@@ -1,0 +1,12 @@
+{
+  "name": "api3-dao",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "yarn start:ui",
+    "start:ui": "cd packages/ui && yarn start"
+  },
+  "dependencies": {
+    "bn.js": "^5.1.3",
+    "ethers": "^5.0.22"
+  }
+}
