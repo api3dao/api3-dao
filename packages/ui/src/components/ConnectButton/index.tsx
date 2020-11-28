@@ -1,22 +1,19 @@
 import React from "react";
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import {
-  AppBar,
-  Toolbar,
-  Typography,
   Button,
-  IconButton,
 } from "@material-ui/core";
+
+import { Web3 } from "services/web3"
 
 import useStyles from "components/Navbar/styles";
 
 function ConnectButton() {
   const classes = useStyles();
-  
+  const connect = async () => {
+    console.log('WEB3', Web3);
+  }
   return (
-    <div className={classes.root}>
-      <Button color="inherit">Connect Wallet</Button>
-    </div>
+    <Button onClick={connect} color="secondary">Connect Wallet</Button>
   );
 }
 

@@ -4,8 +4,11 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 export const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      // border: "solid"
+      margin: 30,
     },
+    box: {
+      padding: 10
+    }
   }),
 );
 

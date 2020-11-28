@@ -10,7 +10,7 @@ function SetStakingTargetButton() {
   
   return (
     <div className={classes.root}>
-      <Button color="inherit">Set Staking Target</Button>
+      <Button color="inherit" className={classes.root}>Set Staking Target</Button>
     </div>
   );
 }
