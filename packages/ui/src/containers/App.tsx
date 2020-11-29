@@ -6,16 +6,20 @@ import { ThemeProvider } from "@material-ui/core";
 
 import { AppRouter }from "containers";
 import { Navbar } from "components";
+import { Web3Provider } from "contexts";
+
 import { theme } from "styles/theme";
 
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <ThemeProvider theme={theme}>
-          <Navbar />
-          <AppRouter />
-        </ThemeProvider>
+        <Web3Provider>
+          <ThemeProvider theme={theme}>
+            <Navbar />
+            <AppRouter />
+          </ThemeProvider>
+        </Web3Provider>
       </BrowserRouter>
     </div>
   );

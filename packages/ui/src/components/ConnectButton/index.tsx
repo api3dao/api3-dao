@@ -1,19 +1,28 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
+  Box,
   Button,
 } from "@material-ui/core";
 
 import { Web3 } from "services/web3"
+import { Web3Context } from "contexts";
 
-import useStyles from "components/Navbar/styles";
+// import useStyles from "components/Navbar/styles";
 
 function ConnectButton() {
-  const classes = useStyles();
+  // const classes = useStyles();
+  const context = useContext(Web3Context);
   const connect = async () => {
-    console.log('WEB3', Web3);
+    const instance = await Web3.getInstance();
+    const address = await instance.getDefaultAddress();
+    console.log('Address', address);
+    context.setAddress(address);
   }
+  
   return (
-    <Button onClick={connect} color="secondary">Connect Wallet</Button>
+    <Box>
+      <Button onClick={connect} color="secondary">Connect Wallet</Button>
+    </Box>
   );
 }
 
