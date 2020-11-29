@@ -4,25 +4,41 @@ import {
   Modal,
   Backdrop,
   Fade,
-  FormGroup,
   FormControl,
   InputLabel,
   Input,
   Button,
   Box,
-  Divider,
-
 } from "@material-ui/core";
+import { createAppHook, useApp } from '@aragon/connect-react'
+import connectVoting from '@aragon/connect-voting'
+
+
+
+import Aragon from "services/aragon";
 
 import useStyles from "components/ProposalModal/styles"
+
+// We create a hook corresponding to the app connector. This is usually enough,
+// since the app connector will inherit from the connection set on <Connect />.
+const useVoting = createAppHook(connectVoting)
 
 function ProposalModal(props: any) {
   const classes = useStyles();
   const { open, handleClose } = props
+  const [voting] = useApp('voting')
+  // 
+  // // And this is how we can use it, by passing the app instance and a callback.
+  const [votes] = useVoting(voting, (app) => app.votes())
   const [stakingTarget, setStakingTarget] = useState<number>(0)
   
   const submitProposal = async () => {
-    console.log('stakingTarget', stakingTarget)
+    const aragon = await Aragon.getInstance();
+    // console.log('aragon', aragon)
+    // console.log('useVoting', useVoting)
+    console.log('voting', voting)
+    console.log('votes', votes)
+    aragon.log();
   }
   
   const onSubmit = (event: any) => {
