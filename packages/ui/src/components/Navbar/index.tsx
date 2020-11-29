@@ -12,7 +12,6 @@ import useStyles from "components/Navbar/styles";
 function Navbar() {
   const classes = useStyles();
   const context = useContext(Web3Context)
-  console.log('context', context);
   return (
     <div className={classes.root}>
       <AppBar position="static">

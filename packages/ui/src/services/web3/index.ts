@@ -27,9 +27,7 @@ export class Web3 {
       const { ethereum } = (window as any)
       await ethereum.enable();
       this.provider = new Web3Provider(ethereum);
-      // console.log('this.provider', this.provider)
       this.signer = await this.provider.getSigner();
-      // console.log("this.signer, this.signer?.getGasPrice()", this.signer?.getGasPrice())
     } catch (error) {
       console.log('Error instanciating Web3 Class', error)
     }

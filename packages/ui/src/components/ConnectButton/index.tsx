@@ -15,7 +15,6 @@ function ConnectButton() {
   const connect = async () => {
     const instance = await Web3.getInstance();
     const address = await instance.getDefaultAddress();
-    console.log('Address', address);
     context.setAddress(address);
   }
   
