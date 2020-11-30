@@ -1,22 +1,27 @@
-import React from "react";
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import React, { useContext } from "react";
 import {
-  AppBar,
-  Toolbar,
-  Typography,
+  Box,
   Button,
-  IconButton,
 } from "@material-ui/core";
 
-import useStyles from "components/Navbar/styles";
+import { Web3 } from "services/web3"
+import { Web3Context } from "contexts";
+
+// import useStyles from "components/Navbar/styles";
 
 function ConnectButton() {
-  const classes = useStyles();
+  // const classes = useStyles();
+  const context = useContext(Web3Context);
+  const connect = async () => {
+    const instance = await Web3.getInstance();
+    const address = await instance.getDefaultAddress();
+    context.setAddress(address);
+  }
   
   return (
-    <div className={classes.root}>
-      <Button color="inherit">Connect Wallet</Button>
-    </div>
+    <Box>
+      <Button onClick={connect} color="secondary">Connect Wallet</Button>
+    </Box>
   );
 }
 
