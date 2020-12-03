@@ -5,16 +5,10 @@ import {
 } from "react-router-dom";
 
 import { Dashboard } from "containers";
-import { Navbar } from "components";
 
 function AppRouter() {
   return (
-      <Switch>    
-        /*
-        <Route path={"/about"}>
-          {"<About />"}
-        </Route>
-        */
+      <Switch>
         <Route path={["/dashboard", "/"]}>
           <Dashboard />
         </Route>

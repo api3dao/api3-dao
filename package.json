@@ -2,7 +2,12 @@
   "name": "api3-dao",
   "version": "1.0.0",
   "scripts": {
-    "start": "yarn start:ui",
-    "start:ui": "cd packages/ui && yarn start"
+    "start": "yarn start:serve",
+    "start:serve": "serve -s ./packages/ui/build",
+    "start:ui": "cd packages/ui && yarn start",
+    "ui": "yarn start:ui"
+  },
+  "dependencies": {
+    "serve": "11.3.2"
   }
 }
