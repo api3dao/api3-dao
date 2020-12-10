@@ -5,6 +5,8 @@ import AddressInfo from "components/AddressInfo";
 import ProposalModal from "components/ProposalModal";
 import TokenBalances from "components/TokenBalances";
 import Actions from "components/Actions";
+import VoteProposalButton from "components/VoteProposalButton";
+import VotesList from "components/VotesList";
 
 export {
   Navbar,
@@ -14,5 +16,7 @@ export {
   ProposalModal,
   TokenBalances,
   Actions,
+  VoteProposalButton,
+  VotesList,
 
 }

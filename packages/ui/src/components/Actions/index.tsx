@@ -2,7 +2,8 @@ import React from 'react';
 import { Box, Typography } from '@material-ui/core';
 import {
   SetStakingTargetButton,
-
+  VotesList,
+  VoteProposalButton,
 } from "components"
 
 import useStyles from "components/Actions/styles";
@@ -19,6 +20,12 @@ function Actions() {
         </Box>
         <Box className={classes.box}>
           <SetStakingTargetButton />
+        </Box>
+        <Box className={classes.box}>
+          <VoteProposalButton />
+        </Box>
+        <Box className={classes.box}>
+          <VotesList />
         </Box>
       </Box>
     </>
