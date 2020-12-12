@@ -1,13 +1,20 @@
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
 
+const padding10 = {
+  padding: 10
+}
 export const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      // border: "1px solid rgb(221, 228, 233)",
-      // color:  "unset",
-      // backgroundColor: "rgb(221, 228, 233)",
+      ...padding10
     },
+    voteItem: {
+      ...padding10
+    },
+    voteListTitle: {
+      paddingLeft: 10,
+    }
   }),
 );
 

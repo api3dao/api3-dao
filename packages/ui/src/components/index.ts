@@ -7,6 +7,7 @@ import TokenBalances from "components/TokenBalances";
 import Actions from "components/Actions";
 import VoteProposalButton from "components/VoteProposalButton";
 import VotesList from "components/VotesList";
+import VoteProposalButtons from "components/VoteProposalButtons";
 
 export {
   Navbar,
@@ -17,6 +18,7 @@ export {
   TokenBalances,
   Actions,
   VoteProposalButton,
+  VoteProposalButtons,
   VotesList,
 
 }

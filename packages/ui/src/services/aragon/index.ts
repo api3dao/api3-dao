@@ -11,16 +11,19 @@ export class Aragon {
   org: Organization
   signer: Signer | undefined;
   address: string | undefined;
+  network: number | string | undefined;
   private constructor() {}
 
   private static _instance: Aragon;
   
   private async initialize() {
     try {
-      this.org = await connect('api3dao.aragonid.eth', 'thegraph', { network: 4 });
       this.web3 = await Web3.getInstance();
       this.signer = await this.web3.getSigner();
       this.address = await this.web3.getDefaultAddress();
+      // This will be extracted from web3 getNetwork function.
+      this.network = 4
+      this.org = await connect('api3dao.aragonid.eth', 'thegraph', { network: this.network });
     } catch (error) {
       console.log('Error instanciating Aragon Class', error)
     }
@@ -38,20 +41,32 @@ export class Aragon {
   public async votes() {
     const voting = await connectVoting(this.org.app('voting'));
     // Fetch votes of the Voting app.
-    const votes = await voting.votes();
-    return votes
+    let votes = await voting.votes();
+    const compare = (a: any, b: any) => {
+      const date1 = new Date(a.startDate * 1000);
+      const date2 = new Date(b.startDate * 1000);
+      let comparison = 0;
+      if (date1 < date2) {
+        comparison = 1;
+      } else {
+        comparison = -1;
+      }
+      return comparison;
+    }
+    return votes.sort(compare)
   }
   
-  public async newVote(stakingTarget?: number) {
+  public async newVote(stakingTarget?: number, description?: string, callback?: Function | any) {
+    description = description ?  description : "no description was provided"
     const voteProposal = {
       stakingTarget,
-      metadata: "refactor new vote",
+      metadata: description,
       // executionScript: Buffer.from('0x00000001'),
       executionScript: '0x00000001',
       castVote: false,
       executesIfDecided: false,
     }
-    const { 
+    const {
       metadata, 
       executionScript, 
       // castVote, 
@@ -66,7 +81,7 @@ export class Aragon {
     ];
     
     const intent = this.org.appIntent(
-      ARAGON_APPS_ADDRESS.voting, 
+      ARAGON_APPS_ADDRESS.rinkeby.voting, 
       'newVote',
       newVoteParams,
     );
@@ -81,8 +96,12 @@ export class Aragon {
         tx = {
           from, to, data 
         }
-        const sign = await this.signer?.sendTransaction(tx);
-        console.log('sign', sign)
+        try {
+          const sign = await this.signer?.sendTransaction(tx);
+          callback()
+        } catch (error) {
+          console.log('Popup error message callback')
+        }
       }
       if(index === 1) {
         // no need to do anything/sign it with this 2nd tx
@@ -93,29 +112,8 @@ export class Aragon {
     transactions.map(executeTx);
   }
 
-  public async vote(voteID?: string) {
-    const voting = await connectVoting(this.org.app('voting'));
-    // console.log('voting', voting);
-    // Fetch votes of the Voting app.
-    const votes = await voting.votes();
-    console.log('votes', votes);
-    // TODO Extract VoteID from aragon votes array.
-    // Need to select the corresponding vote versus the last.
-    // This will be done thru UI.
-    // From UI we will pass the ID of the Vote/Vote Proposal.
-    const vote = votes[votes.length - 1];
-    voteID = vote.id;
-    // get index of vote.
-    let voteIndex: number = 0;
-    votes.filter((vote, index) => {
-      if(vote.id === voteID) {
-        console.log('index', index);
-        voteIndex = index
-      }
-      return vote.id === voteID;
-    });
-
-    const intent = this.org.appIntent(ARAGON_APPS_ADDRESS.voting, 'vote', [voteIndex, true, false]);
+  public async vote(voteID: number, favor: boolean) {    
+    const intent = this.org.appIntent(ARAGON_APPS_ADDRESS.rinkeby.voting, 'vote', [voteID, favor, false]);
     const path = await intent.paths(this.address);
     const { transactions } = path;
     const latestTx = transactions[0];

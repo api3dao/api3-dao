@@ -5,7 +5,7 @@ import {
 
 import { ProposalModal } from "components";
 
-import Aragon from "services/aragon";
+// import Aragon from "services/aragon";
 
 import useStyles from "components/Staking/SetStakingTargetButton/styles";
 
@@ -14,9 +14,9 @@ function SetStakingTargetButton() {
   const [open, setOpen] = React.useState(false);
 
   const handleOpen = async () => {
-    const aragon = await Aragon.getInstance()
-    aragon.newVote();
-    // setOpen(true);
+    // const aragon = await Aragon.getInstance()
+    // aragon.newVote();
+    setOpen(true);
   };
  
   const handleClose = () => {

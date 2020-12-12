@@ -8,19 +8,19 @@ function TokenBalances() {
     <>
       <Box className={classes.box}>
         <Typography variant="subtitle1">
-          list of total tokens staked: { 0 }
+          total API Tokens staked: { 0 }
         </Typography>
       </Box>
 
       <Box className={classes.box}>
         <Typography variant="subtitle1">
-          user token balance: { 0 }
+          Your API3 token balance: { 0 }
         </Typography>
       </Box>
 
       <Box className={classes.box}>
         <Typography variant="subtitle1">
-          user staked token balance: { 0 }
+          Your API staked token balance: { 0 }
         </Typography>
       </Box>
 
