@@ -2,20 +2,6 @@
 # yarn lockfile v1
 
 
-"@aragon/api-react@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@aragon/api-react/-/api-react-2.0.0.tgz#30ea95ef0ac062647b387b934d6414b6f5397ee4"
-  integrity sha512-cEHLJc5vgleERD1Ze0WI+yRgCsTzKZTStdiR9a2sZd5jXaaiOwTjNJzEsZ/sOosPTG0PSvElQg/tojZS2fP7Nw==
-
-"@aragon/api@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@aragon/api/-/api-2.0.0.tgz#0ca4343d5ad45c6cbe7726e48ac1953ca09b61c3"
-  integrity sha512-NcIJu2YxzHoobI4D6dZjHgwLjSnBM7yNJOt+7OdWWLA/P63rLfsCjZM6ArXBdxpIOSyxlmOBFk0mTzAWBJ0ijQ==
-  dependencies:
-    "@aragon/rpc-messenger" "^2.0.0"
-    "@babel/runtime" "^7.1.2"
-    rxjs "^6.5.2"
-
 "@aragon/connect-core@^0.7.0":
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/@aragon/connect-core/-/connect-core-0.7.0.tgz#2464a1ce136fb1166d0de32fcada5a8c5da6e2dc"
@@ -51,15 +37,6 @@
     isomorphic-ws "^4.0.1"
     subscriptions-transport-ws "^0.9.16"
 
-"@aragon/connect-tokens@^0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@aragon/connect-tokens/-/connect-tokens-0.7.0.tgz#958832e4e396fc8dce5ec2f8117ad002003e39ea"
-  integrity sha512-UjyEEUyfgYLCrxGTbdRXSfBca5CflM4n7rULU+Dgi+qMoZKn1RbibRa0ZqtS23ccOJ6hT0I/mcRMzlX+wFAwqQ==
-  dependencies:
-    "@aragon/connect-core" "^0.7.0"
-    "@aragon/connect-thegraph" "^0.7.0"
-    graphql-tag "^2.10.3"
-
 "@aragon/connect-voting@0.7.0":
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/@aragon/connect-voting/-/connect-voting-0.7.0.tgz#3997716bffcadccea55227cfb4e400960e72f09a"
@@ -77,15 +54,6 @@
     "@aragon/connect-core" "^0.7.0"
     "@aragon/connect-ethereum" "^0.7.0"
     "@aragon/connect-thegraph" "^0.7.0"
-
-"@aragon/rpc-messenger@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@aragon/rpc-messenger/-/rpc-messenger-2.0.0.tgz#84d621fca88a723dc01db4f67b3936b6387a2c33"
-  integrity sha512-voJVVgI97MIeUQUTjHOH9GLzMjCvJlp6L2MEsj3nGKgj01VkFVZR7AlooDqqNytAnVnLvJmERtuZ2oXE33UtCg==
-  dependencies:
-    "@babel/runtime" "^7.1.2"
-    rxjs "^6.5.2"
-    uuid "^3.2.1"
 
 "@babel/code-frame@7.10.4", "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.4", "@babel/code-frame@^7.5.5":
   version "7.10.4"
@@ -10350,13 +10318,6 @@ run-queue@^1.0.0, run-queue@^1.0.3:
   dependencies:
     aproba "^1.1.1"
 
-rxjs@^6.5.2:
-  version "6.6.3"
-  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.6.3.tgz#8ca84635c4daa900c0d3967a6ee7ac60271ee552"
-  integrity sha512-trsQc+xYYXZ3urjOiJOuCOa5N3jAZ3eiSpQB5hIT8zGlL2QfnHLJ2r7GMkBGuIausdJN1OneaI6gQlsqNHHmZQ==
-  dependencies:
-    tslib "^1.9.0"
-
 safe-buffer@5.1.2, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.2.tgz#991ec69d296e0313747d59bdfd2b745c35f8828d"
@@ -11726,7 +11687,7 @@ utils-merge@1.0.1:
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
   integrity sha1-n5VxD1CiZ5R7LMwSR0HBAoQn5xM=
 
-uuid@^3.2.1, uuid@^3.3.2, uuid@^3.4.0:
+uuid@^3.3.2, uuid@^3.4.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
