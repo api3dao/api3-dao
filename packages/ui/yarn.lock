@@ -37,15 +37,6 @@
     isomorphic-ws "^4.0.1"
     subscriptions-transport-ws "^0.9.16"
 
-"@aragon/connect-tokens@^0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@aragon/connect-tokens/-/connect-tokens-0.7.0.tgz#958832e4e396fc8dce5ec2f8117ad002003e39ea"
-  integrity sha512-UjyEEUyfgYLCrxGTbdRXSfBca5CflM4n7rULU+Dgi+qMoZKn1RbibRa0ZqtS23ccOJ6hT0I/mcRMzlX+wFAwqQ==
-  dependencies:
-    "@aragon/connect-core" "^0.7.0"
-    "@aragon/connect-thegraph" "^0.7.0"
-    graphql-tag "^2.10.3"
-
 "@aragon/connect-voting@0.7.0":
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/@aragon/connect-voting/-/connect-voting-0.7.0.tgz#3997716bffcadccea55227cfb4e400960e72f09a"

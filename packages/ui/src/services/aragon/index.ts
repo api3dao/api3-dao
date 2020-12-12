@@ -1,26 +1,29 @@
-import * as AragonConnect from '@aragon/connect-react'
-import { 
-  // Connect, 
-  // useApps, 
-  // usePermissions, 
-  // Permission,
-  // createAppHook, 
-  // useApp,
-} from '@aragon/connect-react'
-// import connect from '@aragon/connect'
-// import * as connectVoting from '@aragon/connect-voting'
-import connect2 from "@aragon/connect"
+import connect from '@aragon/connect'
 import connectVoting from "@aragon/connect-voting"
-// import tokens from "@aragon/connect-tokens"
+
+import { ARAGON_APPS_ADDRESS } from "services/constants"
+import { Web3 } from "services/web3";
+import { IWeb3Provider, Signer } from "services/web3/types";
+import { Organization } from 'services/aragon/types';
 
 export class Aragon {
+  web3: IWeb3Provider
+  org: Organization
+  signer: Signer | undefined;
+  address: string | undefined;
+  network: number | string | undefined;
   private constructor() {}
 
   private static _instance: Aragon;
-
+  
   private async initialize() {
     try {
-      
+      this.web3 = await Web3.getInstance();
+      this.signer = await this.web3.getSigner();
+      this.address = await this.web3.getDefaultAddress();
+      // This will be extracted from web3 getNetwork function.
+      this.network = 4
+      this.org = await connect('api3dao.aragonid.eth', 'thegraph', { network: this.network });
     } catch (error) {
       console.log('Error instanciating Aragon Class', error)
     }
@@ -35,29 +38,94 @@ export class Aragon {
     return this._instance;
   }
   
-  public async log() {
-    console.log('AragonConnect', AragonConnect)
-    // console.log('Connect', Connect)
-    // console.log('useApps', useApps)
-    // console.log('Permission', Permission)
-    const connect = AragonConnect.connect
-    console.log('AragonConnect.connect', connect)
-    console.log('connect2', connect2)
-    // console.log('usePermissions', usePermissions)
+  public async votes() {
+    const voting = await connectVoting(this.org.app('voting'));
+    // Fetch votes of the Voting app.
+    let votes = await voting.votes();
+    const compare = (a: any, b: any) => {
+      const date1 = new Date(a.startDate * 1000);
+      const date2 = new Date(b.startDate * 1000);
+      let comparison = 0;
+      if (date1 < date2) {
+        comparison = 1;
+      } else {
+        comparison = -1;
+      }
+      return comparison;
+    }
+    return votes.sort(compare)
+  }
+  
+  public async newVote(stakingTarget?: number, description?: string, callback?: Function | any) {
+    description = description ?  description : "no description was provided"
+    const voteProposal = {
+      stakingTarget,
+      metadata: description,
+      // executionScript: Buffer.from('0x00000001'),
+      executionScript: '0x00000001',
+      castVote: false,
+      executesIfDecided: false,
+    }
+    const {
+      metadata, 
+      executionScript, 
+      // castVote, 
+      // executesIfDecided 
+    } = voteProposal;
     
-    // console.log('tokens', tokens)
-    const org = await connect('w3api.aragonid.eth', 'thegraph')
-    console.log('org', org)
-    // console.log('voting', voting)
-    // const org = await connect('myorg.aragonid.eth', 'thegraph')
-    const voting = await connectVoting(org.app('voting'))
-    console.log("voting", voting)
-    // console.log('connectVoting', connectVoting)
-    // Connect the Voting app using the corresponding connector:
-    // const voting = await connectVoting(org.app('voting'))
+    const newVoteParams = [
+      executionScript, 
+      metadata,
+      // castVote, 
+      // executesIfDecided
+    ];
+    
+    const intent = this.org.appIntent(
+      ARAGON_APPS_ADDRESS.rinkeby.voting, 
+      'newVote',
+      newVoteParams,
+    );
+    console.log('intent', intent);
+    const path = await intent.paths(this.address);
+    console.log('path', path)
+    const { transactions } = path;
+    const executeTx = async (tx: any, index: number) => {
+      const { from, to, data } = tx;
+      if(index === 0) {
+        console.log('tx index 0', tx);
+        tx = {
+          from, to, data 
+        }
+        try {
+          const sign = await this.signer?.sendTransaction(tx);
+          callback()
+        } catch (error) {
+          console.log('Popup error message callback')
+        }
+      }
+      if(index === 1) {
+        // no need to do anything/sign it with this 2nd tx
+        console.log('tx index 1', tx);
+        // const sign = await signer?.sendTransaction(tx);
+      }
+    }
+    transactions.map(executeTx);
+  }
 
-    // Fetch votes of the Voting app
-    // const votes = await voting.votes()
+  public async vote(voteID: number, favor: boolean) {    
+    const intent = this.org.appIntent(ARAGON_APPS_ADDRESS.rinkeby.voting, 'vote', [voteID, favor, false]);
+    const path = await intent.paths(this.address);
+    const { transactions } = path;
+    const latestTx = transactions[0];
+    const { from, to, data } = latestTx;
+    let signTx = {
+      from,
+      to,
+      data,
+    }
+    // Users sign Vote TxRequest.
+    const sign = await this.signer?.sendTransaction(signTx);
+    return sign;
   }
 }
 

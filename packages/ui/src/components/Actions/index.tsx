@@ -2,7 +2,6 @@ import React from 'react';
 import { Box, Typography } from '@material-ui/core';
 import {
   SetStakingTargetButton,
-
 } from "components"
 
 import useStyles from "components/Actions/styles";

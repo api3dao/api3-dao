@@ -1,1 +1,1 @@
-declare module "bn.js"
+declare module "bn.js";

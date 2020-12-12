@@ -66,4 +66,8 @@ export class Web3 {
     return await response.json();
   }
   
+  public getSigner = async () => {
+    return this.signer;
+  }
+  
 }

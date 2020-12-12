@@ -1,10 +1,11 @@
 import React from 'react';
-import { Container } from '@material-ui/core';
+import { Container, Button } from '@material-ui/core';
 import {
   TokenBalances,
   Actions,
-
+  VotesList,
 } from "components"
+
 import useStyles from "containers/dashboard/styles";
 
 function Dashboard() {
@@ -13,6 +14,7 @@ function Dashboard() {
     <Container className={classes.root}>
       <TokenBalances />
       <Actions />
+      <VotesList />
     </Container>
   );
 }
