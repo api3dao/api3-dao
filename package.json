@@ -1,8 +1,24 @@
 {
   "name": "api3-dao",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "scripts": {
     "start": "yarn start:ui",
-    "start:ui": "cd packages/ui && yarn start"
+    "start:ui": "cd ui && yarn start",
+    "test": "mocha --exit --recursive --timeout 5000",
+    "migrate-live": "truffle migrate --network live --skip-dry-run"
+  },
+  "dependencies": {
+    "@openzeppelin/cli": "^2.8.2",
+    "@openzeppelin/contracts-ethereum-package": "^2.5.0",
+    "@truffle/hdwallet-provider": "^1.0.36",
+    "core-util-is": "^1.0.2"
+  },
+  "devDependencies": {
+    "@openzeppelin/test-environment": "^0.1.4",
+    "@openzeppelin/test-helpers": "^0.5.5",
+    "eslint": "^7.0.0",
+    "eslint-plugin-mocha": "^6.3.0",
+    "mocha": "^7.1.2",
+    "process-argv": "^1.0.0"
   }
 }
