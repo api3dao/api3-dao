@@ -28,7 +28,7 @@ function ProposalModal(props: any) {
     ${description} +
     new Staking Target proposed: ${stakingTarget}
     `
-    aragon.newVote(stakingTarget, description, handleClose);
+    aragon.newVote(stakingTarget, newDescription, handleClose);
   }
   
   const onSubmit = (event: any) => {
