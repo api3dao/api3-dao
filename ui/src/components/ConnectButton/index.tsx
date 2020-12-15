@@ -20,7 +20,7 @@ function ConnectButton() {
   
   return (
     <Box>
-      <Button onClick={connect} color="secondary">Connect Wallet</Button>
+      <Button onClick={connect} color="secondary">Connect</Button>
     </Box>
   );
 }
