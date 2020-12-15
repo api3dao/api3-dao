@@ -24,6 +24,8 @@ export class Aragon {
       // This will be extracted from web3 getNetwork function.
       this.network = 4
       this.org = await connect('api3dao.aragonid.eth', 'thegraph', { network: this.network });
+      // For the future we will replace thegraph with an ethereum node
+      // this.org = await connect('api3dao.aragonid.eth', 'ethereum', { network: this.network, ethereum: this.web3.provider });
     } catch (error) {
       console.log('Error instanciating Aragon Class', error)
     }
@@ -98,9 +100,10 @@ export class Aragon {
         }
         try {
           const sign = await this.signer?.sendTransaction(tx);
+          console.log('NewVote sign', sign);
           callback()
         } catch (error) {
-          console.log('Popup error message callback')
+          console.log('Popup error message callback error:', error);
         }
       }
       if(index === 1) {
