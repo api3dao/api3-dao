@@ -1,6 +1,7 @@
 {
   "name": "api3-dao",
   "version": "1.0.0",
+  "homepage": "./packages/ui",
   "scripts": {
     "start": "yarn start:serve",
     "start:serve": "serve -s ./packages/ui/build",
