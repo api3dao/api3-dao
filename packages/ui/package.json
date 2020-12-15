@@ -1,6 +1,7 @@
 {
   "name": "ui-api3-dao",
   "version": "0.1.0",
+  "homepage": ".",
   "private": true,
   "dependencies": {
     "@aragon/connect": "^0.7.0",
