@@ -25,8 +25,8 @@ function ProposalModal(props: any) {
   const submitProposal = async () => {
     const aragon = await Aragon.getInstance();
     let newDescription = `
-    ${description} +
-    new Staking Target proposed: ${stakingTarget}
+      ${description} +
+      new Staking Target proposed: ${stakingTarget}
     `
     aragon.newVote(stakingTarget, newDescription, handleClose);
   }
@@ -72,7 +72,7 @@ function ProposalModal(props: any) {
                   type="text" 
                   onChange={onChangeDescription}
                 />
-                Description: { description }
+                Preview Description: { description }
               </FormControl>
                 <FormControl className={classes.formControl}>
                   <InputLabel htmlFor="target-amout">Staking target amount</InputLabel>
@@ -81,7 +81,7 @@ function ProposalModal(props: any) {
                     type="number" 
                     onChange={onChangeStakingTarget}
                   />
-                  Staking Target: { stakingTarget }
+                  Preview Staking Target: { stakingTarget }
                 </FormControl>
                 <FormControl>
                   <Button color="inherit" type="submit">

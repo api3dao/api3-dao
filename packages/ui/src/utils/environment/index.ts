@@ -1,3 +1,5 @@
-const NODE_ENV = process.env;
+const env = process.env;
 
-export { NODE_ENV };
+export const getEnvVariables = () => {
+  return env;
+}
