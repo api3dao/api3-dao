@@ -1,4 +1,4 @@
-import { providers, Signer } from "ethers";
+import { providers, Signer, Contract } from "ethers";
 
 import { IWeb3Provider } from "services/web3/types";
 
@@ -68,6 +68,11 @@ export class Web3 {
   
   public getSigner = async () => {
     return this.signer;
+  }
+  
+  public getContract = async (address: string, abi: any) => {
+    const contract = new Contract(address, abi, this.provider);
+    return contract;
   }
   
 }
