@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext } from 'react';
 import { Box, Typography } from '@material-ui/core';
 import { API3Context } from "contexts";
 
@@ -7,9 +7,8 @@ import useStyles from "components/TokenBalances/styles";
 function TokenBalances() {
   const api3Context = useContext(API3Context)
   const classes = useStyles();
-  const [API3TokensSupply] = useState<number>(0)
-  const [API3TokensStaked] = useState<number>(0);
-  const tokenItem = (token: any, index: number) => { 
+  
+  const tokenItem = (token: any, index: number) => {
     return (
       <Box className={classes.box} key={index}>
         <Typography variant="subtitle1">
@@ -23,12 +22,12 @@ function TokenBalances() {
       <>
         <Box className={classes.box}>
           <Typography variant="subtitle1">
-            API3 tokens supply: { API3TokensSupply }
+            API3 tokens supply: { api3Context.tokens[0] ? api3Context.tokens[0].totalSupply : 0 }
           </Typography>
         </Box>
         <Box className={classes.box}>
           <Typography variant="subtitle1">
-            API3 tokens staked: { API3TokensStaked }
+            API3 staked tokens supply: { api3Context.tokens[1] ? api3Context.tokens[1].totalSupply : 0 }
           </Typography>
         </Box>
         {
