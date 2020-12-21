@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { Box, Typography } from '@material-ui/core';
 import { API3Context } from "contexts";
+import { Counter } from "components";
 
 import useStyles from "components/TokenBalances/styles";
 
@@ -20,6 +21,9 @@ function TokenBalances() {
   const TokensList = () => {
     return (
       <>
+        <Box className={classes.box}>
+          <Counter countDownDate="Jan 1, 2021 00:00:00" />
+        </Box>
         <Box className={classes.box}>
           <Typography variant="subtitle1">
             API3 tokens supply: { api3Context.tokens[0] ? api3Context.tokens[0].totalSupply : 0 }

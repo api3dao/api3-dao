@@ -6,7 +6,11 @@ import {
 
 import Aragon from "services/aragon";
 import { Votes, Vote } from "services/aragon/types";
-import { VoteProposalButtons } from "components";
+import { 
+  VoteProposalButtons,
+  // Counter,
+
+} from "components";
 import useStyles from "components/VotesList/styles";
 
 function VotesList() {  
@@ -35,6 +39,11 @@ function VotesList() {
         <Box>
           <p>Description of Vote: { vote.metadata }</p>
         </Box>
+        {/*
+        <Box>
+          <Counter countDownDate="Jan 1, 2021 00:00:00" />
+        </Box>
+        */}
         <VoteProposalButtons voteIndex={voteIndex} />
       </Box>
     )
