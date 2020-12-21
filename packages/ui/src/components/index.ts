@@ -8,6 +8,7 @@ import Actions from "components/Actions";
 import VoteProposalButton from "components/VoteProposalButton";
 import VotesList from "components/VotesList";
 import VoteProposalButtons from "components/VoteProposalButtons";
+import Counter from "components/Counter";
 
 export {
   Navbar,
@@ -20,5 +21,6 @@ export {
   VoteProposalButton,
   VoteProposalButtons,
   VotesList,
+  Counter,
 
 }
