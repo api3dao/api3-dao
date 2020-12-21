@@ -1,5 +1,5 @@
 import { Web3 } from "services/web3";
-import { BalanceOfABI } from "services/web3/abis";
+import { API3TokenABI } from "services/web3/abis";
 import { TokenContractAddresses } from "services/web3/erc20/tokens";
 import { divideNumberByDecimals } from "utils/numbers";
 
@@ -20,22 +20,26 @@ export const getERC20Tokens = async (): Promise<Tokens> => {
   // Here we check if the address connected to metamask holds API3 and API3Staked.
   const currentETHAddress = await web3.getDefaultAddress();
 
-  const API3Contract = await web3.getContract(TokenContractAddresses.API3, BalanceOfABI);
-  const API3StakedContract = await web3.getContract(TokenContractAddresses.API3Staked, BalanceOfABI);
-  
+  const API3Contract = await web3.getContract(TokenContractAddresses.API3, API3TokenABI);
+  const API3StakedContract = await web3.getContract(TokenContractAddresses.API3Staked, API3TokenABI);
+
+  const API3TotalSupplyAmount = await API3Contract.totalSupply();
   const API3Amount = await API3Contract.balanceOf(currentETHAddress);
   const API3TokenDecimals = await API3Contract.decimals();
-  
-  const API3StakedTokenDecimals = await API3StakedContract.decimals();
+
+  const API3StakedTotalSupplyAmount = await API3StakedContract.totalSupply();
   const API3StakedAmount = await API3StakedContract.balanceOf(currentETHAddress);
+  const API3StakedTokenDecimals = await API3StakedContract.decimals();
   
   const API3 = {
+    totalSupply: divideNumberByDecimals(Number(API3TotalSupplyAmount.toString()), API3TokenDecimals),
     name: "API3",
-    balance: divideNumberByDecimals(Number(API3Amount.toString()), API3TokenDecimals.toNumber()),
+    balance: divideNumberByDecimals(Number(API3Amount.toString()), API3TokenDecimals),
   }
   const API3Staked = {
+    totalSupply: divideNumberByDecimals(Number(API3StakedTotalSupplyAmount.toString()), API3StakedTokenDecimals),
     name: "API3Staked",
-    balance: divideNumberByDecimals(Number(API3StakedAmount.toString()), API3StakedTokenDecimals.toNumber())
+    balance: divideNumberByDecimals(Number(API3StakedAmount.toString()), API3StakedTokenDecimals)
   }
   
   const tokens = [API3, API3Staked]

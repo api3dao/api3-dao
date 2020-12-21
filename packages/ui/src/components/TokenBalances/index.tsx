@@ -23,12 +23,12 @@ function TokenBalances() {
       <>
         <Box className={classes.box}>
           <Typography variant="subtitle1">
-            API3 tokens supply: { API3TokensSupply }
+            API3 tokens supply: { api3Context.tokens[0] ? api3Context.tokens[0].totalSupply : 0 }
           </Typography>
         </Box>
         <Box className={classes.box}>
           <Typography variant="subtitle1">
-            API3 tokens staked: { API3TokensStaked }
+            API3 staked tokens supply: { api3Context.tokens[1] ? api3Context.tokens[1].totalSupply : 0 }
           </Typography>
         </Box>
         {
