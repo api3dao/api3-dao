@@ -8,13 +8,13 @@ const MainNetTokens = {
 }
 
 const RinkebyTokens = {
-  API3: "0x0b38210ea11411557c13457d4da7dc6ea731b88a",
-  API3Staked: "0x0b38210ea11411557c13457d4da7dc6ea731b88a",
+  API3: "0x185edff5e79f79d811b468ab734b6f9b5426acc7",
+  API3Staked: "0x185edff5e79f79d811b468ab734b6f9b5426acc7",
 }
 
 const setNetworkTokens = () => {
   if(Network === "RINKEBY") {
-    return RinkebyTokens
+    return RinkebyTokens;
   }
   else {
     return MainNetTokens
