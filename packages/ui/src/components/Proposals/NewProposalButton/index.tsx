@@ -5,17 +5,13 @@ import {
 
 import { ProposalModal } from "components";
 
-// import Aragon from "services/aragon";
-
-import useStyles from "components/Staking/SetStakingTargetButton/styles";
+import useStyles from "components/Proposals/NewProposalButton/styles";
 
 function SetStakingTargetButton() {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
 
   const handleOpen = async () => {
-    // const aragon = await Aragon.getInstance()
-    // aragon.newVote();
     setOpen(true);
   };
  
@@ -25,7 +21,7 @@ function SetStakingTargetButton() {
   
   return (
     <div className={classes.root}>
-      <Button color="inherit" className={classes.root} onClick={()=> handleOpen() } >Create Staking Target Vote</Button>
+      <Button color="inherit" className={classes.root} onClick={()=> handleOpen() } >New Proposal</Button>
       <ProposalModal handleClose={handleClose} open={open} />
     </div>
   );

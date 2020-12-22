@@ -8,7 +8,6 @@ import {
   Dashboard,
   Claims,
   DAOGov,
-  Proposals,
   Staking,
 
 } from "containers";
@@ -24,9 +23,6 @@ function AppRouter() {
         </Route>
         <Route path={"/staking"}>
           <Staking />
-        </Route>
-        <Route path={"/proposals"}>
-          <Proposals />
         </Route>
         <Route path={["/dashboard", "/"]}>
           <Dashboard />

@@ -2,7 +2,7 @@ import React, {
   createContext,
 } from "react";
 
-import { Web3Provider, API3Provider } from "contexts";
+import { Web3Provider, API3Provider, AragonProvider } from "contexts";
 
 // Here we will add all Contexts needed versus adding them inside containers/App.tsx.
 
@@ -24,9 +24,11 @@ export function MainProvider(props: IProps) {
   return (
     <MainContext.Provider value={mainProviderValue}>
       <Web3Provider>
-        <API3Provider>
-          { props.children }
-        </API3Provider>
+        <AragonProvider>
+          <API3Provider>
+            { props.children }
+          </API3Provider>
+        </AragonProvider>
       </Web3Provider>
     </MainContext.Provider>
   );
