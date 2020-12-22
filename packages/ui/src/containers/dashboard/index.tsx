@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Button } from '@material-ui/core';
+import { Container } from '@material-ui/core';
 import {
   TokenBalances,
 } from "components"
