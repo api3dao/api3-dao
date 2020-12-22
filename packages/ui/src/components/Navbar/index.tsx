@@ -1,4 +1,6 @@
 import React, { useContext } from "react";
+import { Link } from "react-router-dom";
+
 import {
   AppBar,
   Toolbar,
@@ -17,7 +19,29 @@ function Navbar() {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" className={classes.title}>
-            API3 DAO
+            <Link to="/" className={classes.link}>
+              API3 DAO
+            </Link>
+          </Typography>
+          <Typography className={classes.title}>
+            <Link to="/dashboard" className={classes.link}>
+              Dashboard
+            </Link>
+          </Typography>
+          <Typography className={classes.title}>
+          <Link to="/staking" className={classes.link}>
+            Staking
+          </Link>
+          </Typography>
+          <Typography className={classes.title}>
+          <Link to="/claims" className={classes.link}>
+            Claims
+          </Link>
+          </Typography>
+          <Typography className={classes.title}>
+          <Link to="/dao" className={classes.link}>
+            DAO Gov
+          </Link>
           </Typography>
           {
             context.address ? (
