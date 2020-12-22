@@ -19,7 +19,7 @@ function AppRouter() {
         <Route path={"/claims"}>
           <Claims />
         </Route>
-        <Route path={"/dao-gov"}>
+        <Route path={"/dao"}>
           <DAOGov />
         </Route>
         <Route path={"/staking"}>
