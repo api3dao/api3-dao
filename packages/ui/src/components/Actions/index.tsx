@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@material-ui/core';
 import {
-  SetStakingTargetButton,
+  NewProposalButton,
 } from "components"
 
 import useStyles from "components/Actions/styles";
@@ -17,7 +17,7 @@ function Actions() {
           </Typography>
         </Box>
         <Box className={classes.box}>
-          <SetStakingTargetButton />
+          <NewProposalButton />
         </Box>
       </Box>
     </>

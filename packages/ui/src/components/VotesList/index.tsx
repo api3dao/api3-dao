@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Box,
   Typography,
 } from "@material-ui/core";
 
-import Aragon from "services/aragon";
-import { Votes, Vote } from "services/aragon/types";
+import { AragonContext } from "contexts";
+
+import { Vote } from "services/aragon/types";
 import { 
   VoteProposalButtons,
   // Counter,
@@ -15,18 +16,7 @@ import useStyles from "components/VotesList/styles";
 
 function VotesList() {  
   const classes = useStyles()
-  const [votes, setVotes] = useState<Votes>([]);
-  
-  const getVotes = async () => { 
-    const aragon = await Aragon.getInstance();
-    setVotes(await aragon.votes());
-  }
-  
-  const componentDidMount = () => {
-    getVotes()
-  }
-  
-  useEffect(componentDidMount, []);
+  const aragonContext = useContext<any | null>(AragonContext);
   
   const voteItems = (vote: Vote, voteIndex: number) => {
     voteIndex = Number(vote.id.slice(- 4))
@@ -50,23 +40,26 @@ function VotesList() {
   }
     
   return (
-    <Box>
+    <>
       { 
-        votes.length > 0 ? (
-          <Typography variant="subtitle1" className={classes.voteListTitle}>
+        aragonContext.votes.length > 0 ? (
+          <Typography variant="h5" className={classes.voteListTitle}>
             Vote List
           </Typography>
         )
         : (
-          <Typography variant="subtitle1" className={classes.voteListTitle}>
+          <Typography variant="h5" className={classes.voteListTitle}>
             Loading vote proposals...
           </Typography>
         )
       }
-      {
-        votes.map(voteItems).slice(0, 5)
-      }
-    </Box>
+      <Box>
+        {
+          aragonContext.votes.map(voteItems).slice(0, 5)
+        }
+      </Box>
+
+    </>
   );
 }
 

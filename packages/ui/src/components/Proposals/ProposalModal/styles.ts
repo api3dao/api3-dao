@@ -14,8 +14,8 @@ export const useStyles = makeStyles((theme: Theme) =>
       boxShadow: theme.shadows[5],
       // padding: theme.spacing(2, 4, 3),
       padding: 50,
-      height: "50%",
-      width: "50%",
+      height: "70%",
+      width: "70%",
     },
     form: {
       display: "flex",
@@ -23,7 +23,14 @@ export const useStyles = makeStyles((theme: Theme) =>
       flexDirection: "column",
     },
     formControl: {
-      paddingBottom: 50,
+      // paddingBottom: 50,
+      paddingBottom: 10,
+    },
+    checkboxes: {
+      display: "flex",
+    },
+    preview: {
+      
     }
   }),
 );
