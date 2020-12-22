@@ -13,6 +13,7 @@ export const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
     },
     link: {
+      color: "white",
       "&:visited": {
         color: 'unset',
       },

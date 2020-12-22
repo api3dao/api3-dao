@@ -5,7 +5,8 @@
     "start": "yarn start:serve",
     "start:serve": "serve -s ./packages/ui/build",
     "start:ui": "cd packages/ui && yarn start",
-    "ui": "yarn start:ui"
+    "ui": "yarn start:ui",
+    "ui:build": "cd packages/ui && yarn build"
   },
   "dependencies": {
     "serve": "11.3.2"
