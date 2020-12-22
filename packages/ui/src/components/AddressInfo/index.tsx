@@ -10,7 +10,7 @@ function AddressInfo(props: any) {
   const { address } = props
   return (
     <Typography variant="subtitle2" className={classes.root}>
-      { address }
+      { address.slice(0, 5) }...{ address.slice(-5) }
     </Typography>
   );
 }

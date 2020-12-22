@@ -12,6 +12,13 @@ export const useStyles = makeStyles((theme: Theme) =>
     title: {
       flexGrow: 1,
     },
+    link: {
+      "&:visited": {
+        color: 'unset',
+      },
+      textDecoration: "unset",
+    },
+
   }),
 );
 
