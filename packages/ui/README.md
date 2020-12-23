@@ -26,3 +26,13 @@ The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### `deploy ipfs`
+
+At the moment we are using [fleek](https://app.fleek.co/).
+1.- Sign in with your github account.
+2.- Select your github deployment branch
+3.- Set `ENV_VARIABLES such as REACT_APP_NETWORK` you can find this in fleek deploy settings.
+4.- Every time a `git push` is made to such "deployment branch" fleek would automatically deploy those changes to a new IPFS hash.
+
+In the future we will also implement commands that allow users to deploy to ipfs thru command line.
