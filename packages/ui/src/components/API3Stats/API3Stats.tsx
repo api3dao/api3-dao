@@ -24,7 +24,7 @@ function API3Stats() {
   const Stats = () => {
     return (
       <Box className={classes.root}>
-        <Grid container xs={12} justify="space-evenly" spacing={2}>
+        <Grid container justify="space-evenly" spacing={2}>
           <Grid>
             <Global />
           </Grid>

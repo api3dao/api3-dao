@@ -18,7 +18,6 @@ export const typography: any = {
     fontSize: "28px",
     lineHeight: "28px",
     fontWeight: 600,
-    marginBottom: 6,
   },
   body1: {
     fontSize: "16px",
