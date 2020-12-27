@@ -3,8 +3,8 @@ import { palette } from "styles/palette";
 import { overrides } from "styles/overrides";
 import { typography } from "styles/typography";
 
-export const theme = createMuiTheme({
+export const theme = createMuiTheme({ 
   palette,
-  ...typography,
+  typography,
   overrides,
 });

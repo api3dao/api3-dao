@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@material-ui/core";
 
-import { ConnectButton, AddressInfo } from "components"
+import { ConnectButton, AddressInfo, Logo } from "components"
 import { Web3Context } from "contexts"
 import useStyles from "components/Navbar/styles";
 
@@ -18,6 +18,7 @@ function Navbar() {
     <div className={classes.root}>
       <AppBar position="static">
         <Toolbar>
+          <Logo />
           <Typography variant="h6" className={classes.title}>
             <Link to="/" className={classes.link}>
               API3 DAO
@@ -29,19 +30,19 @@ function Navbar() {
             </Link>
           </Typography>
           <Typography className={classes.title}>
-          <Link to="/staking" className={classes.link}>
-            Staking
-          </Link>
+            <Link to="/staking" className={classes.link}>
+              Staking
+            </Link>
           </Typography>
           <Typography className={classes.title}>
-          <Link to="/claims" className={classes.link}>
-            Claims
-          </Link>
+            <Link to="/claims" className={classes.link}>
+              Claims
+            </Link>
           </Typography>
           <Typography className={classes.title}>
-          <Link to="/dao" className={classes.link}>
-            DAO Gov
-          </Link>
+            <Link to="/dao" className={classes.link}>
+              Governance
+            </Link>
           </Typography>
           {
             context.address ? (

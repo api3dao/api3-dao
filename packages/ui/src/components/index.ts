@@ -1,7 +1,7 @@
 import Navbar from "components/Navbar";
 import ConnectButton from "components/ConnectButton";
 import AddressInfo from "components/AddressInfo";
-import TokenBalances from "components/TokenBalances";
+import { API3Stats, Account, Global } from "components/API3Stats";
 import Actions from "components/Actions";
 import ProposalModal from "components/Proposals/ProposalModal";
 import NewProposalButton from "components/Proposals/NewProposalButton";
@@ -9,15 +9,15 @@ import VoteProposalButton from "components/VoteProposalButton";
 import VotesList from "components/VotesList";
 import VoteProposalButtons from "components/VoteProposalButtons";
 import StakingButton from "components/Staking/StakingButton";
-
 import Counter from "components/Counter";
+import Logo from "components/Logo";
 
 export {
   Navbar,
   ConnectButton,
   AddressInfo,
   ProposalModal,
-  TokenBalances,
+  API3Stats,
   Actions,
   VoteProposalButton,
   VoteProposalButtons,
@@ -25,5 +25,8 @@ export {
   Counter,
   NewProposalButton,
   StakingButton,
+  Account,
+  Global,
+  Logo,
 
 }

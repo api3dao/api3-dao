@@ -2,13 +2,13 @@ import React, { useContext } from 'react';
 import { Box, Typography } from '@material-ui/core';
 import { API3Context } from "contexts";
 
-import useStyles from "components/TokenBalances/styles";
+import useStyles from "components/API3Stats/styles";
 
-function TokenBalances() {
+function Account() {
   const api3Context = useContext(API3Context)
   const classes = useStyles();
   
-  const LoadingBalances = () => {
+  const LoadingAccountInfo = () => {
     return (
       <> 
         <Typography variant="h4">
@@ -18,7 +18,7 @@ function TokenBalances() {
     )
   }
   
-  const tokenItem = (token: any, index: number) => {
+  const accountsStatsItem = (token: any, index: number) => {
     return (
       <Box className={classes.box} key={index}>
         <Typography variant="subtitle1">
@@ -28,9 +28,10 @@ function TokenBalances() {
     )
   }
   
-  const TokensList = () => {
+  const AccountStatsList = () => {
+    // Account dashboard (total API3 tokens, tokens staked, withdrawable tokens, locked rewards, tokens locked for collateral)
     return (
-      <>
+      <Box className={classes.root}>
         <Box className={classes.box}>
           {
             api3Context.tokens.length > 0 && (
@@ -39,33 +40,31 @@ function TokenBalances() {
               </Typography>
             )
           }
-          {
-            api3Context.tokens.map(tokenItem)
-          }
         </Box>
+        {
+          api3Context.tokens.map(accountsStatsItem)
+        }
         <Box className={classes.box}>
-          {
-            api3Context.tokens[0] && (
-              <Typography variant="h4">
-                Global API3 Stats
-              </Typography>
-            )
-          }
           <Typography variant="subtitle1">
-            API3 tokens supply: { api3Context.tokens[0] ? api3Context.tokens[0].totalSupply : 0 }
+            Withdrawable Tokens: { 10 }
           </Typography>
         </Box>
         <Box className={classes.box}>
           <Typography variant="subtitle1">
-            API3 staked tokens supply: { api3Context.tokens[1] ? api3Context.tokens[1].totalSupply : 0 }
+            Locked Rewards Tokens: { 10 }
           </Typography>
         </Box>
-      </>
+        <Box className={classes.box}>
+          <Typography variant="subtitle1">
+            Locked Tokens for Collateral: { 10 }
+          </Typography>
+        </Box>
+      </Box>
     );
   }
   
   const tokens = api3Context.tokens.length > 0;
-  return tokens ? <TokensList /> : <LoadingBalances />;
+  return tokens ? <AccountStatsList /> : <LoadingAccountInfo />;
 }
 
-export default TokenBalances;
+export default Account;

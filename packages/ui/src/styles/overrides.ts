@@ -1,4 +1,14 @@
 export const overrides = {
+  MuiContainer: {
+    root: {
+      
+    },
+  },
+  MuiTypography: {
+    root: {
+      
+    },
+  },
   MuiTextField: {
     root: {
       backgroundColor: "#FFFFFF",
