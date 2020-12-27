@@ -18,8 +18,6 @@ export const typography: any = {
     fontSize: "28px",
     lineHeight: "28px",
     fontWeight: 600,
-    marginBottom: 6,
-    color: "#000000",
   },
   body1: {
     fontSize: "16px",
@@ -35,7 +33,6 @@ export const typography: any = {
     lineHeight: "28px",
   },
   subtitle2: {
-    textAlign: "initial",
     fontSize: 14,
   },
 };

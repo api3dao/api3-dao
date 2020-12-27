@@ -23,11 +23,12 @@ function VotesList() {
     return (
       <Box className={classes.voteItem} key={voteIndex}>
         <Box>
-          <p>Vote #: { voteIndex }</p>
-          <p>Vote ID: { vote.id.slice(- 4) }</p>
+          <Typography variant="body1">Vote #: { voteIndex }</Typography>
+          <Typography variant="body1">Vote ID: { vote.id.slice(- 4) }</Typography>
         </Box>
         <Box>
-          <p>Description of Vote: { vote.metadata }</p>
+          <Typography variant="body1">Description of Vote:</Typography>
+          <Typography variant="body1"> { vote.metadata } </Typography>
         </Box>
         {/*
         <Box>
