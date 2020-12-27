@@ -7,7 +7,7 @@ import { Container } from '@material-ui/core';
 // import Aragon from "services/aragon";
 // import { AragonContext } from "contexts";
 import {
-  TokenBalances,
+  API3Stats,
 } from "components"
 
 import useStyles from "containers/dashboard/styles";
@@ -28,7 +28,7 @@ function Dashboard() {
   
   return (
     <Container className={classes.root}>
-      <TokenBalances />
+      <API3Stats />
     </Container>
   );
 }

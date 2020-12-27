@@ -1,4 +1,7 @@
-export const typography = {
+const fontFamily = ["Inter", "sans-serif" ].join(',');
+
+export const typography: any = {
+  fontFamily,
   h1: {
     fontSize: "42px",
     lineHeight: "42px",
@@ -10,6 +13,12 @@ export const typography = {
   h3: {
     fontSize: "20px",
     lineHeight: "143%",
+  },
+  h4: {
+    fontSize: "28px",
+    lineHeight: "28px",
+    fontWeight: 600,
+    marginBottom: 6,
   },
   body1: {
     fontSize: "16px",
@@ -24,15 +33,7 @@ export const typography = {
     fontSize: "22px",
     lineHeight: "28px",
   },
-  h4: {
-    fontSize: "28px",
-    lineHeight: "28px",
-    fontWeight: 600,
-    marginBottom: 6,
-    color: "#000000",
-  },
   subtitle2: {
-    textAlign: "initial",
     fontSize: 14,
   },
-}
+};
