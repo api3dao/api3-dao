@@ -4,17 +4,20 @@ import {
   Button,
 } from "@material-ui/core";
 
-import Aragon from "services/aragon";
+import { Voting } from "services/aragon";
 
 import useStyles from "components/VoteProposalButton/styles";
 
 function VoteProposalButton(props: any) {
   const classes = useStyles();
-  const { voteIndex } = props
+  const { voteIndex, proposalType } = props
   
   const castVote = async (voteIndex: number, favor: boolean) => {
-    const aragon = await Aragon.getInstance();
-    aragon.vote(voteIndex, favor);
+    // depending of ProposalType castVote is gonna have a different logic.
+    const voting = await Voting.getInstance();
+    if(proposalType === "vote") {
+      voting.vote(voteIndex, favor);
+    }
   }
 
   return (

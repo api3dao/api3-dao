@@ -35,7 +35,7 @@ function VotesList() {
           <Counter countDownDate="Jan 1, 2021 00:00:00" />
         </Box>
         */}
-        <VoteProposalButtons voteIndex={voteIndex} />
+        <VoteProposalButtons voteIndex={voteIndex} proposalType="vote"/>
       </Box>
     )
   }

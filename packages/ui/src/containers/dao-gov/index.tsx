@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { Container, Box, Typography } from '@material-ui/core';
 
-import Aragon from "services/aragon";
+import { Voting } from "services/aragon";
 import { AragonContext } from "contexts"; 
 import { NewProposalButton, VotesList } from "components";
 
@@ -11,18 +11,16 @@ function DAOGov() {
   const classes = useStyles();
   const aragonContext = useContext<any>(AragonContext);
   
-
-  
   const componentDidMount = () => {
-    const getVotes = async () => { 
-      const aragon = await Aragon.getInstance();
-      const votes = await aragon.votes();
+    const getVotes = async () => {
+      const voting = await Voting.getInstance();
+      const votes = await voting.votes();
       aragonContext.setVotes(votes);
     }
     getVotes()
   }
   
-  useEffect(componentDidMount, [aragonContext]);
+  useEffect(componentDidMount, []); // eslint-disable-line react-hooks/exhaustive-deps
   
   return (
     <Container className={classes.root}>
