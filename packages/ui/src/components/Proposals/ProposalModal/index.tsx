@@ -16,7 +16,8 @@ import {
 
 } from "@material-ui/core";
 
-import Aragon from "services/aragon";
+import { Voting } from "services/aragon";
+
 import useStyles from "components/Proposals/ProposalModal/styles"
 
 function ProposalModal(props: any) {
@@ -25,24 +26,25 @@ function ProposalModal(props: any) {
   const [stakingTarget, setStakingTarget] = useState<number>(0);
   const [description, setDescription] = useState<string>("");
   const [type, setType] = useState<string>("Staking Target");
-  const [submitting, setSubmitting] = useState<boolean>(false)
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const submitCallback = () => {
-    setSubmitting(false)
-    handleClose()
+    setSubmitting(false);
+    handleClose();
   }
+  
   const submitProposal = async () => {
-    const aragon = await Aragon.getInstance();
+    // Some logic should be applied here to submit different type of proposals dynamically.
     let newDescription = `
       ${description} +
       new Staking Target proposed: ${stakingTarget}
-    `
-    aragon.newVote(stakingTarget, newDescription, submitCallback);
-    
+    `;
+    const voting = await Voting.getInstance();
+    voting.newVote(newDescription, submitCallback);
   }
   
   const onSubmit = (event: any) => {
     event.preventDefault();
-    setSubmitting(true)
+    setSubmitting(true);
     submitProposal();
   }
   
@@ -57,9 +59,8 @@ function ProposalModal(props: any) {
   }
 
   const onChangeProposalType = (event: any ) => {
-    const { value } = event.target
-    setType(value)
-    
+    const { value } = event.target;
+    setType(value);
   }
   
   return (

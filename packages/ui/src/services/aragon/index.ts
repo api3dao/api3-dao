@@ -1,8 +1,9 @@
 import Aragon from "services/aragon/core";
-import { Voting } from "services/aragon/apps";
+import { Voting, Finance } from "services/aragon/apps";
 
 export {
+  Aragon,
   Voting,
-}
+  Finance,
 
-export default Aragon;
+}

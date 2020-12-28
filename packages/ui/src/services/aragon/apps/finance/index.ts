@@ -1,12 +1,12 @@
 import { Aragon } from "services/aragon";
 import { ARAGON_APPS_ADDRESS } from "services/constants"
 
-export class Voting extends Aragon {
+export class Finance extends Aragon {
   private constructor() {
     super();
   }
 
-  private static _instance: Voting;
+  private static _instance: Finance;
   
   private async initialize() {
     try {
@@ -18,14 +18,14 @@ export class Voting extends Aragon {
   
   public static async getInstance() {
     if (!this._instance) {
-      const instance = new Voting();
+      const instance = new Finance();
       await instance.initialize();
       this._instance = instance;
     }
     return this._instance;
   }
   
-  public async votes() {
+  public async finances() {
     const votes = await this.voting.votes();
     const compare = (a: any, b: any) => {
       const date1 = new Date(a.startDate * 1000);
@@ -42,7 +42,7 @@ export class Voting extends Aragon {
     return votes;
   }
   
-  public async newVote(description?: string, callback?: Function | any) {
+  public async newFinance(description?: string, callback?: Function | any) {
     description = description ?  description : "no description was provided";
     
     const voteProposal = {
@@ -68,8 +68,8 @@ export class Voting extends Aragon {
     ];
 
     const intent = this.org.appIntent(
-      ARAGON_APPS_ADDRESS.rinkeby.voting, 
-      'newVote',
+      ARAGON_APPS_ADDRESS.rinkeby.finance, 
+      'newFinanceVote',
       newVoteParams,
     );
     console.log('intent', intent);
@@ -103,7 +103,7 @@ export class Voting extends Aragon {
   }
 
   public async vote(voteID: number, favor: boolean) {    
-    const intent = this.org.appIntent(ARAGON_APPS_ADDRESS.rinkeby.voting, 'vote', [voteID, favor, false]);
+    const intent = this.org.appIntent(ARAGON_APPS_ADDRESS.rinkeby.finance, 'vote', [voteID, favor, false]);
     const path = await intent.paths(this.address);
     const { transactions } = path;
     const latestTx = transactions[0];
@@ -119,4 +119,4 @@ export class Voting extends Aragon {
   }
 }
 
-export default Voting;
+export default Finance;
