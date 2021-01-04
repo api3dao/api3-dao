@@ -8,10 +8,12 @@
     "migrate-dev": "truffle migrate --network development --skip-dry-run"
   },
   "dependencies": {
+    "@aragon/minime": "^1.0.0",
     "@openzeppelin/cli": "^2.8.2",
     "@openzeppelin/contracts": "^3.3.0",
     "@openzeppelin/contracts-ethereum-package": "^3.0.0",
     "@truffle/hdwallet-provider": "^1.2.0",
+    "abdk-libraries-solidity": "^2.4.0",
     "core-util-is": "^1.0.2"
   },
   "devDependencies": {
