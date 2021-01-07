@@ -76,7 +76,7 @@ contract PoolPrototype is MiniMeToken {
         require(amount <= getCurrentBalance(msg.sender));
         //call Claims minime contract for IOU handling when implemented
         withdrawalRequests.push(Checkpoint(amount, ))
-        emit WithdrawalRequest()
+        emit WithdrawalRequest();
     }
 
     function unstake(uint requestIndex) public {
@@ -88,16 +88,21 @@ contract PoolPrototype is MiniMeToken {
     }
 
     function _unstake(address owner, uint requestIndex) internal {
+        // checks
         Checkpoint[] _senderWithdrawalRequests = withdrawalRequests[owner];
         require(requestIndex < _senderWithdrawalRequests.length);
         Checkpoint request = _senderWithdrawalRequests[requestIndex];
         require(request.fromBlock <= block.number);
-        inflationManager.mintRewards();
+        if (inflationManager.isEpochEnd()) {
+            inflationManager.mintRewards();
+        }
+        // effects
         api3Token.transferFrom(this.address, msg.sender, request.value);
         updateValueAtNow(totalSupplyHistory, totalSupply() - request.value);
         updateValueAtNow(balances[msg.sender], balanceOf(msg.sender) - request.value);
+        // the next line burns tokens?
         Transfer(msg.sender, 0, request.value);
-        delete withdrawalRequests[msg.sender]
+        delete withdrawalRequests[msg.sender];
     }
 
     function getCheckpointIndex(
