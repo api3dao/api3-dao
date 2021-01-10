@@ -31,11 +31,11 @@ contract Api3State is Ownable, IApi3State {
 
     // A timelock that prevents the user from withdrawing amount number of API3
     // tokens from the pool contract before epoch
-    struct Vesting {
-        address userAddress;
-        uint256 amount;
-        uint256 epoch;
-    }
+//    struct Vesting {
+//        address userAddress;
+//        uint256 amount;
+//        uint256 epoch;
+//    }
 
     /// API3 token contract
     IApi3Token public immutable api3Token;
@@ -119,13 +119,13 @@ contract Api3State is Ownable, IApi3State {
 
     // ~~~~~~Vesting~~~~~~
     /// @dev Number of vestings (all, not only active)
-    uint256 internal noVestings;
+//    uint256 internal noVestings;
     /// @dev Mapping of vesting IDs to vesting records
-    mapping(bytes32 => Vesting) internal vestings;
+//    mapping(bytes32 => Vesting) internal vestings;
     /// @dev Mapping of user addresses to their unvested funds. A user cannot
     /// withdraw an amount that will result in their balance go below their
     /// unvested funds.
-    mapping(address => uint256) internal unvestedFunds;
+//    mapping(address => uint256) internal unvestedFunds;
     // ~~~~~~Vesting~~~~~~
 
     // ~~~~~~Claims~~~~~~
@@ -198,14 +198,14 @@ contract Api3State is Ownable, IApi3State {
     /// received
     /// @dev Can only be called by the owner (i.e., the API3 DAO)
     /// @param _rewardVestingPeriod Updated vesting period in epochs
-    function updateRewardVestingPeriod(uint256 _rewardVestingPeriod)
-        external
-        override
-        onlyOwner
-    {
-        rewardVestingPeriod = _rewardVestingPeriod;
-        emit RewardVestingPeriodUpdated(rewardVestingPeriod);
-    }
+//    function updateRewardVestingPeriod(uint256 _rewardVestingPeriod)
+//        external
+//        override
+//        onlyOwner
+//    {
+//        rewardVestingPeriod = _rewardVestingPeriod;
+//        emit RewardVestingPeriodUpdated(rewardVestingPeriod);
+//    }
 
     /// @notice Updates how frequently unpooling requests can be made
     /// @dev Can only be called by the owner (i.e., the API3 DAO)

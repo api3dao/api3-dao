@@ -75,14 +75,14 @@ contract GetterUtils is EpochUtils, IGetterUtils {
     /// needed because ghost funds may be removed as IOUs are redeemed, and
     /// thus cannot be considered as collateral reliably.
     /// @return totalRealPooled Total pooled funds minus ghost funds
-    function getTotalRealPooled()
-        public
-        override
-        view
-        returns (uint256 totalRealPooled)
-    {
-        totalRealPooled = totalPooled.sub(convertFromShares(totalGhostShares));
-    }
+//    function getTotalRealPooled()
+//        public
+//        override
+//        view
+//        returns (uint256 totalRealPooled)
+//    {
+//        totalRealPooled = totalPooled.sub(convertFromShares(totalGhostShares));
+//    }
 
     /// @notice Returns the user balance. Includes vested and uvested funds,
     /// but not IOUs.
@@ -179,53 +179,53 @@ contract GetterUtils is EpochUtils, IGetterUtils {
     /// epochIndex
     /// @param epochIndex Epoch index
     /// @return vestedRewards Vested rewards
-    function getVestedRewards(uint256 epochIndex)
-        external
-        override
-        view
-        returns (uint256 vestedRewards)
-    {
-        vestedRewards = vestedRewardsAtEpoch[epochIndex];
-    }
+//    function getVestedRewards(uint256 epochIndex)
+//        external
+//        override
+//        view
+//        returns (uint256 vestedRewards)
+//    {
+//        vestedRewards = vestedRewardsAtEpoch[epochIndex];
+//    }
 
     /// @notice Returns the vested rewards that has not been distributed at
     /// epochIndex yet
     /// @param epochIndex Epoch index
     /// @return unpaidVestedRewards Unpaid vested rewards
-    function getUnpaidVestedRewards(uint256 epochIndex)
-        external
-        override
-        view
-        returns (uint256 unpaidVestedRewards)
-    {
-        unpaidVestedRewards = unpaidVestedRewardsAtEpoch[epochIndex];
-    }
+//    function getUnpaidVestedRewards(uint256 epochIndex)
+//        external
+//        override
+//        view
+//        returns (uint256 unpaidVestedRewards)
+//    {
+//        unpaidVestedRewards = unpaidVestedRewardsAtEpoch[epochIndex];
+//    }
 
     /// @notice Returns the instant rewards that will be distributed at
     /// epochIndex
     /// @param epochIndex Epoch index
     /// @return instantRewards Instant rewards
-    function getInstantRewards(uint256 epochIndex)
-        external
-        override
-        view
-        returns (uint256 instantRewards)
-    {
-        instantRewards = instantRewardsAtEpoch[epochIndex];
-    }
+//    function getInstantRewards(uint256 epochIndex)
+//        external
+//        override
+//        view
+//        returns (uint256 instantRewards)
+//    {
+//        instantRewards = instantRewardsAtEpoch[epochIndex];
+//    }
 
     /// @notice Returns the instant rewards that has not been distributed at
     /// epochIndex yet
     /// @param epochIndex Epoch index
     /// @return unpaidInstantRewards Unpaid instant rewards
-    function getUnpaidInstantRewards(uint256 epochIndex)
-        external
-        override
-        view
-        returns (uint256 unpaidInstantRewards)
-    {
-        unpaidInstantRewards = unpaidInstantRewardsAtEpoch[epochIndex];
-    }
+//    function getUnpaidInstantRewards(uint256 epochIndex)
+//        external
+//        override
+//        view
+//        returns (uint256 unpaidInstantRewards)
+//    {
+//        unpaidInstantRewards = unpaidInstantRewardsAtEpoch[epochIndex];
+//    }
 
     /// @notice Returns the vesting
     /// @param vestingId Vesting ID
@@ -233,33 +233,33 @@ contract GetterUtils is EpochUtils, IGetterUtils {
     /// @return amount Number of tokens to be vested
     /// @return epoch Index of the epoch when the funds will be
     /// available
-    function getVesting(bytes32 vestingId)
-        external
-        override
-        view
-        returns (
-            address userAddress,
-            uint256 amount,
-            uint256 epoch
-        )
-    {
-        Vesting memory vesting = vestings[vestingId];
-        userAddress = vesting.userAddress;
-        amount = vesting.amount;
-        epoch = vesting.epoch;
-    }
+//    function getVesting(bytes32 vestingId)
+//        external
+//        override
+//        view
+//        returns (
+//            address userAddress,
+//            uint256 amount,
+//            uint256 epoch
+//        )
+//    {
+//        Vesting memory vesting = vestings[vestingId];
+//        userAddress = vesting.userAddress;
+//        amount = vesting.amount;
+//        epoch = vesting.epoch;
+//    }
 
     /// @notice Returns the total funds of the user locked by vestings
     /// @param userAddress User address
     /// @return unvestedFund Total funds of the user locked by vestings
-    function getUnvestedFund(address userAddress)
-        external
-        override
-        view
-        returns (uint256 unvestedFund)
-    {
-        unvestedFund = unvestedFunds[userAddress];
-    }
+//    function getUnvestedFund(address userAddress)
+//        external
+//        override
+//        view
+//        returns (uint256 unvestedFund)
+//    {
+//        unvestedFund = unvestedFunds[userAddress];
+//    }
 
     /// @notice Returns the claim
     /// @param claimId Claim ID
