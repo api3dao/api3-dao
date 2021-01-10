@@ -119,7 +119,7 @@ contract PoolPrototype is MiniMeToken {
         if (inflationManager.isEpochEnd()) {
             inflationManager.mintRewards();
         }
-        api3Token.transferFrom(this.address, msg.sender, _request.value);
+        api3Token.transferFrom(address(this), msg.sender, _request.value);
         updateValueAtNow(totalSupplyHistory, totalSupply() - _request.value);
         delete unstakeRequests[msg.sender];
 
