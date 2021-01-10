@@ -8,14 +8,16 @@ contract PoolPrototype is MiniMeToken {
     IApi3Token api3Token;
 
     Checkpoint[] public poolInflationaryRewards;
+    mapping(address => Checkpoint[]) unstakeRequests;
 
-    struct WithdrawalRequest {
-        address owner;
-        uint256 amount;
-        uint unlockHeight;
-    }
+    //1 week = 43200 blocks
+    uint256 public unstakeWaitingPeriod = 43200;
 
-    mapping(address => WithdrawalRequest[]) withdrawalRequests;
+    event UnstakeRequest(
+        address indexed owner,
+        uint256 indexed unlockHeight,
+        uint256 amount,
+        uint requestIndex);
 
     constructor(IInflation _inflationManager, IApi3Token _api3Token) public MiniMeToken(
         _tokenFactory,
@@ -38,7 +40,9 @@ contract PoolPrototype is MiniMeToken {
         creationBlock = block.number;
     }
 
-    function getCurrentBalance(address owner) external returns (uint256) {
+    function balanceOfAt(address owner, uint256 blockHeight)
+    public override
+    returns (uint256) {
         Checkpoint _lastOwnerBalance = balances[owner][balances[owner].length - 1];
         Checkpoint _lastSupply = totalSupplyHistory[totalSupplyHistory.length - 1];
 
@@ -47,36 +51,39 @@ contract PoolPrototype is MiniMeToken {
             totalSupplyHistory,
             _lastOwnerBalance.fromBlock
         );
-        for (uint256 j = i; j++; j < _totalSupplyHistory.length - 1) {
+        while (balances[owner][i].fromBlock < blockHeight) {
             uint256 share = accumulatedStake
-                .mul(_poolInflationaryRewards[j + 1].value)
-                .div(_totalSupplyHistory[j].value);
+                            .mul(_poolInflationaryRewards[j + 1].value)
+                            .div(_totalSupplyHistory[j].value);
+            accumulatedStake += share;
+            i++;
+        }
+
+        if (blockHeight > inflationManager.lastUpdateTime()) {
+            uint256 _currentUnmintedRewards = inflationManager.getCurrentUnmintedRewards();
+            uint256 share = _currentUnmintedRewards
+                            .mul(accumulatedStake)
+                            .div(_lastSupply.value);
             accumulatedStake += share;
         }
 
-        uint256 _currentUnmintedRewards = inflationManager
-            .getCurrentUnmintedRewards();
-        uint256 share = _currentUnmintedRewards.mul(accumulatedStake).div(
-            _lastSupply.value
-        );
-        accumulatedStake += share;
-
-        return accumulatedStake;
+            return accumulatedStake;
     }
 
-    function distributeInflationaryRewards(uint256 amount) external {
-        require(msg.sender == inflationManager.address);
-        api3Token.transferFrom(inflationManager.address, this.address, amount);
+    function distributeInflationaryRewards(uint256 amount) public {
+        require(msg.sender == address(inflationManager));
+        api3Token.transferFrom(address(inflationManager), address(this), amount);
         uint256 newSupply = totalSupply() += amount;
         updateValueAtNow(totalSupplyHistory, newSupply);
         updateValueAtNow(inflationRewardDistributions, amount);
     }
 
-    function withdrawalRequest(uint256 amount) {
+    function unstakeRequest(uint256 amount) public {
         require(amount <= getCurrentBalance(msg.sender));
         //call Claims minime contract for IOU handling when implemented
-        withdrawalRequests.push(Checkpoint(amount, ))
-        emit WithdrawalRequest();
+        unstakeRequests[msg.sender].push(Checkpoint(amount, block.number));
+        uint256 unstakeHeight = block.number + unstakeWaitingPeriod;
+        emit UnstakeRequest(msg.sender, unstakeHeight, amount, unstakeRequests[msg.sender].length - 1);
     }
 
     function unstake(uint requestIndex) public {
@@ -89,20 +96,19 @@ contract PoolPrototype is MiniMeToken {
 
     function _unstake(address owner, uint requestIndex) internal {
         // checks
-        Checkpoint[] _senderWithdrawalRequests = withdrawalRequests[owner];
-        require(requestIndex < _senderWithdrawalRequests.length);
-        Checkpoint request = _senderWithdrawalRequests[requestIndex];
+        Checkpoint[] _senderUnstakeRequests = unstakeRequests[owner];
+        require(requestIndex < _senderUnstakeRequests.length);
+        Checkpoint request = _senderUnstakeRequests[requestIndex];
         require(request.fromBlock <= block.number);
+        // effects
         if (inflationManager.isEpochEnd()) {
             inflationManager.mintRewards();
         }
-        // effects
         api3Token.transferFrom(this.address, msg.sender, request.value);
         updateValueAtNow(totalSupplyHistory, totalSupply() - request.value);
         updateValueAtNow(balances[msg.sender], balanceOf(msg.sender) - request.value);
-        // the next line burns tokens?
         Transfer(msg.sender, 0, request.value);
-        delete withdrawalRequests[msg.sender];
+        delete unstakeRequests[msg.sender][requestIndex];
     }
 
     function getCheckpointIndex(
