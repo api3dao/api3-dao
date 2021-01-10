@@ -103,18 +103,18 @@ contract Api3State is Ownable, IApi3State {
     /// @dev Mapping of epochs to total unpaid rewards that will be vested
     /// (e.g., inflationary). Used to carry over unpaid rewards from previous
     /// epochs.
-    mapping(uint256 => uint256) internal unpaidVestedRewardsAtEpoch;
+//    mapping(uint256 => uint256) internal unpaidVestedRewardsAtEpoch;
     /// @dev Mapping of epochs to total rewards that will be paid out instantly
     /// (e.g., revenue distribution)
-    mapping(uint256 => uint256) internal instantRewardsAtEpoch;
+//    mapping(uint256 => uint256) internal instantRewardsAtEpoch;
     /// @dev Mapping of epochs to total unpaid rewards that will be paid out
     /// instantly (e.g., revenue distribution). Used to carry over unpaid
     /// rewards from previous epochs.
-    mapping(uint256 => uint256) internal unpaidInstantRewardsAtEpoch;
+//    mapping(uint256 => uint256) internal unpaidInstantRewardsAtEpoch;
     /// Number of epochs the users have to wait to have rewards vested. The
     /// initial value is 1 year (52 epochs), yet this parameter is governable
     /// by the API3 DAO.
-    uint256 public rewardVestingPeriod = 52;
+//    uint256 public rewardVestingPeriod = 52;
     // ~~~~~~Staking~~~~~~
 
     // ~~~~~~Vesting~~~~~~
