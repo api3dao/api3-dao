@@ -38,35 +38,36 @@ contract PoolPrototype is MiniMeToken {
         creationBlock = block.number;
     }
 
-    function balanceOfAt(address owner, uint256 blockHeight)
-    public override
+    function balanceOfAt(address owner, uint256 fromBlock) public
     returns (uint256) {
-        Checkpoint _lastOwnerBalance = balances[owner][balances[owner].length - 1];
-        Checkpoint _lastSupply = totalSupplyHistory[totalSupplyHistory.length - 1];
-
+        Checkpoint _lastOwnerBalance = super.balanceOfAt(owner, block.number);
+        Checkpoint _lastSupply = super.totalSupplyAt(block.number);
         uint256 accumulatedStake = _lastOwnerBalance.value;
-
         uint256 i = getCheckpointIndex(
             totalSupplyHistory,
             _lastOwnerBalance.fromBlock
         );
-        while (balances[owner][i].fromBlock < blockHeight) {
+        while (balances[owner][i].fromBlock < fromBlock) {
             uint256 share = accumulatedStake
                             .mul(_poolInflationaryRewards[j + 1].value)
                             .div(_totalSupplyHistory[j].value);
             accumulatedStake += share;
             i++;
         }
-
-        if (blockHeight > _lastSupply.fromBlock) {
-            uint256 _currentUnmintedRewards = inflationManager.getCurrentUnmintedRewards();
-            uint256 share = _currentUnmintedRewards
-                            .mul(accumulatedStake)
-                            .div(_lastSupply.value);
-            accumulatedStake += share;
-        }
-
         return accumulatedStake;
+    }
+
+    function balanceOf(address owner) public 
+    returns (uint256) {
+        return balanceOfAt(owner, block.number);
+    }
+
+    function stake(uint256 amount) public {
+        api3Token.transferFrom(msg.sender, address(this), amount);
+        generateTokens(msg.sender, amount);
+        if (inflationManager.isEpochEnd()) {
+            inflationManager.mintRewards();
+        }
     }
 
     function distributeInflationaryRewards(uint256 amount) public {
