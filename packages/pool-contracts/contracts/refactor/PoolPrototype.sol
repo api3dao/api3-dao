@@ -8,25 +8,23 @@ contract PoolPrototype is MiniMeToken {
     IApi3Token api3Token;
 
     Checkpoint[] public poolInflationaryRewards;
-    mapping(address => Checkpoint[]) unstakeRequests;
+    mapping(address => Checkpoint) unstakeRequests;
 
     //1 week = 43200 blocks
-    uint256 public unstakeWaitingPeriod = 43200;
+    uint256 public constant unstakeWaitingPeriod = 43200;
 
-    event UnstakeRequest(
-        address indexed owner,
-        uint256 indexed unlockHeight,
-        uint256 amount,
-        uint requestIndex);
+    event UnstakeRequest(address indexed owner, uint256 amount);
+    event CancelUnstakeRequest(address indexed owner, uint256 requestStartBlock, uint256 amount);
+    event Unstake(address indexed owner, uint256 amount);
 
     constructor(IInflation _inflationManager, IApi3Token _api3Token) public MiniMeToken(
         _tokenFactory,
-        _parentToken,
-        _parentSnapShotBlock,
+        0x0,
+        0,
         _tokenName,
         _decimalUnits,
         _tokenSymbol,
-        _transfersEnabled
+        false
     ) {
         api3Token = IApi3Token(_api3Token);
         inflationManager = IInflation(_inflationManager);
@@ -47,6 +45,7 @@ contract PoolPrototype is MiniMeToken {
         Checkpoint _lastSupply = totalSupplyHistory[totalSupplyHistory.length - 1];
 
         uint256 accumulatedStake = _lastOwnerBalance.value;
+
         uint256 i = getCheckpointIndex(
             totalSupplyHistory,
             _lastOwnerBalance.fromBlock
@@ -59,7 +58,7 @@ contract PoolPrototype is MiniMeToken {
             i++;
         }
 
-        if (blockHeight > inflationManager.lastUpdateTime()) {
+        if (blockHeight > _lastSupply.fromBlock) {
             uint256 _currentUnmintedRewards = inflationManager.getCurrentUnmintedRewards();
             uint256 share = _currentUnmintedRewards
                             .mul(accumulatedStake)
@@ -67,11 +66,12 @@ contract PoolPrototype is MiniMeToken {
             accumulatedStake += share;
         }
 
-            return accumulatedStake;
+        return accumulatedStake;
     }
 
     function distributeInflationaryRewards(uint256 amount) public {
         require(msg.sender == address(inflationManager));
+
         api3Token.transferFrom(address(inflationManager), address(this), amount);
         uint256 newSupply = totalSupply() += amount;
         updateValueAtNow(totalSupplyHistory, newSupply);
@@ -79,36 +79,50 @@ contract PoolPrototype is MiniMeToken {
     }
 
     function unstakeRequest(uint256 amount) public {
-        require(amount <= getCurrentBalance(msg.sender));
-        //call Claims minime contract for IOU handling when implemented
-        unstakeRequests[msg.sender].push(Checkpoint(amount, block.number));
-        uint256 unstakeHeight = block.number + unstakeWaitingPeriod;
-        emit UnstakeRequest(msg.sender, unstakeHeight, amount, unstakeRequests[msg.sender].length - 1);
+        Checkpoint currentOwnerBalance = balanceOfAt(msg.sender, block.number);
+
+        require(!unstakeRequests[msg.sender], "Only one unstake request can be pending");
+        require(amount <= currentOwnerBalance, "Insufficient funds");
+
+        unstakeRequests[msg.sender] = Checkpoint(amount, block.number);
+        //amount is deducted from balance - for slashing purposes, the Claims proxy will use new balance + amount of request to determine owner share
+        updateValueAtNow(balances[msg.sender], currentOwnerBalance - amount);
+
+        emit UnstakeRequest(msg.sender, block.number, amount);
     }
 
-    function unstake(uint requestIndex) public {
-        _unstake(msg.sender, requestIndex);
+    function cancelUnstakeRequest() public {
+        require(unstakeRequests[msg.sender], "Sender has no current unstake request");
+
+        Checkpoint _request = unstakeRequests[msg.sender];
+        uint256 lastBalanceIndex = balances[msg.sender].length - 1;
+        uint256 oldBalance = balances[msg.sender][lastBalanceIndex].value + _request.value;
+        updateValueAtNow(balances[msg.sender], oldBalance);
+        delete unstakeRequests[msg.sender];
+
+        emit CancelUnstakeRequest(msg.sender, _request.fromBlock, _request.value);
     }
 
-    function balanceOf(address owner) public override {
-        return getCurrentBalance(owner);
+    function unstake() public {
+        require(unstakeRequests[owner], "Sender has no current unstake request");
+        uint256 unlockHeight = unstakeRequests[owner].fromBlock + unstakeWaitingPeriod;
+        require(unlockHeight <= block.number, 
+                "Unstake waiting period has " + (unlockHeight - block.number) + " blocks remaining");
+
+        _unstake(msg.sender);
     }
 
-    function _unstake(address owner, uint requestIndex) internal {
-        // checks
-        Checkpoint[] _senderUnstakeRequests = unstakeRequests[owner];
-        require(requestIndex < _senderUnstakeRequests.length);
-        Checkpoint request = _senderUnstakeRequests[requestIndex];
-        require(request.fromBlock <= block.number);
-        // effects
+    function _unstake(address owner) internal {
+        Checkpoint _request = unstakeRequests[owner];
+
         if (inflationManager.isEpochEnd()) {
             inflationManager.mintRewards();
         }
-        api3Token.transferFrom(this.address, msg.sender, request.value);
-        updateValueAtNow(totalSupplyHistory, totalSupply() - request.value);
-        updateValueAtNow(balances[msg.sender], balanceOf(msg.sender) - request.value);
-        Transfer(msg.sender, 0, request.value);
-        delete unstakeRequests[msg.sender][requestIndex];
+        api3Token.transferFrom(this.address, msg.sender, _request.value);
+        updateValueAtNow(totalSupplyHistory, totalSupply() - _request.value);
+        delete unstakeRequests[msg.sender];
+
+        emit Unstake(owner, _request.value);
     }
 
     function getCheckpointIndex(

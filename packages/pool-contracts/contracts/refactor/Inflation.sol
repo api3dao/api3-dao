@@ -5,14 +5,13 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "abdk-libraries-solidity/ABDKMath64x64.sol";
 import "../interfaces/IApi3Pool.sol";
 import "../interfaces/IApi3Token.sol";
-import "../interfaces/IApi3VotingRights.sol";
 
 contract Inflation is Ownable {
     using SafeMath for uint256;
 
     IApi3Pool public api3Pool;
     IApi3Token public api3Token;
-    IApi3VotingRights public api3Voting;
+    IVoting public api3Voting;
 
     uint256 public targetStake;
     uint256 public currentAPR;
@@ -20,11 +19,11 @@ contract Inflation is Ownable {
     uint256 public maxAPR;
     uint256 public updateCoefficient;
 
-    uint256 public epochNumber;
     uint256 public lastUpdateTime;
 
     uint256 public constant epochLength = 60 * 60 * 2;
     uint256 public constant epochsPerYear = epochLength / (365 * 24 * 60 * 60);
+    uint256 public firstEpochTimestamp;
 
     struct Checkpoint {
         uint256 fromBlock;
@@ -33,10 +32,13 @@ contract Inflation is Ownable {
 
     Checkpoint public currentInflationPerEpoch;
 
+    event RateUpdate(uint256 inflationPerEpoch, uint256 APR);
+
     constructor(address _api3Pool, address _api3Token, address _api3Voting) {
         api3Pool = IApi3Pool(_api3Pool);
         api3Token = IApi3Token(_api3Token);
-        api3Voting = IApi3VotingRights(_api3Voting);
+        api3Voting = IVoting(_api3Voting);
+        firstEpochTimestamp = block.timestamp;
     }
 
     modifier onlyVote {
@@ -114,7 +116,7 @@ contract Inflation is Ownable {
             currentAPR.mul(tokenSupply).div(100_000_000 * epochsPerYear);
         currentInflationPerEpoch = Checkpoint(block.number, nextInflationPerBlock);
 
-        emit RateUpdate(nextInflationPerBlock, currentAPR);
+        emit RateUpdate(nextInflationPerEpoch, currentAPR);
     }
 
     function compound(
