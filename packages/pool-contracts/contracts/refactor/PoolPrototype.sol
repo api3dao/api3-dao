@@ -100,7 +100,6 @@ contract PoolPrototype is MiniMeToken {
         api3Token.transferFrom(this.address, msg.sender, request.value);
         updateValueAtNow(totalSupplyHistory, totalSupply() - request.value);
         updateValueAtNow(balances[msg.sender], balanceOf(msg.sender) - request.value);
-        // the next line burns tokens?
         Transfer(msg.sender, 0, request.value);
         delete withdrawalRequests[msg.sender];
     }

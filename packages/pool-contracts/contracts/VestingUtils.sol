@@ -27,33 +27,33 @@ contract VestingUtils is IouUtils, IVestingUtils {
     /// @param amount Number of tokens to be vested
     /// @param vestingEpoch Index of the epoch when the funds will be available
     /// to be vested
-    function createVesting(
-        address userAddress,
-        uint256 amount,
-        uint256 vestingEpoch
-    ) internal {
-        unvestedFunds[userAddress] = unvestedFunds[userAddress].add(amount);
-        bytes32 vestingId = keccak256(abi.encodePacked(noVestings, this));
-        noVestings = noVestings.add(1);
-        vestings[vestingId] = Vesting({
-            userAddress: userAddress,
-            amount: amount,
-            epoch: vestingEpoch
-        });
-        emit VestingCreated(vestingId, userAddress, amount, vestingEpoch);
-    }
+//    function createVesting(
+//        address userAddress,
+//        uint256 amount,
+//        uint256 vestingEpoch
+//    ) internal {
+//        unvestedFunds[userAddress] = unvestedFunds[userAddress].add(amount);
+//        bytes32 vestingId = keccak256(abi.encodePacked(noVestings, this));
+//        noVestings = noVestings.add(1);
+//        vestings[vestingId] = Vesting({
+//            userAddress: userAddress,
+//            amount: amount,
+//            epoch: vestingEpoch
+//        });
+//        emit VestingCreated(vestingId, userAddress, amount, vestingEpoch);
+//    }
 
     /// @notice Resolves a vesting
     /// @param vestingId Vesting ID
-    function vest(bytes32 vestingId) external override {
-        Vesting memory vesting = vestings[vestingId];
-        require(
-            getCurrentEpochIndex() >= vesting.epoch,
-            "Cannot vest before vesting.epoch"
-        );
-        unvestedFunds[vesting.userAddress] = unvestedFunds[vesting.userAddress]
-            .sub(vesting.amount);
-        delete vestings[vestingId];
-        emit VestingResolved(vestingId);
-    }
+//    function vest(bytes32 vestingId) external override {
+//        Vesting memory vesting = vestings[vestingId];
+//        require(
+//            getCurrentEpochIndex() >= vesting.epoch,
+//            "Cannot vest before vesting.epoch"
+//        );
+//        unvestedFunds[vesting.userAddress] = unvestedFunds[vesting.userAddress]
+//            .sub(vesting.amount);
+//        delete vestings[vestingId];
+//        emit VestingResolved(vestingId);
+//    }
 }
