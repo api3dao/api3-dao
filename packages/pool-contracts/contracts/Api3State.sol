@@ -31,11 +31,11 @@ contract Api3State is Ownable, IApi3State {
 
     // A timelock that prevents the user from withdrawing amount number of API3
     // tokens from the pool contract before epoch
-//    struct Vesting {
-//        address userAddress;
-//        uint256 amount;
-//        uint256 epoch;
-//    }
+    struct Vesting {
+        address userAddress;
+        uint256 amount;
+        uint256 epoch;
+    }
 
     /// API3 token contract
     IApi3Token public immutable api3Token;
@@ -103,7 +103,7 @@ contract Api3State is Ownable, IApi3State {
     /// @dev Mapping of epochs to total unpaid rewards that will be vested
     /// (e.g., inflationary). Used to carry over unpaid rewards from previous
     /// epochs.
-//    mapping(uint256 => uint256) internal unpaidVestedRewardsAtEpoch;
+    mapping(uint256 => uint256) internal unpaidVestedRewardsAtEpoch;
     /// @dev Mapping of epochs to total rewards that will be paid out instantly
     /// (e.g., revenue distribution)
 //    mapping(uint256 => uint256) internal instantRewardsAtEpoch;
@@ -114,18 +114,18 @@ contract Api3State is Ownable, IApi3State {
     /// Number of epochs the users have to wait to have rewards vested. The
     /// initial value is 1 year (52 epochs), yet this parameter is governable
     /// by the API3 DAO.
-//    uint256 public rewardVestingPeriod = 52;
+    uint256 public rewardVestingPeriod = 52;
     // ~~~~~~Staking~~~~~~
 
     // ~~~~~~Vesting~~~~~~
     /// @dev Number of vestings (all, not only active)
-//    uint256 internal noVestings;
+    uint256 internal noVestings;
     /// @dev Mapping of vesting IDs to vesting records
-//    mapping(bytes32 => Vesting) internal vestings;
+    mapping(bytes32 => Vesting) internal vestings;
     /// @dev Mapping of user addresses to their unvested funds. A user cannot
     /// withdraw an amount that will result in their balance go below their
     /// unvested funds.
-//    mapping(address => uint256) internal unvestedFunds;
+    mapping(address => uint256) internal unvestedFunds;
     // ~~~~~~Vesting~~~~~~
 
     // ~~~~~~Claims~~~~~~

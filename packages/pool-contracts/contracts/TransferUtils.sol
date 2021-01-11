@@ -26,15 +26,15 @@ contract TransferUtils is PoolUtils, ITransferUtils {
     /// @param sourceAddress Source address of the funds
     /// @param amount Number of tokens to be deposited
     /// @param userAddress User that will receive the funds
-//    function deposit(
-//        address sourceAddress,
-//        uint256 amount,
-//        address userAddress
-//    ) external override {
-//        api3Token.transferFrom(sourceAddress, address(this), amount);
-//        balances[userAddress] = balances[userAddress].add(amount);
-//        emit Deposited(sourceAddress, amount, userAddress);
-//    }
+    function deposit(
+        address sourceAddress,
+        uint256 amount,
+        address userAddress
+    ) external override {
+        api3Token.transferFrom(sourceAddress, address(this), amount);
+        balances[userAddress] = balances[userAddress].add(amount);
+        emit Deposited(sourceAddress, amount, userAddress);
+    }
 
     /// @notice Deposits funds for a user, which can then be pooled and staked.
     /// Note that the funds will not be instantly withdrawable and be vested
@@ -44,24 +44,24 @@ contract TransferUtils is PoolUtils, ITransferUtils {
     /// @param userAddress User that will receive the funds
     /// @param vestingStart TODO
     /// @param vestingEnd TODO
-//    function depositWithVesting(
-//        address sourceAddress,
-//        uint256 amount,
-//        address userAddress,
-//        uint256 vestingStart,
-//        uint256 vestingEnd
-//    ) external override {
-//        api3Token.transferFrom(sourceAddress, address(this), amount);
-//        balances[userAddress] = balances[userAddress].add(amount);
-//        uint256 vestingEpoch = getEpochIndex(vestingStart);
-//        createVesting(userAddress, amount, vestingEpoch);
-//        emit DepositedWithVesting(
-//            sourceAddress,
-//            amount,
-//            userAddress,
-//            vestingEpoch
-//        );
-//    }
+    function depositWithVesting(
+        address sourceAddress,
+        uint256 amount,
+        address userAddress,
+        uint256 vestingStart,
+        uint256 vestingEnd
+    ) external override {
+        api3Token.transferFrom(sourceAddress, address(this), amount);
+        balances[userAddress] = balances[userAddress].add(amount);
+        uint256 vestingEpoch = getEpochIndex(vestingStart);
+        createVesting(userAddress, amount, vestingEpoch);
+        emit DepositedWithVesting(
+            sourceAddress,
+            amount,
+            userAddress,
+            vestingEpoch
+        );
+    }
 
     /// @notice Withdraws funds that are not pooled or locked in a vesting
     /// @param destinationAddress Destination address of the funds

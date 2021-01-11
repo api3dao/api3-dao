@@ -233,33 +233,33 @@ contract GetterUtils is EpochUtils, IGetterUtils {
     /// @return amount Number of tokens to be vested
     /// @return epoch Index of the epoch when the funds will be
     /// available
-//    function getVesting(bytes32 vestingId)
-//        external
-//        override
-//        view
-//        returns (
-//            address userAddress,
-//            uint256 amount,
-//            uint256 epoch
-//        )
-//    {
-//        Vesting memory vesting = vestings[vestingId];
-//        userAddress = vesting.userAddress;
-//        amount = vesting.amount;
-//        epoch = vesting.epoch;
-//    }
+    function getVesting(bytes32 vestingId)
+        external
+        override
+        view
+        returns (
+            address userAddress,
+            uint256 amount,
+            uint256 epoch
+        )
+    {
+        Vesting memory vesting = vestings[vestingId];
+        userAddress = vesting.userAddress;
+        amount = vesting.amount;
+        epoch = vesting.epoch;
+    }
 
     /// @notice Returns the total funds of the user locked by vestings
     /// @param userAddress User address
     /// @return unvestedFund Total funds of the user locked by vestings
-//    function getUnvestedFund(address userAddress)
-//        external
-//        override
-//        view
-//        returns (uint256 unvestedFund)
-//    {
-//        unvestedFund = unvestedFunds[userAddress];
-//    }
+    function getUnvestedFund(address userAddress)
+        external
+        override
+        view
+        returns (uint256 unvestedFund)
+    {
+        unvestedFund = unvestedFunds[userAddress];
+    }
 
     /// @notice Returns the claim
     /// @param claimId Claim ID
