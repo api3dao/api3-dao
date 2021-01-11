@@ -69,6 +69,10 @@ contract StakeUtils is VestingUtils, IStakeUtils {
         // checks
         require(api3Token.balanceOf(msg.sender).sub(balanceOf(msg.sender)) >= amount,
             "Insufficient funds");
+        uint256 share = convertToShares(amount);
+        shares[userAddress] = shares[userAddress].add(share);
+        totalShares = totalShares.add(share);
+        totalPooled = totalPooled.add(amount);
         // Create an IOU for each active claim
         for (uint256 ind = 0; ind < activeClaims.length; ind++) {
             // Simulate a payout for the claim
