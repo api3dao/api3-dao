@@ -60,6 +60,9 @@ contract StateUtils {
         )
         public
     {
+        // This triggers an external RewardPayer contract that calls `payReward()` once a week
+        // triggerRewardPayer();
+
         uint256 userShares = users[userAddress].shares[users[userAddress].shares.length - 1].value;
         uint256 locked = users[userAddress].locked;
       
