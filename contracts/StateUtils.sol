@@ -18,10 +18,15 @@ contract StateUtils {
         uint256 locked; // Has to be updated before being used (e.g., withdrawing)
         uint256 lastUpdatedBlock;
     }
+
     IApi3Token api3Token;
 
     // 1 year in blocks, assuming a 13 second-block time (60 * 60 * 24 * 365 / 13)
     uint256 public immutable rewardVestingPeriod = 2425846;
+    // 1 week in seconds
+    uint256 public immutable rewardEpochLength = 60 * 60 * 24 * 7;
+
+    mapping(address => User) public users;
 
     Checkpoint[] public totalShares; // Always up to date
     Checkpoint[] public totalStaked; // Always up to date
@@ -42,11 +47,9 @@ contract StateUtils {
     // Again, we need to keep the block when the claim was made
     uint256[] public claimReleaseEventBlocks;
     // Note that we don't need to keep the time a reward was paid out. That's because
-    // we know that it is `rewardVestingPeriod` before it will be released.
+    // we know that it was `rewardVestingPeriod` before it will be released.
 
-    mapping(address => User) public users;
-
-    // These parameters will be governable by the DAO.
+    // ~~~ These parameters will be governable by the DAO ~~~
     // Percentages are multiplied by 1,000,000.
     uint256 public minApr = 2500000; // 2.5%
     uint256 public maxApr = 75000000; // 75%
@@ -54,16 +57,14 @@ contract StateUtils {
     // updateCoeff is not in percentages, it's a coefficient that determines
     // how aggresively inflation rate will be updated to meet the target.
     uint256 public updateCoeff = 1000000;
-
-    uint256 public currentApr = minApr;
-
+    // ~~~ These parameters will be governable by the DAO ~~~
     mapping(uint256 => bool) public rewardsPaidForEpoch;
-    uint256 public rewardEpochLength = 60 * 60 * 24 * 7; // 1 week in seconds
-
+    uint256 public currentApr = minApr;
+    
     constructor(address api3TokenAddress)
         public
     {
-        // Initialize share price at 1 API3
+        // Initialize the share price at 1 API3
         totalShares.push(Checkpoint(block.number, 1));
         totalStaked.push(Checkpoint(block.number, 1));
         api3Token = IApi3Token(api3TokenAddress);
@@ -97,7 +98,7 @@ contract StateUtils {
         uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
         rewardsPaidForEpoch[now / rewardEpochLength] = true;
         updateCurrentApr();    
-        uint256 rewardAmount = totalStakedNow * currentApr / 52 / 1000000;
+        uint256 rewardAmount = totalStakedNow * currentApr / 52 / 100000000;
         if (rewardAmount == 0)
         {
             return;
