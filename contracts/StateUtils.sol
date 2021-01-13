@@ -50,7 +50,7 @@ contract StateUtils {
     // Percentages are multiplied by 1,000,000.
     uint256 public minApr = 2500000; // 2.5%
     uint256 public maxApr = 75000000; // 75%
-    uint256 public stakeTarget = 10e6; // 10M API3
+    uint256 public stakeTarget = 10e6 ether; // 10M API3
     // updateCoeff is not in percentages, it's a coefficient that determines
     // how aggresively inflation rate will be updated to meet the target.
     uint256 public updateCoeff = 1000000;
