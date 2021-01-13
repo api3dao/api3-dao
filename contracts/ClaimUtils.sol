@@ -1,16 +1,16 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
-import "./RewardUtils.sol";
+import "./StakeUtils.sol";
 
 
 // In general, the claims logic (their IDs, etc.) is implemented at a
 // ClaimsManager contract authorized by the DAO to call the methods below.
 // Therefore, the function prototypes are rather simple and the specifics
 // are out of the scope of the pool contract.
-contract ClaimUtils is RewardUtils {
+contract ClaimUtils is StakeUtils {
     constructor(address api3TokenAddress)
-        RewardUtils(api3TokenAddress)
+        StakeUtils(api3TokenAddress)
         public
     {}
 

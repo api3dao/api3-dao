@@ -2,8 +2,8 @@
 
 ## Omitted features (planning to implement them as well)
 
-- Linearly released timelocks (this will be handled in `updateUserState()`)
-- Unstake requests
+- Linearly released timelocks
+- Unstake requests (this will be handled in `updateUserState()`)
 
 ## Issues
 

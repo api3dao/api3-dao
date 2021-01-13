@@ -2,17 +2,13 @@
 pragma solidity 0.6.12;
 
 import "./StateUtils.sol";
-import "./interfaces/IApi3Token.sol";
 
 
 contract TransferUtils is StateUtils {
-    IApi3Token api3Token;
-
     constructor(address api3TokenAddress)
+        StateUtils(api3TokenAddress)
         public
-    {
-        api3Token = IApi3Token(api3TokenAddress);
-    }
+    {}
 
     function deposit(
         address userAddress,

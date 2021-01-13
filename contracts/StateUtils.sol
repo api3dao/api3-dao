@@ -1,6 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
+import "./interfaces/IApi3Token.sol";
+
 
 contract StateUtils {
     struct Checkpoint
@@ -16,6 +18,7 @@ contract StateUtils {
         uint256 locked; // Has to be updated before being used (e.g., withdrawing)
         uint256 lastUpdatedBlock;
     }
+    IApi3Token api3Token;
 
     // 1 year in blocks, assuming a 13 second-block time (60 * 60 * 24 * 365 / 13)
     uint256 public immutable rewardVestingPeriod = 2425846;
@@ -43,12 +46,67 @@ contract StateUtils {
 
     mapping(address => User) public users;
 
-    constructor()
+    // These parameters will be governable by the DAO.
+    // Percentages are multiplied by 1,000,000.
+    uint256 public minApr = 2500000; // 2.5%
+    uint256 public maxApr = 75000000; // 75%
+    uint256 public stakeTarget = 10e6; // 10M API3
+    // updateCoeff is not in percentages, it's a coefficient that determines
+    // how aggresively inflation rate will be updated to meet the target.
+    uint256 public updateCoeff = 1000000;
+
+    uint256 public currentApr = minApr;
+
+    mapping(uint256 => bool) public rewardsPaidForEpoch;
+    uint256 public rewardEpochLength = 60 * 60 * 24 * 7; // 1 week in seconds
+
+    constructor(address api3TokenAddress)
         public
     {
         // Initialize share price at 1 API3
         totalShares.push(Checkpoint(block.number, 1));
         totalStaked.push(Checkpoint(block.number, 1));
+        api3Token = IApi3Token(api3TokenAddress);
+    }
+
+    function updateCurrentApr()
+        private
+    {
+        if (stakeTarget == 0)
+        {
+            currentApr = 0;
+            return;
+        }
+        uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
+
+        uint256 deltaAbsolute = totalStakedNow < stakeTarget 
+            ? stakeTarget - totalStakedNow : totalStakedNow - stakeTarget;
+        uint256 deltaPercentage = deltaAbsolute * 100000000 / stakeTarget;
+        
+        // An updateCoeff of 1,000,000 means that for each 1% deviation from the 
+        // stake target, APR will be updated by 1%.
+        uint256 aprUpdate = deltaPercentage * updateCoeff / 1000000;
+
+        currentApr = totalStakedNow < stakeTarget
+            ? currentApr + aprUpdate : currentApr - aprUpdate;
+    }
+
+    function payReward()
+        private
+    {
+        uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
+        rewardsPaidForEpoch[now / rewardEpochLength] = true;
+        updateCurrentApr();    
+        uint256 rewardAmount = totalStakedNow * currentApr / 52 / 1000000;
+        if (rewardAmount == 0)
+        {
+            return;
+        }
+
+        totalStaked.push(Checkpoint(block.number, totalStakedNow + rewardAmount));
+        locks.push(Checkpoint(block.number, rewardAmount));
+        rewardReleases.push(Checkpoint(block.number + rewardVestingPeriod, rewardAmount));
+        api3Token.transferFrom(msg.sender, address(this), rewardAmount);
     }
 
     // `targetBlock` allows us to do partial updates if updating until `block.number`
@@ -60,8 +118,11 @@ contract StateUtils {
         )
         public
     {
-        // This triggers an external RewardPayer contract that calls `payReward()` once a week
-        // triggerRewardPayer();
+        // Make the reward payment if it wasn't made for this epoch
+        if (!rewardsPaidForEpoch[now / rewardEpochLength])
+        {
+            payReward();
+        }
 
         uint256 userShares = users[userAddress].shares[users[userAddress].shares.length - 1].value;
         uint256 locked = users[userAddress].locked;
