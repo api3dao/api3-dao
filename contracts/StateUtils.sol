@@ -263,7 +263,7 @@ contract StateUtils {
         view
         returns(uint256)
     {
-        // If we don't require this, the user may vote with shares that are supposed to be slashed
+        // If we don't require this, the user may vote with shares that are supposed to have been slashed
         require(users[userAddress].lastStateUpdateTargetBlock >= fromBlock);
         return getValueAt(users[userAddress].shares, fromBlock);
     }
