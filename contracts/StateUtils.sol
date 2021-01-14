@@ -110,7 +110,7 @@ contract StateUtils {
         totalStaked.push(Checkpoint(block.number, totalStakedNow + rewardAmount));
         locks.push(Checkpoint(block.number, rewardAmount));
         rewardReleases.push(Checkpoint(block.number + rewardVestingPeriod, rewardAmount));
-        api3Token.transferFrom(msg.sender, address(this), rewardAmount);
+        api3Token.mint(address(this), rewardAmount);
     }
 
     // `targetBlock` allows us to do partial updates if updating until `block.number`
