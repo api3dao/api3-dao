@@ -50,7 +50,7 @@ contract StateUtils {
     // Note that we don't need to keep the blocks rewards were paid out. That's because
     // we know that it was `rewardVestingPeriod` before it will be released.
 
-    // ~~~ These parameters will be governable by the DAO ~~~
+    // VVV These parameters will be governable by the DAO VVV
     // Percentages are multiplied by 1,000,000.
     uint256 public minApr = 2500000; // 2.5%
     uint256 public maxApr = 75000000; // 75%
@@ -58,7 +58,9 @@ contract StateUtils {
     // updateCoeff is not in percentages, it's a coefficient that determines
     // how aggresively inflation rate will be updated to meet the target.
     uint256 public updateCoeff = 1000000;
-    // ~~~ These parameters will be governable by the DAO ~~~
+    // ^^^ These parameters will be governable by the DAO ^^^
+
+    // Reward-related state parameters
     mapping(uint256 => bool) public rewardsPaidForEpoch;
     uint256 public currentApr = minApr;
     
