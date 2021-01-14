@@ -32,11 +32,11 @@ contract StateUtils {
     Checkpoint[] public totalShares; // Always up to date
     Checkpoint[] public totalStaked; // Always up to date
 
-    // `claims` keeps the block the claim is paid out and its amount
-    Checkpoint[] public claims;
-    // `claimEventBlocks` maps to `claims` one-to-one and keeps the
+    // `claimPayouts` keeps the block the claim is paid out and its amount
+    Checkpoint[] public claimPayouts;
+    // `claimPayoutReferenceBlocks` maps to `claimPayouts` one-to-one and keeps the
     // block number the claim was made
-    uint256[] public claimEventBlocks;
+    uint256[] public claimPayoutReferenceBlocks;
 
     // `locks` keeps both reward locks and claim locks
     Checkpoint[] public locks;
@@ -46,8 +46,8 @@ contract StateUtils {
     Checkpoint[] public rewardReleases;
     Checkpoint[] public claimReleases;
     // Again, we need to keep the block when the claim was made
-    uint256[] public claimReleaseEventBlocks;
-    // Note that we don't need to keep the time a reward was paid out. That's because
+    uint256[] public claimReleaseReferenceBlocks;
+    // Note that we don't need to keep the blocks rewards were paid out. That's because
     // we know that it was `rewardVestingPeriod` before it will be released.
 
     // ~~~ These parameters will be governable by the DAO ~~~
@@ -112,8 +112,8 @@ contract StateUtils {
     }
 
     // `targetBlock` allows us to do partial updates if updating until `block.number`
-    // costs too much gas (because, for example, too many claims were made since the last update,
-    // which requires the user to create a lot of checkpoints)
+    // costs too much gas (because, for example, too many claim payouts were made since
+    // the last update, which requires the user to create a lot of checkpoints)
     function updateUserState(
         address userAddress,
         uint256 targetBlock
@@ -129,24 +129,24 @@ contract StateUtils {
         uint256 userShares = users[userAddress].shares[users[userAddress].shares.length - 1].value;
         uint256 locked = users[userAddress].locked;
       
-        // Note that we have to record all `shares` checkpoints caused by the claims because
+        // Note that we have to record all `shares` checkpoints caused by the claim payouts because
         // these values are used to calculate the voting power a user will have at a point in
         // time. Therefore, we can't just calculate the final value and do a single write.
-        // Also, claims need to be processed before locks/releases because the latter depend
-        // on user `shares`, which is updated by claims.
+        // Also, claim payouts need to be processed before locks/releases because the latter depend
+        // on user `shares`, which is updated by claim payouts.
         for (
-            uint256 ind = getIndexOf(claims, users[userAddress].lastUpdatedBlock) + 1;
-            ind < claims.length && claims[ind].fromBlock <= targetBlock;
+            uint256 ind = getIndexOf(claimPayouts, users[userAddress].lastUpdatedBlock) + 1;
+            ind < claimPayouts.length && claimPayouts[ind].fromBlock <= targetBlock;
             ind++
         )
         {
-            uint256 claimEventBlock = claimEventBlocks[ind];
-            uint256 totalStakedThen = getValueAt(totalStaked, claimEventBlock);
-            uint256 totalSharesThen = getValueAt(totalShares, claimEventBlock);
-            uint256 totalSharesBurnedThen = claims[ind].value * totalSharesThen / totalStakedThen;
-            uint256 userSharesThen = getValueAt(users[userAddress].shares, claimEventBlock);
+            uint256 claimReferenceBlock = claimPayoutReferenceBlocks[ind];
+            uint256 totalStakedThen = getValueAt(totalStaked, claimReferenceBlock);
+            uint256 totalSharesThen = getValueAt(totalShares, claimReferenceBlock);
+            uint256 totalSharesBurnedThen = claimPayouts[ind].value * totalSharesThen / totalStakedThen;
+            uint256 userSharesThen = getValueAt(users[userAddress].shares, claimReferenceBlock);
             userShares -= userSharesThen * totalSharesBurnedThen / totalSharesThen;
-            users[userAddress].shares.push(Checkpoint(claims[ind].fromBlock, userShares));
+            users[userAddress].shares.push(Checkpoint(claimPayouts[ind].fromBlock, userShares));
         }
 
         // ... In contrast, `locked` doesn't need to be kept as checkpoints, so we can just
@@ -169,8 +169,8 @@ contract StateUtils {
             ind++
         )
         {
-            uint256 totalSharesThen = getValueAt(totalShares, claimReleaseEventBlocks[ind]);
-            uint256 userSharesThen = getValueAt(users[userAddress].shares, claimReleaseEventBlocks[ind]);
+            uint256 totalSharesThen = getValueAt(totalShares, claimReleaseReferenceBlocks[ind]);
+            uint256 userSharesThen = getValueAt(users[userAddress].shares, claimReleaseReferenceBlocks[ind]);
             locked -= rewardReleases[ind].value * userSharesThen / totalSharesThen;
         }
 

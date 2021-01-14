@@ -5,7 +5,7 @@ import "./StakeUtils.sol";
 
 
 // In general, the claims logic (their IDs, etc.) is implemented at a
-// ClaimsManager contract authorized by the DAO to call the methods below.
+// ClaimsManager contracts authorized by the DAO to call the methods below.
 // Therefore, the function prototypes are rather simple and the specifics
 // are out of the scope of the pool contract.
 contract ClaimUtils is StakeUtils {
@@ -23,21 +23,21 @@ contract ClaimUtils is StakeUtils {
     }
 
     // Called externally if the claim is rejected.
-    // claimEventBlock is when the original claim was made.
+    // claimReferenceBlock is when the original claim was made.
     function cancelClaim(
         uint256 amount,
-        uint256 claimEventBlock
+        uint256 claimReferenceBlock
         )
         external
         // `onlyClaimsManager`
     {
         claimReleases.push(Checkpoint(block.number, amount));
-        claimReleaseEventBlocks.push(claimEventBlock);
+        claimReleaseReferenceBlocks.push(claimReferenceBlock);
     }
 
     // Called externally if the claim is accepted.
-    // claimEventBlock is when the original claim was made.
-    // Note that claims burn shares both from `totalShares` and from
+    // claimReferenceBlock is when the original claim was made.
+    // Note that claim payouts burn shares both from `totalShares` and from
     // individual users while they are updating their state. Claims can't
     // be paid out "automatically" simply by depreciating share prices 
     // because they are not applied to all stakers (but only to stakers that
@@ -46,25 +46,25 @@ contract ClaimUtils is StakeUtils {
     // is simpler than `executeClaim()`.
     function executeClaim(
         uint256 amount,
-        uint256 claimEventBlock
+        uint256 claimReferenceBlock
         )
         external
         // `onlyClaimsManager`
     {
         // No longer need to lock tokens
         claimReleases.push(Checkpoint(block.number, amount));
-        claimReleaseEventBlocks.push(claimEventBlock);
+        claimReleaseReferenceBlocks.push(claimReferenceBlock);
 
-        claims.push(Checkpoint(block.number, amount));
-        claimEventBlocks.push(claimEventBlock);
+        claimPayouts.push(Checkpoint(block.number, amount));
+        claimPayoutReferenceBlocks.push(claimReferenceBlock);
 
         // `totalStaked` is updated based on how many tokens are staked now
         uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
         totalStaked.push(Checkpoint(block.number, totalStakedNow - amount));
 
         // `totalShares` is updated based on the state at the time the claim was made
-        uint256 totalStakedThen = getValueAt(totalStaked, claimEventBlock);
-        uint256 totalSharesThen = getValueAt(totalShares, claimEventBlock);
+        uint256 totalStakedThen = getValueAt(totalStaked, claimReferenceBlock);
+        uint256 totalSharesThen = getValueAt(totalShares, claimReferenceBlock);
         uint256 totalSharesBurned = amount * totalSharesThen / totalStakedThen;
         uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
         totalShares.push(Checkpoint(block.number, totalSharesNow - totalSharesBurned));
