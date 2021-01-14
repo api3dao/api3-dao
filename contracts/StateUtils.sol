@@ -16,7 +16,7 @@ contract StateUtils {
         uint256 unstaked; // Always up to date
         Checkpoint[] shares; // Has to be updated before being used (e.g., voting)
         uint256 locked; // Has to be updated before being used (e.g., withdrawing)
-        uint256 lastUpdatedBlock;
+        uint256 lastStateUpdateTargetBlock;
     }
 
     IApi3Token api3Token;
@@ -137,7 +137,7 @@ contract StateUtils {
         // Also, claim payouts need to be processed before locks/releases because the latter depend
         // on user `shares`, which is updated by claim payouts.
         for (
-            uint256 ind = getIndexOf(claimPayouts, users[userAddress].lastUpdatedBlock) + 1;
+            uint256 ind = getIndexOf(claimPayouts, users[userAddress].lastStateUpdateTargetBlock) + 1;
             ind < claimPayouts.length && claimPayouts[ind].fromBlock <= targetBlock;
             ind++
         )
@@ -155,7 +155,7 @@ contract StateUtils {
         // calculate the final value and write that once, because we only care about its
         // value at the time of the withdrawal (i.e., at block.number).
         for (
-            uint256 ind = getIndexOf(locks, users[userAddress].lastUpdatedBlock) + 1;
+            uint256 ind = getIndexOf(locks, users[userAddress].lastStateUpdateTargetBlock) + 1;
             ind < locks.length && locks[ind].fromBlock <= targetBlock;
             ind++
         )
@@ -166,7 +166,7 @@ contract StateUtils {
         }
 
         for (
-            uint256 ind = getIndexOf(claimReleases, users[userAddress].lastUpdatedBlock) + 1;
+            uint256 ind = getIndexOf(claimReleases, users[userAddress].lastStateUpdateTargetBlock) + 1;
             ind < claimReleases.length && claimReleases[ind].fromBlock <= targetBlock;
             ind++
         )
@@ -177,7 +177,7 @@ contract StateUtils {
         }
 
         for (
-            uint256 ind = getIndexOf(rewardReleases, users[userAddress].lastUpdatedBlock) + 1;
+            uint256 ind = getIndexOf(rewardReleases, users[userAddress].lastStateUpdateTargetBlock) + 1;
             ind < rewardReleases.length && rewardReleases[ind].fromBlock <= targetBlock;
             ind++
         )
@@ -188,7 +188,7 @@ contract StateUtils {
         }
 
         users[userAddress].locked = locked;
-        users[userAddress].lastUpdatedBlock = targetBlock;
+        users[userAddress].lastStateUpdateTargetBlock = targetBlock;
     }
 
     // From https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
@@ -251,7 +251,7 @@ contract StateUtils {
         returns(uint256)
     {
         // If we don't require this, the user may vote with shares that are supposed to be slashed
-        require(users[userAddress].lastUpdatedBlock >= fromBlock);
+        require(users[userAddress].lastStateUpdateTargetBlock >= fromBlock);
         return getValueAt(users[userAddress].shares, fromBlock);
     }
 
