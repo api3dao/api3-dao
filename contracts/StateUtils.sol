@@ -98,10 +98,10 @@ contract StateUtils {
     function payReward()
         private
     {
+        updateCurrentApr();
         uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
-        rewardsPaidForEpoch[now / rewardEpochLength] = true;
-        updateCurrentApr();    
         uint256 rewardAmount = totalStakedNow * currentApr / 52 / 100000000;
+        rewardsPaidForEpoch[now / rewardEpochLength] = true;
         if (rewardAmount == 0)
         {
             return;
