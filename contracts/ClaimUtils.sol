@@ -24,7 +24,7 @@ contract ClaimUtils is StakeUtils {
 
     // Called externally if the claim is rejected.
     // claimReferenceBlock is when the original claim was made.
-    function cancelClaim(
+    function releaseClaim(
         uint256 amount,
         uint256 claimReferenceBlock
         )
@@ -42,9 +42,9 @@ contract ClaimUtils is StakeUtils {
     // be paid out "automatically" simply by depreciating share prices 
     // because they are not applied to all stakers (but only to stakers that
     // had stakes at the time the claim was made). In contrast, rewards can
-    // be paid out simply by increasing share price, which is why `payRewards()`
-    // is simpler than `executeClaim()`.
-    function executeClaim(
+    // be paid out simply by increasing share price, which is why `payReward()`
+    // is simpler than `payOutClaim()`.
+    function payOutClaim(
         uint256 amount,
         uint256 claimReferenceBlock
         )
