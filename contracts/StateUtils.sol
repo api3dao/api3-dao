@@ -21,7 +21,8 @@ contract StateUtils {
 
     IApi3Token api3Token;
 
-    // 1 year in blocks, assuming a 13 second-block time (60 * 60 * 24 * 365 / 13)
+    // 1 year in blocks, assuming a 13 second-block time
+    // floor(60 * 60 * 24 * 365 / 13)
     uint256 public immutable rewardVestingPeriod = 2425846;
     // 1 week in seconds
     uint256 public immutable rewardEpochLength = 60 * 60 * 24 * 7;
