@@ -78,7 +78,7 @@ contract StateUtils {
     {
         if (stakeTarget == 0)
         {
-            currentApr = 0;
+            currentApr = minApr;
             return;
         }
         uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
