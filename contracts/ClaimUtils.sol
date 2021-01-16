@@ -46,6 +46,7 @@ contract ClaimUtils is StakeUtils {
     // is simpler than `payOutClaim()`.
     function payOutClaim(
         uint256 amount,
+        uint256 payoutAmount,
         uint256 claimReferenceBlock
         )
         external
@@ -55,20 +56,20 @@ contract ClaimUtils is StakeUtils {
         claimReleases.push(Checkpoint(block.number, amount));
         claimReleaseReferenceBlocks.push(claimReferenceBlock);
 
-        claimPayouts.push(Checkpoint(block.number, amount));
+        claimPayouts.push(Checkpoint(block.number, payoutAmount));
         claimPayoutReferenceBlocks.push(claimReferenceBlock);
 
         // `totalStaked` is updated based on how many tokens are staked now
         uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
-        totalStaked.push(Checkpoint(block.number, totalStakedNow - amount));
+        totalStaked.push(Checkpoint(block.number, totalStakedNow - payoutAmount));
 
         // `totalShares` is updated based on the state at the time the claim was made
         uint256 totalStakedThen = getValueAt(totalStaked, claimReferenceBlock);
         uint256 totalSharesThen = getValueAt(totalShares, claimReferenceBlock);
-        uint256 totalSharesBurned = amount * totalSharesThen / totalStakedThen;
+        uint256 totalSharesBurned = payoutAmount * totalSharesThen / totalStakedThen;
         uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
         totalShares.push(Checkpoint(block.number, totalSharesNow - totalSharesBurned));
 
-        api3Token.transferFrom(address(this), msg.sender, amount);
+        api3Token.transferFrom(address(this), msg.sender, payoutAmount);
     }
 }
