@@ -255,9 +255,9 @@ contract StateUtils {
 
     // The voting app should not be able to get shares if the user state
     // hasn't been updated since the proposal has been made
-    function getUserShares(
-        address userAddress,
-        uint256 fromBlock
+    function balanceOfAt(
+        uint256 fromBlock,
+        address userAddress
         )
         external
         view
@@ -271,7 +271,7 @@ contract StateUtils {
     // Getters that will be used to populate the dashboard etc. should be preceded
     // by an `updateUserState()` using `block.number`. Otherwise, the returned value
     // may be outdated.
-    function updateAndGetUserShares(
+    function updateAndGetBalanceOfAt(
         address userAddress,
         uint256 fromBlock
         )
