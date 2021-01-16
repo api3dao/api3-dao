@@ -17,6 +17,9 @@ contract StateUtils {
         Checkpoint[] shares; // Has to be updated before being used (e.g., voting)
         uint256 locked; // Has to be updated before being used (e.g., withdrawing)
         uint256 lastStateUpdateTargetBlock;
+        uint256 unstakeScheduledAt;
+        uint256 unstakeAmount;
+        mapping(uint256 => bool) revokedEpochReward;
     }
 
     IApi3Token api3Token;
@@ -62,6 +65,8 @@ contract StateUtils {
 
     // Reward-related state parameters
     mapping(uint256 => bool) public rewardsPaidForEpoch;
+    mapping(uint256 => uint256) public rewardAmounts;
+    mapping(uint256 => uint256) public rewardBlocks;
     uint256 public currentApr = minApr;
     
     constructor(address api3TokenAddress)
@@ -106,6 +111,8 @@ contract StateUtils {
         {
             return;
         }
+        rewardAmounts[now / rewardEpochLength] = rewardAmount;
+        rewardBlocks[now / rewardEpochLength] = block.number;
 
         totalStaked.push(Checkpoint(block.number, totalStakedNow + rewardAmount));
         locks.push(Checkpoint(block.number, rewardAmount));

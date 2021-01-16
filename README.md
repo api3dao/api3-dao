@@ -3,7 +3,6 @@
 ## Omitted features (planning to implement them as well)
 
 - Linearly released timelocks
-- Unstake requests (this will be handled in `updateUserState()`)
 
 ## Issues
 
@@ -11,5 +10,6 @@
 - Missing events
 - Missing tests
 - Missing `require` strings
+- Missing docstrings
 - Doesn't use modifiers, has some code duplication
 - May have some off-by-one errors (especially when multiple events happen on the same block)
