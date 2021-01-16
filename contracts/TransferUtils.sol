@@ -10,18 +10,20 @@ contract TransferUtils is StateUtils {
         public
     {}
 
+    // Note that this method is used by TimelockManager.sol
     function deposit(
-        address userAddress,
-        uint256 amount
+        address source,
+        uint256 amount,
+        address userAddress
         )
         external
     {
         users[userAddress].unstaked += amount;
-        api3Token.transferFrom(msg.sender, address(this), amount);
+        api3Token.transferFrom(source, address(this), amount);
     }
 
     function withdraw(
-        address destinationAddress,
+        address destination,
         uint256 amount
         )
         external
@@ -30,6 +32,6 @@ contract TransferUtils is StateUtils {
         updateUserState(msg.sender, block.number);
         require(users[msg.sender].unstaked - users[msg.sender].locked >= amount);
         users[msg.sender].unstaked -= amount;
-        api3Token.transferFrom(address(this), destinationAddress, amount);
+        api3Token.transferFrom(address(this), destination, amount);
     }
 }

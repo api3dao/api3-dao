@@ -1,9 +1,5 @@
 # API3 DAO Pool Prototype v2
 
-## Omitted features (planning to implement them as well)
-
-- Linearly released timelocks
-
 ## Issues
 
 - Doesn't use SafeMath
