@@ -64,7 +64,7 @@ contract StateUtils {
     // ^^^ These parameters will be governable by the DAO ^^^
 
     // Reward-related state parameters
-    mapping(uint256 => bool) public rewardsPaidForEpoch;
+    mapping(uint256 => bool) public rewardPaidForEpoch;
     mapping(uint256 => uint256) public rewardAmounts;
     mapping(uint256 => uint256) public rewardBlocks;
     uint256 public currentApr = minApr;
@@ -97,7 +97,16 @@ contract StateUtils {
         uint256 aprUpdate = deltaPercentage * updateCoeff / 1000000;
 
         currentApr = totalStakedNow < stakeTarget
-            ? currentApr + aprUpdate : currentApr - aprUpdate;
+            ? currentApr * (100000000 + aprUpdate) / 100000000 : currentApr * (100000000 - aprUpdate) / 100000000;
+        
+        if (currentApr < minApr)
+        {
+            currentApr = minApr;
+        }
+        else if (currentApr > maxApr)
+        {
+            currentApr = maxApr;
+        }
     }
 
     function payReward()
@@ -106,13 +115,19 @@ contract StateUtils {
         updateCurrentApr();
         uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
         uint256 rewardAmount = totalStakedNow * currentApr / 52 / 100000000;
-        rewardsPaidForEpoch[now / rewardEpochLength] = true;
+        rewardPaidForEpoch[now / rewardEpochLength] = true;
+        rewardBlocks[now / rewardEpochLength] = block.number;
+        // We don't want the DAO to revoke minter status from this contract
+        // and lock itself out of operation
+        if (!api3Token.getMinterStatus(address(this)))
+        {
+            return;
+        }
         if (rewardAmount == 0)
         {
             return;
         }
         rewardAmounts[now / rewardEpochLength] = rewardAmount;
-        rewardBlocks[now / rewardEpochLength] = block.number;
 
         totalStaked.push(Checkpoint(block.number, totalStakedNow + rewardAmount));
         locks.push(Checkpoint(block.number, rewardAmount));
@@ -130,7 +145,7 @@ contract StateUtils {
         public
     {
         // Make the reward payment if it wasn't made for this epoch
-        if (!rewardsPaidForEpoch[now / rewardEpochLength])
+        if (!rewardPaidForEpoch[now / rewardEpochLength])
         {
             payReward();
         }
