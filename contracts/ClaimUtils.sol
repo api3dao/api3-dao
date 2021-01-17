@@ -65,6 +65,6 @@ contract ClaimUtils is StakeUtils {
         totalStaked.push(Checkpoint(block.number, totalStakedNow - payoutAmount));
         totalShares.push(Checkpoint(block.number, totalSharesNow - totalSharesBurned));
 
-        api3Token.transferFrom(address(this), msg.sender, payoutAmount);
+        api3Token.transfer(msg.sender, payoutAmount);
     }
 }
