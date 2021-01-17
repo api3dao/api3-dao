@@ -50,8 +50,8 @@ contract StateUtils {
     Checkpoint[] public claimReleases;
     // Again, we need to keep the block when the claim was made
     uint256[] public claimReleaseReferenceBlocks;
-    // Note that we don't need to keep the blocks rewards were paid out. That's because
-    // we know that it was `rewardVestingPeriod` before it will be released.
+    // Note that we don't need to keep the blocks rewards were paid out at. That's
+    // because we know that it was `rewardVestingPeriod` before it will be released.
 
     // VVV These parameters will be governable by the DAO VVV
     // Percentages are multiplied by 1,000,000.

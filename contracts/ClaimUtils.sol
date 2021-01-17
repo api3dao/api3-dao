@@ -37,7 +37,7 @@ contract ClaimUtils is StakeUtils {
 
     // Called externally if the claim is accepted.
     // claimReferenceBlock is when the original claim was made.
-    // Note that claim payouts burn shares both from `totalShares` and from
+    // Note that claim payouts burn shares both from `totalShares`, and from
     // individual users while they are updating their state. Claims can't
     // be paid out "automatically" simply by depreciating share prices 
     // because they are not applied to all stakers (but only to stakers that
