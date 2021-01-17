@@ -212,7 +212,7 @@ contract StateUtils {
             uint256 claimReleaseReferenceBlock = claimReleaseReferenceBlocks[ind];
             uint256 totalSharesThen = getValueAt(totalShares, claimReleaseReferenceBlock);
             uint256 userSharesThen = getValueAt(users[userAddress].shares, claimReleaseReferenceBlock);
-            locked -= rewardReleases[ind].value * userSharesThen / totalSharesThen;
+            locked -= claimReleases[ind].value * userSharesThen / totalSharesThen;
         }
 
         for (
