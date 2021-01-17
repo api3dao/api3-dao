@@ -159,13 +159,18 @@ contract StateUtils {
             ind++
         )
         {
+            uint256 claimPayoutBlock = claimPayouts[ind].fromBlock;
+            uint256 totalStakedAtPayout = getValueAt(totalStaked, claimPayoutBlock);
+            uint256 totalSharesAtPayout = getValueAt(totalShares, claimPayoutBlock);
+            uint256 totalSharesBurned = claimPayouts[ind].value * totalSharesAtPayout / totalStakedAtPayout;
+            
             uint256 claimReferenceBlock = claimPayoutReferenceBlocks[ind];
-            uint256 totalStakedThen = getValueAt(totalStaked, claimReferenceBlock);
-            uint256 totalSharesThen = getValueAt(totalShares, claimReferenceBlock);
-            uint256 totalSharesBurnedThen = claimPayouts[ind].value * totalSharesThen / totalStakedThen;
-            uint256 userSharesThen = getValueAt(users[userAddress].shares, claimReferenceBlock);
-            userShares -= userSharesThen * totalSharesBurnedThen / totalSharesThen;
-            users[userAddress].shares.push(Checkpoint(claimPayouts[ind].fromBlock, userShares));
+            uint256 totalSharesAtClaim = getValueAt(totalShares, claimReferenceBlock);
+            uint256 userSharesAtClaim = getValueAt(users[userAddress].shares, claimReferenceBlock);
+
+            uint256 userSharesBurned = totalSharesBurned * userSharesAtClaim / totalSharesAtClaim;
+            userShares -= userSharesBurned;
+            users[userAddress].shares.push(Checkpoint(claimPayoutBlock, userShares));
         }
 
         // ... In contrast, `locked` doesn't need to be kept as checkpoints, so we can just
