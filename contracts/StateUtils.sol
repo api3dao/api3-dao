@@ -212,6 +212,7 @@ contract StateUtils {
             uint256 claimReleaseReferenceBlock = claimReleaseReferenceBlocks[ind];
             uint256 totalSharesThen = getValueAt(totalShares, claimReleaseReferenceBlock);
             uint256 userSharesThen = getValueAt(users[userAddress].shares, claimReleaseReferenceBlock);
+            // The below will underflow in some cases, cap at 0
             locked -= claimReleases[ind].value * userSharesThen / totalSharesThen;
         }
 
@@ -224,6 +225,7 @@ contract StateUtils {
             uint256 rewardReferenceBlock = rewardReleases[ind].fromBlock - rewardVestingPeriod;
             uint256 totalSharesThen = getValueAt(totalShares, rewardReferenceBlock);
             uint256 userSharesThen = getValueAt(users[userAddress].shares, rewardReferenceBlock);
+            // The below will underflow in some cases, cap at 0
             locked -= rewardReleases[ind].value * userSharesThen / totalSharesThen;
         }
 
