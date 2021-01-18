@@ -46,7 +46,6 @@ contract ClaimUtils is StakeUtils {
     // be paid out simply by increasing share price, which is why `payReward()`
     // is simpler than `payOutClaim()`.
     function payOutClaim(
-        uint256 amount,
         uint256 payoutAmount,
         uint256 claimReferenceBlock
         )
