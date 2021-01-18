@@ -13,7 +13,13 @@ contract TimelockUtils is ClaimUtils {
         uint256 releaseEnd;
     }
 
-    mapping(address => Timelock[]) public userTimelocks;
+    // There are two TimelockManager.sol contracts deployed at the moment. One keeps the 6 month
+    // cliff, and the other keeps the linear vesting between 6–36 months. This means that there
+    // will be two separate deposits made from independent contracts, and we need to distinguish
+    // the two. A TimelockManager.sol only keeps a single timelock per user, so we can simply
+    // keep these in a mapping here. So if a user X has timelocked tokens at contract Y, after
+    // transferring them here, the record will be kept at userToDepositorToTimelock[X][Y]
+    mapping(address => mapping(address => Timelock)) public userToDepositorToTimelock;
 
     constructor(address api3TokenAddress)
         ClaimUtils(api3TokenAddress)
@@ -30,20 +36,21 @@ contract TimelockUtils is ClaimUtils {
         )
         external
     {
+        require(userToDepositorToTimelock[userAddress][msg.sender].remainingAmount == 0);
         users[userAddress].unstaked += amount;
         users[userAddress].locked += amount;
-        userTimelocks[userAddress].push(Timelock(amount, amount, releaseStart, releaseEnd));
+        userToDepositorToTimelock[userAddress][msg.sender] = Timelock(amount, amount, releaseStart, releaseEnd);
         api3Token.transferFrom(source, address(this), amount);
     }
 
     // This method can simply be called from Etherscan, no need to have it on the dashboard
     function updateTimelockStatus(
         address userAddress,
-        uint256 indTimelock
+        address timelockContractAddress
         )
         external
     {
-        Timelock storage timelock = userTimelocks[userAddress][indTimelock];
+        Timelock storage timelock = userToDepositorToTimelock[userAddress][timelockContractAddress];
         uint256 totalUnlocked = 0;
         if (now >= timelock.releaseEnd)
         {
