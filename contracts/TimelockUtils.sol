@@ -58,6 +58,6 @@ contract TimelockUtils is ClaimUtils {
         uint256 previouslyUnlocked = timelock.totalAmount - timelock.remainingAmount;
         uint256 newlyUnlocked = totalUnlocked - previouslyUnlocked;
         users[userAddress].locked -= newlyUnlocked;
-        userTimelocks[userAddress][indTimelock].remainingAmount = timelock.remainingAmount - totalUnlocked;
+        userToDepositorToTimelock[userAddress][timelockContractAddress].remainingAmount = timelock.remainingAmount - newlyUnlocked;
     }
 }
