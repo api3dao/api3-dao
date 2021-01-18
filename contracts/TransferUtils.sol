@@ -32,6 +32,6 @@ contract TransferUtils is StateUtils {
         updateUserState(msg.sender, block.number);
         require(users[msg.sender].unstaked - users[msg.sender].locked >= amount);
         users[msg.sender].unstaked -= amount;
-        api3Token.transferFrom(address(this), destination, amount);
+        api3Token.transfer(destination, amount);
     }
 }
