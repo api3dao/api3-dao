@@ -170,7 +170,7 @@ contract StateUtils {
         // Also, claim payouts need to be processed before locks/releases because the latter depend
         // on user `shares`, which is updated by claim payouts.
         for (
-            uint256 ind = getIndexOf(claimPayouts, lastStateUpdateTargetBlock - 1) + 1;
+            uint256 ind = lastStateUpdateTargetBlock - 1 < claimPayouts[0].fromBlock ? 0 : getIndexOf(claimPayouts, lastStateUpdateTargetBlock - 1) + 1;
             ind < claimPayouts.length && claimPayouts[ind].fromBlock < targetBlock;
             ind++
         )
@@ -193,7 +193,7 @@ contract StateUtils {
         // calculate the final value and write that once, because we only care about its
         // value at the time of the withdrawal (i.e., at `block.number`).
         for (
-            uint256 ind = getIndexOf(locks, lastStateUpdateTargetBlock - 1) + 1;
+            uint256 ind = lastStateUpdateTargetBlock - 1 < locks[0].fromBlock ? 0 : getIndexOf(locks, lastStateUpdateTargetBlock - 1) + 1;
             ind < locks.length && locks[ind].fromBlock < targetBlock;
             ind++
         )
@@ -205,7 +205,7 @@ contract StateUtils {
         }
 
         for (
-            uint256 ind = getIndexOf(claimReleases, lastStateUpdateTargetBlock - 1) + 1;
+            uint256 ind = lastStateUpdateTargetBlock - 1 < claimReleases[0].fromBlock ? 0 : getIndexOf(claimReleases, lastStateUpdateTargetBlock - 1) + 1;
             ind < claimReleases.length && claimReleases[ind].fromBlock < targetBlock;
             ind++
         )
@@ -218,7 +218,7 @@ contract StateUtils {
         }
 
         for (
-            uint256 ind = getIndexOf(rewardReleases, lastStateUpdateTargetBlock - 1) + 1;
+            uint256 ind = lastStateUpdateTargetBlock - 1 < rewardReleases[0].fromBlock ? 0 : getIndexOf(rewardReleases, lastStateUpdateTargetBlock - 1) + 1;
             ind < rewardReleases.length && rewardReleases[ind].fromBlock < targetBlock;
             ind++
         )
@@ -264,8 +264,6 @@ contract StateUtils {
         // Repeating the shortcut
         if (_block >= checkpoints[checkpoints.length-1].fromBlock)
             return checkpoints.length-1;
-        if (_block < checkpoints[0].fromBlock)
-            return 0;
         
         // Binary search of the value in the array
         uint min = 0;
