@@ -49,14 +49,14 @@ contract StakeUtils is TransferUtils {
         uint256 userSharesNow = users[msg.sender].shares[users[msg.sender].shares.length - 1].value;
         uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
         // Revoke this epoch's reward if we haven't already
-        uint256 currentEpochIndex = now / rewardEpochLength;    
+        uint256 indEpoch = now / rewardEpochLength;    
         uint256 tokensToRevoke = 0;
-        if (!users[msg.sender].revokedEpochReward[currentEpochIndex] && rewardAmounts[currentEpochIndex] != 0)
+        if (!users[msg.sender].revokedEpochReward[indEpoch] && rewardAmounts[indEpoch] != 0)
         {
             // Calculate how many tokens the user was paid as inflationary rewards
-            uint256 userSharesThen = getValueAt(users[msg.sender].shares, rewardBlocks[currentEpochIndex]);
-            uint256 totalSharesThen = getValueAt(totalShares, rewardBlocks[currentEpochIndex]);
-            tokensToRevoke = rewardAmounts[currentEpochIndex] * userSharesThen / totalSharesThen;
+            uint256 userSharesThen = getValueAt(users[msg.sender].shares, rewardBlocks[indEpoch]);
+            uint256 totalSharesThen = getValueAt(totalShares, rewardBlocks[indEpoch]);
+            tokensToRevoke = rewardAmounts[indEpoch] * userSharesThen / totalSharesThen;
             // Calculate how many shares they correspond to now
             uint256 sharesToBurn = totalSharesNow * tokensToRevoke / totalStakedNow;
             // The user may have been slashed since the reward payment, resulting in them
@@ -77,7 +77,7 @@ contract StakeUtils is TransferUtils {
             users[msg.sender].locked -= tokensToRevoke;
             // We don't want to repeat this penalty if the user refreshes their unstake schedule in the same
             // epoch a second time
-            users[msg.sender].revokedEpochReward[currentEpochIndex] = true;
+            users[msg.sender].revokedEpochReward[indEpoch] = true;
         }
         uint256 userStakedNow = userSharesNow * totalStakedNow / totalSharesNow;
         // We have to check this because otherwise the user can schedule an unstake 1 week ago
