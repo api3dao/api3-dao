@@ -66,14 +66,14 @@ contract StakeUtils is TransferUtils {
                 sharesToBurn = userSharesNow;
             }
             // Deduct these shares from the user, practically distributing them to the current shareholders.
-            // (The ideal thing to be done would be to distribute them to shareholders at the time the
+            // (The ideal thing would be to distribute them to shareholders at the time the
             // reward payment was made, but that's not feasible to implement.)
             userSharesNow -= sharesToBurn;
             totalSharesNow -= sharesToBurn;
             users[msg.sender].shares.push(Checkpoint(block.number, userSharesNow));
             totalShares.push(Checkpoint(block.number, totalSharesNow));
             // Also unlock the tokens. Note that these tokens will be unlocked again 1 year later (so
-            // this favors the user) but this is acceptable (or rather the opposite is less desirable).
+            // this favors the user) but this is acceptable (or rather the opposite is less desirable). 
             users[msg.sender].locked -= tokensToRevoke;
             // We don't want to repeat this penalty if the user refreshes their unstake schedule in the same
             // epoch a second time

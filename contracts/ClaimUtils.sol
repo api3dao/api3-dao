@@ -22,7 +22,7 @@ contract ClaimUtils is StakeUtils {
         locks.push(Checkpoint(block.number, amount));
     }
 
-    // Called externally if the claim is rejected.
+    // Called externally when the claim is finalized (accepted/rejected).
     // claimReferenceBlock is when the original claim was made.
     function releaseClaim(
         uint256 amount,
