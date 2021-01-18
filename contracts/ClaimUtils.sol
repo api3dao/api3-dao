@@ -35,7 +35,8 @@ contract ClaimUtils is StakeUtils {
         claimReleaseReferenceBlocks.push(claimReferenceBlock);
     }
 
-    // Called externally if the claim is accepted.
+    // Called externally if the claim is accepted (should also call `releaseClaim()`
+    // separately if `makeClaim()` had been called).
     // claimReferenceBlock is when the original claim was made.
     // Note that claim payouts burn shares both from `totalShares`, and from
     // individual users while they are updating their state. Claims can't
@@ -52,10 +53,6 @@ contract ClaimUtils is StakeUtils {
         external
         // `onlyClaimsManager`
     {
-        // No longer need to lock tokens
-        claimReleases.push(Checkpoint(block.number, amount));
-        claimReleaseReferenceBlocks.push(claimReferenceBlock);
-
         claimPayouts.push(Checkpoint(block.number, payoutAmount));
         claimPayoutReferenceBlocks.push(claimReferenceBlock);
 
