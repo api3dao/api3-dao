@@ -30,7 +30,7 @@ contract StakeUtils is TransferUtils {
     // As a solution, we require the user to "schedule an unstake" `rewardEpochLength` (1 week)
     // in advance.
     // This system by itself is also open to abuse, as the user can schedule an unstake event, but
-    // not execute it. Then, when an event occurs that will result in an insurance claim, they will
+    // not execute it. Then, as soon as an event occurs that will result in an insurance claim, they will
     // execute the unstake. As a solution, scheduled unstake events "go stale" `2 * rewardEpochLength`
     // (2 weeks) after they are scheduled. In other words, the user has a 1 week window to unstake,
     // starting from 1 week after the unstake has been scheduled.
