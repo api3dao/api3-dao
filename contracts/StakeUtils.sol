@@ -51,7 +51,7 @@ contract StakeUtils is TransferUtils {
         // Revoke this epoch's reward if we haven't already
         uint256 currentEpochIndex = now / rewardEpochLength;    
         uint256 tokensToRevoke = 0;
-        if (!users[msg.sender].revokedEpochReward[currentEpochIndex])
+        if (!users[msg.sender].revokedEpochReward[currentEpochIndex] && rewardAmounts[currentEpochIndex] != 0)
         {
             // Calculate how many tokens the user was paid as inflationary rewards
             uint256 userSharesThen = getValueAt(users[msg.sender].shares, rewardBlocks[currentEpochIndex]);
