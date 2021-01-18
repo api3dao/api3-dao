@@ -113,10 +113,11 @@ contract StateUtils {
         private
     {
         updateCurrentApr();
+        uint256 indEpoch = now / rewardEpochLength;
         uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
         uint256 rewardAmount = totalStakedNow * currentApr / 52 / 100000000;
-        rewardPaidForEpoch[now / rewardEpochLength] = true;
-        rewardBlocks[now / rewardEpochLength] = block.number;
+        rewardPaidForEpoch[indEpoch] = true;
+        rewardBlocks[indEpoch] = block.number;
         // We don't want the DAO to revoke minter status from this contract
         // and lock itself out of operation
         if (!api3Token.getMinterStatus(address(this)))
@@ -127,7 +128,7 @@ contract StateUtils {
         {
             return;
         }
-        rewardAmounts[now / rewardEpochLength] = rewardAmount;
+        rewardAmounts[indEpoch] = rewardAmount;
 
         totalStaked.push(Checkpoint(block.number, totalStakedNow + rewardAmount));
         locks.push(Checkpoint(block.number, rewardAmount));
