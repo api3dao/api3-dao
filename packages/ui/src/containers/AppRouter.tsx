@@ -6,26 +6,30 @@ import {
 
 import { 
   Dashboard,
-  Claims,
   DAOGov,
   Staking,
+  ProposalDetails,
+  Landing,
 
 } from "containers";
 
 function AppRouter() {
   return (
       <Switch>
-        <Route path={"/claims"}>
-          <Claims />
-        </Route>
-        <Route path={"/dao"}>
+        <Route path={"/proposals"}>
           <DAOGov />
+        </Route>
+        <Route path={"/proposals/:id"}>
+          <ProposalDetails />
         </Route>
         <Route path={"/staking"}>
           <Staking />
         </Route>
-        <Route path={["/dashboard", "/"]}>
+        <Route path={["/dashboard"]}>
           <Dashboard />
+        </Route>
+        <Route path={"/"}>
+          <Landing />
         </Route>
       </Switch>
   );

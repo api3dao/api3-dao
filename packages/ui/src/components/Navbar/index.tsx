@@ -35,13 +35,8 @@ function Navbar() {
             </Link>
           </Typography>
           <Typography className={classes.title}>
-            <Link to="/claims" className={classes.link}>
-              Claims
-            </Link>
-          </Typography>
-          <Typography className={classes.title}>
-            <Link to="/dao" className={classes.link}>
-              Governance
+            <Link to="/proposals" className={classes.link}>
+              Proposals
             </Link>
           </Typography>
           {

@@ -1,4 +1,5 @@
 import React, { useContext } from "react";
+import { Link } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -22,19 +23,21 @@ function VotesList() {
     voteIndex = Number(vote.id.slice(- 4))
     return (
       <Box className={classes.voteItem} key={voteIndex}>
-        <Box>
-          <Typography variant="body1">Vote #: { voteIndex }</Typography>
-          <Typography variant="body1">Vote ID: { vote.id.slice(- 4) }</Typography>
-        </Box>
-        <Box>
-          <Typography variant="body1">Description of Vote:</Typography>
-          <Typography variant="body1"> { vote.metadata } </Typography>
-        </Box>
-        {/*
-        <Box>
-          <Counter countDownDate="Jan 1, 2021 00:00:00" />
-        </Box>
-        */}
+        <Link to={`proposals/${voteIndex}`}>
+          <Box>
+            <Typography variant="body1">Vote #: { voteIndex }</Typography>
+            <Typography variant="body1">Vote ID: { vote.id.slice(- 4) }</Typography>
+          </Box>
+          <Box>
+            <Typography variant="body1">Description of Vote:</Typography>
+            <Typography variant="body1"> { vote.metadata } </Typography>
+          </Box>
+          {/*
+          <Box>
+            <Counter countDownDate="Jan 1, 2021 00:00:00" />
+          </Box>
+          */}
+        </Link>
         <VoteProposalButtons voteIndex={voteIndex} proposalType="vote"/>
       </Box>
     )

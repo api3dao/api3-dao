@@ -26,7 +26,7 @@ function DAOGov() {
     <Container className={classes.root}>
       <Box className={classes.box}>
         <Typography variant="h4">
-          Proposals List
+          DAO Governance
         </Typography>
       </Box>
       <Box className={classes.box}>
