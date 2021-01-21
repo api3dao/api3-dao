@@ -6,8 +6,14 @@ export const useStyles = makeStyles((theme: Theme) =>
 
     },
     logo: {
-      height: 50,
-      width: 50,
+      position: "absolute",
+      left: "1.56%",
+      right: "83.59%",
+      top: "18.75%",
+      bottom: "18.75%",
+      width: "152px",
+      height: "60px",
+
     }
   }),
 );

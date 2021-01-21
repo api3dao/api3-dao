@@ -19,8 +19,21 @@ export const useStyles = makeStyles((theme: Theme) =>
       },
       textDecoration: "unset",
     },
-
+    header: {
+      display: "flex",
+      justifyContent: "space-between"
+    },
+    addressContainer: {
+      display: "flex",
+      flexDirection: "row"
+    },
+    logo: {
+      width: 18,
+      height: 18,
+      marginTop: '5px',
+      marginRight: '9.5px'
+    }
   }),
 );
 
-export default useStyles
+export default useStyles;

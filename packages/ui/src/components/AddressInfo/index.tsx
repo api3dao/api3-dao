@@ -9,9 +9,14 @@ function AddressInfo(props: any) {
   const classes = useStyles();
   const { address } = props
   return (
-    <Typography variant="subtitle2" className={classes.root}>
-      { address.slice(0, 5) }...{ address.slice(-5) }
-    </Typography>
+    <div className={classes.root}>
+          <Typography variant="subtitle2">
+            { address.slice(0, 5) }...{ address.slice(-5) }
+          </Typography>
+          <Typography style={{ fontSize: "12px"}}>
+            Connected to __
+          </Typography>
+        </div>
   );
 }
 
