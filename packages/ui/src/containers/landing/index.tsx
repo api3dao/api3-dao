@@ -2,7 +2,7 @@ import React, {
   // useContext, 
   // useEffect 
 } from 'react';
-import { Container } from '@material-ui/core';
+import { Container, Typography } from '@material-ui/core';
 
 // import Aragon from "services/aragon";
 // import { AragonContext } from "contexts";
@@ -25,7 +25,7 @@ function Dashboard() {
   
   return (
     <Container className={classes.root}>
-      Landing Page before user connects wallet.
+      <Typography variant="h6">Landing Page before user connects wallet.</Typography>
     </Container>
   );
 }

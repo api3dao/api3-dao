@@ -1,4 +1,5 @@
 import Navbar from "components/Navbar";
+import Sidebar from "components/Navbar/Sidebar";
 import ConnectButton from "components/ConnectButton";
 import AddressInfo from "components/AddressInfo";
 import { API3Stats, Account, Global, API3InsuranceStats } from "components/API3Stats";
@@ -14,6 +15,7 @@ import Logo from "components/Logo";
 
 export {
   Navbar,
+  Sidebar,
   ConnectButton,
   AddressInfo,
   ProposalModal,
