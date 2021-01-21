@@ -5,7 +5,7 @@ import {
 import { ThemeProvider } from "@material-ui/core";
 
 import { AppRouter }from "containers";
-import { Navbar } from "components";
+import { Navbar, Sidebar } from "components";
 import { MainProvider } from "contexts";
 import { getEnvVariables } from "utils/environment";
 
@@ -22,6 +22,7 @@ function App() {
           <MainProvider>
             <ThemeProvider theme={theme}>
               <Navbar />
+              <Sidebar />
               <AppRouter />
             </ThemeProvider>
           </MainProvider>

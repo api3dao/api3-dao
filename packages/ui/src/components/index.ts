@@ -1,7 +1,8 @@
 import Navbar from "components/Navbar";
+import Sidebar from "components/Navbar/Sidebar";
 import ConnectButton from "components/ConnectButton";
 import AddressInfo from "components/AddressInfo";
-import { API3Stats, Account, Global } from "components/API3Stats";
+import { API3Stats, Account, Global, API3InsuranceStats } from "components/API3Stats";
 import Actions from "components/Actions";
 import ProposalModal from "components/Proposals/ProposalModal";
 import NewProposalButton from "components/Proposals/NewProposalButton";
@@ -14,10 +15,12 @@ import Logo from "components/Logo";
 
 export {
   Navbar,
+  Sidebar,
   ConnectButton,
   AddressInfo,
   ProposalModal,
   API3Stats,
+  API3InsuranceStats,
   Actions,
   VoteProposalButton,
   VoteProposalButtons,
