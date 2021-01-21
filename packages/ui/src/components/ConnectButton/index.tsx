@@ -8,10 +8,10 @@ import { Web3 } from "services/web3"
 import { getERC20Tokens } from "services/web3/erc20";
 import { Web3Context, API3Context } from "contexts";
 
-// import useStyles from "components/Navbar/styles";
+import useStyles from "components/ConnectButton/styles";
 
 function ConnectButton() {
-  // const classes = useStyles();
+  const classes = useStyles();
   const web3Context = useContext(Web3Context);
   const api3Context = useContext(API3Context);
 
@@ -25,7 +25,7 @@ function ConnectButton() {
 
   return (
     <Box>
-      <Button onClick={connect} color="secondary">Connect</Button>
+      <Button onClick={connect} color="secondary" className={classes.button}>Connect Wallet</Button>
     </Box>
   );
 }
