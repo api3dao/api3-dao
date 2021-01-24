@@ -30,6 +30,8 @@ describe('contracts', () => {
     const signer = hre.waffle.provider.getSigner(1)
     const account = token.connect(signer)
     await account.approve(pool.address, 100)
+    const allowance = await token.allowance(accounts[1], pool.address)
+    expect(allowance).to.equal(100)
     const staker = pool.connect(signer)
     await staker.deposit(accounts[1], 50, accounts[1])
     const stakeTx = await staker.stake(50)

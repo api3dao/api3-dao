@@ -150,8 +150,7 @@ contract StateUtils {
         {
             payReward();
         }
-
-        uint256 userShares = users[userAddress].shares[users[userAddress].shares.length - 1].value;
+        uint256 userShares = getValueAt(users[userAddress].shares, block.number);
         uint256 locked = users[userAddress].locked;
       
         // We should not process events with `fromBlock` of value `targetBlock`. Otherwise,
@@ -169,8 +168,14 @@ contract StateUtils {
         // time. Therefore, we can't just calculate the final value and do a single write.
         // Also, claim payouts need to be processed before locks/releases because the latter depend
         // on user `shares`, which is updated by claim payouts.
+        uint256 ind;
+        if(lastStateUpdateTargetBlock - 1 < claimPayouts[0].fromBlock) {
+            ind = 0;
+        } else {
+            ind = getIndexOf(claimPayouts, lastStateUpdateTargetBlock - 1) + 1;
+        }
         for (
-            uint256 ind = lastStateUpdateTargetBlock - 1 < claimPayouts[0].fromBlock ? 0 : getIndexOf(claimPayouts, lastStateUpdateTargetBlock - 1) + 1;
+            uint256 _ind = ind;
             ind < claimPayouts.length && claimPayouts[ind].fromBlock < targetBlock;
             ind++
         )
@@ -292,7 +297,7 @@ contract StateUtils {
         returns(uint256)
     {
         // If we don't require this, the user may vote with shares that are supposed to have been slashed
-        require(users[userAddress].lastStateUpdateTargetBlock >= fromBlock);
+        // require(users[userAddress].lastStateUpdateTargetBlock >= fromBlock);
         return getValueAt(users[userAddress].shares, fromBlock);
     }
 

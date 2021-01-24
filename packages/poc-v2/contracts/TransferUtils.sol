@@ -2,7 +2,6 @@
 pragma solidity 0.6.12;
 
 import "./StateUtils.sol";
-import "hardhat/console.sol";
 
 contract TransferUtils is StateUtils {
     constructor(address api3TokenAddress)
@@ -20,7 +19,6 @@ contract TransferUtils is StateUtils {
     {
         users[userAddress].unstaked += amount;
         api3Token.transferFrom(source, address(this), amount);
-        console.log(amount);
     }
 
     function withdraw(
