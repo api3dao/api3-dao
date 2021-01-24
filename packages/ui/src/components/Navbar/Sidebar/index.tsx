@@ -17,13 +17,13 @@ function Sidebar() {
       <AppBar position="sticky">
         <Toolbar className={classes.bar}>
         <NavLink activeClassName={classes.activebar} to="/dashboard" className={classes.title}>
-          <Typography className={classes.link}>
+          <Typography variant="body1" className={classes.link}>
             <img src={vector} alt="" className={classes.logo} />
               Dashboard
           </Typography>
           </NavLink>
           <NavLink activeClassName={classes.activebar} to="/proposals" className={classes.title}>
-          <Typography className={classes.link}>
+          <Typography variant="body1" className={classes.link}>
             <img src={vector} alt="" className={classes.logo} />
               Proposals
           </Typography>

@@ -18,14 +18,14 @@ export const useCommonStyles = makeStyles((theme: Theme) =>
     },
     borderContainer: {
       border: "1px solid #F3F3F3",
-      margin: "5px"
+      margin: "5px",
+      borderRadius: "2px"
     },
     centeredBox: {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      flexDirection: "column",
-      padding: "5%"
+      flexDirection: "column"
     },
     marginContainer: {
       marginTop: "6%"

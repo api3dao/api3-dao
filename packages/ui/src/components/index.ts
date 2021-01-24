@@ -13,6 +13,7 @@ import VoteProposalButtons from "components/VoteProposalButtons";
 import StakingButton from "components/Staking/StakingButton";
 import Counter from "components/Counter";
 import Logo from "components/Logo";
+import InsurancePool from "components/InsurancePool";
 
 export {
   Navbar,
@@ -33,5 +34,5 @@ export {
   Account,
   Global,
   Logo,
-
+  InsurancePool,
 }

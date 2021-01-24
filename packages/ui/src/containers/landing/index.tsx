@@ -3,7 +3,7 @@ import React, {
   // useEffect 
 } from 'react';
 import { Container, Typography } from '@material-ui/core';
-
+import InsurancePool from "components/InsurancePool";
 // import Aragon from "services/aragon";
 // import { AragonContext } from "contexts";
 
@@ -36,7 +36,6 @@ function Dashboard() {
         description: "Hello World!"
     }
 ];
-
   // const aragonContext = useContext<any>(AragonContext);
 
   // const componentDidMount = () => {
@@ -53,20 +52,18 @@ function Dashboard() {
     <Container className={classes.root}>
       <Typography variant="h1" color="textSecondary" className={commonClasses.textBackground}>Dashboard</Typography>
       <div className={commonClasses.mainTitleContainer}>
-        <Typography color="textSecondary" style={{ color: "#878888" }}>Dashboard</Typography>
+        <Typography variant="subtitle2" color="textSecondary" style={{ color: "#878888" }}>Dashboard</Typography>
         <Typography variant="h2" color="secondary">Welcome to the API3 DAO</Typography>
       </div>
       <div className={commonClasses.marginContainer}>
       <Typography variant="body1" color="secondary">How This Works</Typography>
-      <div className={commonClasses.borderContainer}> 
-      <Carousel navButtonsAlwaysVisible>
+      <div className={commonClasses.borderContainer} style={{ padding: "5%" }}> 
+      <Carousel>
             {items.map((item, i) => <Item key={i} item={item} /> )}
-        </Carousel>
+       </Carousel>
       </div>
       </div>
-      <div className={commonClasses.marginContainer}>
-        <Typography variant="body1" color="secondary">Insurance Pool</Typography>
-      </div>
+      <InsurancePool />
     </Container>
   );
 }
