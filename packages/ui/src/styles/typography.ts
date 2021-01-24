@@ -20,7 +20,7 @@ export const typography: any = {
     fontWeight: 600,
   },
   body1: {
-    fontSize: "16px",
+    fontSize: "18px",
     lineHeight: "143%",
   },
   body2: {

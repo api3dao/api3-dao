@@ -4,12 +4,13 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 export const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      width: "10vw",
+      width: "15vw",
       height: "100vh",
     },
     bar: {
       display: "flex",
       flexDirection: "column",
+      flexWrap: "nowrap",
       height: "100vh",
       marginTop: "35px",
       padding: 0
