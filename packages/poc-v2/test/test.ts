@@ -35,8 +35,9 @@ describe('contracts', () => {
     expect(allowance).to.equal(100)
     const staker = pool.connect(signer)
     await staker.deposit(accounts[1], 50, accounts[1])
-    await staker.stake(50)
-    const stakerBalance = await staker.balanceOfAt(hre.waffle.provider.blockNumber, accounts[1])
+    const stakeTx = await staker.stake(50)
+    const fromBlock = stakeTx.blockNumber ? stakeTx.blockNumber : hre.waffle.provider.blockNumber
+    const stakerBalance = await staker.balanceOfAt(fromBlock, accounts[1])
     expect(stakerBalance).to.equal(50)
   })
 })
