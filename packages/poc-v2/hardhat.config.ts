@@ -2,9 +2,9 @@ import { HardhatUserConfig } from "hardhat/types";
 import "@nomiclabs/hardhat-waffle";
 import "hardhat-typechain";
 
-const config: BuidlerConfig = {
+const config: HardhatUserConfig = {
   solidity: {
-    compilers: [{ version: "0.6.8", settings: {} }],
+    compilers: [{ version: "0.6.12", settings: {} }],
   },
 };
 export default config;

@@ -2,7 +2,7 @@
   "name": "api3-dao-pool-poc-v2",
   "scripts": {
     "build": "hardhat compile",
-    "test": "hardhat run scripts/test.js"
+    "test": "hardhat test"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
