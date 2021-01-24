@@ -20,13 +20,10 @@ contract StakeUtils is TransferUtils {
         uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
         uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
         uint256 sharesToMint = totalSharesNow * amount / totalStakedNow;
-        // console.log(sharesToMint);
         User memory user = users[msg.sender];
         uint256 userSharesNow = user.shares.length > 0 ? user.shares[user.shares.length - 1].value : 0;
         users[msg.sender].shares.push(Checkpoint(block.number, userSharesNow + sharesToMint));
         totalShares.push(Checkpoint(block.number, totalSharesNow + sharesToMint));
-        // console.log(totalShares);
-        // console.log(users[msg.sender].shares[0].value);
     }
 
     // We can't let the user unstake on demand. Otherwise, they would be able to unstake

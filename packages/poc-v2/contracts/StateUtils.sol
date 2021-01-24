@@ -312,9 +312,11 @@ contract StateUtils {
         // require(users[userAddress].lastStateUpdateTargetBlock >= fromBlock);
         User memory user = users[userAddress];
         uint256 shares = getValueAt(user.shares, fromBlock);
-        console.log(fromBlock);
-        console.log(user.shares[0].fromBlock);
-        console.log(shares);
+        return shares;
+    }
+
+    function balanceOf(address userAddress) external view returns (uint256) {
+        return this.balanceOfAt(block.number, userAddress);
     }
 
     // Getters that will be used to populate the dashboard etc. should be preceded

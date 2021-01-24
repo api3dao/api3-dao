@@ -37,7 +37,7 @@ describe('contracts', () => {
     await staker.deposit(accounts[1], 50, accounts[1])
     const stakeTx = await staker.stake(50)
     const fromBlock = stakeTx.blockNumber ? stakeTx.blockNumber : hre.waffle.provider.blockNumber
-    const stakerBalance = await staker.balanceOfAt(fromBlock, accounts[1])
+    const stakerBalance = await staker.balanceOf(accounts[1])
     expect(stakerBalance).to.equal(50)
   })
 })

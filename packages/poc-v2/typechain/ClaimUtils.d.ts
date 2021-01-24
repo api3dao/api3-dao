@@ -22,6 +22,7 @@ import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 
 interface ClaimUtilsInterface extends ethers.utils.Interface {
   functions: {
+    "balanceOf(address)": FunctionFragment;
     "balanceOfAt(uint256,address)": FunctionFragment;
     "claimReleaseReferenceBlocks(uint256)": FunctionFragment;
     "claimReleases(uint256)": FunctionFragment;
@@ -52,6 +53,7 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
     "withdraw(address,uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(
     functionFragment: "balanceOfAt",
     values: [BigNumberish, string]
@@ -147,6 +149,7 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
 
+  decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "balanceOfAt",
     data: BytesLike
@@ -247,6 +250,16 @@ export class ClaimUtils extends Contract {
   interface: ClaimUtilsInterface;
 
   functions: {
+    balanceOf(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "balanceOf(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     balanceOfAt(
       fromBlock: BigNumberish,
       userAddress: string,
@@ -531,6 +544,13 @@ export class ClaimUtils extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
   };
+
+  balanceOf(userAddress: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  "balanceOf(address)"(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   balanceOfAt(
     fromBlock: BigNumberish,
@@ -817,6 +837,16 @@ export class ClaimUtils extends Contract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    balanceOf(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "balanceOf(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     balanceOfAt(
       fromBlock: BigNumberish,
       userAddress: string,
@@ -1099,6 +1129,16 @@ export class ClaimUtils extends Contract {
   filters: {};
 
   estimateGas: {
+    balanceOf(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "balanceOf(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     balanceOfAt(
       fromBlock: BigNumberish,
       userAddress: string,
@@ -1337,6 +1377,16 @@ export class ClaimUtils extends Contract {
   };
 
   populateTransaction: {
+    balanceOf(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "balanceOf(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     balanceOfAt(
       fromBlock: BigNumberish,
       userAddress: string,
