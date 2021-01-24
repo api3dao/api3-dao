@@ -52,14 +52,14 @@ contract ClaimUtils is StakeUtils {
         external
         // `onlyClaimsManager`
     {
-        claimPayouts.push(Checkpoint(block.number, payoutAmount));
-        claimPayoutReferenceBlocks.push(claimReferenceBlock);
+        // claimPayouts.push(Checkpoint(block.number, payoutAmount));
+        // claimPayoutReferenceBlocks.push(claimReferenceBlock);
 
-        uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
-        uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
-        uint256 totalSharesBurned = payoutAmount * totalSharesNow / totalStakedNow;
-        totalStaked.push(Checkpoint(block.number, totalStakedNow - payoutAmount));
-        totalShares.push(Checkpoint(block.number, totalSharesNow - totalSharesBurned));
+        // uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
+        // uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
+        // uint256 totalSharesBurned = payoutAmount * totalSharesNow / totalStakedNow;
+        // totalStaked.push(Checkpoint(block.number, totalStakedNow - payoutAmount));
+        // totalShares.push(Checkpoint(block.number, totalSharesNow - totalSharesBurned));
 
         api3Token.transfer(msg.sender, payoutAmount);
     }

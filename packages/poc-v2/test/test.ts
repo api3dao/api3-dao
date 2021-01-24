@@ -1,4 +1,5 @@
 import * as hre from 'hardhat'
+// import waffle from '@nomiclabs/hardhat-waffle'
 import { expect } from 'chai'
 import 'mocha'
 import { Api3Token, Api3Pool } from '../typechain'
@@ -34,8 +35,8 @@ describe('contracts', () => {
     expect(allowance).to.equal(100)
     const staker = pool.connect(signer)
     await staker.deposit(accounts[1], 50, accounts[1])
-    const stakeTx = await staker.stake(50)
-    const stakerBalance = await staker.balanceOfAt(stakeTx.blockNumber, accounts[1])
+    await staker.stake(50)
+    const stakerBalance = await staker.balanceOfAt(hre.waffle.provider.blockNumber, accounts[1])
     expect(stakerBalance).to.equal(50)
   })
 })

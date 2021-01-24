@@ -23,8 +23,6 @@ import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 interface TransferUtilsInterface extends ethers.utils.Interface {
   functions: {
     "balanceOfAt(uint256,address)": FunctionFragment;
-    "claimPayoutReferenceBlocks(uint256)": FunctionFragment;
-    "claimPayouts(uint256)": FunctionFragment;
     "claimReleaseReferenceBlocks(uint256)": FunctionFragment;
     "claimReleases(uint256)": FunctionFragment;
     "currentApr()": FunctionFragment;
@@ -51,14 +49,6 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "balanceOfAt",
     values: [BigNumberish, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "claimPayoutReferenceBlocks",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "claimPayouts",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "claimReleaseReferenceBlocks",
@@ -135,14 +125,6 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
 
   decodeFunctionResult(
     functionFragment: "balanceOfAt",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "claimPayoutReferenceBlocks",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "claimPayouts",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -237,30 +219,6 @@ export class TransferUtils extends Contract {
       userAddress: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
-
-    claimPayoutReferenceBlocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    "claimPayoutReferenceBlocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    claimPayouts(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
-
-    "claimPayouts(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
 
     claimReleaseReferenceBlocks(
       arg0: BigNumberish,
@@ -489,30 +447,6 @@ export class TransferUtils extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  claimPayoutReferenceBlocks(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  "claimPayoutReferenceBlocks(uint256)"(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  claimPayouts(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-  >;
-
-  "claimPayouts(uint256)"(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-  >;
-
   claimReleaseReferenceBlocks(
     arg0: BigNumberish,
     overrides?: CallOverrides
@@ -739,30 +673,6 @@ export class TransferUtils extends Contract {
       userAddress: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    claimPayoutReferenceBlocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "claimPayoutReferenceBlocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    claimPayouts(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
-
-    "claimPayouts(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
 
     claimReleaseReferenceBlocks(
       arg0: BigNumberish,
@@ -994,26 +904,6 @@ export class TransferUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    claimPayoutReferenceBlocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "claimPayoutReferenceBlocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    claimPayouts(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "claimPayouts(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     claimReleaseReferenceBlocks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1197,26 +1087,6 @@ export class TransferUtils extends Contract {
     "balanceOfAt(uint256,address)"(
       fromBlock: BigNumberish,
       userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    claimPayoutReferenceBlocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "claimPayoutReferenceBlocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    claimPayouts(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "claimPayouts(uint256)"(
-      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
