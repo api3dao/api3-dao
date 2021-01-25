@@ -5,7 +5,7 @@ export const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       width: "15vw",
-      height: "100vh",
+      height: "132vh",
     },
     bar: {
       display: "flex",

@@ -29,6 +29,14 @@ export const useCommonStyles = makeStyles((theme: Theme) =>
     },
     marginContainer: {
       marginTop: "6%"
+    },
+    titleWithButton: {
+      display: "flex",
+      justifyContent: "space-between"
+    },
+    leftBox: {
+      display: "flex",
+      justifyContent: "flex-end"
     }
   }),
 );

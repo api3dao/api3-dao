@@ -3,7 +3,6 @@ import React, {
   // useEffect 
 } from 'react';
 import { Container, Typography } from '@material-ui/core';
-import InsurancePool from "components/InsurancePool";
 // import Aragon from "services/aragon";
 // import { AragonContext } from "contexts";
 
@@ -11,6 +10,7 @@ import useStyles from "containers/dashboard/styles";
 import useCommonStyles from "styles/common-styles";
 import Carousel from 'react-material-ui-carousel';
 import { Box } from '@material-ui/core';
+import { BalanceContainer, StakingContainer, InsurancePool } from 'components';
 
 function Item(props: any) {
     const commonClasses = useCommonStyles();
@@ -64,6 +64,10 @@ function Dashboard() {
       </div>
       </div>
       <InsurancePool />
+      <div style={{ display: "flex" }}>
+        <BalanceContainer />
+        <StakingContainer />
+      </div>
     </Container>
   );
 }

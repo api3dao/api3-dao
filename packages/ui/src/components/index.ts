@@ -14,6 +14,8 @@ import StakingButton from "components/Staking/StakingButton";
 import Counter from "components/Counter";
 import Logo from "components/Logo";
 import InsurancePool from "components/InsurancePool";
+import BalanceContainer from "components/BalanceContainer";
+import StakingContainer from "components/StakingContainer";
 
 export {
   Navbar,
@@ -35,4 +37,6 @@ export {
   Global,
   Logo,
   InsurancePool,
+  BalanceContainer,
+  StakingContainer
 }
