@@ -3,7 +3,7 @@ const fontFamily = ["Inter", "sans-serif" ].join(',');
 export const typography: any = {
   fontFamily,
   h1: {
-    fontSize: "42px",
+    fontSize: "40px",
     lineHeight: "42px",
   },
   h2: {
@@ -11,7 +11,7 @@ export const typography: any = {
     lineHeight: "133.84%",
   },
   h3: {
-    fontSize: "20px",
+    fontSize: "24px",
     lineHeight: "143%",
   },
   h4: {
@@ -20,7 +20,7 @@ export const typography: any = {
     fontWeight: 600,
   },
   body1: {
-    fontSize: "16px",
+    fontSize: "18px",
     lineHeight: "143%",
   },
   body2: {
@@ -33,6 +33,6 @@ export const typography: any = {
     lineHeight: "28px",
   },
   subtitle2: {
-    fontSize: 14,
+    fontSize: 12,
   },
 };
