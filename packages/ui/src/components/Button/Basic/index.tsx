@@ -7,11 +7,16 @@ import {
 import useStyles from "components/Button/Basic/styles";
 
 function BasicButton(props: any) {
+  const { whiteTheme, onClick, title } = props;
   const classes = useStyles();
+  const buttonColor = whiteTheme ? classes.whiteButton : classes.button;
+  const firstSpan = whiteTheme ? classes.whiteFirstSpan : classes.firstSpan;
   return (
     <Box>
-      <button onClick={props.onClick} className={classes.button}>{props.title}</button>
-      <span className={classes.firstSpan} />
+      <button onClick={onClick} className={buttonColor}>
+        { title }
+      </button>
+      <span className={firstSpan} />
       <span className={classes.secondSpan} />
     </Box>
   );
