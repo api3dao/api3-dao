@@ -16,9 +16,9 @@ export const palette = {
   info: {
     main: "#7CE3CB", // Emerald
   },
-  // background: {
-  //   default: "#030303"
-  // },
+  background: {
+    default: "#030303"
+  },
 };
 
 // White

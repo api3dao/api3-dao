@@ -16,14 +16,14 @@ function Sidebar() {
     <div className={classes.root}>
       <AppBar position="sticky">
         <Toolbar className={classes.bar}>
-        <NavLink activeClassName={classes.bar} to="/dashboard" className={classes.title}>
-          <Typography className={classes.link}>
+        <NavLink activeClassName={classes.activebar} to="/dashboard" className={classes.title}>
+          <Typography variant="body1" className={classes.link}>
             <img src={vector} alt="" className={classes.logo} />
               Dashboard
           </Typography>
           </NavLink>
           <NavLink activeClassName={classes.activebar} to="/proposals" className={classes.title}>
-          <Typography className={classes.link}>
+          <Typography variant="body1" className={classes.link}>
             <img src={vector} alt="" className={classes.logo} />
               Proposals
           </Typography>
