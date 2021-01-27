@@ -10,7 +10,7 @@ describe('TransferUtils', () => {
   let pool: Api3Pool
   let ownerAccount: Api3Token
 
-  const testValues = [1, 2, 3, 10, 100, 1000, 1e18, -1];
+  const testValues = [1, 2, 3, 10, 100, 1000, '1000000000000000000', -1];
   let testTotal = hre.ethers.BigNumber.from(0);
 
   before(async () => {
@@ -44,12 +44,12 @@ describe('TransferUtils', () => {
     expect(poolBalance).to.equal(0);
     expect(userBalance).to.equal(testTotal);
     // deposit
-    let deposited = 0;
+    let deposited = hre.ethers.BigNumber.from(0);
     for (let amount of testValues) {
       const prePoolBalance = poolBalance;
       const preUserBalance = userBalance;
       await pool.deposit(tokenHolder, amount, tokenHolder);
-      deposited += amount;
+      deposited = deposited.add(amount);
       // confirm pool token balance
       poolBalance = await token.balanceOf(pool.address);
       expect(poolBalance).to.equal(prePoolBalance.add(amount));
@@ -79,12 +79,12 @@ describe('TransferUtils', () => {
     expect(poolBalance).to.equal(testTotal);
     expect(userBalance).to.equal(0);
     // deposit
-    let withdrawn = 0;
+    let withdrawn = hre.ethers.BigNumber.from(0);
     for (let amount of testValues) {
       const prePoolBalance = poolBalance;
       const preUserBalance = userBalance;
       await pool.connect(signer1).withdraw(tokenHolder, amount);
-      withdrawn += amount;
+      withdrawn = withdrawn.add(amount);
       // confirm pool token balance
       poolBalance = await token.balanceOf(pool.address);
       expect(poolBalance).to.equal(prePoolBalance.sub(amount));

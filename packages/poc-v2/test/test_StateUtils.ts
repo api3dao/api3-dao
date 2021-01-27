@@ -10,7 +10,7 @@ describe('StateUtils', () => {
   let pool: Api3Pool
   let ownerAccount: Api3Token
 
-  before(async () => {
+  beforeEach(async () => {
     accounts = await hre.waffle.provider.listAccounts()
     const api3TokenFactory = await hre.ethers.getContractFactory("Api3Token")
     token = (await api3TokenFactory.deploy(accounts[0], accounts[0])) as Api3Token
@@ -18,16 +18,19 @@ describe('StateUtils', () => {
     pool = (await api3PoolFactory.deploy(token.address)) as Api3Pool
     const signer0 = hre.waffle.provider.getSigner(0)
     ownerAccount = token.connect(signer0)
+    await ownerAccount.updateMinterStatus(pool.address, true);
   })
 
-  it('Update APR with default parameters', async () => {
+  it('test updateCurrentApr() function', async () => {
     expect(await pool.currentApr()).to.equal(await pool.minApr());
-    const stakeValues = new Map<number, number>([
-      [10e24, 2500000],
-      [1e24, 4750000],
-      [15e24, 7125000],
-      [19e24, 2500000]
+    const stakeValues = new Map<string, number>([
+      ['10000000000000000000000000', 2500000],
+      ['1000000000000000000000000', 4750000],
+      ['1500000000000000000000000', 8787500],
+      ['15000000000000000000000000', 13181250],
+      ['70000000000000000000000000', 75000000]
     ])
+
     // @ts-ignore
     for (let [staked, expectedApr] of stakeValues.entries()) {
       await pool.testUpdateCurrentApr(hre.ethers.BigNumber.from(staked));
@@ -37,6 +40,30 @@ describe('StateUtils', () => {
     }
   })
 
-
+  it('test payReward() function', async () => {
+    const stakeValues = [
+      // [oldStaked, expectedReward, newStaked]
+      ['10000000000000000000000000', '4807692307692310000000', '10004807692307700000000000'],
+      ['1000000000000000000000000', '913461538461539000000', '1000913461538460000000000'],
+      ['1500000000000000000000000', '2534855769230770000000', '1502534855769230000000000'],
+      ['15000000000000000000000000', '38022836538461500000000', '15038022836538500000000000']
+    ]
+    const roundingError = hre.ethers.BigNumber.from('10000000000000000'); // 10^16
+    for (let [oldStaked, expectedReward, newStaked] of stakeValues) {
+      const oldPoolBalance = await token.balanceOf(pool.address);
+      await pool.testPayReward(hre.ethers.BigNumber.from(oldStaked));
+      // check new total staked value
+      const realStakedNow = await pool.getTotalStakedNow();
+      const newStakedBN = hre.ethers.BigNumber.from(newStaked);
+      const stakeDifference = realStakedNow.sub(newStakedBN).abs();
+      expect(stakeDifference).to.be.lte(roundingError);
+      // check that pool balance increased by expected reward amount
+      const newPoolBalance = await token.balanceOf(pool.address);
+      const balanceDifference = newPoolBalance.sub(oldPoolBalance);
+      const expectedRewardBN = hre.ethers.BigNumber.from(expectedReward);
+      const rewardDifference = balanceDifference.sub(expectedRewardBN).abs();
+      expect(rewardDifference).to.be.lte(roundingError);
+    }
+  })
 
 })

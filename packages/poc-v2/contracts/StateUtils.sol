@@ -339,4 +339,15 @@ contract StateUtils {
         updateCurrentApr();
         totalStaked.pop();
     }
+
+    // TODO: delete this function after testing has completed
+    function testPayReward(uint _totalStaked) public {
+        totalStaked.push(Checkpoint(block.number, _totalStaked));
+        payReward();
+    }
+
+    // TODO: delete this function after testing has completed
+    function getTotalStakedNow() public view returns(uint256 stakedNow) {
+        stakedNow = totalStaked[totalStaked.length - 1].value;
+    }
 }
