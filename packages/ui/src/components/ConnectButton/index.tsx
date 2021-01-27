@@ -1,17 +1,11 @@
 import React, { useContext } from "react";
-import {
-  Box,
-  Button,
-} from "@material-ui/core";
+import BasicButton from "components/Button/Basic";
 
 import { Web3 } from "services/web3"
 import { getERC20Tokens } from "services/web3/erc20";
 import { Web3Context, API3Context } from "contexts";
 
-import useStyles from "components/ConnectButton/styles";
-
 function ConnectButton() {
-  const classes = useStyles();
   const web3Context = useContext(Web3Context);
   const api3Context = useContext(API3Context);
 
@@ -23,11 +17,7 @@ function ConnectButton() {
     api3Context.setTokens(tokens);
   }
 
-  return (
-    <Box>
-      <Button onClick={connect} color="secondary" className={classes.button}>Connect Wallet</Button>
-    </Box>
-  );
+  return <BasicButton onClick={connect} title="Connect Wallet" />
 }
 
 export default ConnectButton;

@@ -1,5 +1,6 @@
 import Navbar from "components/Navbar";
 import Sidebar from "components/Navbar/Sidebar";
+import BasicButton from "components/Button/Basic";
 import ConnectButton from "components/ConnectButton";
 import AddressInfo from "components/AddressInfo";
 import { API3Stats, Account, Global, API3InsuranceStats } from "components/API3Stats";
@@ -12,10 +13,14 @@ import VoteProposalButtons from "components/VoteProposalButtons";
 import StakingButton from "components/Staking/StakingButton";
 import Counter from "components/Counter";
 import Logo from "components/Logo";
+import InsurancePool from "components/Insurance/Pool";
+import BalanceContainer from "components/BalanceContainer";
+import StakingContainer from "components/Staking/StakingContainer";
 
 export {
   Navbar,
   Sidebar,
+  BasicButton,
   ConnectButton,
   AddressInfo,
   ProposalModal,
@@ -31,5 +36,7 @@ export {
   Account,
   Global,
   Logo,
-
+  InsurancePool,
+  BalanceContainer,
+  StakingContainer
 }
