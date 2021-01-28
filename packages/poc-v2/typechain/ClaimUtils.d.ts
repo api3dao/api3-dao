@@ -46,6 +46,7 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
     "totalShares(uint256)": FunctionFragment;
     "totalStaked(uint256)": FunctionFragment;
     "unstake()": FunctionFragment;
+    "updateAndGetBalanceOf(address)": FunctionFragment;
     "updateAndGetBalanceOfAt(address,uint256)": FunctionFragment;
     "updateCoeff()": FunctionFragment;
     "updateUserState(address,uint256)": FunctionFragment;
@@ -131,6 +132,10 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "unstake", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "updateAndGetBalanceOf",
+    values: [string]
+  ): string;
   encodeFunctionData(
     functionFragment: "updateAndGetBalanceOfAt",
     values: [string, BigNumberish]
@@ -218,6 +223,10 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "unstake", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "updateAndGetBalanceOf",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "updateAndGetBalanceOfAt",
     data: BytesLike
@@ -477,6 +486,16 @@ export class ClaimUtils extends Contract {
     unstake(overrides?: Overrides): Promise<ContractTransaction>;
 
     "unstake()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     updateAndGetBalanceOfAt(
       userAddress: string,
@@ -770,6 +789,16 @@ export class ClaimUtils extends Contract {
 
   "unstake()"(overrides?: Overrides): Promise<ContractTransaction>;
 
+  updateAndGetBalanceOf(
+    userAddress: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "updateAndGetBalanceOf(address)"(
+    userAddress: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   updateAndGetBalanceOfAt(
     userAddress: string,
     fromBlock: BigNumberish,
@@ -1059,6 +1088,16 @@ export class ClaimUtils extends Contract {
 
     "unstake()"(overrides?: CallOverrides): Promise<void>;
 
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     updateAndGetBalanceOfAt(
       userAddress: string,
       fromBlock: BigNumberish,
@@ -1328,6 +1367,16 @@ export class ClaimUtils extends Contract {
 
     "unstake()"(overrides?: Overrides): Promise<BigNumber>;
 
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
     updateAndGetBalanceOfAt(
       userAddress: string,
       fromBlock: BigNumberish,
@@ -1590,6 +1639,16 @@ export class ClaimUtils extends Contract {
     unstake(overrides?: Overrides): Promise<PopulatedTransaction>;
 
     "unstake()"(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
 
     updateAndGetBalanceOfAt(
       userAddress: string,

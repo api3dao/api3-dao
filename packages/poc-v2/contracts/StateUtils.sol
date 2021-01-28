@@ -310,8 +310,7 @@ contract StateUtils {
     {
         // If we don't require this, the user may vote with shares that are supposed to have been slashed
         // require(users[userAddress].lastStateUpdateTargetBlock >= fromBlock);
-        User memory user = users[userAddress];
-        uint256 shares = getValueAt(user.shares, fromBlock);
+        uint256 shares = getValueAt(users[userAddress].shares, fromBlock);
         return shares;
     }
 
@@ -331,5 +330,9 @@ contract StateUtils {
     {
         updateUserState(userAddress, fromBlock);
         return getValueAt(users[userAddress].shares, fromBlock);
+    }
+
+    function updateAndGetBalanceOf(address userAddress) external returns (uint256) {
+        return this.updateAndGetBalanceOfAt(userAddress, block.number);
     }
 }

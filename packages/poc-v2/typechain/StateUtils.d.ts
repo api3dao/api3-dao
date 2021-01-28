@@ -39,6 +39,7 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     "stakeTarget()": FunctionFragment;
     "totalShares(uint256)": FunctionFragment;
     "totalStaked(uint256)": FunctionFragment;
+    "updateAndGetBalanceOf(address)": FunctionFragment;
     "updateAndGetBalanceOfAt(address,uint256)": FunctionFragment;
     "updateCoeff()": FunctionFragment;
     "updateUserState(address,uint256)": FunctionFragment;
@@ -100,6 +101,10 @@ interface StateUtilsInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "totalStaked",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateAndGetBalanceOf",
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "updateAndGetBalanceOfAt",
@@ -166,6 +171,10 @@ interface StateUtilsInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "totalStaked",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateAndGetBalanceOf",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -354,6 +363,16 @@ export class StateUtils extends Contract {
     ): Promise<
       [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
     >;
+
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     updateAndGetBalanceOfAt(
       userAddress: string,
@@ -562,6 +581,16 @@ export class StateUtils extends Contract {
   ): Promise<
     [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
   >;
+
+  updateAndGetBalanceOf(
+    userAddress: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "updateAndGetBalanceOf(address)"(
+    userAddress: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
 
   updateAndGetBalanceOfAt(
     userAddress: string,
@@ -774,6 +803,16 @@ export class StateUtils extends Contract {
       [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
     >;
 
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     updateAndGetBalanceOfAt(
       userAddress: string,
       fromBlock: BigNumberish,
@@ -965,6 +1004,16 @@ export class StateUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
     updateAndGetBalanceOfAt(
       userAddress: string,
       fromBlock: BigNumberish,
@@ -1142,6 +1191,16 @@ export class StateUtils extends Contract {
     "totalStaked(uint256)"(
       arg0: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     updateAndGetBalanceOfAt(
