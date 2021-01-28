@@ -54,7 +54,7 @@ contract StateUtils {
     // because we know that it was `rewardVestingPeriod` before it will be released.
 
     // VVV These parameters will be governable by the DAO VVV
-    // Percentages are multiplied by 1,000,000.
+    // Percentages are multipl1ied by 1,000,000.
     uint256 public minApr = 2500000; // 2.5%
     uint256 public maxApr = 75000000; // 75%
     uint256 public stakeTarget = 10e6 ether; // 10M API3
@@ -334,5 +334,22 @@ contract StateUtils {
 
     function updateAndGetBalanceOf(address userAddress) external returns (uint256) {
         return this.updateAndGetBalanceOfAt(userAddress, block.number);
+    }
+    // TODO: delete this function after testing has completed
+    function testUpdateCurrentApr(uint _totalStaked) public {
+        totalStaked.push(Checkpoint(block.number, _totalStaked));
+        updateCurrentApr();
+        totalStaked.pop();
+    }
+
+    // TODO: delete this function after testing has completed
+    function testPayReward(uint _totalStaked) public {
+        totalStaked.push(Checkpoint(block.number, _totalStaked));
+        payReward();
+    }
+
+    // TODO: delete this function after testing has completed
+    function getTotalStakedNow() public view returns(uint256 stakedNow) {
+        stakedNow = totalStaked[totalStaked.length - 1].value;
     }
 }
