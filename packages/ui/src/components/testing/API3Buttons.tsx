@@ -5,7 +5,11 @@ import {
 } from "@material-ui/core";
 
 import { API3 } from "services/api3";
-import useStyles from "components/ConnectButton/styles";
+// import { API3ContractAddresses } from "services/api3/addresses";
+import useStyles from "components/testing/styles";
+
+// const { API3Pool } = API3ContractAddresses;
+
 
 function API3Buttons() {
   const classes = useStyles();
@@ -16,38 +20,43 @@ function API3Buttons() {
   }
   
   const deposit = async () => {
-
+    const instance = await API3.getInstance();
+    await instance.deposit(30);
   }
   
   const withdraw = async () => {
-  
+    const instance = await API3.getInstance();
+    await instance.withdrawal(1);
   }
   
   const stake = async () => {
-  
+    const instance = await API3.getInstance();
+    await instance.stake(1);
   }
   
   const unstake = async () => {
+    const instance = await API3.getInstance();
+    await instance.unstake()
   }
   
   const delegate = async () => {
-  
+    // const instance = await API3.getInstance();
   }
   
   const undelegate = async () => {
-  
+    // const instance = await API3.getInstance();
   }
   
   const vote = async () => {
-  
+  // const instance = await API3.getInstance();
   }
   
   const unvote = async () => {
-  
+    // const instance = await API3.getInstance();
   }
   
   const insurancepool = async () => {
-  
+    // const instance = await API3.getInstance();
   }
 
   return (

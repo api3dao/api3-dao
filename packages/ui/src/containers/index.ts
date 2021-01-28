@@ -6,6 +6,7 @@ import DAOGov from "containers/dao-gov";
 import Staking from "containers/staking";
 import ProposalDetails from "containers/proposal/details";
 import Landing from "containers/landing";
+import Testing from "containers/testing";
 
 export {
   AppRouter,
@@ -16,5 +17,6 @@ export {
   Staking,
   ProposalDetails,
   Landing,
+  Testing,
 
 }

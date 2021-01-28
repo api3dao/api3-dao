@@ -10,12 +10,16 @@ import {
   Staking,
   ProposalDetails,
   Landing,
+  Testing,
 
 } from "containers";
 
 function AppRouter() {
   return (
       <Switch>
+      <Route path={"/testing"}>
+        <Testing  />
+      </Route>
         <Route path={"/proposals"}>
           <DAOGov />
         </Route>
