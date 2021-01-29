@@ -28,7 +28,6 @@ interface StakeUtilsInterface extends ethers.utils.Interface {
     "claimReleases(uint256)": FunctionFragment;
     "currentApr()": FunctionFragment;
     "deposit(address,uint256,address)": FunctionFragment;
-    "getTotalStakedNow()": FunctionFragment;
     "locks(uint256)": FunctionFragment;
     "maxApr()": FunctionFragment;
     "minApr()": FunctionFragment;
@@ -41,10 +40,10 @@ interface StakeUtilsInterface extends ethers.utils.Interface {
     "scheduleUnstake(uint256)": FunctionFragment;
     "stake(uint256)": FunctionFragment;
     "stakeTarget()": FunctionFragment;
-    "testPayReward(uint256)": FunctionFragment;
-    "testUpdateCurrentApr(uint256)": FunctionFragment;
     "totalShares(uint256)": FunctionFragment;
     "totalStaked(uint256)": FunctionFragment;
+    "totalSupply()": FunctionFragment;
+    "totalSupplyAt(uint256)": FunctionFragment;
     "unstake()": FunctionFragment;
     "updateAndGetBalanceOf(address)": FunctionFragment;
     "updateAndGetBalanceOfAt(address,uint256)": FunctionFragment;
@@ -74,10 +73,6 @@ interface StakeUtilsInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "deposit",
     values: [string, BigNumberish, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getTotalStakedNow",
-    values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "locks", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "maxApr", values?: undefined): string;
@@ -116,19 +111,19 @@ interface StakeUtilsInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "testPayReward",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "testUpdateCurrentApr",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "totalShares",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "totalStaked",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalSupply",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalSupplyAt",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "unstake", values?: undefined): string;
@@ -169,10 +164,6 @@ interface StakeUtilsInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "currentApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getTotalStakedNow",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "locks", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "minApr", data: BytesLike): Result;
@@ -210,19 +201,19 @@ interface StakeUtilsInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "testPayReward",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "testUpdateCurrentApr",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "totalShares",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "totalStaked",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSupply",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSupplyAt",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "unstake", data: BytesLike): Result;
@@ -326,14 +317,6 @@ export class StakeUtils extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    getTotalStakedNow(
-      overrides?: CallOverrides
-    ): Promise<[BigNumber] & { stakedNow: BigNumber }>;
-
-    "getTotalStakedNow()"(
-      overrides?: CallOverrides
-    ): Promise<[BigNumber] & { stakedNow: BigNumber }>;
-
     locks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -432,26 +415,6 @@ export class StakeUtils extends Contract {
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    testPayReward(
-      _totalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    "testPayReward(uint256)"(
-      _totalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    testUpdateCurrentApr(
-      _totalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    "testUpdateCurrentApr(uint256)"(
-      _totalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
     totalShares(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -479,6 +442,20 @@ export class StakeUtils extends Contract {
     ): Promise<
       [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
     >;
+
+    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     unstake(overrides?: Overrides): Promise<ContractTransaction>;
 
@@ -622,10 +599,6 @@ export class StakeUtils extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  getTotalStakedNow(overrides?: CallOverrides): Promise<BigNumber>;
-
-  "getTotalStakedNow()"(overrides?: CallOverrides): Promise<BigNumber>;
-
   locks(
     arg0: BigNumberish,
     overrides?: CallOverrides
@@ -724,26 +697,6 @@ export class StakeUtils extends Contract {
 
   "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  testPayReward(
-    _totalStaked: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  "testPayReward(uint256)"(
-    _totalStaked: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  testUpdateCurrentApr(
-    _totalStaked: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  "testUpdateCurrentApr(uint256)"(
-    _totalStaked: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
   totalShares(
     arg0: BigNumberish,
     overrides?: CallOverrides
@@ -771,6 +724,20 @@ export class StakeUtils extends Contract {
   ): Promise<
     [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
   >;
+
+  totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  totalSupplyAt(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "totalSupplyAt(uint256)"(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   unstake(overrides?: Overrides): Promise<ContractTransaction>;
 
@@ -917,10 +884,6 @@ export class StakeUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    getTotalStakedNow(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "getTotalStakedNow()"(overrides?: CallOverrides): Promise<BigNumber>;
-
     locks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1016,26 +979,6 @@ export class StakeUtils extends Contract {
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    testPayReward(
-      _totalStaked: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "testPayReward(uint256)"(
-      _totalStaked: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    testUpdateCurrentApr(
-      _totalStaked: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "testUpdateCurrentApr(uint256)"(
-      _totalStaked: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     totalShares(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1063,6 +1006,20 @@ export class StakeUtils extends Contract {
     ): Promise<
       [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
     >;
+
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     unstake(overrides?: CallOverrides): Promise<void>;
 
@@ -1208,10 +1165,6 @@ export class StakeUtils extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    getTotalStakedNow(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "getTotalStakedNow()"(overrides?: CallOverrides): Promise<BigNumber>;
-
     locks(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "locks(uint256)"(
@@ -1296,26 +1249,6 @@ export class StakeUtils extends Contract {
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    testPayReward(
-      _totalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    "testPayReward(uint256)"(
-      _totalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    testUpdateCurrentApr(
-      _totalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    "testUpdateCurrentApr(uint256)"(
-      _totalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
     totalShares(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1333,6 +1266,20 @@ export class StakeUtils extends Contract {
 
     "totalStaked(uint256)"(
       arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1459,12 +1406,6 @@ export class StakeUtils extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    getTotalStakedNow(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    "getTotalStakedNow()"(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     locks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1561,26 +1502,6 @@ export class StakeUtils extends Contract {
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    testPayReward(
-      _totalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    "testPayReward(uint256)"(
-      _totalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    testUpdateCurrentApr(
-      _totalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    "testUpdateCurrentApr(uint256)"(
-      _totalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
     totalShares(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1598,6 +1519,20 @@ export class StakeUtils extends Contract {
 
     "totalStaked(uint256)"(
       arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

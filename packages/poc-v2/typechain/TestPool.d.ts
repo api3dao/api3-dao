@@ -20,7 +20,7 @@ import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 
-interface Api3PoolInterface extends ethers.utils.Interface {
+interface TestPoolInterface extends ethers.utils.Interface {
   functions: {
     "balanceOf(address)": FunctionFragment;
     "balanceOfAt(uint256,address)": FunctionFragment;
@@ -48,6 +48,8 @@ interface Api3PoolInterface extends ethers.utils.Interface {
     "setUpdateCoeff(uint256)": FunctionFragment;
     "stake(uint256)": FunctionFragment;
     "stakeTarget()": FunctionFragment;
+    "testPayReward(uint256)": FunctionFragment;
+    "testUpdateCurrentApr(uint256,uint256,uint256)": FunctionFragment;
     "totalShares(uint256)": FunctionFragment;
     "totalStaked(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
@@ -151,6 +153,14 @@ interface Api3PoolInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "stakeTarget",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "testPayReward",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "testUpdateCurrentApr",
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "totalShares",
@@ -274,6 +284,14 @@ interface Api3PoolInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "testPayReward",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "testUpdateCurrentApr",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "totalShares",
     data: BytesLike
   ): Result;
@@ -330,7 +348,7 @@ interface Api3PoolInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "newUpdateCoeff"): EventFragment;
 }
 
-export class Api3Pool extends Contract {
+export class TestPool extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -341,7 +359,7 @@ export class Api3Pool extends Contract {
   removeAllListeners(eventName: EventFilter | string): this;
   removeListener(eventName: any, listener: Listener): this;
 
-  interface: Api3PoolInterface;
+  interface: TestPoolInterface;
 
   functions: {
     balanceOf(
@@ -597,6 +615,30 @@ export class Api3Pool extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    testPayReward(
+      deltaTotalStaked: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "testPayReward(uint256)"(
+      deltaTotalStaked: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    testUpdateCurrentApr(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "testUpdateCurrentApr(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     totalShares(
       arg0: BigNumberish,
@@ -1010,6 +1052,30 @@ export class Api3Pool extends Contract {
 
   "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+  testPayReward(
+    deltaTotalStaked: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "testPayReward(uint256)"(
+    deltaTotalStaked: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  testUpdateCurrentApr(
+    _totalStaked: BigNumberish,
+    _stakeTarget: BigNumberish,
+    _currentApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "testUpdateCurrentApr(uint256,uint256,uint256)"(
+    _totalStaked: BigNumberish,
+    _stakeTarget: BigNumberish,
+    _currentApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   totalShares(
     arg0: BigNumberish,
     overrides?: CallOverrides
@@ -1413,6 +1479,30 @@ export class Api3Pool extends Contract {
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    testPayReward(
+      deltaTotalStaked: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "testPayReward(uint256)"(
+      deltaTotalStaked: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    testUpdateCurrentApr(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "testUpdateCurrentApr(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     totalShares(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1812,6 +1902,30 @@ export class Api3Pool extends Contract {
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    testPayReward(
+      deltaTotalStaked: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "testPayReward(uint256)"(
+      deltaTotalStaked: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    testUpdateCurrentApr(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "testUpdateCurrentApr(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
     totalShares(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -2180,6 +2294,30 @@ export class Api3Pool extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    testPayReward(
+      deltaTotalStaked: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "testPayReward(uint256)"(
+      deltaTotalStaked: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    testUpdateCurrentApr(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "testUpdateCurrentApr(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
 
     totalShares(
       arg0: BigNumberish,
