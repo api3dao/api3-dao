@@ -3,7 +3,6 @@ pragma solidity 0.6.12;
 
 import "./StateUtils.sol";
 
-
 contract TransferUtils is StateUtils {
     constructor(address api3TokenAddress)
         StateUtils(api3TokenAddress)

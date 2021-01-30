@@ -1,4 +1,6 @@
 yarn-error.log
 node_modules/
 .DS_Store
+artifacts/
+cache/
 playground

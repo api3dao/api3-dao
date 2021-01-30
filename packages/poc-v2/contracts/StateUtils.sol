@@ -2,7 +2,7 @@
 pragma solidity 0.6.12;
 
 import "./auxiliary/interfaces/IApi3Token.sol";
-
+import "hardhat/console.sol";
 
 contract StateUtils {
     struct Checkpoint
@@ -35,11 +35,11 @@ contract StateUtils {
     Checkpoint[] public totalShares; // Always up to date
     Checkpoint[] public totalStaked; // Always up to date
 
-    // `claimPayouts` keeps the block the claim is paid out and its amount
-    Checkpoint[] public claimPayouts;
-    // `claimPayoutReferenceBlocks` maps to `claimPayouts` one-to-one and keeps the
-    // block number the claim was made
-    uint256[] public claimPayoutReferenceBlocks;
+    // // `claimPayouts` keeps the block the claim is paid out and its amount
+    // Checkpoint[] public claimPayouts;
+    // // `claimPayoutReferenceBlocks` maps to `claimPayouts` one-to-one and keeps the
+    // // block number the claim was made
+    // uint256[] public claimPayoutReferenceBlocks;
 
     // `locks` keeps both reward locks and claim locks
     Checkpoint[] public locks;
@@ -150,92 +150,109 @@ contract StateUtils {
         {
             payReward();
         }
-
-        uint256 userShares = users[userAddress].shares[users[userAddress].shares.length - 1].value;
-        uint256 locked = users[userAddress].locked;
+        User memory user = users[userAddress];
+        uint256 userShares = getValueAt(user.shares, block.number);
+        uint256 locked = user.locked;
       
         // We should not process events with `fromBlock` of value `targetBlock`. Otherwise,
         // if `targetBlock` is `block.number`, we may miss some of the events depending on tx order.
         // Since we are not processing the events on `targetBlock`, we need to start processing
         // events starting from `lastStateUpdateTargetBlock - 1`
-        uint256 lastStateUpdateTargetBlock = users[userAddress].lastStateUpdateTargetBlock;
+        uint256 lastStateUpdateTargetBlock = user.lastStateUpdateTargetBlock;
         if (lastStateUpdateTargetBlock == 0)
         {
             lastStateUpdateTargetBlock = 1;
         }
 
-        // We have to record all `shares` checkpoints caused by the claim payouts because
-        // these values are used to calculate the voting power a user will have at a point in
-        // time. Therefore, we can't just calculate the final value and do a single write.
-        // Also, claim payouts need to be processed before locks/releases because the latter depend
-        // on user `shares`, which is updated by claim payouts.
-        for (
-            uint256 ind = lastStateUpdateTargetBlock - 1 < claimPayouts[0].fromBlock ? 0 : getIndexOf(claimPayouts, lastStateUpdateTargetBlock - 1) + 1;
-            ind < claimPayouts.length && claimPayouts[ind].fromBlock < targetBlock;
-            ind++
-        )
-        {
-            uint256 claimPayoutBlock = claimPayouts[ind].fromBlock;
-            uint256 totalStakedAtPayout = getValueAt(totalStaked, claimPayoutBlock);
-            uint256 totalSharesAtPayout = getValueAt(totalShares, claimPayoutBlock);
-            uint256 totalSharesBurned = claimPayouts[ind].value * totalSharesAtPayout / totalStakedAtPayout;
+        // // We have to record all `shares` checkpoints caused by the claim payouts because
+        // // these values are used to calculate the voting power a user will have at a point in
+        // // time. Therefore, we can't just calculate the final value and do a single write.
+        // // Also, claim payouts need to be processed before locks/releases because the latter depend
+        // // on user `shares`, which is updated by claim payouts.
+        // uint256 ind;
+        // if(lastStateUpdateTargetBlock - 1 < claimPayouts[0].fromBlock) {
+        //     ind = 0;
+        // } else {
+        //     ind = getIndexOf(claimPayouts, lastStateUpdateTargetBlock - 1) + 1;
+        // }
+        // for (
+        //     uint256 _ind = ind;
+        //     ind < claimPayouts.length && claimPayouts[ind].fromBlock < targetBlock;
+        //     ind++
+        // )
+        // {
+        //     uint256 claimPayoutBlock = claimPayouts[ind].fromBlock;
+        //     uint256 totalStakedAtPayout = getValueAt(totalStaked, claimPayoutBlock);
+        //     uint256 totalSharesAtPayout = getValueAt(totalShares, claimPayoutBlock);
+        //     uint256 totalSharesBurned = claimPayouts[ind].value * totalSharesAtPayout / totalStakedAtPayout;
             
-            uint256 claimReferenceBlock = claimPayoutReferenceBlocks[ind];
-            uint256 totalSharesAtClaim = getValueAt(totalShares, claimReferenceBlock);
-            uint256 userSharesAtClaim = getValueAt(users[userAddress].shares, claimReferenceBlock);
+        //     uint256 claimReferenceBlock = claimPayoutReferenceBlocks[ind];
+        //     uint256 totalSharesAtClaim = getValueAt(totalShares, claimReferenceBlock);
+        //     uint256 userSharesAtClaim = getValueAt(users[userAddress].shares, claimReferenceBlock);
 
-            uint256 userSharesBurned = totalSharesBurned * userSharesAtClaim / totalSharesAtClaim;
-            userShares -= userSharesBurned;
-            users[userAddress].shares.push(Checkpoint(claimPayoutBlock, userShares));
-        }
+        //     uint256 userSharesBurned = totalSharesBurned * userSharesAtClaim / totalSharesAtClaim;
+        //     userShares -= userSharesBurned;
+        //     users[userAddress].shares.push(Checkpoint(claimPayoutBlock, userShares));
+        // }
 
         // ... In contrast, `locked` doesn't need to be kept as checkpoints, so we can just
         // calculate the final value and write that once, because we only care about its
         // value at the time of the withdrawal (i.e., at `block.number`).
-        for (
-            uint256 ind = lastStateUpdateTargetBlock - 1 < locks[0].fromBlock ? 0 : getIndexOf(locks, lastStateUpdateTargetBlock - 1) + 1;
-            ind < locks.length && locks[ind].fromBlock < targetBlock;
-            ind++
-        )
-        {
-            Checkpoint storage lock = locks[ind];
-            uint256 totalSharesAtBlock = getValueAt(totalShares, lock.fromBlock);
-            uint256 userSharesAtBlock = getValueAt(users[userAddress].shares, lock.fromBlock);
-            locked += lock.value * userSharesAtBlock / totalSharesAtBlock;
-        }
 
-        for (
-            uint256 ind = lastStateUpdateTargetBlock - 1 < claimReleases[0].fromBlock ? 0 : getIndexOf(claimReleases, lastStateUpdateTargetBlock - 1) + 1;
-            ind < claimReleases.length && claimReleases[ind].fromBlock < targetBlock;
-            ind++
-        )
-        {
-            uint256 claimReleaseReferenceBlock = claimReleaseReferenceBlocks[ind];
-            uint256 totalSharesThen = getValueAt(totalShares, claimReleaseReferenceBlock);
-            uint256 userSharesThen = getValueAt(users[userAddress].shares, claimReleaseReferenceBlock);
-            // The below will underflow in some cases, cap at 0
-            locked -= claimReleases[ind].value * userSharesThen / totalSharesThen;
-        }
+        Checkpoint[] memory _totalShares = totalShares;
 
-        for (
-            uint256 ind = lastStateUpdateTargetBlock - 1 < rewardReleases[0].fromBlock ? 0 : getIndexOf(rewardReleases, lastStateUpdateTargetBlock - 1) + 1;
-            ind < rewardReleases.length && rewardReleases[ind].fromBlock < targetBlock;
-            ind++
-        )
-        {
-            uint256 rewardReferenceBlock = rewardReleases[ind].fromBlock - rewardVestingPeriod;
-            uint256 totalSharesThen = getValueAt(totalShares, rewardReferenceBlock);
-            uint256 userSharesThen = getValueAt(users[userAddress].shares, rewardReferenceBlock);
-            // The below will underflow in some cases, cap at 0
-            locked -= rewardReleases[ind].value * userSharesThen / totalSharesThen;
+        if (locks.length > 0) {
+            Checkpoint[] memory _locks = locks;
+            for (
+                uint256 ind = lastStateUpdateTargetBlock - 1 < _locks[0].fromBlock ? 0 : getIndexOf(_locks, lastStateUpdateTargetBlock - 1) + 1;
+                ind < _locks.length && _locks[ind].fromBlock < targetBlock;
+                ind++
+            )
+            {
+                Checkpoint memory lock = _locks[ind];
+                uint256 totalSharesAtBlock = getValueAt(_totalShares, lock.fromBlock);
+                uint256 userSharesAtBlock = getValueAt(user.shares, lock.fromBlock);
+                locked += lock.value * userSharesAtBlock / totalSharesAtBlock;
+            }
         }
+        
+
+        // for (
+        //     uint256 ind = lastStateUpdateTargetBlock - 1 < claimReleases[0].fromBlock ? 0 : getIndexOf(claimReleases, lastStateUpdateTargetBlock - 1) + 1;
+        //     ind < claimReleases.length && claimReleases[ind].fromBlock < targetBlock;
+        //     ind++
+        // )
+        // {
+        //     uint256 claimReleaseReferenceBlock = claimReleaseReferenceBlocks[ind];
+        //     uint256 totalSharesThen = getValueAt(totalShares, claimReleaseReferenceBlock);
+        //     uint256 userSharesThen = getValueAt(users[userAddress].shares, claimReleaseReferenceBlock);
+        //     // The below will underflow in some cases, cap at 0
+        //     locked -= claimReleases[ind].value * userSharesThen / totalSharesThen;
+        // }
+
+        if (rewardReleases.length > 0) {
+            Checkpoint[] memory _rewardReleases = rewardReleases;
+            for (
+                uint256 ind = lastStateUpdateTargetBlock - 1 < _rewardReleases[0].fromBlock ? 0 : getIndexOf(_rewardReleases, lastStateUpdateTargetBlock - 1) + 1;
+                ind < _rewardReleases.length && _rewardReleases[ind].fromBlock < targetBlock;
+                ind++
+            )
+            {
+                uint256 rewardReferenceBlock = _rewardReleases[ind].fromBlock - rewardVestingPeriod;
+                uint256 totalSharesThen = getValueAt(_totalShares, rewardReferenceBlock);
+                uint256 userSharesThen = getValueAt(user.shares, rewardReferenceBlock);
+                // The below will underflow in some cases, cap at 0
+                locked -= _rewardReleases[ind].value * userSharesThen / totalSharesThen;
+            }
+        }
+        
 
         users[userAddress].locked = locked;
         users[userAddress].lastStateUpdateTargetBlock = targetBlock;
     }
 
     // From https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
-    function getValueAt(Checkpoint[] storage checkpoints, uint _block) view internal returns (uint) {
+    function getValueAt(Checkpoint[] memory checkpoints, uint _block) view internal returns (uint) {
         if (checkpoints.length == 0)
             return 0;
 
@@ -260,7 +277,7 @@ contract StateUtils {
     }
 
     // Extracted from `getValueAt()`
-    function getIndexOf(Checkpoint[] storage checkpoints, uint _block) view internal returns (uint) {
+    function getIndexOf(Checkpoint[] memory checkpoints, uint _block) view internal returns (uint) {
         // Repeating the shortcut
         if (_block >= checkpoints[checkpoints.length-1].fromBlock)
             return checkpoints.length-1;
@@ -292,8 +309,14 @@ contract StateUtils {
         returns(uint256)
     {
         // If we don't require this, the user may vote with shares that are supposed to have been slashed
-        require(users[userAddress].lastStateUpdateTargetBlock >= fromBlock);
-        return getValueAt(users[userAddress].shares, fromBlock);
+        // require(users[userAddress].lastStateUpdateTargetBlock >= fromBlock);
+        User memory user = users[userAddress];
+        uint256 shares = getValueAt(user.shares, fromBlock);
+        return shares;
+    }
+
+    function balanceOf(address userAddress) external view returns (uint256) {
+        return this.balanceOfAt(block.number, userAddress);
     }
 
     // Getters that will be used to populate the dashboard etc. should be preceded
