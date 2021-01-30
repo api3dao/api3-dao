@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -59,6 +70,7 @@ var hre = __importStar(require("hardhat"));
 require("mocha");
 var ethers_1 = require("ethers");
 var test_config_1 = require("../test_config");
+var helpers_1 = require("../scripts/helpers");
 var tokenDigits = ethers_1.BigNumber.from('1000000000000000000');
 var paramDigits = ethers_1.BigNumber.from('1000000');
 describe('StateUtils', function () {
@@ -66,6 +78,7 @@ describe('StateUtils', function () {
     var token;
     var pool;
     var ownerAccount;
+    // let expectedValues: ExpectedResults[]
     beforeEach(function () { return __awaiter(void 0, void 0, void 0, function () {
         var api3TokenFactory, testPoolFactory, signer0;
         return __generator(this, function (_a) {
@@ -95,73 +108,57 @@ describe('StateUtils', function () {
         });
     }); });
     it('update APR', function () { return __awaiter(void 0, void 0, void 0, function () {
-        var minApr, maxApr, sensitivity;
+        var expectedValues;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, pool.minApr()];
-                case 1:
-                    minApr = _a.sent();
-                    return [4 /*yield*/, pool.maxApr()];
-                case 2:
-                    maxApr = _a.sent();
-                    return [4 /*yield*/, pool.updateCoeff()
-                        // expect(await pool.currentApr()).to.equal(minApr);
-                    ];
-                case 3:
-                    sensitivity = _a.sent();
+                case 0: return [4 /*yield*/, helpers_1.calculateExpected(pool)
+                    // console.log(JSON.parse(JSON.stringify(expectedValues)))
                     // expect(await pool.currentApr()).to.equal(minApr);
-                    test_config_1.testCases.forEach(function (test, index) { return __awaiter(void 0, void 0, void 0, function () {
-                        var staked, target, apr, delta, deltaPercent, aprUpdate, nextExpectedApr, waitForApr;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    console.log(index);
-                                    staked = test.staked, target = test.target, apr = test.apr;
-                                    delta = target.sub(staked);
-                                    deltaPercent = delta.mul(100000000).div(target);
-                                    aprUpdate = deltaPercent.mul(sensitivity).div(paramDigits);
-                                    console.log('Update ' + aprUpdate);
-                                    nextExpectedApr = apr.mul(aprUpdate.add(100000000)).div(100000000);
-                                    console.log('Next ' + nextExpectedApr);
-                                    if (nextExpectedApr > maxApr) {
-                                        console.log(nextExpectedApr > maxApr);
-                                        nextExpectedApr = maxApr;
+                ];
+                case 1:
+                    expectedValues = _a.sent();
+                    // console.log(JSON.parse(JSON.stringify(expectedValues)))
+                    // expect(await pool.currentApr()).to.equal(minApr);
+                    return [4 /*yield*/, Promise.all(test_config_1.testCases.map(function (_a, index) {
+                            var staked = _a.staked, target = _a.target, apr = _a.apr;
+                            return __awaiter(void 0, void 0, void 0, function () {
+                                var result, resString, testResults;
+                                return __generator(this, function (_b) {
+                                    switch (_b.label) {
+                                        case 0: return [4 /*yield*/, pool.testUpdateCurrentApr(staked, target, apr)];
+                                        case 1:
+                                            _b.sent();
+                                            return [4 /*yield*/, pool.currentApr()];
+                                        case 2:
+                                            result = _b.sent();
+                                            console.log(result);
+                                            resString = result.toString();
+                                            testResults = __assign(__assign({}, expectedValues[index]), { result: resString });
+                                            console.log(JSON.parse(JSON.stringify(testResults)));
+                                            return [2 /*return*/];
                                     }
-                                    else if (nextExpectedApr < minApr) {
-                                        nextExpectedApr = minApr;
-                                    }
-                                    console.log('Expected ' + nextExpectedApr);
-                                    return [4 /*yield*/, pool.testUpdateCurrentApr(staked, target, apr)];
-                                case 1:
-                                    _a.sent();
-                                    waitForApr = function () { return __awaiter(void 0, void 0, void 0, function () {
-                                        var result;
-                                        return __generator(this, function (_a) {
-                                            switch (_a.label) {
-                                                case 0: return [4 /*yield*/, pool.currentApr()];
-                                                case 1:
-                                                    result = _a.sent();
-                                                    console.log('Result ' + result + '/n/n');
-                                                    return [2 /*return*/, result];
-                                            }
-                                        });
-                                    }); };
-                                    setTimeout(function () { return __awaiter(void 0, void 0, void 0, function () {
-                                        var result;
-                                        return __generator(this, function (_a) {
-                                            switch (_a.label) {
-                                                case 0: return [4 /*yield*/, waitForApr()];
-                                                case 1:
-                                                    result = _a.sent();
-                                                    console.log(result);
-                                                    return [2 /*return*/];
-                                            }
-                                        });
-                                    }); }, 5000);
-                                    return [2 /*return*/];
-                            }
-                        });
-                    }); });
+                                });
+                            });
+                        }))
+                        // const stakeValues = new Map<string, number>([
+                        //   ['10000000000000000000000000', 2500000],
+                        //   ['1000000000000000000000000', 4750000],
+                        //   ['1500000000000000000000000', 8787500],
+                        //   ['15000000000000000000000000', 13181250],
+                        //   ['70000000000000000000000000', 75000000]
+                        // ])
+                        // // @ts-ignore
+                        // for (let [staked, expectedApr] of stakeValues.entries()) {
+                        //   await pool.testUpdateCurrentApr(hre.ethers.BigNumber.from(staked));
+                        //   expect(await pool.currentApr()).to.be.gte(await pool.minApr());
+                        //   expect(await pool.currentApr()).to.be.lte(await pool.maxApr());
+                        //   expect(await pool.currentApr()).to.equal(expectedApr);
+                        // }
+                    ];
+                case 2:
+                    // console.log(JSON.parse(JSON.stringify(expectedValues)))
+                    // expect(await pool.currentApr()).to.equal(minApr);
+                    _a.sent();
                     return [2 /*return*/];
             }
         });

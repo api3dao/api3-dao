@@ -37,80 +37,60 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 exports.calculateExpected = void 0;
-var hre = require("hardhat");
 var test_config_1 = require("../test_config");
-var fs_1 = require("fs");
-var calculateExpected = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var accounts, api3TokenFactory, token, testPoolFactory, pool, signer0, ownerAccount, minApr, maxApr, sensitivity, output;
+var calculateExpected = function (pool) { return __awaiter(void 0, void 0, void 0, function () {
+    var minApr, maxApr, sensitivity, output, results;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, hre.waffle.provider.listAccounts()];
+            case 0: return [4 /*yield*/, pool.minApr()];
             case 1:
-                accounts = _a.sent();
-                return [4 /*yield*/, hre.ethers.getContractFactory("Api3Token")];
-            case 2:
-                api3TokenFactory = _a.sent();
-                return [4 /*yield*/, api3TokenFactory.deploy(accounts[0], accounts[0])];
-            case 3:
-                token = (_a.sent());
-                return [4 /*yield*/, hre.ethers.getContractFactory("TestPool")];
-            case 4:
-                testPoolFactory = _a.sent();
-                return [4 /*yield*/, testPoolFactory.deploy(token.address)];
-            case 5:
-                pool = (_a.sent());
-                signer0 = hre.waffle.provider.getSigner(0);
-                ownerAccount = token.connect(signer0);
-                return [4 /*yield*/, ownerAccount.updateMinterStatus(pool.address, true)];
-            case 6:
-                _a.sent();
-                return [4 /*yield*/, pool.minApr()];
-            case 7:
                 minApr = _a.sent();
                 return [4 /*yield*/, pool.maxApr()];
-            case 8:
+            case 2:
                 maxApr = _a.sent();
                 return [4 /*yield*/, pool.updateCoeff()
                     // expect(await pool.currentApr()).to.equal(minApr);
                 ];
-            case 9:
+            case 3:
                 sensitivity = _a.sent();
                 output = [];
-                test_config_1.testCases.forEach(function (test, index) { return __awaiter(void 0, void 0, void 0, function () {
-                    var staked, target, apr, delta, deltaPercent, aprUpdate, nextApr, nextExpectedApr;
-                    return __generator(this, function (_a) {
-                        console.log(index);
-                        staked = test.staked, target = test.target, apr = test.apr;
-                        delta = target.sub(staked);
-                        deltaPercent = delta.mul(100000000).div(target);
-                        aprUpdate = deltaPercent.mul(sensitivity).div(1000000);
-                        console.log('Update ' + aprUpdate);
-                        nextApr = apr.mul(aprUpdate.add(100000000)).div(100000000);
-                        nextExpectedApr = nextApr;
-                        if (nextApr > maxApr) {
-                            nextExpectedApr = maxApr;
-                        }
-                        else if (nextApr < minApr) {
-                            nextExpectedApr = minApr;
-                        }
-                        output.push({
-                            staked: staked,
-                            target: target,
-                            apr: apr,
-                            update: aprUpdate,
-                            calculated: nextApr,
-                            expected: nextExpectedApr
+                return [4 /*yield*/, Promise.all(test_config_1.testCases.map(function (test, index) { return __awaiter(void 0, void 0, void 0, function () {
+                        var staked, target, apr, delta, deltaPercent, aprUpdate, nextApr, nextExpectedApr, result;
+                        return __generator(this, function (_a) {
+                            staked = test.staked, target = test.target, apr = test.apr;
+                            delta = target.sub(staked);
+                            deltaPercent = delta.mul(100000000).div(target);
+                            aprUpdate = deltaPercent.mul(sensitivity).div(1000000);
+                            nextApr = apr.mul(aprUpdate.add(100000000)).div(100000000);
+                            nextExpectedApr = nextApr;
+                            if (nextApr > maxApr) {
+                                nextExpectedApr = maxApr;
+                            }
+                            else if (nextApr < minApr) {
+                                nextExpectedApr = minApr;
+                            }
+                            result = {
+                                staked: staked.toString(),
+                                target: target.toString(),
+                                apr: apr.toString(),
+                                update: aprUpdate.toString(),
+                                calculated: nextApr.toString(),
+                                expected: nextExpectedApr.toString()
+                            };
+                            console.log(JSON.parse(JSON.stringify(result)));
+                            return [2 /*return*/, result];
                         });
-                        return [2 /*return*/];
-                    });
-                }); });
-                fs_1.writeFile('./calculated.json', JSON.parse(JSON.stringify(output)), function (err) {
-                    if (err) {
-                        console.log(err);
-                    }
-                });
-                return [2 /*return*/];
+                    }); }))];
+            case 4:
+                results = _a.sent();
+                console.log(JSON.parse(JSON.stringify(results)));
+                // writeFile('./calculated.json', JSON.stringify(output), (err) => {
+                //     console.log('callback')
+                //     if (err) { console.log(err) }
+                // })
+                return [2 /*return*/, results];
         }
     });
 }); };
 exports.calculateExpected = calculateExpected;
+// calculateExpected()

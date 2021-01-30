@@ -90,8 +90,6 @@ contract StateUtils {
         if (stakeTarget < totalStakedNow) {
             currentApr = minApr;
             return;
-        } else if (currentApr == maxApr) {
-            return;
         }
 
         uint256 deltaAbsolute = totalStakedNow < stakeTarget
@@ -104,18 +102,13 @@ contract StateUtils {
         console.log('CONTRACT_APR_UPDATE');
         console.log(aprUpdate);
 
-        currentApr = totalStakedNow < stakeTarget
-            ? currentApr.mul(aprUpdate.add(hundredPercent)).div(hundredPercent) : currentApr.mul(hundredPercent.sub(aprUpdate)).div(hundredPercent);
+        currentApr = currentApr.mul(aprUpdate.add(hundredPercent)).div(hundredPercent);
         console.log('CONTRACT_BELOW_TARGET');
         console.log(totalStakedNow < stakeTarget);
         console.log('CONTRACT_APR_CALC');
         console.log(currentApr);
         
-        if (currentApr < minApr)
-        {
-            currentApr = minApr;
-        }
-        else if (currentApr > maxApr)
+        if (currentApr > maxApr)
         {
             currentApr = maxApr;
         }

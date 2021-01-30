@@ -4,6 +4,7 @@ import 'mocha'
 import { Api3Token, TestPool } from '../typechain'
 import { BigNumber } from 'ethers'
 import { testCases } from '../test_config'
+import { calculateExpected, ExpectedResults } from '../scripts/helpers'
 
 const tokenDigits = BigNumber.from('1000000000000000000')
 const paramDigits = BigNumber.from('1000000')
@@ -13,6 +14,7 @@ describe('StateUtils', () => {
   let token: Api3Token
   let pool: TestPool
   let ownerAccount: Api3Token
+  // let expectedValues: ExpectedResults[]
 
   beforeEach(async () => {
     accounts = await hre.waffle.provider.listAccounts()
@@ -26,46 +28,19 @@ describe('StateUtils', () => {
   })
 
   it('update APR', async () => {
-    const minApr = await pool.minApr()
-    const maxApr = await pool.maxApr()
-    const sensitivity = await pool.updateCoeff()
-
+    const expectedValues = await calculateExpected(pool)
+    // console.log(JSON.parse(JSON.stringify(expectedValues)))
     // expect(await pool.currentApr()).to.equal(minApr);
 
-    testCases.forEach(async (test, index) => {
-      console.log(index)
-      const { staked, target, apr } = test
-      const delta = target.sub(staked)
-      const deltaPercent = delta.mul(100000000).div(target)
-      const aprUpdate = deltaPercent.mul(sensitivity).div(paramDigits)
-      console.log('Update ' + aprUpdate)
-
-      let nextExpectedApr = apr.mul(aprUpdate.add(100000000)).div(100000000)
-      console.log('Next ' + nextExpectedApr)
-      if (nextExpectedApr > maxApr) {
-        console.log(nextExpectedApr > maxApr)
-        nextExpectedApr = maxApr
-      }
-      else if (nextExpectedApr < minApr) { nextExpectedApr = minApr }
-      console.log('Expected ' + nextExpectedApr)
+    Promise.all(testCases.map(async ({ staked, target, apr }, index) => {
       await pool.testUpdateCurrentApr(staked, target, apr)
-      const waitForApr = async () => {
-        const result = await pool.currentApr()
-        console.log('Result ' + result + '/n/n')
-        return result
-      }
-      setTimeout(async () => {
-        const result = await waitForApr()
-        console.log(result)
-      }, 5000)
-      // const string = `Result ${result}`
-      // console.log(string)
-      // 7600000
-      // 75000000
-      // 75000000
-      // 7600000
-      // expect(result).to.equal(nextExpectedApr)
-    })
+      const result = await pool.currentApr()
+      console.log(result)
+      const resString = result.toString()
+      const testResults = { ...expectedValues[index], result: resString }
+      console.log(JSON.parse(JSON.stringify(testResults)))
+      // expect(result).to.equal(expectedValues[index])
+    }))
     // const stakeValues = new Map<string, number>([
     //   ['10000000000000000000000000', 2500000],
     //   ['1000000000000000000000000', 4750000],
