@@ -52,9 +52,13 @@ export class API3 {
   }
   
   private async setAllowance(amount: number) {
-    // const balance = 100000000
-    amount = new BN(amount.toString())
-    await this.token.approve(API3Pool, amount.toString());
+    try {
+      // const balance = 100000000
+      amount = new BN(amount.toString())
+      await this.token.approve(API3Pool, amount.toString());
+    } catch (error) {
+      console.log("error setting Allowance")
+    }
   }
   
   public async print() {
@@ -86,7 +90,12 @@ export class API3 {
         // alert("API3Pool need your approval")
         console.log('allowance', allowance)
         console.log('balance', balance);
-        this.setAllowance(balance);
+        await this.setAllowance(balance);
+        const amountBN = new BN(amount);
+        const exponent = new BN((1e18).toString());
+        const depositAmount = new BN(amountBN.mul(exponent));
+        const deposit = await this.pool.deposit(address, depositAmount.toString(), address)
+        console.log("after allowance approval deposit", deposit)
       } else {
         const amountBN = new BN(amount);
         const exponent = new BN((1e18).toString());
@@ -114,7 +123,7 @@ export class API3 {
         const amountBN = new BN(amount);
         const exponent = new BN((1e18).toString());
         const withdrawAmount = new BN(amountBN.mul(exponent));
-        const withdraw = await this.pool.withdraw(address, amount)
+        const withdraw = await this.pool.withdraw(address, withdrawAmount.toString())
         console.log("withdraw", withdraw);
       }
     } catch (error) {

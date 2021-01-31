@@ -26,7 +26,7 @@ function API3Buttons() {
   
   const withdraw = async () => {
     const instance = await API3.getInstance();
-    await instance.withdrawal(1);
+    await instance.withdrawal(28);
   }
   
   const stake = async () => {
