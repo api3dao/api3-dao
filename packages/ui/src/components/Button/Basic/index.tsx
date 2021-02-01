@@ -1,22 +1,22 @@
+
 import React from "react";
 import {
   Box,
-  // Button,
 } from "@material-ui/core";
 
 import useStyles from "components/Button/Basic/styles";
 
 function BasicButton(props: any) {
-  const { whiteTheme, onClick, title } = props;
-  const classes = useStyles();
-  const buttonColor = whiteTheme ? classes.whiteButton : classes.button;
-  const firstSpan = whiteTheme ? classes.whiteFirstSpan : classes.firstSpan;
+  const { onClick, title, color } = props;
+  const classes = useStyles(props);
+  /* const buttonColor = whiteTheme ? classes.whiteButton : classes.button;
+  const firstSpan = whiteTheme ? classes.whiteFirstSpan : classes.firstSpan; */
   return (
     <Box>
-      <button onClick={onClick} className={buttonColor}>
+      <button color={props.disabled ? 'disabled': color} onClick={onClick} className={classes.button} disabled={props.disabled}>
         { title }
       </button>
-      <span className={firstSpan} />
+      <span color={color} className={classes.firstSpan} />
       <span className={classes.secondSpan} />
     </Box>
   );

@@ -1,15 +1,18 @@
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
+interface Props {
+  color: 'black' | 'white' | 'disabled' ;
+}
 
 export const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
     },
-    button: {
-      backgroundColor: "#000 !important",
-      border: "1px solid #878888",
+    button: (props: Props) => ({
+      backgroundColor: props.color === "black" ? "#000": props.color === "white" ? "#FFFFFF" : "#292929",
+      border: props.color === "black" ? "1px solid #878888" : props.color === "white" ? "1px solid #000" : "1px solid #383838",
       padding: "16px 28px",
-      color: "#fff",
+      color: props.color === "black" ? "#fff" : props.color === "white" ? "#000" : "#383838",
       fontSize: "18px",
       fontWeight: 400,
       width: "100%",
@@ -39,13 +42,13 @@ export const useStyles = makeStyles((theme: Theme) =>
         zIndex: -1,
         transition: "all .3s"
       },  
-    },
-    firstSpan: {
+    }),
+    firstSpan: (props: Props) => ({
       marginTop: "3px",
-      borderBottom: "1px solid #878888",
+      borderBottom: props.color === "black" ? "1px solid #878888" : "1px solid #000000",
       display: "flex",
       bottom: "-6px",
-    },
+    }),
     secondSpan: {
       content: "''",
       width: 0,
@@ -56,27 +59,6 @@ export const useStyles = makeStyles((theme: Theme) =>
       left: "-1px",
       transition: "all .3s"
     },
-    whiteButton: {
-      backgroundColor: "##FFFFFF !important",
-      border: "1px solid #000000",
-      color: "#000000",
-      padding: "16px 28px",
-      fontSize: "18px",
-      fontWeight: 400,
-      width: "100%",
-      position: "relative",
-      cursor: "pointer",
-      display: "block",
-      textAlign: "center",
-
-    },
-    whiteFirstSpan: {
-      marginTop: "3px",
-      borderBottom: "1px solid #000000",
-      display: "flex",
-      bottom: "-6px",
-
-    }
   }),
 );
 

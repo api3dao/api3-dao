@@ -29,7 +29,7 @@ function AppRouter() {
         <Route path={"/staking"}>
           <Staking />
         </Route>
-        <Route path={["/dashboard"]}>
+        <Route path={"/dashboard"}>
           <Dashboard />
         </Route>
         <Route path={"/"}>

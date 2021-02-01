@@ -9,16 +9,16 @@ export const useCommonStyles = makeStyles((theme: Theme) =>
     textBackground: {
         position: "absolute",
         color: "#191919",
-        zIndex: -900,
+        zIndex: -20,
         fontSize: 131,
         fontWeight: 500
     },
     mainTitleContainer: {
-        marginLeft: "32px"
+      marginLeft: "32px"
     },
     borderContainer: {
       border: "1px solid #F3F3F3",
-      margin: "5px",
+      margin: "5px 0",
       borderRadius: "2px"
     },
     centeredBox: {

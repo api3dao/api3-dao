@@ -26,7 +26,15 @@ export const useStyles = makeStyles((theme: Theme) =>
     },
     cancelButton: {
       padding: "10%"
-    }
+    },
+    unstakeContainer: {
+      backgroundColor: "#181818"
+    },
+    box: {
+      "& > *": {
+        padding: "2%"
+      }
+    },
   })
 );
 
