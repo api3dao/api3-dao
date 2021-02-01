@@ -3,12 +3,15 @@ import { Container, Box, Typography } from '@material-ui/core';
 
 import { Voting } from "services/aragon";
 import { AragonContext } from "contexts"; 
-import { NewProposalButton, VotesList } from "components";
+import { VotesList, BasicButton } from "components";
 
 import useStyles from "containers/dao-gov/styles";
+import useCommonStyles from "styles/common-styles";
 // This a Proposals Dashboard.
 function DAOGov() {
   const classes = useStyles();
+  const commonClasses = useCommonStyles();
+
   const aragonContext = useContext<any>(AragonContext);
   
   const componentDidMount = () => {
@@ -24,15 +27,17 @@ function DAOGov() {
   
   return (
     <Container className={classes.root}>
-      <Box className={classes.box}>
-        <Typography variant="h4">
-          Proposals List
-        </Typography>
+       <Typography variant="h1" color="textSecondary" className={commonClasses.textBackground}>Proposals</Typography>
+          <Box marginLeft="32px">
+            <Typography variant="subtitle2" color="textSecondary">Proposals</Typography>
+            <Typography variant="h2" color="secondary">Proposals</Typography>
+          </Box>
+
+      <Box display="flex" justifyContent="flex-end" marginTop="6%">
+        <BasicButton color="black" title="New Proposal" />
+        {/*         <NewProposalButton />  */}
       </Box>
-      <Box className={classes.box}>
-        <NewProposalButton />
-      </Box>
-      <Box>
+      <Box className={commonClasses.borderContainer}>
         <VotesList />
       </Box>
     </Container>

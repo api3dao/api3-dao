@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
+  Box,
+
 } from "@material-ui/core";
 
 import { ConnectButton, AddressInfo, Logo } from "components"
@@ -18,7 +20,7 @@ function Navbar() {
   const classes = useStyles();
   const context = useContext(Web3Context)
   return (
-    <div className={classes.root}>
+    <Box className={classes.root}>
       <AppBar position="static" >
         <Toolbar className={classes.header}>
         <Link to="/">
@@ -26,17 +28,17 @@ function Navbar() {
         </Link>
           {
             context.address ? (
-              <div className={classes.addressContainer}>
+              <Box className={classes.addressContainer}>
                 <img src={vector} alt="" className={classes.logo} />
                 <AddressInfo address={context.address}/>
-              </div>
+              </Box>
             ) : (
               <ConnectButton />
             )
           }
         </Toolbar>
       </AppBar>
-    </div>
+    </Box>
   );
 }
 
