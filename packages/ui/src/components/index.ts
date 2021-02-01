@@ -7,15 +7,16 @@ import { API3Stats, Account, Global, API3InsuranceStats } from "components/API3S
 import Actions from "components/Actions";
 import ProposalModal from "components/Proposals/ProposalModal";
 import NewProposalButton from "components/Proposals/NewProposalButton";
-import VoteProposalButton from "components/VoteProposalButton";
-import VotesList from "components/VotesList";
-import VoteProposalButtons from "components/VoteProposalButtons";
+import VoteProposalButton from "components/Vote/VoteProposalButton";
+import VotesList from "components/Vote/VotesList";
+import VoteProposalButtons from "components/Vote/VoteProposalButtons";
 import StakingButton from "components/Staking/StakingButton";
 import Counter from "components/Counter";
 import Logo from "components/Logo";
 import InsurancePool from "components/Insurance/Pool";
-import BalanceContainer from "components/BalanceContainer";
+import BalanceContainer from "components/Balance/BalanceContainer";
 import StakingContainer from "components/Staking/StakingContainer";
+import ProposalItem from "components/Proposals/ProposalItem";
 
 export {
   Navbar,
@@ -38,5 +39,7 @@ export {
   Logo,
   InsurancePool,
   BalanceContainer,
-  StakingContainer
+  StakingContainer,
+  ProposalItem,
+
 }
