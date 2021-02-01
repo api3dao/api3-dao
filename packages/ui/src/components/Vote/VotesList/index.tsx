@@ -20,7 +20,7 @@ function VotesList() {
   
   const voteItems = (vote: Vote, voteIndex: number) => {
     voteIndex = Number(vote.id.slice(- 4));
-    return <ProposalItem vote={vote} voteIndex={voteIndex} />
+    return <ProposalItem vote={vote} voteIndex={voteIndex} key={voteIndex}/>
      /*  <Box className={classes.voteItem} key={voteIndex}>
         <Link to={`proposals/${voteIndex}`}>
           <Box>
