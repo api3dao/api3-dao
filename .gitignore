@@ -1,11 +1,6 @@
 yarn-error.log
 node_modules/
 .DS_Store
-<<<<<<< HEAD
+.env
 artifacts/
 cache/
-playground
-=======
-artifacts
-cache
->>>>>>> tests

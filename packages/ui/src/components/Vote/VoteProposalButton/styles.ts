@@ -4,14 +4,13 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 export const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      flexGrow: 1,
+      // border: "1px solid rgb(221, 228, 233)",
+      // color:  "unset",
+      // backgroundColor: "rgb(221, 228, 233)",
     },
-    menuButton: {
-      marginRight: theme.spacing(2),
-    },
-    title: {
-      flexGrow: 1,
-    },
+    button: {
+      marginRight: 10,
+    }
   }),
 );
 

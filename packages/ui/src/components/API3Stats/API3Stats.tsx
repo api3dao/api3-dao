@@ -1,10 +1,10 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { 
   Box, 
-  Typography, 
-  // Grid,
+  Typography,
+
 } from '@material-ui/core';
-import { InsurancePool, BalanceContainer, StakingContainer  } from "components";
+import { InsurancePool, BalanceContainer, StakingContainer, BasicButton  } from "components";
 
 import { API3Context } from "contexts";
 // import { Account, Global } from "components/API3Stats";
@@ -17,7 +17,12 @@ function API3Stats() {
   const commonClasses = useCommonStyles();
   const api3Context = useContext(API3Context);
   console.log('api3Context', api3Context);
-  
+  const [unstakeTime, setUnstakeTime] = useState(0);
+  const [unstakeAvailable, setUnstakeAvailable] = useState(true);
+  const [unstakeTimeAvailable, setUnstakeTimeAvailable] = useState(0);
+  const [unstakeStatus, setUnstakeStatus] = useState(true);
+  const [actualUnstakeAmount, setActualUnstakeAmount ] = useState(0);
+  const [unstakeAmount, setUnstakeAmount] = useState(0);
   const LoadingAccountInfo = () => {
     return (
       <> 
@@ -32,17 +37,46 @@ function API3Stats() {
     return (
       <Box className={classes.root}>
         <Typography variant="h1" color="textSecondary" className={commonClasses.textBackground}>Dashboard</Typography>
-          <div className={commonClasses.mainTitleContainer}>
-            <Typography variant="subtitle2" color="textSecondary" style={{ color: "#878888" }}>Dashboard</Typography>
+          <Box marginLeft="32px">
+            <Typography variant="subtitle2" color="textSecondary">Dashboard</Typography>
             <Typography variant="h2" color="secondary">User Address</Typography>
-          </div>
+          </Box>
+          { 
+            unstakeAvailable && (
+              <Box 
+                display="flex" 
+                padding="18px 24px" 
+                justifyContent="space-between" 
+                alignItems="center" 
+                marginTop="6%" 
+                className={classes.unstakeAvailableContainer}  
+              >
+                <Typography variant="body1" color="secondary">Your tokens are ready to be unstaked.</Typography>
+                <Typography variant="body1" color="secondary" style={{ fontWeight: 200 }}>Unstake within 5 days 15 hours.</Typography>
+                <BasicButton color="black" title="Unstake" />
+              </Box>
+            )
+          }
           <div className={commonClasses.marginContainer}>
             <InsurancePool walletConnected />
           </div>
-          <div style={{ display: "flex" }}>
+          <Box display="flex">
             <BalanceContainer />
-            <StakingContainer />
-          </div>
+            <StakingContainer 
+              unstakeTime={unstakeTime}
+              setUnstakeTime={setUnstakeTime} 
+              unstakeAvailable={unstakeAvailable} 
+              setUnstakeAvailable={setUnstakeAvailable}
+              unstakeTimeAvailable={unstakeTimeAvailable}
+              setUnstakeTimeAvailable={setUnstakeTimeAvailable}
+              unstakeStatus={unstakeStatus}
+              setUnstakeStatus={setUnstakeStatus}
+              actualUnstakeAmount={actualUnstakeAmount}
+              setActualUnstakeAmount={setActualUnstakeAmount}
+              unstakeAmount={unstakeAmount}
+              setUnstakeAmount={setUnstakeAmount}
+            />
+          </Box>
         {/* <Grid container justify="space-evenly" spacing={2}>
           <Grid>
             <Global />
