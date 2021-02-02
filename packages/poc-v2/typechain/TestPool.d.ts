@@ -20,7 +20,7 @@ import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 
-interface ClaimUtilsInterface extends ethers.utils.Interface {
+interface TestPoolInterface extends ethers.utils.Interface {
   functions: {
     "balanceOf(address)": FunctionFragment;
     "balanceOfAt(uint256,address)": FunctionFragment;
@@ -28,6 +28,7 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
     "claimReleases(uint256)": FunctionFragment;
     "currentApr()": FunctionFragment;
     "deposit(address,uint256,address)": FunctionFragment;
+    "depositWithVesting(address,uint256,address,uint256,uint256)": FunctionFragment;
     "getScheduledUnstake(address)": FunctionFragment;
     "getUnstakeAmount(address)": FunctionFragment;
     "locks(uint256)": FunctionFragment;
@@ -43,8 +44,14 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
     "rewardReleases(uint256)": FunctionFragment;
     "rewardVestingPeriod()": FunctionFragment;
     "scheduleUnstake(uint256)": FunctionFragment;
+    "setMaxApr(uint256)": FunctionFragment;
+    "setMinApr(uint256)": FunctionFragment;
+    "setStakeTarget(uint256)": FunctionFragment;
+    "setUpdateCoeff(uint256)": FunctionFragment;
     "stake(uint256)": FunctionFragment;
     "stakeTarget()": FunctionFragment;
+    "testPayReward(uint256)": FunctionFragment;
+    "testUpdateCurrentApr(uint256,uint256,uint256)": FunctionFragment;
     "totalShares(uint256)": FunctionFragment;
     "totalStaked(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
@@ -53,7 +60,9 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
     "updateAndGetBalanceOf(address)": FunctionFragment;
     "updateAndGetBalanceOfAt(address,uint256)": FunctionFragment;
     "updateCoeff()": FunctionFragment;
+    "updateTimelockStatus(address,address)": FunctionFragment;
     "updateUserState(address,uint256)": FunctionFragment;
+    "userToDepositorToTimelock(address,address)": FunctionFragment;
     "users(address)": FunctionFragment;
     "withdraw(address,uint256)": FunctionFragment;
   };
@@ -78,6 +87,10 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "deposit",
     values: [string, BigNumberish, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "depositWithVesting",
+    values: [string, BigNumberish, string, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getScheduledUnstake",
@@ -130,10 +143,34 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
     functionFragment: "scheduleUnstake",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "setMaxApr",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setMinApr",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setStakeTarget",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setUpdateCoeff",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "stake", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "stakeTarget",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "testPayReward",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "testUpdateCurrentApr",
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "totalShares",
@@ -165,8 +202,16 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "updateTimelockStatus",
+    values: [string, string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "updateUserState",
     values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "userToDepositorToTimelock",
+    values: [string, string]
   ): string;
   encodeFunctionData(functionFragment: "users", values: [string]): string;
   encodeFunctionData(
@@ -189,6 +234,10 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "currentApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "depositWithVesting",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getScheduledUnstake",
     data: BytesLike
@@ -237,9 +286,27 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
     functionFragment: "scheduleUnstake",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setMaxApr", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setMinApr", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setStakeTarget",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setUpdateCoeff",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "stake", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "stakeTarget",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "testPayReward",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "testUpdateCurrentApr",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -272,16 +339,34 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "updateTimelockStatus",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "updateUserState",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "userToDepositorToTimelock",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "users", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
-  events: {};
+  events: {
+    "newMaxApr(uint256,uint256)": EventFragment;
+    "newMinApr(uint256,uint256)": EventFragment;
+    "newStakeTarget(uint256,uint256)": EventFragment;
+    "newUpdateCoeff(uint256,uint256)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "newMaxApr"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "newMinApr"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "newStakeTarget"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "newUpdateCoeff"): EventFragment;
 }
 
-export class ClaimUtils extends Contract {
+export class TestPool extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -292,7 +377,7 @@ export class ClaimUtils extends Contract {
   removeAllListeners(eventName: EventFilter | string): this;
   removeListener(eventName: any, listener: Listener): this;
 
-  interface: ClaimUtilsInterface;
+  interface: TestPoolInterface;
 
   functions: {
     balanceOf(
@@ -356,6 +441,24 @@ export class ClaimUtils extends Contract {
       source: string,
       amount: BigNumberish,
       userAddress: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    depositWithVesting(
+      source: string,
+      amount: BigNumberish,
+      userAddress: string,
+      releaseStart: BigNumberish,
+      releaseEnd: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "depositWithVesting(address,uint256,address,uint256,uint256)"(
+      source: string,
+      amount: BigNumberish,
+      userAddress: string,
+      releaseStart: BigNumberish,
+      releaseEnd: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -497,6 +600,46 @@ export class ClaimUtils extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
+    setMaxApr(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setMaxApr(uint256)"(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setMinApr(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setMinApr(uint256)"(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setStakeTarget(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setStakeTarget(uint256)"(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setUpdateCoeff(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setUpdateCoeff(uint256)"(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
     stake(
       amount: BigNumberish,
       overrides?: Overrides
@@ -510,6 +653,30 @@ export class ClaimUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    testPayReward(
+      deltaTotalStaked: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "testPayReward(uint256)"(
+      deltaTotalStaked: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    testUpdateCurrentApr(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "testUpdateCurrentApr(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     totalShares(
       arg0: BigNumberish,
@@ -583,6 +750,18 @@ export class ClaimUtils extends Contract {
 
     "updateCoeff()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    updateTimelockStatus(
+      userAddress: string,
+      timelockContractAddress: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "updateTimelockStatus(address,address)"(
+      userAddress: string,
+      timelockContractAddress: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
     updateUserState(
       userAddress: string,
       targetBlock: BigNumberish,
@@ -594,6 +773,32 @@ export class ClaimUtils extends Contract {
       targetBlock: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
+
+    userToDepositorToTimelock(
+      arg0: string,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber] & {
+        totalAmount: BigNumber;
+        remainingAmount: BigNumber;
+        releaseStart: BigNumber;
+        releaseEnd: BigNumber;
+      }
+    >;
+
+    "userToDepositorToTimelock(address,address)"(
+      arg0: string,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber] & {
+        totalAmount: BigNumber;
+        remainingAmount: BigNumber;
+        releaseStart: BigNumber;
+        releaseEnd: BigNumber;
+      }
+    >;
 
     users(
       arg0: string,
@@ -692,6 +897,24 @@ export class ClaimUtils extends Contract {
     source: string,
     amount: BigNumberish,
     userAddress: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  depositWithVesting(
+    source: string,
+    amount: BigNumberish,
+    userAddress: string,
+    releaseStart: BigNumberish,
+    releaseEnd: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "depositWithVesting(address,uint256,address,uint256,uint256)"(
+    source: string,
+    amount: BigNumberish,
+    userAddress: string,
+    releaseStart: BigNumberish,
+    releaseEnd: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -833,6 +1056,46 @@ export class ClaimUtils extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  setMaxApr(
+    _maxApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setMaxApr(uint256)"(
+    _maxApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setMinApr(
+    _minApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setMinApr(uint256)"(
+    _minApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setStakeTarget(
+    _stakeTarget: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setStakeTarget(uint256)"(
+    _stakeTarget: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setUpdateCoeff(
+    _updateCoeff: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setUpdateCoeff(uint256)"(
+    _updateCoeff: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   stake(
     amount: BigNumberish,
     overrides?: Overrides
@@ -846,6 +1109,30 @@ export class ClaimUtils extends Contract {
   stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
   "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  testPayReward(
+    deltaTotalStaked: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "testPayReward(uint256)"(
+    deltaTotalStaked: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  testUpdateCurrentApr(
+    _totalStaked: BigNumberish,
+    _stakeTarget: BigNumberish,
+    _currentApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "testUpdateCurrentApr(uint256,uint256,uint256)"(
+    _totalStaked: BigNumberish,
+    _stakeTarget: BigNumberish,
+    _currentApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
 
   totalShares(
     arg0: BigNumberish,
@@ -919,6 +1206,18 @@ export class ClaimUtils extends Contract {
 
   "updateCoeff()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+  updateTimelockStatus(
+    userAddress: string,
+    timelockContractAddress: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "updateTimelockStatus(address,address)"(
+    userAddress: string,
+    timelockContractAddress: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   updateUserState(
     userAddress: string,
     targetBlock: BigNumberish,
@@ -930,6 +1229,32 @@ export class ClaimUtils extends Contract {
     targetBlock: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
+
+  userToDepositorToTimelock(
+    arg0: string,
+    arg1: string,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber, BigNumber] & {
+      totalAmount: BigNumber;
+      remainingAmount: BigNumber;
+      releaseStart: BigNumber;
+      releaseEnd: BigNumber;
+    }
+  >;
+
+  "userToDepositorToTimelock(address,address)"(
+    arg0: string,
+    arg1: string,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber, BigNumber] & {
+      totalAmount: BigNumber;
+      remainingAmount: BigNumber;
+      releaseStart: BigNumber;
+      releaseEnd: BigNumber;
+    }
+  >;
 
   users(
     arg0: string,
@@ -1031,6 +1356,24 @@ export class ClaimUtils extends Contract {
       source: string,
       amount: BigNumberish,
       userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    depositWithVesting(
+      source: string,
+      amount: BigNumberish,
+      userAddress: string,
+      releaseStart: BigNumberish,
+      releaseEnd: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "depositWithVesting(address,uint256,address,uint256,uint256)"(
+      source: string,
+      amount: BigNumberish,
+      userAddress: string,
+      releaseStart: BigNumberish,
+      releaseEnd: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1169,6 +1512,40 @@ export class ClaimUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setMaxApr(_maxApr: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    "setMaxApr(uint256)"(
+      _maxApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setMinApr(_minApr: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    "setMinApr(uint256)"(
+      _minApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setStakeTarget(
+      _stakeTarget: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setStakeTarget(uint256)"(
+      _stakeTarget: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setUpdateCoeff(
+      _updateCoeff: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setUpdateCoeff(uint256)"(
+      _updateCoeff: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     stake(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     "stake(uint256)"(
@@ -1179,6 +1556,30 @@ export class ClaimUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    testPayReward(
+      deltaTotalStaked: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "testPayReward(uint256)"(
+      deltaTotalStaked: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    testUpdateCurrentApr(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "testUpdateCurrentApr(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     totalShares(
       arg0: BigNumberish,
@@ -1252,6 +1653,18 @@ export class ClaimUtils extends Contract {
 
     "updateCoeff()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    updateTimelockStatus(
+      userAddress: string,
+      timelockContractAddress: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "updateTimelockStatus(address,address)"(
+      userAddress: string,
+      timelockContractAddress: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     updateUserState(
       userAddress: string,
       targetBlock: BigNumberish,
@@ -1263,6 +1676,32 @@ export class ClaimUtils extends Contract {
       targetBlock: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    userToDepositorToTimelock(
+      arg0: string,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber] & {
+        totalAmount: BigNumber;
+        remainingAmount: BigNumber;
+        releaseStart: BigNumber;
+        releaseEnd: BigNumber;
+      }
+    >;
+
+    "userToDepositorToTimelock(address,address)"(
+      arg0: string,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber] & {
+        totalAmount: BigNumber;
+        remainingAmount: BigNumber;
+        releaseStart: BigNumber;
+        releaseEnd: BigNumber;
+      }
+    >;
 
     users(
       arg0: string,
@@ -1303,7 +1742,15 @@ export class ClaimUtils extends Contract {
     ): Promise<void>;
   };
 
-  filters: {};
+  filters: {
+    newMaxApr(oldMaxApr: null, newMaxApr: null): EventFilter;
+
+    newMinApr(oldMinApr: null, newMinApr: null): EventFilter;
+
+    newStakeTarget(oldStakeTarget: null, newStakeTarget: null): EventFilter;
+
+    newUpdateCoeff(oldUpdateCoeff: null, newUpdateCoeff: null): EventFilter;
+  };
 
   estimateGas: {
     balanceOf(
@@ -1363,6 +1810,24 @@ export class ClaimUtils extends Contract {
       source: string,
       amount: BigNumberish,
       userAddress: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    depositWithVesting(
+      source: string,
+      amount: BigNumberish,
+      userAddress: string,
+      releaseStart: BigNumberish,
+      releaseEnd: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "depositWithVesting(address,uint256,address,uint256,uint256)"(
+      source: string,
+      amount: BigNumberish,
+      userAddress: string,
+      releaseStart: BigNumberish,
+      releaseEnd: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -1490,6 +1955,40 @@ export class ClaimUtils extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
+    setMaxApr(_maxApr: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+
+    "setMaxApr(uint256)"(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setMinApr(_minApr: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+
+    "setMinApr(uint256)"(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setStakeTarget(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setStakeTarget(uint256)"(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setUpdateCoeff(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setUpdateCoeff(uint256)"(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
     stake(amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
 
     "stake(uint256)"(
@@ -1500,6 +1999,30 @@ export class ClaimUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    testPayReward(
+      deltaTotalStaked: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "testPayReward(uint256)"(
+      deltaTotalStaked: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    testUpdateCurrentApr(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "testUpdateCurrentApr(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
 
     totalShares(
       arg0: BigNumberish,
@@ -1565,6 +2088,18 @@ export class ClaimUtils extends Contract {
 
     "updateCoeff()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    updateTimelockStatus(
+      userAddress: string,
+      timelockContractAddress: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "updateTimelockStatus(address,address)"(
+      userAddress: string,
+      timelockContractAddress: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
     updateUserState(
       userAddress: string,
       targetBlock: BigNumberish,
@@ -1575,6 +2110,18 @@ export class ClaimUtils extends Contract {
       userAddress: string,
       targetBlock: BigNumberish,
       overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    userToDepositorToTimelock(
+      arg0: string,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "userToDepositorToTimelock(address,address)"(
+      arg0: string,
+      arg1: string,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     users(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
@@ -1655,6 +2202,24 @@ export class ClaimUtils extends Contract {
       source: string,
       amount: BigNumberish,
       userAddress: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    depositWithVesting(
+      source: string,
+      amount: BigNumberish,
+      userAddress: string,
+      releaseStart: BigNumberish,
+      releaseEnd: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "depositWithVesting(address,uint256,address,uint256,uint256)"(
+      source: string,
+      amount: BigNumberish,
+      userAddress: string,
+      releaseStart: BigNumberish,
+      releaseEnd: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -1794,6 +2359,46 @@ export class ClaimUtils extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
+    setMaxApr(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setMaxApr(uint256)"(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setMinApr(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setMinApr(uint256)"(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setStakeTarget(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setStakeTarget(uint256)"(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setUpdateCoeff(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setUpdateCoeff(uint256)"(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
     stake(
       amount: BigNumberish,
       overrides?: Overrides
@@ -1807,6 +2412,30 @@ export class ClaimUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    testPayReward(
+      deltaTotalStaked: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "testPayReward(uint256)"(
+      deltaTotalStaked: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    testUpdateCurrentApr(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "testUpdateCurrentApr(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
 
     totalShares(
       arg0: BigNumberish,
@@ -1872,6 +2501,18 @@ export class ClaimUtils extends Contract {
 
     "updateCoeff()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    updateTimelockStatus(
+      userAddress: string,
+      timelockContractAddress: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "updateTimelockStatus(address,address)"(
+      userAddress: string,
+      timelockContractAddress: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
     updateUserState(
       userAddress: string,
       targetBlock: BigNumberish,
@@ -1882,6 +2523,18 @@ export class ClaimUtils extends Contract {
       userAddress: string,
       targetBlock: BigNumberish,
       overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    userToDepositorToTimelock(
+      arg0: string,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "userToDepositorToTimelock(address,address)"(
+      arg0: string,
+      arg1: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     users(

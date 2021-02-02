@@ -27,6 +27,8 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     "claimReleaseReferenceBlocks(uint256)": FunctionFragment;
     "claimReleases(uint256)": FunctionFragment;
     "currentApr()": FunctionFragment;
+    "getScheduledUnstake(address)": FunctionFragment;
+    "getUnstakeAmount(address)": FunctionFragment;
     "locks(uint256)": FunctionFragment;
     "maxApr()": FunctionFragment;
     "minApr()": FunctionFragment;
@@ -39,6 +41,9 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     "stakeTarget()": FunctionFragment;
     "totalShares(uint256)": FunctionFragment;
     "totalStaked(uint256)": FunctionFragment;
+    "totalSupply()": FunctionFragment;
+    "totalSupplyAt(uint256)": FunctionFragment;
+    "updateAndGetBalanceOf(address)": FunctionFragment;
     "updateAndGetBalanceOfAt(address,uint256)": FunctionFragment;
     "updateCoeff()": FunctionFragment;
     "updateUserState(address,uint256)": FunctionFragment;
@@ -61,6 +66,14 @@ interface StateUtilsInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "currentApr",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getScheduledUnstake",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getUnstakeAmount",
+    values: [string]
   ): string;
   encodeFunctionData(functionFragment: "locks", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "maxApr", values?: undefined): string;
@@ -102,6 +115,18 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "totalSupply",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalSupplyAt",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateAndGetBalanceOf",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "updateAndGetBalanceOfAt",
     values: [string, BigNumberish]
   ): string;
@@ -129,6 +154,14 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "currentApr", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getScheduledUnstake",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getUnstakeAmount",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "locks", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "minApr", data: BytesLike): Result;
@@ -166,6 +199,18 @@ interface StateUtilsInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "totalStaked",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSupply",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSupplyAt",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateAndGetBalanceOf",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -248,6 +293,26 @@ export class StateUtils extends Contract {
     currentApr(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "currentApr()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     locks(
       arg0: BigNumberish,
@@ -355,6 +420,30 @@ export class StateUtils extends Contract {
       [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
     >;
 
+    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
     updateAndGetBalanceOfAt(
       userAddress: string,
       fromBlock: BigNumberish,
@@ -456,6 +545,26 @@ export class StateUtils extends Contract {
   currentApr(overrides?: CallOverrides): Promise<BigNumber>;
 
   "currentApr()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  getScheduledUnstake(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "getScheduledUnstake(address)"(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getUnstakeAmount(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "getUnstakeAmount(address)"(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   locks(
     arg0: BigNumberish,
@@ -563,6 +672,30 @@ export class StateUtils extends Contract {
     [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
   >;
 
+  totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  totalSupplyAt(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "totalSupplyAt(uint256)"(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  updateAndGetBalanceOf(
+    userAddress: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "updateAndGetBalanceOf(address)"(
+    userAddress: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   updateAndGetBalanceOfAt(
     userAddress: string,
     fromBlock: BigNumberish,
@@ -668,6 +801,26 @@ export class StateUtils extends Contract {
 
     "currentApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     locks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -773,6 +926,30 @@ export class StateUtils extends Contract {
     ): Promise<
       [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
     >;
+
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     updateAndGetBalanceOfAt(
       userAddress: string,
@@ -878,6 +1055,26 @@ export class StateUtils extends Contract {
 
     "currentApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     locks(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "locks(uint256)"(
@@ -965,6 +1162,30 @@ export class StateUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
     updateAndGetBalanceOfAt(
       userAddress: string,
       fromBlock: BigNumberish,
@@ -1047,6 +1268,26 @@ export class StateUtils extends Contract {
     currentApr(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "currentApr()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     locks(
       arg0: BigNumberish,
@@ -1142,6 +1383,30 @@ export class StateUtils extends Contract {
     "totalStaked(uint256)"(
       arg0: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     updateAndGetBalanceOfAt(
