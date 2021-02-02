@@ -28,6 +28,8 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
     "claimReleases(uint256)": FunctionFragment;
     "currentApr()": FunctionFragment;
     "deposit(address,uint256,address)": FunctionFragment;
+    "getScheduledUnstake(address)": FunctionFragment;
+    "getUnstakeAmount(address)": FunctionFragment;
     "locks(uint256)": FunctionFragment;
     "makeClaim(uint256)": FunctionFragment;
     "maxApr()": FunctionFragment;
@@ -76,6 +78,14 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "deposit",
     values: [string, BigNumberish, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getScheduledUnstake",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getUnstakeAmount",
+    values: [string]
   ): string;
   encodeFunctionData(functionFragment: "locks", values: [BigNumberish]): string;
   encodeFunctionData(
@@ -179,6 +189,14 @@ interface ClaimUtilsInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "currentApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getScheduledUnstake",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getUnstakeAmount",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "locks", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "makeClaim", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
@@ -340,6 +358,26 @@ export class ClaimUtils extends Contract {
       userAddress: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
+
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     locks(
       arg0: BigNumberish,
@@ -656,6 +694,26 @@ export class ClaimUtils extends Contract {
     userAddress: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
+
+  getScheduledUnstake(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "getScheduledUnstake(address)"(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getUnstakeAmount(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "getUnstakeAmount(address)"(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   locks(
     arg0: BigNumberish,
@@ -976,6 +1034,26 @@ export class ClaimUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     locks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1288,6 +1366,26 @@ export class ClaimUtils extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     locks(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "locks(uint256)"(
@@ -1558,6 +1656,26 @@ export class ClaimUtils extends Contract {
       amount: BigNumberish,
       userAddress: string,
       overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     locks(

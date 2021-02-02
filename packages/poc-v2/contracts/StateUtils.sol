@@ -99,21 +99,21 @@ contract StateUtils {
         // An updateCoeff of 1,000,000 means that for each 1% deviation from the 
         // stake target, APR will be updated by 1%.
         uint256 aprUpdate = deltaPercentage.mul(updateCoeff).div(onePercent);
-        console.log('CONTRACT_APR_UPDATE');
-        console.log(aprUpdate);
+        // console.log('CONTRACT_APR_UPDATE');
+        // console.log(aprUpdate);
 
         currentApr = currentApr.mul(aprUpdate.add(hundredPercent)).div(hundredPercent);
-        console.log('CONTRACT_BELOW_TARGET');
-        console.log(totalStakedNow < stakeTarget);
-        console.log('CONTRACT_APR_CALC');
-        console.log(currentApr);
+        // console.log('CONTRACT_BELOW_TARGET');
+        // console.log(totalStakedNow < stakeTarget);
+        // console.log('CONTRACT_APR_CALC');
+        // console.log(currentApr);
         
         if (currentApr > maxApr)
         {
             currentApr = maxApr;
         }
-        console.log('CONTRACT_NEW_APR');
-        console.log(currentApr);
+        // console.log('CONTRACT_NEW_APR');
+        // console.log(currentApr);
     }
 
     function payReward()
@@ -325,12 +325,20 @@ contract StateUtils {
         return this.balanceOfAt(block.number, userAddress);
     }
 
+    function getUnstakeAmount(address userAddress) external view returns (uint256) {
+        return users[userAddress].unstakeAmount;
+    }
+
     function totalSupplyAt(uint256 fromBlock) external view returns (uint256) {
         return getValueAt(totalStaked, fromBlock);
     }
 
     function totalSupply() external view returns (uint256) {
         return this.totalSupplyAt(block.number);
+    }
+
+    function getScheduledUnstake(address userAddress) external view returns (uint256) {
+        return users[userAddress].unstakeScheduledAt;
     }
 
     // Getters that will be used to populate the dashboard etc. should be preceded
