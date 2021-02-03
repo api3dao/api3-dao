@@ -358,4 +358,6 @@ contract StateUtils {
     function updateAndGetBalanceOf(address userAddress) external returns (uint256) {
         return this.updateAndGetBalanceOfAt(userAddress, block.number);
     }
+
+
 }

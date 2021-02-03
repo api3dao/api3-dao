@@ -41,47 +41,46 @@ describe('StateUtils', () => {
       console.log(JSON.parse(JSON.stringify(testResults)))
       // expect(result).to.equal(expectedValues[index])
     }))
-    // const stakeValues = new Map<string, number>([
-    //   ['10000000000000000000000000', 2500000],
-    //   ['1000000000000000000000000', 4750000],
-    //   ['1500000000000000000000000', 8787500],
-    //   ['15000000000000000000000000', 13181250],
-    //   ['70000000000000000000000000', 75000000]
-    // ])
-
-    // // @ts-ignore
-    // for (let [staked, expectedApr] of stakeValues.entries()) {
-    //   await pool.testUpdateCurrentApr(hre.ethers.BigNumber.from(staked));
-    //   expect(await pool.currentApr()).to.be.gte(await pool.minApr());
-    //   expect(await pool.currentApr()).to.be.lte(await pool.maxApr());
-    //   expect(await pool.currentApr()).to.equal(expectedApr);
-    // }
   })
 
-  // it('test payReward() function', async () => {
-  //   const stakeValues = [
-  //     // [oldStaked, expectedReward, newStaked]
-  //     ['10000000000000000000000000', '4807692307692310000000', '10004807692307700000000000'],
-  //     ['1000000000000000000000000', '913461538461539000000', '1000913461538460000000000'],
-  //     ['1500000000000000000000000', '2534855769230770000000', '1502534855769230000000000'],
-  //     ['15000000000000000000000000', '38022836538461500000000', '15038022836538500000000000']
-  //   ]
-  //   const roundingError = hre.ethers.BigNumber.from('10000000000000000'); // 10^16
-  //   for (let [oldStaked, expectedReward, newStaked] of stakeValues) {
-  //     const oldPoolBalance = await token.balanceOf(pool.address);
-  //     await pool.testPayReward(hre.ethers.BigNumber.from(oldStaked));
-  //     // check new total staked value
-  //     const realStakedNow = await pool.getTotalStakedNow();
-  //     const newStakedBN = hre.ethers.BigNumber.from(newStaked);
-  //     const stakeDifference = realStakedNow.sub(newStakedBN).abs();
-  //     expect(stakeDifference).to.be.lte(roundingError);
-  //     // check that pool balance increased by expected reward amount
-  //     const newPoolBalance = await token.balanceOf(pool.address);
-  //     const balanceDifference = newPoolBalance.sub(oldPoolBalance);
-  //     const expectedRewardBN = hre.ethers.BigNumber.from(expectedReward);
-  //     const rewardDifference = balanceDifference.sub(expectedRewardBN).abs();
-  //     expect(rewardDifference).to.be.lte(roundingError);
-  //   }
-  // })
+  testCases.map(({ staked, target, apr}, index) => {
+    it(`pay rewards: case ${index}`, async () => {
+        // set test case
+        await pool.setTestCase(staked, target, apr);
+        const startPoolBalance = await token.balanceOf(pool.address);
+        const startPoolStaked = await pool.totalSupply();
+        // function call
+        await pool.testPayReward();
+        // calculate expected results
+        const currentApr = await pool.currentApr();
+        const expectedReward = startPoolStaked.mul(BigNumber.from(currentApr)).div(52).div(100000000);
+        // get epoch index
+        const blockNumber = await hre.ethers.provider.getBlockNumber();
+        const currentBlock = await hre.ethers.provider.getBlock(blockNumber);
+        const rewardEpochLength = await pool.rewardEpochLength();
+        const now = BigNumber.from(currentBlock.timestamp);
+        const indEpoch = now.div(rewardEpochLength);
+
+        // check results
+        const rewardRecord = await pool.rewardAmounts(indEpoch);
+        expect(rewardRecord).to.equal(expectedReward);
+
+        const poolStaked = await pool.totalSupply();
+        const expectedStaked = startPoolStaked.add(expectedReward);
+        expect(poolStaked).to.equal(expectedStaked);
+
+        const locked = await pool.getLockedAt(blockNumber);
+        expect(locked).to.equal(expectedReward);
+
+        const rewardVestingPeriod = await pool.rewardVestingPeriod();
+        const rewardReleaseBlock = BigNumber.from(blockNumber).add(rewardVestingPeriod)
+        const rewardRelease = await pool.getRewardReleaseAt(rewardReleaseBlock);
+        expect(rewardRelease).to.equal(expectedReward);
+
+        const poolBalance = await token.balanceOf(pool.address);
+        const expectedBalance = startPoolBalance.add(expectedReward);
+        expect(poolBalance).to.equal(expectedBalance);
+    })
+  })
 
 })
