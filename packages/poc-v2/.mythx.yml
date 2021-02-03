@@ -1,0 +1,13 @@
+output: mythx.txt
+confirm: true
+
+analyze:
+  mode: quick
+  create-group: true
+  group-name: api3-dao
+  solc: 0.6.12
+  # note I used absolute paths to get the remappings to work
+  remappings:
+    - "@openzeppelin/=/home/kris/WebstormProjects/api3-dao/packages/poc-v2/node_modules/@openzeppelin/"
+    - "@nomiclabs=/home/kris/WebstormProjects/api3-dao/packages/poc-v2/node_modules/@nomiclabs/"
+    - "hardhat/=/home/kris/WebstormProjects/api3-dao/packages/poc-v2/node_modules/hardhat/"

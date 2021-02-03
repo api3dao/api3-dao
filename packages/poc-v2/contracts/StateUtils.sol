@@ -25,7 +25,7 @@ contract StateUtils {
         mapping(uint256 => bool) revokedEpochReward;
     }
 
-    IApi3Token api3Token;
+    IApi3Token internal api3Token;
 
     // 1 year in blocks, assuming a 13 second-block time
     // floor(60 * 60 * 24 * 365 / 13)
@@ -56,8 +56,8 @@ contract StateUtils {
     // Note that we don't need to keep the blocks rewards were paid out at. That's
     // because we know that it was `rewardVestingPeriod` before it will be released.
 
-    uint256 onePercent = 1000000;
-    uint256 hundredPercent = 100000000;
+    uint256 internal onePercent = 1000000;
+    uint256 internal hundredPercent = 100000000;
     // VVV These parameters will be governable by the DAO VVV
     // Percentages are multipl1ied by 1,000,000.
     uint256 public minApr = 2500000; // 2.5%
@@ -158,7 +158,7 @@ contract StateUtils {
             payReward();
         }
         User memory user = users[userAddress];
-        uint256 userShares = getValueAt(user.shares, block.number);
+        // uint256 userShares = getValueAt(user.shares, block.number);
         uint256 locked = user.locked;
       
         // We should not process events with `fromBlock` of value `targetBlock`. Otherwise,

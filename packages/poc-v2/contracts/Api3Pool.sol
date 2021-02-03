@@ -17,22 +17,22 @@ contract Api3Pool is TimelockUtils {
     event newUpdateCoeff(uint oldUpdateCoeff, uint newUpdateCoeff);
 
     // setters for governable parameters
-    function setMinApr(uint _minApr) public {
+    function setMinApr(uint _minApr) external {
         emit newMinApr(minApr, _minApr);
         minApr = _minApr;
     }
 
-    function setMaxApr(uint _maxApr) public {
+    function setMaxApr(uint _maxApr) external {
         emit newMaxApr(maxApr, _maxApr);
         maxApr = _maxApr;
     }
 
-    function setStakeTarget(uint _stakeTarget) public {
+    function setStakeTarget(uint _stakeTarget) external {
         emit newStakeTarget(stakeTarget, _stakeTarget);
         stakeTarget = _stakeTarget;
     }
 
-    function setUpdateCoeff(uint _updateCoeff) public {
+    function setUpdateCoeff(uint _updateCoeff) external {
         emit newUpdateCoeff(updateCoeff, _updateCoeff);
         updateCoeff = _updateCoeff;
     }
