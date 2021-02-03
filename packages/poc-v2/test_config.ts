@@ -1,6 +1,6 @@
 import { BigNumber } from 'ethers'
 
-interface TestCase {
+export interface TestCase {
     staked: BigNumber,
     target: BigNumber,
     apr: BigNumber,
