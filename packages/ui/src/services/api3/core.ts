@@ -69,12 +69,13 @@ export class API3 {
     console.log('API3TokenContract', API3TokenContract);
     const totalSupply = await this.token.totalSupply();
     console.log('totalSupply', totalSupply);
-    const users = await this.pool.users(address);
+    let users = await this.pool.users(address);
     console.log("users", users);
     console.log("users.unstaked", users.unstaked);
-    users.map((user: any) => {
+    users = users.map((user: any) => {
       console.log('user', user);
-    })
+      return user;
+    });
     // console.log(await this.pool.totalStaked(2))
     // const balance = await API3PoolContract.balanceOfAt(7, "0x44A814f80c14977481b47C613CD020df6ea3D25D")
     // console.log("balance", balance)
@@ -146,7 +147,7 @@ export class API3 {
         const amountBN = new BN(amount);
         const exponent = new BN((1e18).toString());
         const stakeAmount = new BN(amountBN.mul(exponent));
-        const stake = await this.pool.stake(1)
+        const stake = await this.pool.stake(stakeAmount.toString())
         console.log("stake", stake);
       }
     } catch (error) {
@@ -154,7 +155,7 @@ export class API3 {
     }
   }
   
-  public async unstake(amount?: number) {
+  public async unstake() {
     try {
       const address = await this.web3.getDefaultAddress();
       const balance = await this.token.balanceOf(address);
@@ -174,6 +175,29 @@ export class API3 {
       }
     } catch (error) {
       console.log('error in unstake', error);
+    }
+  }
+  
+  public async scheduleUnstake(amount: number) {
+    try {
+      const address = await this.web3.getDefaultAddress();
+      const balance = await this.token.balanceOf(address);
+      const allowance = await this.token.allowance(address, API3Pool);
+      // If allowance === 0 means we need to ask for approval
+      if(Number(allowance._hex) === 0) {
+        alert("API3Pools need your approval");
+        // console.log('allowance', allowance)
+        // console.log('balance', balance);
+        this.setAllowance(balance);
+      } else {
+        const amountBN = new BN(amount);
+        const exponent = new BN((1e18).toString());
+        const scheduleUnstakeAmount = new BN(amountBN.mul(exponent));
+        const scheduleUnstake = await this.pool.scheduleUnstake(scheduleUnstakeAmount.toString());
+        console.log("scheduleUnstake", scheduleUnstake);
+      }
+    } catch (error) {
+      console.log('error in scheduleUnstake', error);
     }
   }
   

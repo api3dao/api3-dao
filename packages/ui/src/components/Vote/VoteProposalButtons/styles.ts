@@ -9,8 +9,15 @@ export const useStyles = makeStyles((theme: Theme) =>
       // backgroundColor: "rgb(221, 228, 233)",
     },
     button: {
-      marginRight: 10,
-    }
+      color: "red",
+      transition: 'all 0.1s',
+      borderBottom: '3px solid #828282',
+      textShadow: "0px -1px #828282",
+      "&.active": {
+        translate: "(0px, 5px)",
+        borderBottom: "1px solid"
+      }
+    },
   }),
 );
 

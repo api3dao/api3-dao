@@ -36,7 +36,12 @@ function API3Buttons() {
   
   const unstake = async () => {
     const instance = await API3.getInstance();
-    await instance.unstake()
+    await instance.unstake();
+  }
+  
+  const scheduleUnstake = async () => {
+    const instance = await API3.getInstance();
+    await instance.scheduleUnstake(1);
   }
   
   const delegate = async () => {
@@ -65,6 +70,7 @@ function API3Buttons() {
       <Button onClick={deposit} color="primary" className={classes.button}>Deposit</Button>
       <Button onClick={withdraw} color="primary" className={classes.button}>Withdraw</Button>
       <Button onClick={stake} color="primary" className={classes.button}>Stake</Button>
+      <Button onClick={scheduleUnstake} color="primary" className={classes.button}>Schedule Unstake</Button>
       <Button onClick={unstake} color="primary" className={classes.button}>Unstake</Button>
       <Button onClick={delegate} color="primary" className={classes.button}>Delegate</Button>
       <Button onClick={undelegate} color="primary" className={classes.button}>Undelegate</Button>

@@ -3,7 +3,7 @@ import { Container, Typography } from "@material-ui/core";
 
 import useStyles from "containers/landing/styles";
 import useCommonStyles from "styles/common-styles";
-import { BalanceContainer, StakingContainer, API3Buttons } from "components";
+import { BalanceContainer, StakingContainer, API3Buttons, VoteProposalButtons } from "components";
 
 function Testing() {
   const classes = useStyles();
@@ -18,6 +18,7 @@ function Testing() {
       </div>
       <div className={commonClasses.marginContainer}>
         <API3Buttons />
+        <VoteProposalButtons voteIndex={49} proposalType="vote"/>
       </div>  
       <div style={{ display: "flex" }}>
         <BalanceContainer />
