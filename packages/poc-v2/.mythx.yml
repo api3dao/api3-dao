@@ -1,8 +1,8 @@
-output: mythx.txt
+output: mythx.json
 confirm: true
 
 analyze:
-  mode: quick
+  mode: standard
   create-group: true
   group-name: api3-dao
   solc: 0.6.12
