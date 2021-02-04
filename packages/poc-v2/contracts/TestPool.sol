@@ -38,4 +38,16 @@ contract TestPool is Api3Pool {
         return getValueAt(rewardReleases, fromBlock);
     }
 
+    function getTotalSharesAt(uint256 fromBlock) public view returns(uint256) {
+        return getValueAt(totalShares, fromBlock);
+    }
+
+    function getTotalShares() public view returns(uint256) {
+        return getTotalSharesAt(block.number);
+    }
+
+    function getUnstaked(address _address) public view returns(uint256) {
+        return users[_address].unstaked;
+    }
+
 }
