@@ -35,7 +35,6 @@ function DAOGov() {
 
       <Box display="flex" justifyContent="flex-end" marginTop="6%">
         <BasicButton color="black" title="New Proposal" />
-        {/*         <NewProposalButton />  */}
       </Box>
       <Box className={commonClasses.borderContainer}>
         <VotesList />
