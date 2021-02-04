@@ -1,8 +1,7 @@
 import * as hre from 'hardhat'
-import { Api3Token, TestPool } from '../typechain'
-import { BigNumber } from 'ethers'
+import {Api3Token, TestPool} from '../typechain'
+import {BigNumber} from 'ethers'
 import {TestCase, testCases} from '../test_config'
-import { writeFile } from 'fs'
 
 export interface ExpectedResults {
     staked: string,

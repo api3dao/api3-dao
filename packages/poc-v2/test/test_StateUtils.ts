@@ -5,26 +5,10 @@ import { Api3Token, TestPool } from '../typechain'
 import { BigNumber } from 'ethers'
 import {TestCase, testCases} from '../test_config'
 import {calculateExpected, ExpectedResults} from '../scripts/helpers'
+import {getBlockTimestamp} from "./test_StakeUtils";
 
 const tokenDigits = BigNumber.from('1000000000000000000')
 const paramDigits = BigNumber.from('1000000')
-
-// for some reason I kept getting an exception when this was in the helpers.ts module, saying "calculateExpectedApr is not a function"
-// I put it here instead because I otherwise couldn't get the exception to go away
-const calculateExpectedApr = (testCase: TestCase, sensitivity: BigNumber, minApr: BigNumber, maxApr: BigNumber): BigNumber => {
-  const {staked, target, apr} = testCase;
-  const delta = target.sub(staked);
-  const deltaPercent = delta.mul(100000000).div(target);
-  const aprUpdate = deltaPercent.mul(sensitivity).div(1000000);
-  const nextApr = apr.mul(aprUpdate.add(100000000)).div(100000000);
-  let nextExpectedApr = nextApr;
-  if (nextApr.gt(maxApr)) {
-    nextExpectedApr = maxApr;
-  } else if (nextApr.lt(minApr)) {
-    nextExpectedApr = minApr
-  }
-  return nextExpectedApr;
-}
 
 describe('StateUtils', () => {
   let accounts: string[]
@@ -89,9 +73,8 @@ describe('StateUtils', () => {
       const expectedReward = startPoolStaked.mul(BigNumber.from(currentApr)).div(52).div(100000000);
       // get epoch index
       const blockNumber = await hre.ethers.provider.getBlockNumber();
-      const currentBlock = await hre.ethers.provider.getBlock(blockNumber);
       const rewardEpochLength = await pool.rewardEpochLength();
-      const now = BigNumber.from(currentBlock.timestamp);
+      const now = await getBlockTimestamp();
       const indEpoch = now.div(rewardEpochLength);
 
       // check results
@@ -116,4 +99,61 @@ describe('StateUtils', () => {
     })
   })
 
+  // testCases.map(({ staked, target, apr}, index) => {
+  //   it(`update user state: case ${index}`, async () => {
+  //     // set test case
+  //     await pool.setTestCase(staked, target, apr);
+  //     const startPoolBalance = await token.balanceOf(pool.address);
+  //     const startPoolStaked = await pool.totalSupply();
+  //     // function call
+  //     const blockNumber = await hre.ethers.provider.getBlockNumber();
+  //     await pool.updateUserState(accounts[1], blockNumber)
+  //     // calculate expected results
+  //     const currentApr = await pool.currentApr();
+  //     const expectedReward = startPoolStaked.mul(BigNumber.from(currentApr)).div(52).div(100000000);
+  //     // get epoch index
+  //     const rewardEpochLength = await pool.rewardEpochLength();
+  //     const now = await getBlockTimestamp();
+  //     const indEpoch = now.div(rewardEpochLength);
+  //
+  //     // check results
+  //     const rewardRecord = await pool.rewardAmounts(indEpoch);
+  //     expect(rewardRecord).to.equal(expectedReward);
+  //
+  //     const poolStaked = await pool.totalSupply();
+  //     const expectedStaked = startPoolStaked.add(expectedReward);
+  //     expect(poolStaked).to.equal(expectedStaked);
+  //
+  //     const locked = await pool.getLockedAt(blockNumber);
+  //     expect(locked).to.equal(expectedReward);
+  //
+  //     const rewardVestingPeriod = await pool.rewardVestingPeriod();
+  //     const rewardReleaseBlock = BigNumber.from(blockNumber).add(rewardVestingPeriod)
+  //     const rewardRelease = await pool.getRewardReleaseAt(rewardReleaseBlock);
+  //     expect(rewardRelease).to.equal(expectedReward);
+  //
+  //     const poolBalance = await token.balanceOf(pool.address);
+  //     const expectedBalance = startPoolBalance.add(expectedReward);
+  //     expect(poolBalance).to.equal(expectedBalance);
+  //   })
+  // })
+
 })
+
+
+// for some reason I kept getting an exception when this was in the helpers.ts module, saying "calculateExpectedApr is not a function"
+// I put it here instead because I otherwise couldn't get the exception to go away
+export const calculateExpectedApr = (testCase: TestCase, sensitivity: BigNumber, minApr: BigNumber, maxApr: BigNumber): BigNumber => {
+  const {staked, target, apr} = testCase;
+  const delta = target.sub(staked);
+  const deltaPercent = delta.mul(100000000).div(target);
+  const aprUpdate = deltaPercent.mul(sensitivity).div(1000000);
+  const nextApr = apr.mul(aprUpdate.add(100000000)).div(100000000);
+  let nextExpectedApr = nextApr;
+  if (nextApr.gt(maxApr)) {
+    nextExpectedApr = maxApr;
+  } else if (nextApr.lt(minApr)) {
+    nextExpectedApr = minApr
+  }
+  return nextExpectedApr;
+}
