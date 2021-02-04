@@ -16,7 +16,7 @@ import {
 function AppRouter() {
   return (
       <Switch>
-        <Route path={"/proposals"}>
+        <Route exact path={"/proposals"}>
           <DAOGov />
         </Route>
         <Route path={"/proposals/:id"}>

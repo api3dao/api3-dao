@@ -6,7 +6,7 @@ import {
 
 import { Voting } from "services/aragon";
 
-import useStyles from "components/VoteProposalButton/styles";
+import useStyles from "components/Vote/VoteProposalButton/styles";
 
 function VoteProposalButton(props: any) {
   const classes = useStyles();
