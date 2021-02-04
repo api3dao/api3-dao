@@ -1,17 +1,20 @@
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
 
+const padding10 = {
+  padding: 10
+}
 export const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      flexGrow: 1,
+      ...padding10
     },
-    menuButton: {
-      marginRight: theme.spacing(2),
+    voteItem: {
+      ...padding10
     },
-    title: {
-      flexGrow: 1,
-    },
+    voteListTitle: {
+      paddingLeft: 10,
+    }
   }),
 );
 

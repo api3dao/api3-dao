@@ -1,33 +1,67 @@
-import React, { 
-  // useContext, 
-  // useEffect 
-} from 'react';
-import { Container, Typography } from '@material-ui/core';
+import React, { } from "react";
+import { Container, Typography, Box } from "@material-ui/core";
+import Carousel from "react-material-ui-carousel";
 
-// import Aragon from "services/aragon";
-// import { AragonContext } from "contexts";
+import useStyles from "containers/landing/styles";
+import useCommonStyles from "styles/common-styles";
+import { BalanceContainer, StakingContainer, InsurancePool } from "components";
 
-import useStyles from "containers/dashboard/styles";
+function Item(props: any) {
+  return (
+    <Box display="flex" alignItems="center" justifyContent="center" flexDirection="column">
+      <Typography color="textSecondary">{props.item.name}</Typography>
+      <Typography variant="h2" color="secondary">{props.item.description}</Typography>
+    </Box>
+  )
+}
 
-function Dashboard() {
+const renderItems = (item: any, index: number) => <Item key={index} item={item} />
+
+function Landing() {
   const classes = useStyles();
-  // const aragonContext = useContext<any>(AragonContext);
+  const commonClasses = useCommonStyles();
 
-  // const componentDidMount = () => {
-  //   const getVotes = async () => { 
-  //     const aragon = await Aragon.getInstance();
-  //     const votes = await aragon.votes();
-  //     aragonContext.setVotes(votes);
-  //   }
-  //   getVotes()
-  // }
-  // useEffect(componentDidMount, [aragonContext]);
-  
+  let items = [
+    {
+      name: "",
+      description: "Tips explaining staking size of box small as possible while fitting all info"
+    },
+    {
+      name: "",
+      description: "#2 Tips explaining staking size of box small as possible while fitting all info"
+    }
+  ];
+
   return (
     <Container className={classes.root}>
-      <Typography variant="h6">Landing Page before user connects wallet.</Typography>
+      <Typography variant="h1" color="textSecondary" className={commonClasses.textBackground}>
+        Dashboard
+      </Typography>
+      <Box marginLeft="32px">
+        <Typography variant="subtitle2" color="textSecondary">
+          Dashboard
+        </Typography>
+        <Typography variant="h2" color="secondary">
+          Welcome to the API3 DAO
+        </Typography>
+      </Box>
+      <Box marginTop="6%">
+        <Typography variant="body1" color="secondary">
+          How This Works
+        </Typography>
+        <Box padding="5%" className={commonClasses.borderContainer}> 
+          <Carousel>
+            { items.map(renderItems) }
+          </Carousel>
+        </Box>
+      </Box>
+      <InsurancePool />
+      <Box display="flex">
+        <BalanceContainer />
+        <StakingContainer />
+      </Box>
     </Container>
   );
 }
 
-export default Dashboard;
+export default Landing;

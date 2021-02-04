@@ -13,7 +13,7 @@ function AddressInfo(props: any) {
           <Typography variant="subtitle2">
             { address.slice(0, 5) }...{ address.slice(-5) }
           </Typography>
-          <Typography style={{ fontSize: "12px"}}>
+          <Typography variant="subtitle2">
             Connected to __
           </Typography>
         </div>
