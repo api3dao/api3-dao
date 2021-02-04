@@ -27,6 +27,15 @@ contract StakeUtils is TransferUtils {
         totalStaked.push(Checkpoint(block.number, totalStakedNow + amount));
     }
 
+    function depositAndStake(
+        address source,
+        uint256 amount,
+        address userAddress
+    ) external {
+        this.deposit(source, amount, userAddress);
+        this.stake(amount);
+    }
+
     // We can't let the user unstake on demand. Otherwise, they would be able to unstake
     // instantly as soon as anything went wrong, evading being slashed by an insurance claim.
     // As a solution, we require the user to "schedule an unstake" `rewardEpochLength` (1 week)
@@ -120,5 +129,10 @@ contract StakeUtils is TransferUtils {
         // Reset the schedule
         users[msg.sender].unstakeScheduledAt = 0;
         users[msg.sender].unstakeAmount = 0;
+    }
+
+    function unstakeAndWithdraw(address destination, uint256 amount) external {
+        this.unstake();
+        this.withdraw(destination, amount);
     }
 }
