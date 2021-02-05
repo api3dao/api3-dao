@@ -25,10 +25,14 @@ interface StateProps {
   }
 }
 
+// this is hard coded for now.
 const data = [
   { label: 'yes', yes: 0 }, // for some reason they are inverted
   { label: 'no', no: 100 }, 
 ];
+
+// this should be part of a styling global file
+const palleteScheme = ['#FFFFFF', '#FFFFFF', '#00C853', '#FFEB3B', '#FF4081', '#E040FB'];
 
 function ProposalDetails() {
   const classes = useStyles();
@@ -36,9 +40,12 @@ function ProposalDetails() {
   const { state } : StateProps = useLocation();
   const { vote, voteIndex } = state;
 
+  // this is hardcoded for now
+  const countDownDate = new Date().setDate(new Date().getDate() + 6)
+  
   return (
     <Container className={classes.root}>
-      // 1
+    
       <Box display="flex" justifyContent="space-between">
         <Typography variant="h1" color="textSecondary" className={commonClasses.textBackground}>Proposals</Typography>
         <Box marginLeft="32px">
@@ -46,11 +53,10 @@ function ProposalDetails() {
           <Typography variant="h2" color="secondary">Proposals {voteIndex}</Typography>
         </Box>
         <Box display="flex" justifyContent="center" flexDirection="column" margin="16px" width="12%">
-            <Counter countDownDate={new Date().setDate(new Date().getDate() + 6)} />
+            <Counter countDownDate={countDownDate} />
         </Box>
       </Box>
-      
-      // 2
+
       <Box display="flex" justifyContent="space-between">
         <Box marginLeft="32px" display="flex" width="100%" className={classes.proposalSubtitle}>
           {!vote.executed ? 
@@ -82,7 +88,6 @@ function ProposalDetails() {
         </Box>
       </Box>
       
-      // 3
       <Box marginTop="6%" display="flex" justifyContent="space-between">
         <Box>
           <BasicButton title="Vote" color="black" />
@@ -98,7 +103,6 @@ function ProposalDetails() {
         </Box>
       </Box>
       
-      // 4
       <Box marginTop="3%" display="flex" justifyContent="space-between">  
         <Box className={commonClasses.borderContainer} padding="2%" width="50%" style={{ marginRight: '20px' }}>
           <Box display="flex" justifyContent="space-between">
@@ -119,7 +123,7 @@ function ProposalDetails() {
                 height={30}
                 width={500}
               >
-                <Palette scheme={['#FFFFFF', '#FFFFFF', '#00C853', '#FFEB3B', '#FF4081', '#E040FB']} />
+                <Palette scheme={palleteScheme} />
                 <BarSeries
                   valueField="yes"
                   argumentField="label"
@@ -150,7 +154,7 @@ function ProposalDetails() {
               height={30}
               width={500}
             >
-              <Palette scheme={['#FFFFFF', '#FFFFFF', '#00C853', '#FFEB3B', '#FF4081', '#E040FB']} />
+              <Palette scheme={palleteScheme} />
               <BarSeries
                 valueField="no"
                 argumentField="label"
@@ -162,8 +166,7 @@ function ProposalDetails() {
         
         </Box>
       </Box>
-      
-      // 5
+
       <Box marginTop="3%">
         <Box marginBottom="2%">
           <Typography variant="body1" color="secondary">Summary</Typography>
