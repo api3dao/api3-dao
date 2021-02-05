@@ -7,7 +7,7 @@ describe('StakeUtils', () => {
   let accounts: string[]
   let token: Api3Token
   let pool: TestPool
-  let ownerAccount: Api3Token
+  let stakers: TestPool[]
 
   before(async () => {
     accounts = await hre.waffle.provider.listAccounts()
@@ -16,33 +16,45 @@ describe('StakeUtils', () => {
     const api3PoolFactory = await hre.ethers.getContractFactory("TestPool")
     pool = (await api3PoolFactory.deploy(token.address)) as TestPool
     const signer0 = hre.waffle.provider.getSigner(0)
-    ownerAccount = token.connect(signer0)
+    const ownerAccount = token.connect(signer0)
+    stakers = await Promise.all(accounts.map(async account => {
+      await ownerAccount.transfer(account, 100)
+      const signer = hre.waffle.provider.getSigner(account)
+      const holder = token.connect(signer)
+      await holder.approve(pool.address, 100)
+      return pool.connect(signer)
+    }))
   })
 
+  it('stakes a deposit', async () => {
+    await stakers[1].deposit(accounts[1], 100, accounts[1])
 
-  it('transfers tokens', async () => {
-    await ownerAccount.transfer(accounts[1], 100)
-    const balance = await token.balanceOf(accounts[1])
-    expect(balance).to.equal(100)
-  })
+    const deposited = (await pool.users(accounts[1])).unstaked
+    expect(deposited).to.equal(100)
 
-  it('deposits and stakes tokens', async () => {
-    const signer = hre.waffle.provider.getSigner(1)
-    const account = token.connect(signer)
-    await account.approve(pool.address, 100)
-    const allowance = await token.allowance(accounts[1], pool.address)
-    expect(allowance).to.equal(100)
-    const staker = pool.connect(signer)
-    await staker.deposit(accounts[1], 100, accounts[1])
-    await staker.stake(50)
-    const staked = await staker.balanceOf(accounts[1])
+    await stakers[1].stake(50)
+
+    const staked = await pool.balanceOf(accounts[1])
     expect(staked).to.equal(50)
+    const unstaked = (await pool.users(accounts[1])).unstaked
+    expect(unstaked).to.equal(50)
+  })
+
+  it('deposits and stakes in one tx', async () => {
+    await stakers[2].depositAndStake(accounts[2], 100, accounts[2])
+
+    const staked = await pool.balanceOf(accounts[2])
+    expect(staked).to.equal(100)
+    const unstaked = (await pool.users(accounts[2])).unstaked
+    expect(unstaked).to.equal(0)
+    const unpooled = await token.balanceOf(accounts[2])
+    expect(unpooled).to.equal(0)
   })
 
   it('schedules unstake', async () => {
-    const staker = pool.connect(hre.waffle.provider.getSigner(1))
-    await staker.scheduleUnstake(25)
-    const unstakeAmount = await staker.getUnstakeAmount(accounts[1])
+    await stakers[1].scheduleUnstake(25)
+
+    const unstakeAmount = (await pool.users(accounts[1])).unstakeAmount
     expect(unstakeAmount).to.equal(25)
   })
 })

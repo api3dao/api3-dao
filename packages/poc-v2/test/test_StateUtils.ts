@@ -38,7 +38,7 @@ describe('StateUtils', () => {
       // console.log(result)
       const resString = result.toString()
       const testResults = { ...expectedValues[index], result: resString }
-      console.log(JSON.parse(JSON.stringify(testResults)))
+      // console.log(JSON.parse(JSON.stringify(testResults)))
       // expect(result).to.equal(expectedValues[index])
     }))
     // const stakeValues = new Map<string, number>([

@@ -11,7 +11,7 @@ contract StakeUtils is TransferUtils {
     {}
     
     function stake(uint256 amount)
-        external
+        public
     {
         // We have to update user state because we need the current `shares`
         updateUserState(msg.sender, block.number);
@@ -31,9 +31,9 @@ contract StakeUtils is TransferUtils {
         address source,
         uint256 amount,
         address userAddress
-    ) external {
-        this.deposit(source, amount, userAddress);
-        this.stake(amount);
+    ) public {
+        deposit(source, amount, userAddress);
+        stake(amount);
     }
 
     // We can't let the user unstake on demand. Otherwise, they would be able to unstake
@@ -60,7 +60,7 @@ contract StakeUtils is TransferUtils {
         uint256 userSharesNow = users[msg.sender].shares[users[msg.sender].shares.length - 1].value;
         uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
         // Revoke this epoch's reward if we haven't already
-        uint256 indEpoch = now / rewardEpochLength;    
+        uint256 indEpoch = now / rewardEpochLength;
         uint256 tokensToRevoke = 0;
         if (!users[msg.sender].revokedEpochReward[indEpoch] && rewardAmounts[indEpoch] != 0)
         {

@@ -38,12 +38,6 @@ contract StateUtils {
     Checkpoint[] public totalShares; // Always up to date
     Checkpoint[] public totalStaked; // Always up to date
 
-    // // `claimPayouts` keeps the block the claim is paid out and its amount
-    // Checkpoint[] public claimPayouts;
-    // // `claimPayoutReferenceBlocks` maps to `claimPayouts` one-to-one and keeps the
-    // // block number the claim was made
-    // uint256[] public claimPayoutReferenceBlocks;
-
     // `locks` keeps both reward locks and claim locks
     Checkpoint[] public locks;
     // `rewardReleases` and `claimReleases` are kept separately because `fromBlock`s
@@ -259,42 +253,6 @@ contract StateUtils {
     }
 
     // ~~~ Below are some example usage patterns ~~~
-
-    // The voting app should not be able to get shares if the user state
-    // hasn't been updated since the proposal has been made
-    function balanceOfAt(
-        uint256 fromBlock,
-        address userAddress
-        )
-        external
-        view
-        returns(uint256)
-    {
-        // If we don't require this, the user may vote with shares that are supposed to have been slashed
-        // require(users[userAddress].lastStateUpdateTargetBlock >= fromBlock);
-        uint256 shares = getValueAt(users[userAddress].shares, fromBlock);
-        return shares;
-    }
-
-    function balanceOf(address userAddress) external view returns (uint256) {
-        return this.balanceOfAt(block.number, userAddress);
-    }
-
-    function getUnstakeAmount(address userAddress) external view returns (uint256) {
-        return users[userAddress].unstakeAmount;
-    }
-
-    function totalSupplyAt(uint256 fromBlock) external view returns (uint256) {
-        return getValueAt(totalStaked, fromBlock);
-    }
-
-    function totalSupply() external view returns (uint256) {
-        return this.totalSupplyAt(block.number);
-    }
-
-    function getScheduledUnstake(address userAddress) external view returns (uint256) {
-        return users[userAddress].unstakeScheduledAt;
-    }
 
     // Getters that will be used to populate the dashboard etc. should be preceded
     // by an `updateUserState()` using `block.number`. Otherwise, the returned value
