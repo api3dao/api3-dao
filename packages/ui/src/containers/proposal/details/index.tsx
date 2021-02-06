@@ -1,6 +1,11 @@
 import React from 'react';
 import { useLocation } from "react-router-dom";
 import { Container,  Typography, Box } from "@material-ui/core";
+import {
+  Chart,
+  BarSeries,
+} from '@devexpress/dx-react-chart-material-ui';
+import { Animation, Palette } from '@devexpress/dx-react-chart';
 
 import { BasicButton, Counter } from "components";
 import { WarningIcon, DoneIcon, HelpOutlineIcon, CloseIcon, ChangeHistoryIcon } from "components/@material-icons";
@@ -20,14 +25,27 @@ interface StateProps {
   }
 }
 
+// this is hard coded for now.
+const data = [
+  { label: 'yes', yes: 0 }, // for some reason they are inverted
+  { label: 'no', no: 100 }, 
+];
+
+// this should be part of a styling global file
+const palleteScheme = ['#FFFFFF', '#FFFFFF', '#00C853', '#FFEB3B', '#FF4081', '#E040FB'];
+
 function ProposalDetails() {
   const classes = useStyles();
   const commonClasses = useCommonStyles();
   const { state } : StateProps = useLocation();
   const { vote, voteIndex } = state;
 
+  // this is hardcoded for now
+  const countDownDate = new Date().setDate(new Date().getDate() + 6)
+  
   return (
     <Container className={classes.root}>
+    
       <Box display="flex" justifyContent="space-between">
         <Typography variant="h1" color="textSecondary" className={commonClasses.textBackground}>Proposals</Typography>
         <Box marginLeft="32px">
@@ -35,9 +53,10 @@ function ProposalDetails() {
           <Typography variant="h2" color="secondary">Proposals {voteIndex}</Typography>
         </Box>
         <Box display="flex" justifyContent="center" flexDirection="column" margin="16px" width="12%">
-            <Counter countDownDate={new Date().setDate(new Date().getDate() + 6)} />
+            <Counter countDownDate={countDownDate} />
         </Box>
       </Box>
+
       <Box display="flex" justifyContent="space-between">
         <Box marginLeft="32px" display="flex" width="100%" className={classes.proposalSubtitle}>
           {!vote.executed ? 
@@ -68,6 +87,7 @@ function ProposalDetails() {
           <Typography variant="subtitle2" className={classes.activeIcon} color="textSecondary">Remaining</Typography>
         </Box>
       </Box>
+      
       <Box marginTop="6%" display="flex" justifyContent="space-between">
         <Box>
           <BasicButton title="Vote" color="black" />
@@ -80,6 +100,85 @@ function ProposalDetails() {
           <Box>
             <Typography variant="body1"  color="secondary" style={{ textDecoration: "underline" }}>Delegate My Votes</Typography>
           </Box>
+        </Box>
+      </Box>
+      
+      <Box marginTop="3%" display="flex" justifyContent="space-between">  
+        <Box className={commonClasses.borderContainer} padding="2%" width="50%" style={{ marginRight: '20px' }}>
+          <Box display="flex" justifyContent="space-between">
+            <Box>
+              <Typography variant="h2"  color="secondary">For</Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between" width="30%">
+              <Typography variant="body1" color="secondary">60,000 tokens</Typography>
+              <Typography variant="body1" color="secondary">80%</Typography>
+            </Box>
+          </Box>
+          <Box margin="1%" marginTop="3%" display="flex" justifyContent="space-between" alignItems="center">
+            <DoneIcon className={classes.doneIcon} fontSize="large" />
+            <Box display="block" marginTop="-8px" className={commonClasses.borderContainer} width="90%">
+              <Chart
+                data={data}
+                rotated
+                height={30}
+                width={500}
+              >
+                <Palette scheme={palleteScheme} />
+                <BarSeries
+                  valueField="yes"
+                  argumentField="label"
+                />
+                <Animation />
+              </Chart>
+            </Box>
+          </Box>
+        </Box>
+        
+        <Box className={commonClasses.borderContainer} padding="2%" width="50%">
+          <Box display="flex" justifyContent="space-between">
+          <Box>
+            <Typography variant="h2"  color="secondary">Against</Typography>
+          </Box>
+          <Box  display="flex" justifyContent="space-between" width="30%">
+            <Typography variant="body1" color="secondary">15,000 tokens</Typography>
+            <Typography variant="body1" color="secondary">10%</Typography>
+          </Box>
+        </Box>
+        
+        <Box margin="1%" marginTop="3%" display="flex" justifyContent="space-between" alignItems="center">
+          <CloseIcon className={classes.rejectIcon} fontSize="large" />
+          <Box display="block" marginTop="-8px" className={commonClasses.borderContainer} width="90%">
+            <Chart
+              data={data}
+              rotated
+              height={30}
+              width={500}
+            >
+              <Palette scheme={palleteScheme} />
+              <BarSeries
+                valueField="no"
+                argumentField="label"
+                />
+              <Animation />
+            </Chart>
+          </Box>
+        </Box>
+        
+        </Box>
+      </Box>
+
+      <Box marginTop="3%">
+        <Box marginBottom="2%">
+          <Typography variant="body1" color="secondary">Summary</Typography>
+        </Box>
+        <Box className={commonClasses.borderContainer} padding="4%">
+          <Typography variant="body1" color="secondary" style={{ lineHeight: "32px" }}>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            Link to discussion: _______                
+          </Typography>
         </Box>
       </Box>
     </Container>
