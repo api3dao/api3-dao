@@ -25,7 +25,7 @@ contract StateUtils {
         mapping(uint256 => bool) revokedEpochReward;
     }
 
-    IApi3Token api3Token;
+    IApi3Token internal api3Token;
 
     // 1 year in blocks, assuming a 13 second-block time
     // floor(60 * 60 * 24 * 365 / 13)
@@ -37,12 +37,6 @@ contract StateUtils {
 
     Checkpoint[] public totalShares; // Always up to date
     Checkpoint[] public totalStaked; // Always up to date
-
-    // // `claimPayouts` keeps the block the claim is paid out and its amount
-    // Checkpoint[] public claimPayouts;
-    // // `claimPayoutReferenceBlocks` maps to `claimPayouts` one-to-one and keeps the
-    // // block number the claim was made
-    // uint256[] public claimPayoutReferenceBlocks;
 
     // `locks` keeps both reward locks and claim locks
     Checkpoint[] public locks;
@@ -56,8 +50,8 @@ contract StateUtils {
     // Note that we don't need to keep the blocks rewards were paid out at. That's
     // because we know that it was `rewardVestingPeriod` before it will be released.
 
-    uint256 onePercent = 1000000;
-    uint256 hundredPercent = 100000000;
+    uint256 internal onePercent = 1000000;
+    uint256 internal hundredPercent = 100000000;
     // VVV These parameters will be governable by the DAO VVV
     // Percentages are multipl1ied by 1,000,000.
     uint256 public minApr = 2500000; // 2.5%
@@ -158,7 +152,7 @@ contract StateUtils {
             payReward();
         }
         User memory user = users[userAddress];
-        uint256 userShares = getValueAt(user.shares, block.number);
+        // uint256 userShares = getValueAt(user.shares, block.number);
         uint256 locked = user.locked;
       
         // We should not process events with `fromBlock` of value `targetBlock`. Otherwise,
@@ -170,37 +164,6 @@ contract StateUtils {
         {
             lastStateUpdateTargetBlock = 1;
         }
-
-        // // We have to record all `shares` checkpoints caused by the claim payouts because
-        // // these values are used to calculate the voting power a user will have at a point in
-        // // time. Therefore, we can't just calculate the final value and do a single write.
-        // // Also, claim payouts need to be processed before locks/releases because the latter depend
-        // // on user `shares`, which is updated by claim payouts.
-        // uint256 ind;
-        // if(lastStateUpdateTargetBlock - 1 < claimPayouts[0].fromBlock) {
-        //     ind = 0;
-        // } else {
-        //     ind = getIndexOf(claimPayouts, lastStateUpdateTargetBlock - 1) + 1;
-        // }
-        // for (
-        //     uint256 _ind = ind;
-        //     ind < claimPayouts.length && claimPayouts[ind].fromBlock < targetBlock;
-        //     ind++
-        // )
-        // {
-        //     uint256 claimPayoutBlock = claimPayouts[ind].fromBlock;
-        //     uint256 totalStakedAtPayout = getValueAt(totalStaked, claimPayoutBlock);
-        //     uint256 totalSharesAtPayout = getValueAt(totalShares, claimPayoutBlock);
-        //     uint256 totalSharesBurned = claimPayouts[ind].value * totalSharesAtPayout / totalStakedAtPayout;
-            
-        //     uint256 claimReferenceBlock = claimPayoutReferenceBlocks[ind];
-        //     uint256 totalSharesAtClaim = getValueAt(totalShares, claimReferenceBlock);
-        //     uint256 userSharesAtClaim = getValueAt(users[userAddress].shares, claimReferenceBlock);
-
-        //     uint256 userSharesBurned = totalSharesBurned * userSharesAtClaim / totalSharesAtClaim;
-        //     userShares -= userSharesBurned;
-        //     users[userAddress].shares.push(Checkpoint(claimPayoutBlock, userShares));
-        // }
 
         // ... In contrast, `locked` doesn't need to be kept as checkpoints, so we can just
         // calculate the final value and write that once, because we only care about its
@@ -222,20 +185,6 @@ contract StateUtils {
                 locked += lock.value * userSharesAtBlock / totalSharesAtBlock;
             }
         }
-        
-
-        // for (
-        //     uint256 ind = lastStateUpdateTargetBlock - 1 < claimReleases[0].fromBlock ? 0 : getIndexOf(claimReleases, lastStateUpdateTargetBlock - 1) + 1;
-        //     ind < claimReleases.length && claimReleases[ind].fromBlock < targetBlock;
-        //     ind++
-        // )
-        // {
-        //     uint256 claimReleaseReferenceBlock = claimReleaseReferenceBlocks[ind];
-        //     uint256 totalSharesThen = getValueAt(totalShares, claimReleaseReferenceBlock);
-        //     uint256 userSharesThen = getValueAt(users[userAddress].shares, claimReleaseReferenceBlock);
-        //     // The below will underflow in some cases, cap at 0
-        //     locked -= claimReleases[ind].value * userSharesThen / totalSharesThen;
-        // }
 
         if (rewardReleases.length > 0) {
             Checkpoint[] memory _rewardReleases = rewardReleases;
@@ -304,42 +253,6 @@ contract StateUtils {
     }
 
     // ~~~ Below are some example usage patterns ~~~
-
-    // The voting app should not be able to get shares if the user state
-    // hasn't been updated since the proposal has been made
-    function balanceOfAt(
-        uint256 fromBlock,
-        address userAddress
-        )
-        external
-        view
-        returns(uint256)
-    {
-        // If we don't require this, the user may vote with shares that are supposed to have been slashed
-        // require(users[userAddress].lastStateUpdateTargetBlock >= fromBlock);
-        uint256 shares = getValueAt(users[userAddress].shares, fromBlock);
-        return shares;
-    }
-
-    function balanceOf(address userAddress) external view returns (uint256) {
-        return this.balanceOfAt(block.number, userAddress);
-    }
-
-    function getUnstakeAmount(address userAddress) external view returns (uint256) {
-        return users[userAddress].unstakeAmount;
-    }
-
-    function totalSupplyAt(uint256 fromBlock) external view returns (uint256) {
-        return getValueAt(totalStaked, fromBlock);
-    }
-
-    function totalSupply() external view returns (uint256) {
-        return this.totalSupplyAt(block.number);
-    }
-
-    function getScheduledUnstake(address userAddress) external view returns (uint256) {
-        return users[userAddress].unstakeScheduledAt;
-    }
 
     // Getters that will be used to populate the dashboard etc. should be preceded
     // by an `updateUserState()` using `block.number`. Otherwise, the returned value

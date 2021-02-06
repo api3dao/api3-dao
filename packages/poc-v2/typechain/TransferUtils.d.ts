@@ -28,8 +28,6 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     "claimReleases(uint256)": FunctionFragment;
     "currentApr()": FunctionFragment;
     "deposit(address,uint256,address)": FunctionFragment;
-    "getScheduledUnstake(address)": FunctionFragment;
-    "getUnstakeAmount(address)": FunctionFragment;
     "locks(uint256)": FunctionFragment;
     "maxApr()": FunctionFragment;
     "minApr()": FunctionFragment;
@@ -40,6 +38,8 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     "rewardReleases(uint256)": FunctionFragment;
     "rewardVestingPeriod()": FunctionFragment;
     "stakeTarget()": FunctionFragment;
+    "totalDeposits()": FunctionFragment;
+    "totalDepositsAt(uint256)": FunctionFragment;
     "totalShares(uint256)": FunctionFragment;
     "totalStaked(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
@@ -73,14 +73,6 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     functionFragment: "deposit",
     values: [string, BigNumberish, string]
   ): string;
-  encodeFunctionData(
-    functionFragment: "getScheduledUnstake",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getUnstakeAmount",
-    values: [string]
-  ): string;
   encodeFunctionData(functionFragment: "locks", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "maxApr", values?: undefined): string;
   encodeFunctionData(functionFragment: "minApr", values?: undefined): string;
@@ -111,6 +103,14 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "stakeTarget",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalDeposits",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalDepositsAt",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "totalShares",
@@ -165,14 +165,6 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "currentApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getScheduledUnstake",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getUnstakeAmount",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "locks", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "minApr", data: BytesLike): Result;
@@ -202,6 +194,14 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "stakeTarget",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalDeposits",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalDepositsAt",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -320,26 +320,6 @@ export class TransferUtils extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    getScheduledUnstake(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    "getScheduledUnstake(address)"(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    getUnstakeAmount(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    "getUnstakeAmount(address)"(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
     locks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -417,6 +397,20 @@ export class TransferUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    totalDeposits(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "totalDeposits()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    totalDepositsAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "totalDepositsAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     totalShares(
       arg0: BigNumberish,
@@ -598,26 +592,6 @@ export class TransferUtils extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  getScheduledUnstake(
-    userAddress: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  "getScheduledUnstake(address)"(
-    userAddress: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  getUnstakeAmount(
-    userAddress: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  "getUnstakeAmount(address)"(
-    userAddress: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   locks(
     arg0: BigNumberish,
     overrides?: CallOverrides
@@ -695,6 +669,20 @@ export class TransferUtils extends Contract {
   stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
   "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  totalDeposits(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "totalDeposits()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  totalDepositsAt(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "totalDepositsAt(uint256)"(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   totalShares(
     arg0: BigNumberish,
@@ -879,26 +867,6 @@ export class TransferUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    getScheduledUnstake(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "getScheduledUnstake(address)"(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getUnstakeAmount(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "getUnstakeAmount(address)"(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     locks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -976,6 +944,20 @@ export class TransferUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalDeposits(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalDeposits()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalDepositsAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalDepositsAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     totalShares(
       arg0: BigNumberish,
@@ -1159,26 +1141,6 @@ export class TransferUtils extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    getScheduledUnstake(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "getScheduledUnstake(address)"(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getUnstakeAmount(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "getUnstakeAmount(address)"(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     locks(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "locks(uint256)"(
@@ -1245,6 +1207,20 @@ export class TransferUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalDeposits(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalDeposits()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalDepositsAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalDepositsAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     totalShares(
       arg0: BigNumberish,
@@ -1399,26 +1375,6 @@ export class TransferUtils extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    getScheduledUnstake(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "getScheduledUnstake(address)"(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getUnstakeAmount(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "getUnstakeAmount(address)"(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     locks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1494,6 +1450,20 @@ export class TransferUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    totalDeposits(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "totalDeposits()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    totalDepositsAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "totalDepositsAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     totalShares(
       arg0: BigNumberish,

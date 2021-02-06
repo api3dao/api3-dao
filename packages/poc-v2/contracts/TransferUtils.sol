@@ -1,11 +1,11 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
-import "./StateUtils.sol";
+import "./GetterUtils.sol";
 
-contract TransferUtils is StateUtils {
+contract TransferUtils is GetterUtils {
     constructor(address api3TokenAddress)
-        StateUtils(api3TokenAddress)
+        GetterUtils(api3TokenAddress)
         public
     {}
 
@@ -15,7 +15,7 @@ contract TransferUtils is StateUtils {
         uint256 amount,
         address userAddress
         )
-        external
+        public
     {
         users[userAddress].unstaked += amount;
         api3Token.transferFrom(source, address(this), amount);

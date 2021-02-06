@@ -20,8 +20,10 @@ import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 
-interface StateUtilsInterface extends ethers.utils.Interface {
+interface GetterUtilsInterface extends ethers.utils.Interface {
   functions: {
+    "balanceOf(address)": FunctionFragment;
+    "balanceOfAt(uint256,address)": FunctionFragment;
     "claimReleaseReferenceBlocks(uint256)": FunctionFragment;
     "claimReleases(uint256)": FunctionFragment;
     "currentApr()": FunctionFragment;
@@ -35,8 +37,12 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     "rewardReleases(uint256)": FunctionFragment;
     "rewardVestingPeriod()": FunctionFragment;
     "stakeTarget()": FunctionFragment;
+    "totalDeposits()": FunctionFragment;
+    "totalDepositsAt(uint256)": FunctionFragment;
     "totalShares(uint256)": FunctionFragment;
     "totalStaked(uint256)": FunctionFragment;
+    "totalSupply()": FunctionFragment;
+    "totalSupplyAt(uint256)": FunctionFragment;
     "updateAndGetBalanceOf(address)": FunctionFragment;
     "updateAndGetBalanceOfAt(address,uint256)": FunctionFragment;
     "updateCoeff()": FunctionFragment;
@@ -44,6 +50,11 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     "users(address)": FunctionFragment;
   };
 
+  encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "balanceOfAt",
+    values: [BigNumberish, string]
+  ): string;
   encodeFunctionData(
     functionFragment: "claimReleaseReferenceBlocks",
     values: [BigNumberish]
@@ -88,11 +99,27 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "totalDeposits",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalDepositsAt",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "totalShares",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "totalStaked",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalSupply",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalSupplyAt",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -113,6 +140,11 @@ interface StateUtilsInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "users", values: [string]): string;
 
+  decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "balanceOfAt",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "claimReleaseReferenceBlocks",
     data: BytesLike
@@ -154,11 +186,27 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "totalDeposits",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalDepositsAt",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "totalShares",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "totalStaked",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSupply",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSupplyAt",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -182,7 +230,7 @@ interface StateUtilsInterface extends ethers.utils.Interface {
   events: {};
 }
 
-export class StateUtils extends Contract {
+export class GetterUtils extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -193,9 +241,31 @@ export class StateUtils extends Contract {
   removeAllListeners(eventName: EventFilter | string): this;
   removeListener(eventName: any, listener: Listener): this;
 
-  interface: StateUtilsInterface;
+  interface: GetterUtilsInterface;
 
   functions: {
+    balanceOf(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "balanceOf(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    balanceOfAt(
+      fromBlock: BigNumberish,
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "balanceOfAt(uint256,address)"(
+      fromBlock: BigNumberish,
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     claimReleaseReferenceBlocks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -302,6 +372,20 @@ export class StateUtils extends Contract {
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    totalDeposits(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "totalDeposits()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    totalDepositsAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "totalDepositsAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     totalShares(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -329,6 +413,20 @@ export class StateUtils extends Contract {
     ): Promise<
       [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
     >;
+
+    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     updateAndGetBalanceOf(
       userAddress: string,
@@ -394,6 +492,25 @@ export class StateUtils extends Contract {
       }
     >;
   };
+
+  balanceOf(userAddress: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  "balanceOf(address)"(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  balanceOfAt(
+    fromBlock: BigNumberish,
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "balanceOfAt(uint256,address)"(
+    fromBlock: BigNumberish,
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   claimReleaseReferenceBlocks(
     arg0: BigNumberish,
@@ -501,6 +618,20 @@ export class StateUtils extends Contract {
 
   "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+  totalDeposits(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "totalDeposits()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  totalDepositsAt(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "totalDepositsAt(uint256)"(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   totalShares(
     arg0: BigNumberish,
     overrides?: CallOverrides
@@ -528,6 +659,20 @@ export class StateUtils extends Contract {
   ): Promise<
     [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
   >;
+
+  totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  totalSupplyAt(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "totalSupplyAt(uint256)"(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   updateAndGetBalanceOf(
     userAddress: string,
@@ -594,6 +739,28 @@ export class StateUtils extends Contract {
   >;
 
   callStatic: {
+    balanceOf(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "balanceOf(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    balanceOfAt(
+      fromBlock: BigNumberish,
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "balanceOfAt(uint256,address)"(
+      fromBlock: BigNumberish,
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     claimReleaseReferenceBlocks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -700,6 +867,20 @@ export class StateUtils extends Contract {
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    totalDeposits(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalDeposits()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalDepositsAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalDepositsAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     totalShares(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -727,6 +908,20 @@ export class StateUtils extends Contract {
     ): Promise<
       [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
     >;
+
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     updateAndGetBalanceOf(
       userAddress: string,
@@ -796,6 +991,28 @@ export class StateUtils extends Contract {
   filters: {};
 
   estimateGas: {
+    balanceOf(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "balanceOf(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    balanceOfAt(
+      fromBlock: BigNumberish,
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "balanceOfAt(uint256,address)"(
+      fromBlock: BigNumberish,
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     claimReleaseReferenceBlocks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -887,6 +1104,20 @@ export class StateUtils extends Contract {
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    totalDeposits(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalDeposits()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalDepositsAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalDepositsAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     totalShares(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -904,6 +1135,20 @@ export class StateUtils extends Contract {
 
     "totalStaked(uint256)"(
       arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -954,6 +1199,28 @@ export class StateUtils extends Contract {
   };
 
   populateTransaction: {
+    balanceOf(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "balanceOf(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    balanceOfAt(
+      fromBlock: BigNumberish,
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "balanceOfAt(uint256,address)"(
+      fromBlock: BigNumberish,
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     claimReleaseReferenceBlocks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1054,6 +1321,20 @@ export class StateUtils extends Contract {
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    totalDeposits(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "totalDeposits()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    totalDepositsAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "totalDepositsAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     totalShares(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1071,6 +1352,20 @@ export class StateUtils extends Contract {
 
     "totalStaked(uint256)"(
       arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
