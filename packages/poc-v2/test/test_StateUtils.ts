@@ -65,7 +65,7 @@ describe('StateUtils', () => {
       // set test case
       await pool.setTestCase(staked, target, apr);
       const startPoolBalance = await token.balanceOf(pool.address);
-      const startPoolStaked = await pool.totalSupply();
+      const startPoolStaked = await pool.totalStakedNow();
       // function call
       await pool.testPayReward();
       // calculate expected results
@@ -81,7 +81,7 @@ describe('StateUtils', () => {
       const rewardRecord = await pool.rewardAmounts(indEpoch);
       expect(rewardRecord).to.equal(expectedReward);
 
-      const poolStaked = await pool.totalSupply();
+      const poolStaked = await pool.totalStakedNow();
       const expectedStaked = startPoolStaked.add(expectedReward);
       expect(poolStaked).to.equal(expectedStaked);
 
@@ -104,7 +104,7 @@ describe('StateUtils', () => {
   //     // set test case
   //     await pool.setTestCase(staked, target, apr);
   //     const startPoolBalance = await token.balanceOf(pool.address);
-  //     const startPoolStaked = await pool.totalSupply();
+  //     const startPoolStaked = await pool.totalStakedNow();
   //     // function call
   //     const blockNumber = await hre.ethers.provider.getBlockNumber();
   //     await pool.updateUserState(accounts[1], blockNumber)
@@ -120,7 +120,7 @@ describe('StateUtils', () => {
   //     const rewardRecord = await pool.rewardAmounts(indEpoch);
   //     expect(rewardRecord).to.equal(expectedReward);
   //
-  //     const poolStaked = await pool.totalSupply();
+  //     const poolStaked = await pool.totalStakedNow();
   //     const expectedStaked = startPoolStaked.add(expectedReward);
   //     expect(poolStaked).to.equal(expectedStaked);
   //

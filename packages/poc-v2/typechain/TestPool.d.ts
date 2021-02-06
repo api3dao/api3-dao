@@ -30,6 +30,13 @@ interface TestPoolInterface extends ethers.utils.Interface {
     "deposit(address,uint256,address)": FunctionFragment;
     "depositAndStake(address,uint256,address)": FunctionFragment;
     "depositWithVesting(address,uint256,address,uint256,uint256)": FunctionFragment;
+    "getLockedAt(uint256)": FunctionFragment;
+    "getRewardReleaseAt(uint256)": FunctionFragment;
+    "getScheduledUnstake(address)": FunctionFragment;
+    "getTotalShares()": FunctionFragment;
+    "getTotalSharesAt(uint256)": FunctionFragment;
+    "getUnstakeAmount(address)": FunctionFragment;
+    "getUnstaked(address)": FunctionFragment;
     "locks(uint256)": FunctionFragment;
     "makeClaim(uint256)": FunctionFragment;
     "maxApr()": FunctionFragment;
@@ -46,15 +53,18 @@ interface TestPoolInterface extends ethers.utils.Interface {
     "setMaxApr(uint256)": FunctionFragment;
     "setMinApr(uint256)": FunctionFragment;
     "setStakeTarget(uint256)": FunctionFragment;
+    "setTestCase(uint256,uint256,uint256)": FunctionFragment;
     "setUpdateCoeff(uint256)": FunctionFragment;
     "stake(uint256)": FunctionFragment;
     "stakeTarget()": FunctionFragment;
-    "testPayReward(uint256)": FunctionFragment;
+    "testPayReward()": FunctionFragment;
     "testUpdateCurrentApr(uint256,uint256,uint256)": FunctionFragment;
     "totalDeposits()": FunctionFragment;
     "totalDepositsAt(uint256)": FunctionFragment;
     "totalShares(uint256)": FunctionFragment;
     "totalStaked(uint256)": FunctionFragment;
+    "totalStakedAt(uint256)": FunctionFragment;
+    "totalStakedNow()": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "totalSupplyAt(uint256)": FunctionFragment;
     "unstake()": FunctionFragment;
@@ -98,6 +108,31 @@ interface TestPoolInterface extends ethers.utils.Interface {
     functionFragment: "depositWithVesting",
     values: [string, BigNumberish, string, BigNumberish, BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "getLockedAt",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getRewardReleaseAt",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getScheduledUnstake",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTotalShares",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTotalSharesAt",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getUnstakeAmount",
+    values: [string]
+  ): string;
+  encodeFunctionData(functionFragment: "getUnstaked", values: [string]): string;
   encodeFunctionData(functionFragment: "locks", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "makeClaim",
@@ -154,6 +189,10 @@ interface TestPoolInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "setTestCase",
+    values: [BigNumberish, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setUpdateCoeff",
     values: [BigNumberish]
   ): string;
@@ -164,7 +203,7 @@ interface TestPoolInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "testPayReward",
-    values: [BigNumberish]
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "testUpdateCurrentApr",
@@ -185,6 +224,14 @@ interface TestPoolInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "totalStaked",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalStakedAt",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalStakedNow",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
@@ -252,6 +299,34 @@ interface TestPoolInterface extends ethers.utils.Interface {
     functionFragment: "depositWithVesting",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getLockedAt",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRewardReleaseAt",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getScheduledUnstake",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getTotalShares",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getTotalSharesAt",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getUnstakeAmount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getUnstaked",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "locks", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "makeClaim", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
@@ -299,6 +374,10 @@ interface TestPoolInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setTestCase",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setUpdateCoeff",
     data: BytesLike
   ): Result;
@@ -329,6 +408,14 @@ interface TestPoolInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "totalStaked",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalStakedAt",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalStakedNow",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -494,6 +581,70 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
+    getLockedAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "getLockedAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getRewardReleaseAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "getRewardReleaseAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getTotalShares(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "getTotalShares()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    getTotalSharesAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "getTotalSharesAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getUnstaked(
+      _address: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "getUnstaked(address)"(
+      _address: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     locks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -642,6 +793,20 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
+    setTestCase(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setTestCase(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
     setUpdateCoeff(
       _updateCoeff: BigNumberish,
       overrides?: Overrides
@@ -666,15 +831,9 @@ export class TestPool extends Contract {
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    testPayReward(
-      deltaTotalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
+    testPayReward(overrides?: Overrides): Promise<ContractTransaction>;
 
-    "testPayReward(uint256)"(
-      deltaTotalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
+    "testPayReward()"(overrides?: Overrides): Promise<ContractTransaction>;
 
     testUpdateCurrentApr(
       _totalStaked: BigNumberish,
@@ -731,6 +890,20 @@ export class TestPool extends Contract {
     ): Promise<
       [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
     >;
+
+    totalStakedAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "totalStakedAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    totalStakedNow(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "totalStakedNow()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -970,6 +1143,67 @@ export class TestPool extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  getLockedAt(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "getLockedAt(uint256)"(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getRewardReleaseAt(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "getRewardReleaseAt(uint256)"(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getScheduledUnstake(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "getScheduledUnstake(address)"(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getTotalShares(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "getTotalShares()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  getTotalSharesAt(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "getTotalSharesAt(uint256)"(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getUnstakeAmount(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "getUnstakeAmount(address)"(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getUnstaked(_address: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  "getUnstaked(address)"(
+    _address: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   locks(
     arg0: BigNumberish,
     overrides?: CallOverrides
@@ -1118,6 +1352,20 @@ export class TestPool extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  setTestCase(
+    _totalStaked: BigNumberish,
+    _stakeTarget: BigNumberish,
+    _currentApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setTestCase(uint256,uint256,uint256)"(
+    _totalStaked: BigNumberish,
+    _stakeTarget: BigNumberish,
+    _currentApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   setUpdateCoeff(
     _updateCoeff: BigNumberish,
     overrides?: Overrides
@@ -1142,15 +1390,9 @@ export class TestPool extends Contract {
 
   "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  testPayReward(
-    deltaTotalStaked: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
+  testPayReward(overrides?: Overrides): Promise<ContractTransaction>;
 
-  "testPayReward(uint256)"(
-    deltaTotalStaked: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
+  "testPayReward()"(overrides?: Overrides): Promise<ContractTransaction>;
 
   testUpdateCurrentApr(
     _totalStaked: BigNumberish,
@@ -1207,6 +1449,20 @@ export class TestPool extends Contract {
   ): Promise<
     [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
   >;
+
+  totalStakedAt(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "totalStakedAt(uint256)"(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  totalStakedNow(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "totalStakedNow()"(overrides?: CallOverrides): Promise<BigNumber>;
 
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1449,6 +1705,70 @@ export class TestPool extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    getLockedAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getLockedAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getRewardReleaseAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getRewardReleaseAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getTotalShares(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "getTotalShares()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getTotalSharesAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getTotalSharesAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getUnstaked(
+      _address: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getUnstaked(address)"(
+      _address: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     locks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1588,6 +1908,20 @@ export class TestPool extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setTestCase(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setTestCase(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     setUpdateCoeff(
       _updateCoeff: BigNumberish,
       overrides?: CallOverrides
@@ -1609,15 +1943,9 @@ export class TestPool extends Contract {
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    testPayReward(
-      deltaTotalStaked: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    testPayReward(overrides?: CallOverrides): Promise<void>;
 
-    "testPayReward(uint256)"(
-      deltaTotalStaked: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    "testPayReward()"(overrides?: CallOverrides): Promise<void>;
 
     testUpdateCurrentApr(
       _totalStaked: BigNumberish,
@@ -1674,6 +2002,20 @@ export class TestPool extends Contract {
     ): Promise<
       [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
     >;
+
+    totalStakedAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalStakedAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    totalStakedNow(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalStakedNow()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1923,6 +2265,70 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
+    getLockedAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getLockedAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getRewardReleaseAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getRewardReleaseAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getTotalShares(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "getTotalShares()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getTotalSharesAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getTotalSharesAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getUnstaked(
+      _address: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getUnstaked(address)"(
+      _address: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     locks(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "locks(uint256)"(
@@ -2051,6 +2457,20 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
+    setTestCase(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setTestCase(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
     setUpdateCoeff(
       _updateCoeff: BigNumberish,
       overrides?: Overrides
@@ -2072,15 +2492,9 @@ export class TestPool extends Contract {
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    testPayReward(
-      deltaTotalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
+    testPayReward(overrides?: Overrides): Promise<BigNumber>;
 
-    "testPayReward(uint256)"(
-      deltaTotalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
+    "testPayReward()"(overrides?: Overrides): Promise<BigNumber>;
 
     testUpdateCurrentApr(
       _totalStaked: BigNumberish,
@@ -2129,6 +2543,20 @@ export class TestPool extends Contract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    totalStakedAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalStakedAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    totalStakedNow(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalStakedNow()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -2335,6 +2763,72 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
+    getLockedAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getLockedAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getRewardReleaseAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getRewardReleaseAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getTotalShares(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "getTotalShares()"(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getTotalSharesAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getTotalSharesAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getUnstaked(
+      _address: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getUnstaked(address)"(
+      _address: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     locks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -2481,6 +2975,20 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
+    setTestCase(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setTestCase(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
     setUpdateCoeff(
       _updateCoeff: BigNumberish,
       overrides?: Overrides
@@ -2505,15 +3013,9 @@ export class TestPool extends Contract {
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    testPayReward(
-      deltaTotalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
+    testPayReward(overrides?: Overrides): Promise<PopulatedTransaction>;
 
-    "testPayReward(uint256)"(
-      deltaTotalStaked: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
+    "testPayReward()"(overrides?: Overrides): Promise<PopulatedTransaction>;
 
     testUpdateCurrentApr(
       _totalStaked: BigNumberish,
@@ -2560,6 +3062,22 @@ export class TestPool extends Contract {
 
     "totalStaked(uint256)"(
       arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    totalStakedAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "totalStakedAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    totalStakedNow(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "totalStakedNow()"(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

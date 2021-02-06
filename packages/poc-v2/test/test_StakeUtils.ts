@@ -14,10 +14,6 @@ describe('StakeUtils', () => {
   let pool: TestPool
   let ownerAccount: Api3Token
   let stakers: TestPool[]
-  let sum = BigNumber.from(0);
-  let sumDeposited = BigNumber.from(0);
-  let sumUnstaked = BigNumber.from(0);
-  let sumStaked = BigNumber.from(0);
 
   before(async () => {
     accounts = await hre.waffle.provider.listAccounts()
@@ -68,6 +64,29 @@ describe('StakeUtils', () => {
     expect(unstakeAmount).to.equal(25)
   })
 
+})
+
+
+describe('StakeUtils_MultiCase', () => {
+  let accounts: string[]
+  let token: Api3Token
+  let pool: TestPool
+  let ownerAccount: Api3Token
+  let sum = BigNumber.from(0);
+  let sumDeposited = BigNumber.from(0);
+  let sumUnstaked = BigNumber.from(0);
+  let sumStaked = BigNumber.from(0);
+
+  before(async () => {
+    accounts = await hre.waffle.provider.listAccounts()
+    const api3TokenFactory = await hre.ethers.getContractFactory("Api3Token")
+    token = (await api3TokenFactory.deploy(accounts[0], accounts[0])) as Api3Token
+    const api3PoolFactory = await hre.ethers.getContractFactory("TestPool")
+    pool = (await api3PoolFactory.deploy(token.address)) as TestPool
+    const signer0 = hre.waffle.provider.getSigner(0)
+    ownerAccount = token.connect(signer0)
+  })
+
   testValues.map((testValue, index) => {
     it(`transfer tokens: case ${index}`, async () => {
       await ownerAccount.transfer(accounts[1], testValue);
@@ -104,7 +123,7 @@ describe('StakeUtils', () => {
       // check total
       expect(staked.add(unstaked)).to.equal(sumDeposited);
     })
- })
+  })
 
   testValues.map((testValue, index) => {
     it(`schedule unstake: case ${index}`, async () => {
@@ -166,38 +185,6 @@ describe('StakeUtils_UnstakeDeep', () => {
     // unstake request wait period
     minWait = await pool.rewardEpochLength();
     maxWait = minWait.mul(2);
-  })
-
-  it('what works', async () => {
-    const stakerAddress = accounts[1];
-    const ownerAddress = accounts[0];
-    const amount = BigNumber.from(1000);
-
-    // get values
-    const staker = pool.connect(hre.waffle.provider.getSigner(stakerAddress));
-    const minWait = await pool.rewardEpochLength();
-    const staked = await getStaked(pool, stakerAddress);
-    // unstake all
-    if (staked.gt(0)) {
-      await staker.scheduleUnstake(staked);
-      const unstakeScheduleAt = await staker.getScheduledUnstake(stakerAddress);
-      const inWindow = unstakeScheduleAt.add(minWait).add(3600).toNumber();
-      await jumpTo(inWindow);
-      await staker.unstake();
-    }
-    // transfer all to owner account
-    const unstaked = await staker.getUnstaked(stakerAddress);
-    if (unstaked.gt(0)) {
-      await token.transfer(ownerAddress, unstaked);
-    }
-    // transfer amount to staker account
-    await token.transfer(stakerAddress, amount);
-    // deposit
-    await token.connect(hre.waffle.provider.getSigner(1)).approve(pool.address, amount);
-    await staker.deposit(stakerAddress, amount, stakerAddress);
-
-    const unstakedNow = await staker.getUnstaked(accounts[1]);
-    expect(unstakedNow).to.equal(1000);
   })
 
   testValues.map((testValue, index) => {

@@ -50,4 +50,20 @@ contract TestPool is Api3Pool {
         return users[_address].unstaked;
     }
 
+    function getScheduledUnstake(address userAddress) external view returns (uint256) {
+        return users[userAddress].unstakeScheduledAt;
+    }
+
+    function getUnstakeAmount(address userAddress) external view returns (uint256) {
+        return users[userAddress].unstakeAmount;
+    }
+
+    function totalStakedAt(uint256 fromBlock) external view returns (uint256) {
+        return getValueAt(totalStaked, fromBlock);
+    }
+
+    function totalStakedNow() external view returns (uint256) {
+        return this.totalStakedAt(block.number);
+    }
+
 }
