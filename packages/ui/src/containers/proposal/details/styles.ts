@@ -26,6 +26,22 @@ export const useStyles = makeStyles((theme: Theme) =>
         paddingRight: "4%",
       }
     },
+    modal: {
+      height: "256px",
+      width: "268px",
+      padding: "0 2%",
+      "& > *": {
+        paddingBottom: "7%"
+      }
+    },
+    delegateModal: {
+      height: "224px",
+      width: "520px",
+      padding: "0 2%",
+      "& > *": {
+        paddingBottom: "7%"
+      }
+    },
   }),
 );
 
