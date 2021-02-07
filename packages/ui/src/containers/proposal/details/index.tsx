@@ -103,7 +103,7 @@ function ProposalDetails() {
       
       <Box marginTop="6%" display="flex" justifyContent="space-between">
         <Box>
-          <BasicButton title={voted === "" ? "Vote" : "Change Vote"} color="black" onClick={() => setVoteModal(true)}/>
+          <BasicButton title={voted === "" ? "Vote" : "Change Vote"} color={delegateAddress !== "" ? "black" : ""} onClick={() => setVoteModal(true)}/>
         </Box>
         <Box display="flex" flexDirection="column" justifyContent="center" alignItems="flex-end">
           <Box display="flex">
