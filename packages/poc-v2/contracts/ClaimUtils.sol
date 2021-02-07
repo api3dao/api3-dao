@@ -31,20 +31,10 @@ contract ClaimUtils is StakeUtils {
         external
         // `onlyClaimsManager`
     {
-        claimReleases.push(Checkpoint(block.number, amount));
-        claimReleaseReferenceBlocks.push(claimReferenceBlock);
+        uint256 lockIndex = getIndexOf(locks, claimReferenceBlock);
+        locks[lockIndex].value = 0;
     }
 
-    // Called externally if the claim is accepted (should also call `releaseClaim()`
-    // separately if `makeClaim()` had been called).
-    // claimReferenceBlock is when the original claim was made.
-    // Note that claim payouts burn shares both from `totalShares`, and from
-    // individual users while they are updating their state. Claims can't
-    // be paid out "automatically" simply by depreciating share prices 
-    // because they are not applied to all stakers (but only to stakers that
-    // had stakes at the time the claim was made). In contrast, rewards can
-    // be paid out simply by increasing share price, which is why `payReward()`
-    // is simpler than `payOutClaim()`.
     function payOutClaim(
         uint256 payoutAmount,
         uint256 claimReferenceBlock
@@ -52,15 +42,14 @@ contract ClaimUtils is StakeUtils {
         external
         // `onlyClaimsManager`
     {
-        // claimPayouts.push(Checkpoint(block.number, payoutAmount));
-        // claimPayoutReferenceBlocks.push(claimReferenceBlock);
-
-        // uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
-        // uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
-        // uint256 totalSharesBurned = payoutAmount * totalSharesNow / totalStakedNow;
-        // totalStaked.push(Checkpoint(block.number, totalStakedNow - payoutAmount));
-        // totalShares.push(Checkpoint(block.number, totalSharesNow - totalSharesBurned));
-
+        uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
+        totalStaked.push(Checkpoint(block.number, totalStakedNow - payoutAmount));
         api3Token.transfer(msg.sender, payoutAmount);
+        uint256 lockIndex = getIndexOf(locks, claimReferenceBlock);
+        locks[lockIndex].value = 0;
+        if (!rewardPaidForEpoch[now / rewardEpochLength])
+        {
+            payReward();
+        }
     }
 }

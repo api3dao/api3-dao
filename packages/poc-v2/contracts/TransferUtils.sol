@@ -25,10 +25,10 @@ contract TransferUtils is GetterUtils {
         address destination,
         uint256 amount
         )
-        external
+        public
     {
         // We have to update user state because we need the current `locked`
-        updateUserState(msg.sender, block.number);
+        updateUserLock(msg.sender, block.number);
         require(users[msg.sender].unstaked - users[msg.sender].locked >= amount);
         users[msg.sender].unstaked -= amount;
         api3Token.transfer(destination, amount);

@@ -13,8 +13,11 @@ contract StakeUtils is TransferUtils {
     function stake(uint256 amount)
         public
     {
-        // We have to update user state because we need the current `shares`
-        updateUserState(msg.sender, block.number);
+        //Pay reward to update totalStaked if that hasn't occurred yet for this epoch
+        if (!rewardPaidForEpoch[now / rewardEpochLength])
+        {
+            payReward();
+        }
         require(users[msg.sender].unstaked >= amount);
         users[msg.sender].unstaked -= amount;
         uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
@@ -31,7 +34,7 @@ contract StakeUtils is TransferUtils {
         address source,
         uint256 amount,
         address userAddress
-    ) public {
+    ) external {
         deposit(source, amount, userAddress);
         stake(amount);
     }
@@ -54,8 +57,6 @@ contract StakeUtils is TransferUtils {
     function scheduleUnstake(uint256 amount)
         external
     {
-        // We have to update user state because we need the current `shares`
-        updateUserState(msg.sender, block.number);
         uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
         uint256 userSharesNow = users[msg.sender].shares[users[msg.sender].shares.length - 1].value;
         uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
@@ -81,8 +82,6 @@ contract StakeUtils is TransferUtils {
             // reward payment was made, but that's not feasible to implement.)
             userSharesNow -= sharesToBurn;
             totalSharesNow -= sharesToBurn;
-            console.log('userSharesNow 2');
-            console.log(userSharesNow);
             users[msg.sender].shares.push(Checkpoint(block.number, userSharesNow));
             totalShares.push(Checkpoint(block.number, totalSharesNow));
             // Also unlock the tokens. Note that these tokens will be unlocked again 1 year later (so
@@ -102,7 +101,7 @@ contract StakeUtils is TransferUtils {
     }
 
     function unstake()
-        external
+        public
     {
         // Note that these time limits are hardcoded and not governable
         require(
@@ -110,8 +109,6 @@ contract StakeUtils is TransferUtils {
                 && now < users[msg.sender].unstakeScheduledAt + rewardEpochLength * 2
             );
         uint256 amount = users[msg.sender].unstakeAmount;
-        // We have to update user state because we need the current `shares`
-        updateUserState(msg.sender, block.number);
         uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
         uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
         uint256 userSharesNow = users[msg.sender].shares[users[msg.sender].shares.length - 1].value;
@@ -129,10 +126,15 @@ contract StakeUtils is TransferUtils {
         // Reset the schedule
         users[msg.sender].unstakeScheduledAt = 0;
         users[msg.sender].unstakeAmount = 0;
+        //Trigger reward and update APR if it hasn't happened for this epoch already
+        if (!rewardPaidForEpoch[now / rewardEpochLength])
+        {
+            payReward();
+        }
     }
 
     function unstakeAndWithdraw(address destination, uint256 amount) external {
-        this.unstake();
-        this.withdraw(destination, amount);
+        unstake();
+        withdraw(destination, amount);
     }
 }

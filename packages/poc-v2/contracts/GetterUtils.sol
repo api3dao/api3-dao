@@ -15,17 +15,17 @@ contract GetterUtils is StateUtils {
         return getValueAt(users[userAddress].shares, fromBlock);
     }
 
-    function balanceOf(address userAddress) 
+    function balanceOf(address userAddress)
     external view returns (uint256) {
         return this.balanceOfAt(block.number, userAddress);
     }
 
-    function totalSupplyAt(uint256 fromBlock) 
+    function totalSupplyAt(uint256 fromBlock)
     external view returns (uint256) {
         return getValueAt(totalShares, fromBlock);
     }
 
-    function totalSupply() 
+    function totalSupply()
     external view returns (uint256) {
         return this.totalSupplyAt(block.number);
     }

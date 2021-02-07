@@ -18,8 +18,7 @@ contract StateUtils {
     {
         uint256 unstaked; // Always up to date
         Checkpoint[] shares; // Has to be updated before being used (e.g., voting)
-        uint256 locked; // Has to be updated before being used (e.g., withdrawing)
-        uint256 lastStateUpdateTargetBlock;
+        Checkpoint locked; // Has to be updated before being used (e.g., withdrawing)
         uint256 unstakeScheduledAt;
         uint256 unstakeAmount;
         mapping(uint256 => bool) revokedEpochReward;
@@ -137,60 +136,47 @@ contract StateUtils {
         api3Token.mint(address(this), rewardAmount);
     }
 
-    // `targetBlock` allows us to do partial updates if updating until `block.number`
-    // costs too much gas (because, for example, too many claim payouts were made since
-    // the last update, which requires the user to create a lot of checkpoints)
-    function updateUserState(
-        address userAddress,
-        uint256 targetBlock
-        )
+    function updateUserLock(address userAddress)
         public
     {
-        // Make the reward payment if it wasn't made for this epoch
         if (!rewardPaidForEpoch[now / rewardEpochLength])
         {
             payReward();
         }
-        User memory user = users[userAddress];
-        // uint256 userShares = getValueAt(user.shares, block.number);
-        uint256 locked = user.locked;
-      
-        // We should not process events with `fromBlock` of value `targetBlock`. Otherwise,
-        // if `targetBlock` is `block.number`, we may miss some of the events depending on tx order.
-        // Since we are not processing the events on `targetBlock`, we need to start processing
-        // events starting from `lastStateUpdateTargetBlock - 1`
-        uint256 lastStateUpdateTargetBlock = user.lastStateUpdateTargetBlock;
-        if (lastStateUpdateTargetBlock == 0)
+
+        uint256 updateBlock = block.number - 1;
+        uint256 lastUpdateBlock = user.locked.fromBlock;
+        if (lastUpdateBlock == 0)
         {
-            lastStateUpdateTargetBlock = 1;
+            lastUpdateBlock = 1;
         }
 
-        // ... In contrast, `locked` doesn't need to be kept as checkpoints, so we can just
-        // calculate the final value and write that once, because we only care about its
-        // value at the time of the withdrawal (i.e., at `block.number`).
-
+        User memory user = users[userAddress];
+        uint256 locked = user.locked;
         Checkpoint[] memory _totalShares = totalShares;
 
         if (locks.length > 0) {
             Checkpoint[] memory _locks = locks;
             for (
-                uint256 ind = lastStateUpdateTargetBlock - 1 < _locks[0].fromBlock ? 0 : getIndexOf(_locks, lastStateUpdateTargetBlock - 1) + 1;
-                ind < _locks.length && _locks[ind].fromBlock < targetBlock;
+                uint256 ind = lastUpdateBlock - 1 < _locks[0].fromBlock ? 0 : getIndexOf(_locks, lastUpdateBlock - 1) + 1;
+                ind < _locks.length && _locks[ind].fromBlock < updateBlock;
                 ind++
             )
             {
-                Checkpoint memory lock = _locks[ind];
-                uint256 totalSharesAtBlock = getValueAt(_totalShares, lock.fromBlock);
-                uint256 userSharesAtBlock = getValueAt(user.shares, lock.fromBlock);
-                locked += lock.value * userSharesAtBlock / totalSharesAtBlock;
+                if (_locks[ind] > 0) {
+                    Checkpoint lock = _locks[ind];
+                    uint256 totalSharesAtBlock = getValueAt(_totalShares, lock.fromBlock);
+                    uint256 userSharesAtBlock = getValueAt(user.shares, lock.fromBlock);
+                    locked += lock.value * userSharesAtBlock / totalSharesAtBlock;
+                }
             }
         }
 
         if (rewardReleases.length > 0) {
             Checkpoint[] memory _rewardReleases = rewardReleases;
             for (
-                uint256 ind = lastStateUpdateTargetBlock - 1 < _rewardReleases[0].fromBlock ? 0 : getIndexOf(_rewardReleases, lastStateUpdateTargetBlock - 1) + 1;
-                ind < _rewardReleases.length && _rewardReleases[ind].fromBlock < targetBlock;
+                uint256 ind = lastUpdateBlock - 1 < _rewardReleases[0].fromBlock ? 0 : getIndexOf(_rewardReleases, lastUpdateBlock - 1) + 1;
+                ind < _rewardReleases.length && _rewardReleases[ind].fromBlock < updateBlock;
                 ind++
             )
             {
@@ -201,14 +187,11 @@ contract StateUtils {
                 locked -= _rewardReleases[ind].value * userSharesThen / totalSharesThen;
             }
         }
-        
-
-        users[userAddress].locked = locked;
-        users[userAddress].lastStateUpdateTargetBlock = targetBlock;
+        users[userAddress].locked = Checkpoint(locked, updateBlock);
     }
 
     // From https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
-    function getValueAt(Checkpoint[] memory checkpoints, uint _block) view internal returns (uint) {
+    function getValueAt(Checkpoint[] storage checkpoints, uint _block) view internal returns (uint) {
         if (checkpoints.length == 0)
             return 0;
 
@@ -233,7 +216,7 @@ contract StateUtils {
     }
 
     // Extracted from `getValueAt()`
-    function getIndexOf(Checkpoint[] memory checkpoints, uint _block) view internal returns (uint) {
+    function getIndexOf(Checkpoint[] storage checkpoints, uint _block) view internal returns (uint) {
         // Repeating the shortcut
         if (_block >= checkpoints[checkpoints.length-1].fromBlock)
             return checkpoints.length-1;
