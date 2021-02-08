@@ -6,51 +6,54 @@ import "./auxiliary/SafeMath.sol";
 import "hardhat/console.sol";
 
 contract StateUtils {
-    using SafeMath for uint256;
-
     struct Checkpoint
     {
         uint256 fromBlock;
         uint256 value;
     }
 
-    struct User
-    {
-        uint256 unstaked; // Always up to date
-        Checkpoint[] shares; // Has to be updated before being used (e.g., voting)
-        Checkpoint locked; // Has to be updated before being used (e.g., withdrawing)
+    struct RewardEpoch {
+        bool paid;
+        uint256 amount;
+        uint256 atBlock;
+    }
+
+    struct UserUpdate {
+        uint256 epoch;
+        uint256 atBlock;
+        uint256 claimIndex;
+    }
+
+    struct User {
+        uint256 unstaked;
+        Checkpoint[] shares;
+        uint256 locked;
         uint256 unstakeScheduledAt;
         uint256 unstakeAmount;
         mapping(uint256 => bool) revokedEpochReward;
+        UserUpdate lastUpdate;
     }
 
     IApi3Token internal api3Token;
 
-    // 1 year in blocks, assuming a 13 second-block time
-    // floor(60 * 60 * 24 * 365 / 13)
-    uint256 public immutable rewardVestingPeriod = 2425846;
-    // 1 week in seconds
-    uint256 public immutable rewardEpochLength = 60 * 60 * 24 * 7;
+    //1 week in blocks @ 14sec/block
+    uint256 public constant rewardEpochLength = 43200;
+    //1 year in epochs
+    uint256 public constant rewardVestingPeriod = 52;
+    uint256 public immutable genesisEpoch;
 
     mapping(address => User) public users;
 
     Checkpoint[] public totalShares; // Always up to date
     Checkpoint[] public totalStaked; // Always up to date
 
-    // `locks` keeps both reward locks and claim locks
-    Checkpoint[] public locks;
-    // `rewardReleases` and `claimReleases` are kept separately because `fromBlock`s
-    // of `claimReleases` are not deterministic. We need checkpoints to be
-    // chronologically ordered. (Note that this is not a problem with `locks`.)
-    Checkpoint[] public rewardReleases;
-    Checkpoint[] public claimReleases;
-    // Again, we need to keep the block when the claim was made
-    uint256[] public claimReleaseReferenceBlocks;
-    // Note that we don't need to keep the blocks rewards were paid out at. That's
-    // because we know that it was `rewardVestingPeriod` before it will be released.
+    mapping(uint256 => RewardEpoch) public rewards;
+    Checkpoint[] public claimLocks;
 
-    uint256 internal onePercent = 1000000;
-    uint256 internal hundredPercent = 100000000;
+    uint256 public lastUpdateBlock;
+
+    // uint256 internal onePercent = 1000000;
+    // uint256 internal hundredPercent = 100000000;
     // VVV These parameters will be governable by the DAO VVV
     // Percentages are multipl1ied by 1,000,000.
     uint256 public minApr = 2500000; // 2.5%
@@ -59,12 +62,9 @@ contract StateUtils {
     // updateCoeff is not in percentages, it's a coefficient that determines
     // how aggresively inflation rate will be updated to meet the target.
     uint256 public updateCoeff = 1000000;
+    uint256 public unstakeWaitPeriod = 172800; //4 weeks in blocks @ 14sec/block
     // ^^^ These parameters will be governable by the DAO ^^^
 
-    // Reward-related state parameters
-    mapping(uint256 => bool) public rewardPaidForEpoch;
-    mapping(uint256 => uint256) public rewardAmounts;
-    mapping(uint256 => uint256) public rewardBlocks;
     uint256 public currentApr = minApr;
     
     constructor(address api3TokenAddress)
@@ -74,12 +74,13 @@ contract StateUtils {
         totalShares.push(Checkpoint(block.number, 1));
         totalStaked.push(Checkpoint(block.number, 1));
         api3Token = IApi3Token(api3TokenAddress);
+        genesisEpoch = now / rewardEpochLength;
     }
 
     function updateCurrentApr()
         internal
     {
-        uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
+        uint256 totalStakedNow = getValue(totalStaked);
         if (stakeTarget < totalStakedNow) {
             currentApr = minApr;
             return;
@@ -113,81 +114,123 @@ contract StateUtils {
         internal
     {
         updateCurrentApr();
-        uint256 indEpoch = now / rewardEpochLength;
-        uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
+        uint256 totalStakedNow = getValue(totalStaked);
         uint256 rewardAmount = totalStakedNow * currentApr / 52 / 100000000;
-        rewardPaidForEpoch[indEpoch] = true;
-        rewardBlocks[indEpoch] = block.number;
-        // We don't want the DAO to revoke minter status from this contract
-        // and lock itself out of operation
-        if (!api3Token.getMinterStatus(address(this)))
-        {
+        uint256 indEpoch = now / rewardEpochLength;
+        rewards[indEpoch] = RewardEpoch(true, rewardAmount, block.number);
+        //Cover the case when multiple epochs have passed without change in totalStaked
+        //We have to add each epoch to the mapping rather than just total the rewards because
+        //rewardVestingPeriod is denominated in epochs.
+        while (!rewards[indEpoch - 1].paid) {
+            rewards[indEpoch - 1] = RewardEpoch(true, rewardAmount, block.number);
+            indEpoch--;
+        }
+        if (!api3Token.getMinterStatus(address(this))) {
             return;
         }
-        if (rewardAmount == 0)
-        {
+        if (rewardAmount == 0) {
             return;
         }
-        rewardAmounts[indEpoch] = rewardAmount;
-
         totalStaked.push(Checkpoint(block.number, totalStakedNow + rewardAmount));
-        locks.push(Checkpoint(block.number, rewardAmount));
-        rewardReleases.push(Checkpoint(block.number + rewardVestingPeriod, rewardAmount));
         api3Token.mint(address(this), rewardAmount);
     }
 
-    function updateUserLock(address userAddress)
+    function updateUserLock(address userAddress, uint256 targetEpoch)
         public
     {
-        if (!rewardPaidForEpoch[now / rewardEpochLength])
-        {
+        //Effectively this condition only obtains when we're targeting the current epoch.
+        if (!rewards[targetEpoch].paid) {
             payReward();
         }
 
-        uint256 updateBlock = block.number - 1;
-        uint256 lastUpdateBlock = user.locked.fromBlock;
-        if (lastUpdateBlock == 0)
-        {
-            lastUpdateBlock = 1;
-        }
+        //Reward intervals are sufficiently deterministic for us to access a mapping by epochs instead of iterating over
+        //checkpoints. We start totaling locked rewards from epoch T-52 (floor +0) and unlocked rewards from epoch +52.
+        uint256 currentEpoch = now / rewardEpochLength;
+        uint256 firstUnlockEpoch = genesisEpoch + rewardVestingPeriod;
+        uint256 oldestLockedEpoch = currentEpoch >= firstUnlockEpoch ?
+                                    currentEpoch - rewardVestingPeriod : genesisEpoch;
 
-        User memory user = users[userAddress];
-        uint256 locked = user.locked;
-        Checkpoint[] memory _totalShares = totalShares;
+        //Governance updates of unstakeWaitingPeriod are prohibited from exceeding rewardVestingPeriod,
+        //so in the extreme future case where we could be targeting an epoch more than rewardVestingPeriod
+        //before present, we can just set locked to 0. We prevent exploitation of this elsewhere by explicitly
+        //requiring that User is caught up to lastUpdateBlock in order to execute a withdrawal.
+        uint256 locked = 0;
+        if (targetEpoch > oldestLockedEpoch) {
+            uint256 targetBlock = targetEpoch == currentEpoch ? 
+                                                 block.number : rewards[targetEpoch].atBlock;
+            uint256 updateBlock = targetBlock - 1;
+            User storage user = users[userAddress];
+            locked = user.locked;
+            UserUpdate lastUpdate = user.lastUpdate;
 
-        if (locks.length > 0) {
-            Checkpoint[] memory _locks = locks;
-            for (
-                uint256 ind = lastUpdateBlock - 1 < _locks[0].fromBlock ? 0 : getIndexOf(_locks, lastUpdateBlock - 1) + 1;
-                ind < _locks.length && _locks[ind].fromBlock < updateBlock;
-                ind++
-            )
-            {
-                if (_locks[ind] > 0) {
-                    Checkpoint lock = _locks[ind];
-                    uint256 totalSharesAtBlock = getValueAt(_totalShares, lock.fromBlock);
-                    uint256 userSharesAtBlock = getValueAt(user.shares, lock.fromBlock);
-                    locked += lock.value * userSharesAtBlock / totalSharesAtBlock;
+            //Claim locks represent the value of currently undecided claims, which remain pending no longer than unstakeWaitPeriod,
+            //so we only care about claim locks from the last unstakeWaitPeriod blocks, and if we're doing a partial update
+            //we can safely ignore them.
+            uint256 currentClaimWindow = block.number - unstakeWaitPeriod;
+            if (
+                claimLocks.length > 0 
+                && claimLocks[claimLocks.length - 1].fromBlock >= currentClaimWindow
+                && updateBlock >= currentClaimWindow
+            ) {
+                //getIndexOf finds the latest state at or before the block argument, so we cover both cases.
+                uint256 oldestValidClaimIndex = getIndexOf(claimLocks, currentClaimWindow);
+                if (claimLocks[oldestValidClaimIndex].fromBlock != currentClaimWindow) {
+                    oldestValidClaimIndex++;
+                }
+                //We avoid iterating over storage as much as possible, so User stores the index of the last claim it updated on 
+                //to initialize our loop.
+                for (
+                    uint256 ind = lastUpdate.claimIndex < oldestValidClaimIndex ? 
+                                  oldestValidClaimIndex : lastUpdate.claimIndex + 1;
+                    ind < claimLocks.length && claimLocks[ind].fromBlock < updateBlock;
+                    ind++
+                ) {
+                //When a claim is decided, that lock is zeroed because those tokens were either spent or unfrozen.
+                    if (claimLocks[ind].value > 0) {
+                        Checkpoint storage lock = claimLocks[ind];
+                        uint256 totalSharesAtBlock = getValueAt(totalShares, lock.fromBlock);
+                        uint256 userSharesAtBlock = getValueAt(user.shares, lock.fromBlock);
+                        locked += lock.value * userSharesAtBlock / totalSharesAtBlock;
+                    }
+                }
+            }
+
+            if (rewards[genesisEpoch].paid) {
+                uint256 lastUpdateEpoch = lastUpdate.epoch;
+                for (
+                    uint256 ind = lastUpdate.epoch < oldestLockedEpoch ? oldestLockedEpoch : lastUpdate.epoch + 1;
+                    ind <= currentEpoch;
+                    ind++
+                ) {
+                    uint256 storage lockedReward = rewards[ind];
+                    uint256 totalSharesThen = getValueAt(totalShares, lockedReward.atBlock);
+                    uint256 userSharesThen = getValueAt(user.shares, lockedReward.atBlock);
+                    locked += lockedReward.amount * userSharesThen / totalSharesThen;
+                }
+                if (currentEpoch >= firstUnlockEpoch) {
+                    for (
+                        uint256 ind = user.lastUpdateEpoch < firstUnlockEpoch ? firstUnlockEpoch : user.lastUpdateEpoch + 1;
+                        ind <= currentEpoch;
+                        ind++
+                    ) {
+                        uint256 storage unlockedReward = rewards[ind - rewardVestingPeriod];
+                        uint256 totalSharesThen = getValueAt(totalShares, unlockedReward.atBlock);
+                        uint256 userSharesThen = getValueAt(user.shares, unlockedReward.atBlock);
+                        locked -= unlockedReward.amount * userSharesThen / totalSharesThen;
+                    }        
                 }
             }
         }
 
-        if (rewardReleases.length > 0) {
-            Checkpoint[] memory _rewardReleases = rewardReleases;
-            for (
-                uint256 ind = lastUpdateBlock - 1 < _rewardReleases[0].fromBlock ? 0 : getIndexOf(_rewardReleases, lastUpdateBlock - 1) + 1;
-                ind < _rewardReleases.length && _rewardReleases[ind].fromBlock < updateBlock;
-                ind++
-            )
-            {
-                uint256 rewardReferenceBlock = _rewardReleases[ind].fromBlock - rewardVestingPeriod;
-                uint256 totalSharesThen = getValueAt(_totalShares, rewardReferenceBlock);
-                uint256 userSharesThen = getValueAt(user.shares, rewardReferenceBlock);
-                // The below will underflow in some cases, cap at 0
-                locked -= _rewardReleases[ind].value * userSharesThen / totalSharesThen;
-            }
+        user.locked = locked;
+        //We only set the global lastUpdateBlock and user lastUpdate.claimIndex atomically,
+        //ie. when fast-forwarding User all the way to present.
+        uint256 claimIndexAtUpdate = 0;
+        if (updateBlock == block.number - 1) {
+            lastUpdateBlock = updateBlock;
+            claimIndexAtUpdate = claimLocks.length - 1;
         }
-        users[userAddress].locked = Checkpoint(locked, updateBlock);
+        user.lastUpdate = UserUpdate(targetEpoch, updateBlock, claimIndexAtUpdate);
     }
 
     // From https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
@@ -215,6 +258,11 @@ contract StateUtils {
         return checkpoints[min].value;
     }
 
+    function getValue(Checkpoint[] storage checkpoints)
+    internal view returns (uint256) {
+        return getValueAt(checkpoints, block.number);
+    }
+
     // Extracted from `getValueAt()`
     function getIndexOf(Checkpoint[] storage checkpoints, uint _block) view internal returns (uint) {
         // Repeating the shortcut
@@ -233,25 +281,5 @@ contract StateUtils {
             }
         }
         return min;
-    }
-
-    // ~~~ Below are some example usage patterns ~~~
-
-    // Getters that will be used to populate the dashboard etc. should be preceded
-    // by an `updateUserState()` using `block.number`. Otherwise, the returned value
-    // may be outdated.
-    function updateAndGetBalanceOfAt(
-        address userAddress,
-        uint256 fromBlock
-        )
-        external
-        returns(uint256)
-    {
-        updateUserState(userAddress, fromBlock);
-        return getValueAt(users[userAddress].shares, fromBlock);
-    }
-
-    function updateAndGetBalanceOf(address userAddress) external returns (uint256) {
-        return this.updateAndGetBalanceOfAt(userAddress, block.number);
     }
 }

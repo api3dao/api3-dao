@@ -5,6 +5,8 @@ import "./TimelockUtils.sol";
 
 
 contract Api3Pool is TimelockUtils {
+    using SafeMath for uint256;
+    
     constructor(address api3TokenAddress)
         TimelockUtils(api3TokenAddress)
         public

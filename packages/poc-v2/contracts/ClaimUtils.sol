@@ -19,7 +19,7 @@ contract ClaimUtils is StakeUtils {
         external
         // `onlyClaimsManager`
     {
-        locks.push(Checkpoint(block.number, amount));
+        claimLocks.push(Checkpoint(block.number, amount));
     }
 
     // Called externally when the claim is finalized (accepted/rejected).
@@ -31,8 +31,7 @@ contract ClaimUtils is StakeUtils {
         external
         // `onlyClaimsManager`
     {
-        uint256 lockIndex = getIndexOf(locks, claimReferenceBlock);
-        locks[lockIndex].value = 0;
+        resolveClaim(claimReferenceBlock);
     }
 
     function payOutClaim(
@@ -42,14 +41,18 @@ contract ClaimUtils is StakeUtils {
         external
         // `onlyClaimsManager`
     {
-        uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
+        uint256 totalStakedNow = getValue(totalStaked);
         totalStaked.push(Checkpoint(block.number, totalStakedNow - payoutAmount));
         api3Token.transfer(msg.sender, payoutAmount);
-        uint256 lockIndex = getIndexOf(locks, claimReferenceBlock);
-        locks[lockIndex].value = 0;
+        resolveClaim(claimReferenceBlock);
         if (!rewardPaidForEpoch[now / rewardEpochLength])
         {
             payReward();
         }
+    }
+
+    function resolveClaim(uint256 claimReferenceBlock) internal {
+        uint256 lockIndex = getIndexOf(locks, claimReferenceBlock);
+        delete locks[lockIndex];
     }
 }

@@ -18,14 +18,15 @@ contract StakeUtils is TransferUtils {
         {
             payReward();
         }
-        require(users[msg.sender].unstaked >= amount);
-        users[msg.sender].unstaked -= amount;
+        User storage user = users[msg.sender];
+        require(user.unstaked >= amount);
+        user.unstaked -= amount;
         uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
         uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
         uint256 sharesToMint = totalSharesNow * amount / totalStakedNow;
-        User memory user = users[msg.sender];
+        User memory user = user;
         uint256 userSharesNow = user.shares.length > 0 ? user.shares[user.shares.length - 1].value : 0;
-        users[msg.sender].shares.push(Checkpoint(block.number, userSharesNow + sharesToMint));
+        user.shares.push(Checkpoint(block.number, userSharesNow + sharesToMint));
         totalShares.push(Checkpoint(block.number, totalSharesNow + sharesToMint));
         totalStaked.push(Checkpoint(block.number, totalStakedNow + amount));
     }
@@ -57,61 +58,54 @@ contract StakeUtils is TransferUtils {
     function scheduleUnstake(uint256 amount)
         external
     {
-        uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
-        uint256 userSharesNow = users[msg.sender].shares[users[msg.sender].shares.length - 1].value;
-        uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
+        uint256 totalStakedNow = getValue(totalStaked);
+        uint256 totalSharesNow = getValue(totalShares);
+        User storage user = users[msg.sender];
+        uint256 userSharesNow = getValue(user.shares);
+
         // Revoke this epoch's reward if we haven't already
-        uint256 indEpoch = now / rewardEpochLength;
+        uint256 current = now / rewardEpochLength;
         uint256 tokensToRevoke = 0;
-        if (!users[msg.sender].revokedEpochReward[indEpoch] && rewardAmounts[indEpoch] != 0)
-        {
-            // Calculate how many tokens the user was paid as inflationary rewards
-            uint256 userSharesThen = getValueAt(users[msg.sender].shares, rewardBlocks[indEpoch]);
-            uint256 totalSharesThen = getValueAt(totalShares, rewardBlocks[indEpoch]);
-            tokensToRevoke = rewardAmounts[indEpoch] * userSharesThen / totalSharesThen;
-            // Calculate how many shares they correspond to now
+        if (!user.revokedEpochReward[current] && rewards[current].amount != 0) {
+            RewardEpoch storage currentEpoch = rewards[current];
+            uint256 userSharesThen = getValueAt(user.shares, currentEpoch.atBlock);
+            uint256 totalSharesThen = getValueAt(totalShares, currentEpoch.atBlock);
+
+            tokensToRevoke = currentEpoch.amount * userSharesThen / totalSharesThen;
             uint256 sharesToBurn = totalSharesNow * tokensToRevoke / totalStakedNow;
-            // The user may have been slashed since the reward payment, resulting in them
-            // having less shares than the reward payment (unlikely, but possible)
-            if (sharesToBurn > userSharesNow)
-            {
+            if (sharesToBurn > userSharesNow) {
                 sharesToBurn = userSharesNow;
             }
-            // Deduct these shares from the user, practically distributing them to the current shareholders.
-            // (The ideal thing would be to distribute them to shareholders at the time the
-            // reward payment was made, but that's not feasible to implement.)
+
             userSharesNow -= sharesToBurn;
             totalSharesNow -= sharesToBurn;
-            users[msg.sender].shares.push(Checkpoint(block.number, userSharesNow));
+            user.shares.push(Checkpoint(block.number, userSharesNow));
             totalShares.push(Checkpoint(block.number, totalSharesNow));
-            // Also unlock the tokens. Note that these tokens will be unlocked again 1 year later (so
-            // this favors the user) but this is acceptable (or rather the opposite is less desirable). 
-            users[msg.sender].locked -= tokensToRevoke;
-            // We don't want to repeat this penalty if the user refreshes their unstake schedule in the same
-            // epoch a second time
-            users[msg.sender].revokedEpochReward[indEpoch] = true;
+            
+            user.locked -= tokensToRevoke;
+            user.revokedEpochReward[current] = true;
         }
         uint256 userStakedNow = userSharesNow * totalStakedNow / totalSharesNow;
         // We have to check this because otherwise the user can schedule an unstake 1 week ago
         // for infinite tokens, take a flash loan, vote on a proposal, unstake, withdraw and return
         // the loan.
         require(amount <= userStakedNow + tokensToRevoke, "Insufficient amount");
-        users[msg.sender].unstakeScheduledAt = now;
-        users[msg.sender].unstakeAmount = amount;
+        user.unstakeScheduledAt = now;
+        user.unstakeAmount = amount;
     }
 
     function unstake()
         public
     {
-        // Note that these time limits are hardcoded and not governable
+        User storage user = users[msg.sender];
         require(
-            now > users[msg.sender].unstakeScheduledAt + rewardEpochLength
-                && now < users[msg.sender].unstakeScheduledAt + rewardEpochLength * 2
+            now > user.unstakeScheduledAt + unstakeWaitPeriod
+                && now < user.unstakeScheduledAt + unstakeWaitPeriod + rewardEpochLength * 2
             );
-        uint256 amount = users[msg.sender].unstakeAmount;
+        uint256 amount = user.unstakeAmount;
         uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
         uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
-        uint256 userSharesNow = users[msg.sender].shares[users[msg.sender].shares.length - 1].value;
+        uint256 userSharesNow = user.shares[user.shares.length - 1].value;
         uint256 sharesToBurn = totalSharesNow * amount / totalStakedNow;
         // If the user doesn't have the tokens to be unstaked, unstake as much as possible
         if (sharesToBurn > userSharesNow)
@@ -119,13 +113,13 @@ contract StakeUtils is TransferUtils {
             sharesToBurn = userSharesNow;
             amount = sharesToBurn * totalStakedNow / totalSharesNow;
         }
-        users[msg.sender].unstaked += amount;
-        users[msg.sender].shares.push(Checkpoint(block.number, userSharesNow - sharesToBurn));
+        user.unstaked += amount;
+        user.shares.push(Checkpoint(block.number, userSharesNow - sharesToBurn));
         totalShares.push(Checkpoint(block.number, totalSharesNow - sharesToBurn));
         totalStaked.push(Checkpoint(block.number, totalStakedNow - amount));
         // Reset the schedule
-        users[msg.sender].unstakeScheduledAt = 0;
-        users[msg.sender].unstakeAmount = 0;
+        user.unstakeScheduledAt = 0;
+        user.unstakeAmount = 0;
         //Trigger reward and update APR if it hasn't happened for this epoch already
         if (!rewardPaidForEpoch[now / rewardEpochLength])
         {
