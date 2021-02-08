@@ -7,6 +7,9 @@ export const useStyles = makeStyles((theme: Theme) =>
       display: "flex",
       flexDirection: "column",
     },
+    connectedText: {
+      fontWeight: 300
+    },
   }),
 );
 
