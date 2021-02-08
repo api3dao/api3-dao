@@ -30,13 +30,13 @@ contract GetterUtils is StateUtils {
         return this.totalSupplyAt(block.number);
     }
 
-    function totalDepositsAt(uint256 fromBlock)
+    function totalStakeAt(uint256 fromBlock)
     external view returns (uint256) {
         return getValueAt(totalStaked, fromBlock);
     }
 
-    function totalDeposits()
+    function totalStake()
     external view returns (uint256) {
-        return this.totalDepositsAt(block.number);
+        return this.totalStakeAt(block.number);
     }
 }

@@ -143,7 +143,11 @@ interface StateUtilsInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "users", data: BytesLike): Result;
 
-  events: {};
+  events: {
+    "Epoch(uint256,uint256,uint256)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "Epoch"): EventFragment;
 }
 
 export class StateUtils extends Contract {
@@ -649,7 +653,13 @@ export class StateUtils extends Contract {
     >;
   };
 
-  filters: {};
+  filters: {
+    Epoch(
+      epoch: BigNumberish | null,
+      rewardAmount: null,
+      newApr: null
+    ): EventFilter;
+  };
 
   estimateGas: {
     claimLocks(

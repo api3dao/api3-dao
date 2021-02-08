@@ -20,7 +20,7 @@ import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 
-interface TimelockUtilsInterface extends ethers.utils.Interface {
+interface GovernanceUtilsInterface extends ethers.utils.Interface {
   functions: {
     "balanceOf(address)": FunctionFragment;
     "balanceOfAt(uint256,address)": FunctionFragment;
@@ -40,6 +40,11 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
     "rewardVestingPeriod()": FunctionFragment;
     "rewards(uint256)": FunctionFragment;
     "scheduleUnstake(uint256)": FunctionFragment;
+    "setMaxApr(uint256)": FunctionFragment;
+    "setMinApr(uint256)": FunctionFragment;
+    "setStakeTarget(uint256)": FunctionFragment;
+    "setUnstakeWaitPeriod(uint256)": FunctionFragment;
+    "setUpdateCoefficient(uint256)": FunctionFragment;
     "stake(uint256)": FunctionFragment;
     "stakeTarget()": FunctionFragment;
     "totalShares(uint256)": FunctionFragment;
@@ -120,6 +125,26 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "scheduleUnstake",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setMaxApr",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setMinApr",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setStakeTarget",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setUnstakeWaitPeriod",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setUpdateCoefficient",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "stake", values: [BigNumberish]): string;
@@ -230,6 +255,20 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
     functionFragment: "scheduleUnstake",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setMaxApr", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setMinApr", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setStakeTarget",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setUnstakeWaitPeriod",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setUpdateCoefficient",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "stake", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "stakeTarget",
@@ -290,6 +329,11 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
     "ClaimRelease(uint256,uint256)": EventFragment;
     "Deposit(address,uint256)": EventFragment;
     "Epoch(uint256,uint256,uint256)": EventFragment;
+    "NewMaxApr(uint256,uint256)": EventFragment;
+    "NewMinApr(uint256,uint256)": EventFragment;
+    "NewStakeTarget(uint256,uint256)": EventFragment;
+    "NewUnstakeWaitPeriod(uint256,uint256)": EventFragment;
+    "NewUpdateCoefficient(uint256,uint256)": EventFragment;
     "ScheduleUnstake(address,uint256)": EventFragment;
     "Stake(address,uint256)": EventFragment;
     "Unstake(address,uint256)": EventFragment;
@@ -301,13 +345,18 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ClaimRelease"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Deposit"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Epoch"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "NewMaxApr"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "NewMinApr"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "NewStakeTarget"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "NewUnstakeWaitPeriod"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "NewUpdateCoefficient"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ScheduleUnstake"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Stake"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unstake"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Withdrawal"): EventFragment;
 }
 
-export class TimelockUtils extends Contract {
+export class GovernanceUtils extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -318,7 +367,7 @@ export class TimelockUtils extends Contract {
   removeAllListeners(eventName: EventFilter | string): this;
   removeListener(eventName: any, listener: Listener): this;
 
-  interface: TimelockUtilsInterface;
+  interface: GovernanceUtilsInterface;
 
   functions: {
     balanceOf(
@@ -492,6 +541,56 @@ export class TimelockUtils extends Contract {
 
     "scheduleUnstake(uint256)"(
       amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setMaxApr(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setMaxApr(uint256)"(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setMinApr(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setMinApr(uint256)"(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setStakeTarget(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setStakeTarget(uint256)"(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setUnstakeWaitPeriod(
+      _unstakeWaitPeriod: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setUnstakeWaitPeriod(uint256)"(
+      _unstakeWaitPeriod: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setUpdateCoefficient(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setUpdateCoefficient(uint256)"(
+      _updateCoeff: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -869,6 +968,56 @@ export class TimelockUtils extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  setMaxApr(
+    _maxApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setMaxApr(uint256)"(
+    _maxApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setMinApr(
+    _minApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setMinApr(uint256)"(
+    _minApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setStakeTarget(
+    _stakeTarget: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setStakeTarget(uint256)"(
+    _stakeTarget: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setUnstakeWaitPeriod(
+    _unstakeWaitPeriod: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setUnstakeWaitPeriod(uint256)"(
+    _unstakeWaitPeriod: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setUpdateCoefficient(
+    _updateCoeff: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setUpdateCoefficient(uint256)"(
+    _updateCoeff: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   stake(
     amount: BigNumberish,
     overrides?: Overrides
@@ -1243,6 +1392,50 @@ export class TimelockUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setMaxApr(_maxApr: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    "setMaxApr(uint256)"(
+      _maxApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setMinApr(_minApr: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    "setMinApr(uint256)"(
+      _minApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setStakeTarget(
+      _stakeTarget: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setStakeTarget(uint256)"(
+      _stakeTarget: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setUnstakeWaitPeriod(
+      _unstakeWaitPeriod: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setUnstakeWaitPeriod(uint256)"(
+      _unstakeWaitPeriod: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setUpdateCoefficient(
+      _updateCoeff: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setUpdateCoefficient(uint256)"(
+      _updateCoeff: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     stake(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     "stake(uint256)"(
@@ -1458,6 +1651,16 @@ export class TimelockUtils extends Contract {
       newApr: null
     ): EventFilter;
 
+    NewMaxApr(oldMax: null, newMax: null): EventFilter;
+
+    NewMinApr(oldMin: null, newMin: null): EventFilter;
+
+    NewStakeTarget(oldTarget: null, newTarget: null): EventFilter;
+
+    NewUnstakeWaitPeriod(oldPeriod: null, newPeriod: null): EventFilter;
+
+    NewUpdateCoefficient(oldCoeff: null, newCoeff: null): EventFilter;
+
     ScheduleUnstake(user: string | null, amount: null): EventFilter;
 
     Stake(user: string | null, amount: null): EventFilter;
@@ -1621,6 +1824,50 @@ export class TimelockUtils extends Contract {
 
     "scheduleUnstake(uint256)"(
       amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setMaxApr(_maxApr: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+
+    "setMaxApr(uint256)"(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setMinApr(_minApr: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+
+    "setMinApr(uint256)"(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setStakeTarget(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setStakeTarget(uint256)"(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setUnstakeWaitPeriod(
+      _unstakeWaitPeriod: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setUnstakeWaitPeriod(uint256)"(
+      _unstakeWaitPeriod: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setUpdateCoefficient(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setUpdateCoefficient(uint256)"(
+      _updateCoeff: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -1927,6 +2174,56 @@ export class TimelockUtils extends Contract {
 
     "scheduleUnstake(uint256)"(
       amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setMaxApr(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setMaxApr(uint256)"(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setMinApr(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setMinApr(uint256)"(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setStakeTarget(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setStakeTarget(uint256)"(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setUnstakeWaitPeriod(
+      _unstakeWaitPeriod: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setUnstakeWaitPeriod(uint256)"(
+      _unstakeWaitPeriod: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setUpdateCoefficient(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setUpdateCoefficient(uint256)"(
+      _updateCoeff: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 

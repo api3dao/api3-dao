@@ -42,28 +42,43 @@ contract StateUtils {
 
     mapping(address => User) public users;
 
-    Checkpoint[] public totalShares; // Always up to date
-    Checkpoint[] public totalStaked; // Always up to date
+    Checkpoint[] public totalShares;
+    Checkpoint[] public totalStaked;
 
     mapping(uint256 => RewardEpoch) public rewards;
     Checkpoint[] public claimLocks;
 
     uint256 public lastUpdateBlock;
 
-    uint256 internal onePercent = 1000000;
-    uint256 internal hundredPercent = 100000000;
     // VVV These parameters will be governable by the DAO VVV
     // Percentages are multipl1ied by 1,000,000.
     uint256 public minApr = 2500000; // 2.5%
     uint256 public maxApr = 75000000; // 75%
-    uint256 public stakeTarget = 10e6 ether; // 10M API3
-    // updateCoeff is not in percentages, it's a coefficient that determines
-    // how aggresively inflation rate will be updated to meet the target.
+    uint256 public stakeTarget = 10e6 ether;
     uint256 public updateCoeff = 1000000;
     uint256 public unstakeWaitPeriod = 172800; //4 weeks in blocks @ 14sec/block
     // ^^^ These parameters will be governable by the DAO ^^^
 
     uint256 public currentApr = minApr;
+
+    uint256 internal onePercent = 1000000;
+    uint256 internal hundredPercent = 100000000;
+
+    event Epoch(uint256 indexed epoch, uint256 rewardAmount, uint256 newApr);
+
+    modifier triggerEpochBefore {
+        if (!rewards[now / rewardEpochLength].paid) {
+            payReward();
+        }
+        _;
+    }
+
+    modifier triggerEpochAfter {
+        _;
+        if (!rewards[now / rewardEpochLength].paid) {
+            payReward();
+        }
+    }
     
     constructor(address api3TokenAddress)
         public
@@ -91,21 +106,12 @@ contract StateUtils {
         // An updateCoeff of 1,000,000 means that for each 1% deviation from the 
         // stake target, APR will be updated by 1%.
         uint256 aprUpdate = deltaPercentage.mul(updateCoeff).div(onePercent);
-        // console.log('CONTRACT_APR_UPDATE');
-        // console.log(aprUpdate);
-
         currentApr = currentApr.mul(aprUpdate.add(hundredPercent)).div(hundredPercent);
-        // console.log('CONTRACT_BELOW_TARGET');
-        // console.log(totalStakedNow < stakeTarget);
-        // console.log('CONTRACT_APR_CALC');
-        // console.log(currentApr);
-        
+
         if (currentApr > maxApr)
         {
             currentApr = maxApr;
         }
-        // console.log('CONTRACT_NEW_APR');
-        // console.log(currentApr);
     }
 
     function payReward()
@@ -113,14 +119,16 @@ contract StateUtils {
     {
         updateCurrentApr();
         uint256 totalStakedNow = getValue(totalStaked);
-        uint256 rewardAmount = totalStakedNow * currentApr / 52 / 100000000;
+        uint256 rewardAmount = totalStakedNow.mul(currentApr).div(52).div(100000000);
         uint256 indEpoch = now / rewardEpochLength;
         rewards[indEpoch] = RewardEpoch(true, rewardAmount, block.number);
+        emit Epoch(indEpoch, rewardAmount, currentApr);
         //Cover the case when multiple epochs have passed without change in totalStaked
         //We have to add each epoch to the mapping rather than just total the rewards because
         //rewardVestingPeriod is denominated in epochs.
         while (!rewards[indEpoch - 1].paid && indEpoch - 1 >= genesisEpoch) {
             rewards[indEpoch - 1] = RewardEpoch(true, rewardAmount, block.number);
+            emit Epoch(indEpoch, rewardAmount, currentApr);
             indEpoch--;
         }
         if (!api3Token.getMinterStatus(address(this))) {
@@ -134,13 +142,8 @@ contract StateUtils {
     }
 
     function updateUserLock(address userAddress, uint256 targetEpoch)
-        public
+        public triggerEpochBefore
     {
-        //Effectively this condition only obtains when we're targeting the current epoch.
-        if (!rewards[targetEpoch].paid) {
-            payReward();
-        }
-
         //Reward intervals are sufficiently deterministic for us to access a mapping by epoch instead of iterating over
         //checkpoints. We start totaling locked rewards from epoch T-52 (floor +0) and unlocked rewards from epoch +52.
         uint256 currentEpoch = now / rewardEpochLength;
@@ -187,39 +190,37 @@ contract StateUtils {
                         Checkpoint storage lock = claimLocks[ind];
                         uint256 totalSharesAtBlock = getValueAt(totalShares, lock.fromBlock);
                         uint256 userSharesAtBlock = getValueAt(user.shares, lock.fromBlock);
-                        locked += lock.value * userSharesAtBlock / totalSharesAtBlock;
+                        locked += lock.value.mul(userSharesAtBlock).div(totalSharesAtBlock);
                     }
                 }
             }
 
-            if (rewards[genesisEpoch].paid) {
+            for (
+                uint256 ind = user.lastUpdateEpoch < oldestLockedEpoch ? oldestLockedEpoch : user.lastUpdateEpoch + 1;
+                ind <= currentEpoch;
+                ind++
+            ) {
+                RewardEpoch storage lockedReward = rewards[ind];
+                uint256 totalSharesThen = getValueAt(totalShares, lockedReward.atBlock);
+                uint256 userSharesThen = getValueAt(user.shares, lockedReward.atBlock);
+                locked += lockedReward.amount.mul(userSharesThen).div(totalSharesThen);
+            }
+            if (currentEpoch >= firstUnlockEpoch) {
                 for (
-                    uint256 ind = user.lastUpdateEpoch < oldestLockedEpoch ? oldestLockedEpoch : user.lastUpdateEpoch + 1;
+                    uint256 ind = user.lastUpdateEpoch < firstUnlockEpoch ? firstUnlockEpoch : user.lastUpdateEpoch + 1;
                     ind <= currentEpoch;
                     ind++
                 ) {
-                    RewardEpoch storage lockedReward = rewards[ind];
-                    uint256 totalSharesThen = getValueAt(totalShares, lockedReward.atBlock);
-                    uint256 userSharesThen = getValueAt(user.shares, lockedReward.atBlock);
-                    locked += lockedReward.amount * userSharesThen / totalSharesThen;
-                }
-                if (currentEpoch >= firstUnlockEpoch) {
-                    for (
-                        uint256 ind = user.lastUpdateEpoch < firstUnlockEpoch ? firstUnlockEpoch : user.lastUpdateEpoch + 1;
-                        ind <= currentEpoch;
-                        ind++
-                    ) {
-                        RewardEpoch storage unlockedReward = rewards[ind - rewardVestingPeriod];
-                        uint256 totalSharesThen = getValueAt(totalShares, unlockedReward.atBlock);
-                        uint256 userSharesThen = getValueAt(user.shares, unlockedReward.atBlock);
-                        locked -= unlockedReward.amount * userSharesThen / totalSharesThen;
-                    }        
-                }
+                    RewardEpoch storage unlockedReward = rewards[ind - rewardVestingPeriod];
+                    uint256 totalSharesThen = getValueAt(totalShares, unlockedReward.atBlock);
+                    uint256 userSharesThen = getValueAt(user.shares, unlockedReward.atBlock);
+                    locked -= unlockedReward.amount.mul(userSharesThen).div(totalSharesThen);
+                }        
             }
         }
 
         user.locked = locked;
-        //We only set the global lastUpdateBlock and user lastUpdate.claimIndex atomically,
+        //We only set the global lastUpdateBlock and user lastUpdateClaimIndex atomically,
         //ie. when fast-forwarding User all the way to present.
         uint256 claimIndexAtUpdate = 0;
         if (updateBlock == block.number - 1) {
