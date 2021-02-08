@@ -14,18 +14,17 @@ contract StakeUtils is TransferUtils {
         public
     {
         //Pay reward to update totalStaked if that hasn't occurred yet for this epoch
-        if (!rewardPaidForEpoch[now / rewardEpochLength])
+        if (!rewards[now / rewardEpochLength].paid)
         {
             payReward();
         }
         User storage user = users[msg.sender];
         require(user.unstaked >= amount);
         user.unstaked -= amount;
-        uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
-        uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
+        uint256 totalSharesNow = getValue(totalShares);
+        uint256 totalStakedNow = getValue(totalStaked);
         uint256 sharesToMint = totalSharesNow * amount / totalStakedNow;
-        User memory user = user;
-        uint256 userSharesNow = user.shares.length > 0 ? user.shares[user.shares.length - 1].value : 0;
+        uint256 userSharesNow = getValue(user.shares);
         user.shares.push(Checkpoint(block.number, userSharesNow + sharesToMint));
         totalShares.push(Checkpoint(block.number, totalSharesNow + sharesToMint));
         totalStaked.push(Checkpoint(block.number, totalStakedNow + amount));
@@ -103,9 +102,9 @@ contract StakeUtils is TransferUtils {
                 && now < user.unstakeScheduledAt + unstakeWaitPeriod + rewardEpochLength * 2
             );
         uint256 amount = user.unstakeAmount;
-        uint256 totalSharesNow = totalShares[totalShares.length - 1].value;
-        uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
-        uint256 userSharesNow = user.shares[user.shares.length - 1].value;
+        uint256 totalSharesNow = getValue(totalShares);
+        uint256 totalStakedNow = getValue(totalStaked);
+        uint256 userSharesNow = getValue(user.shares);
         uint256 sharesToBurn = totalSharesNow * amount / totalStakedNow;
         // If the user doesn't have the tokens to be unstaked, unstake as much as possible
         if (sharesToBurn > userSharesNow)
@@ -121,7 +120,7 @@ contract StakeUtils is TransferUtils {
         user.unstakeScheduledAt = 0;
         user.unstakeAmount = 0;
         //Trigger reward and update APR if it hasn't happened for this epoch already
-        if (!rewardPaidForEpoch[now / rewardEpochLength])
+        if (!rewards[now / rewardEpochLength].paid)
         {
             payReward();
         }

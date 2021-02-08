@@ -45,14 +45,14 @@ contract ClaimUtils is StakeUtils {
         totalStaked.push(Checkpoint(block.number, totalStakedNow - payoutAmount));
         api3Token.transfer(msg.sender, payoutAmount);
         resolveClaim(claimReferenceBlock);
-        if (!rewardPaidForEpoch[now / rewardEpochLength])
+        if (!rewards[now / rewardEpochLength].paid)
         {
             payReward();
         }
     }
 
     function resolveClaim(uint256 claimReferenceBlock) internal {
-        uint256 lockIndex = getIndexOf(locks, claimReferenceBlock);
-        delete locks[lockIndex];
+        uint256 lockIndex = getIndexOf(claimLocks, claimReferenceBlock);
+        delete claimLocks[lockIndex];
     }
 }

@@ -1,11 +1,13 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
 import "./auxiliary/interfaces/IApi3Token.sol";
 import "./auxiliary/SafeMath.sol";
 import "hardhat/console.sol";
 
 contract StateUtils {
+    using SafeMath for uint256;
     struct Checkpoint
     {
         uint256 fromBlock;
@@ -18,12 +20,6 @@ contract StateUtils {
         uint256 atBlock;
     }
 
-    struct UserUpdate {
-        uint256 epoch;
-        uint256 atBlock;
-        uint256 claimIndex;
-    }
-
     struct User {
         uint256 unstaked;
         Checkpoint[] shares;
@@ -31,7 +27,9 @@ contract StateUtils {
         uint256 unstakeScheduledAt;
         uint256 unstakeAmount;
         mapping(uint256 => bool) revokedEpochReward;
-        UserUpdate lastUpdate;
+        uint256 lastUpdateBlock;
+        uint256 lastUpdateEpoch;
+        uint256 lastUpdateClaimIndex;
     }
 
     IApi3Token internal api3Token;
@@ -52,8 +50,8 @@ contract StateUtils {
 
     uint256 public lastUpdateBlock;
 
-    // uint256 internal onePercent = 1000000;
-    // uint256 internal hundredPercent = 100000000;
+    uint256 internal onePercent = 1000000;
+    uint256 internal hundredPercent = 100000000;
     // VVV These parameters will be governable by the DAO VVV
     // Percentages are multipl1ied by 1,000,000.
     uint256 public minApr = 2500000; // 2.5%
@@ -121,7 +119,7 @@ contract StateUtils {
         //Cover the case when multiple epochs have passed without change in totalStaked
         //We have to add each epoch to the mapping rather than just total the rewards because
         //rewardVestingPeriod is denominated in epochs.
-        while (!rewards[indEpoch - 1].paid) {
+        while (!rewards[indEpoch - 1].paid && indEpoch - 1 >= genesisEpoch) {
             rewards[indEpoch - 1] = RewardEpoch(true, rewardAmount, block.number);
             indEpoch--;
         }
@@ -143,25 +141,24 @@ contract StateUtils {
             payReward();
         }
 
-        //Reward intervals are sufficiently deterministic for us to access a mapping by epochs instead of iterating over
+        //Reward intervals are sufficiently deterministic for us to access a mapping by epoch instead of iterating over
         //checkpoints. We start totaling locked rewards from epoch T-52 (floor +0) and unlocked rewards from epoch +52.
         uint256 currentEpoch = now / rewardEpochLength;
         uint256 firstUnlockEpoch = genesisEpoch + rewardVestingPeriod;
         uint256 oldestLockedEpoch = currentEpoch >= firstUnlockEpoch ?
                                     currentEpoch - rewardVestingPeriod : genesisEpoch;
+        
+        uint256 targetBlock = targetEpoch == currentEpoch ? block.number : rewards[targetEpoch].atBlock;
+        uint256 updateBlock = targetBlock - 1;
 
         //Governance updates of unstakeWaitingPeriod are prohibited from exceeding rewardVestingPeriod,
         //so in the extreme future case where we could be targeting an epoch more than rewardVestingPeriod
         //before present, we can just set locked to 0. We prevent exploitation of this elsewhere by explicitly
         //requiring that User is caught up to lastUpdateBlock in order to execute a withdrawal.
+        User storage user = users[userAddress];
         uint256 locked = 0;
         if (targetEpoch > oldestLockedEpoch) {
-            uint256 targetBlock = targetEpoch == currentEpoch ? 
-                                                 block.number : rewards[targetEpoch].atBlock;
-            uint256 updateBlock = targetBlock - 1;
-            User storage user = users[userAddress];
             locked = user.locked;
-            UserUpdate lastUpdate = user.lastUpdate;
 
             //Claim locks represent the value of currently undecided claims, which remain pending no longer than unstakeWaitPeriod,
             //so we only care about claim locks from the last unstakeWaitPeriod blocks, and if we're doing a partial update
@@ -180,8 +177,8 @@ contract StateUtils {
                 //We avoid iterating over storage as much as possible, so User stores the index of the last claim it updated on 
                 //to initialize our loop.
                 for (
-                    uint256 ind = lastUpdate.claimIndex < oldestValidClaimIndex ? 
-                                  oldestValidClaimIndex : lastUpdate.claimIndex + 1;
+                    uint256 ind = user.lastUpdateClaimIndex < oldestValidClaimIndex ? 
+                                  oldestValidClaimIndex : user.lastUpdateClaimIndex + 1;
                     ind < claimLocks.length && claimLocks[ind].fromBlock < updateBlock;
                     ind++
                 ) {
@@ -196,13 +193,12 @@ contract StateUtils {
             }
 
             if (rewards[genesisEpoch].paid) {
-                uint256 lastUpdateEpoch = lastUpdate.epoch;
                 for (
-                    uint256 ind = lastUpdate.epoch < oldestLockedEpoch ? oldestLockedEpoch : lastUpdate.epoch + 1;
+                    uint256 ind = user.lastUpdateEpoch < oldestLockedEpoch ? oldestLockedEpoch : user.lastUpdateEpoch + 1;
                     ind <= currentEpoch;
                     ind++
                 ) {
-                    uint256 storage lockedReward = rewards[ind];
+                    RewardEpoch storage lockedReward = rewards[ind];
                     uint256 totalSharesThen = getValueAt(totalShares, lockedReward.atBlock);
                     uint256 userSharesThen = getValueAt(user.shares, lockedReward.atBlock);
                     locked += lockedReward.amount * userSharesThen / totalSharesThen;
@@ -213,7 +209,7 @@ contract StateUtils {
                         ind <= currentEpoch;
                         ind++
                     ) {
-                        uint256 storage unlockedReward = rewards[ind - rewardVestingPeriod];
+                        RewardEpoch storage unlockedReward = rewards[ind - rewardVestingPeriod];
                         uint256 totalSharesThen = getValueAt(totalShares, unlockedReward.atBlock);
                         uint256 userSharesThen = getValueAt(user.shares, unlockedReward.atBlock);
                         locked -= unlockedReward.amount * userSharesThen / totalSharesThen;
@@ -230,7 +226,9 @@ contract StateUtils {
             lastUpdateBlock = updateBlock;
             claimIndexAtUpdate = claimLocks.length - 1;
         }
-        user.lastUpdate = UserUpdate(targetEpoch, updateBlock, claimIndexAtUpdate);
+        user.lastUpdateEpoch = targetEpoch;
+        user.lastUpdateBlock = updateBlock;
+        user.lastUpdateClaimIndex = claimIndexAtUpdate;
     }
 
     // From https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431

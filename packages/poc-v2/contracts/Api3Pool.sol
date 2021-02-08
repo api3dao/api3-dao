@@ -4,9 +4,7 @@ pragma solidity 0.6.12;
 import "./TimelockUtils.sol";
 
 
-contract Api3Pool is TimelockUtils {
-    using SafeMath for uint256;
-    
+contract Api3Pool is TimelockUtils {    
     constructor(address api3TokenAddress)
         TimelockUtils(api3TokenAddress)
         public

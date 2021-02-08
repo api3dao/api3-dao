@@ -24,19 +24,16 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
   functions: {
     "balanceOf(address)": FunctionFragment;
     "balanceOfAt(uint256,address)": FunctionFragment;
-    "claimReleaseReferenceBlocks(uint256)": FunctionFragment;
-    "claimReleases(uint256)": FunctionFragment;
+    "claimLocks(uint256)": FunctionFragment;
     "currentApr()": FunctionFragment;
     "deposit(address,uint256,address)": FunctionFragment;
-    "locks(uint256)": FunctionFragment;
+    "genesisEpoch()": FunctionFragment;
+    "lastUpdateBlock()": FunctionFragment;
     "maxApr()": FunctionFragment;
     "minApr()": FunctionFragment;
-    "rewardAmounts(uint256)": FunctionFragment;
-    "rewardBlocks(uint256)": FunctionFragment;
     "rewardEpochLength()": FunctionFragment;
-    "rewardPaidForEpoch(uint256)": FunctionFragment;
-    "rewardReleases(uint256)": FunctionFragment;
     "rewardVestingPeriod()": FunctionFragment;
+    "rewards(uint256)": FunctionFragment;
     "stakeTarget()": FunctionFragment;
     "totalDeposits()": FunctionFragment;
     "totalDepositsAt(uint256)": FunctionFragment;
@@ -44,10 +41,9 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     "totalStaked(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "totalSupplyAt(uint256)": FunctionFragment;
-    "updateAndGetBalanceOf(address)": FunctionFragment;
-    "updateAndGetBalanceOfAt(address,uint256)": FunctionFragment;
+    "unstakeWaitPeriod()": FunctionFragment;
     "updateCoeff()": FunctionFragment;
-    "updateUserState(address,uint256)": FunctionFragment;
+    "updateUserLock(address,uint256)": FunctionFragment;
     "users(address)": FunctionFragment;
     "withdraw(address,uint256)": FunctionFragment;
   };
@@ -58,11 +54,7 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "claimReleaseReferenceBlocks",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "claimReleases",
+    functionFragment: "claimLocks",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -73,32 +65,27 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     functionFragment: "deposit",
     values: [string, BigNumberish, string]
   ): string;
-  encodeFunctionData(functionFragment: "locks", values: [BigNumberish]): string;
+  encodeFunctionData(
+    functionFragment: "genesisEpoch",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "lastUpdateBlock",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "maxApr", values?: undefined): string;
   encodeFunctionData(functionFragment: "minApr", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "rewardAmounts",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "rewardBlocks",
-    values: [BigNumberish]
-  ): string;
   encodeFunctionData(
     functionFragment: "rewardEpochLength",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "rewardPaidForEpoch",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "rewardReleases",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "rewardVestingPeriod",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "rewards",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "stakeTarget",
@@ -129,19 +116,15 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "updateAndGetBalanceOf",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "updateAndGetBalanceOfAt",
-    values: [string, BigNumberish]
+    functionFragment: "unstakeWaitPeriod",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "updateCoeff",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "updateUserState",
+    functionFragment: "updateUserLock",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "users", values: [string]): string;
@@ -155,43 +138,28 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     functionFragment: "balanceOfAt",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "claimReleaseReferenceBlocks",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "claimReleases",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "claimLocks", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "currentApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "locks", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "genesisEpoch",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "lastUpdateBlock",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "minApr", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "rewardAmounts",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "rewardBlocks",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "rewardEpochLength",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "rewardPaidForEpoch",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "rewardReleases",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "rewardVestingPeriod",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "rewards", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "stakeTarget",
     data: BytesLike
@@ -221,11 +189,7 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateAndGetBalanceOf",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "updateAndGetBalanceOfAt",
+    functionFragment: "unstakeWaitPeriod",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -233,7 +197,7 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateUserState",
+    functionFragment: "updateUserLock",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "users", data: BytesLike): Result;
@@ -278,24 +242,14 @@ export class TransferUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    claimReleaseReferenceBlocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    "claimReleaseReferenceBlocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    claimReleases(
+    claimLocks(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
     >;
 
-    "claimReleases(uint256)"(
+    "claimLocks(uint256)"(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
@@ -320,19 +274,13 @@ export class TransferUtils extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    locks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
+    genesisEpoch(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    "locks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
+    "genesisEpoch()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    lastUpdateBlock(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "lastUpdateBlock()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     maxApr(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -342,57 +290,35 @@ export class TransferUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    rewardAmounts(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    "rewardAmounts(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    rewardBlocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    "rewardBlocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
     rewardEpochLength(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "rewardEpochLength()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    rewardPaidForEpoch(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    "rewardPaidForEpoch(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    rewardReleases(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
-
-    "rewardReleases(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
-
     rewardVestingPeriod(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "rewardVestingPeriod()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    rewards(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, BigNumber, BigNumber] & {
+        paid: boolean;
+        amount: BigNumber;
+        atBlock: BigNumber;
+      }
+    >;
+
+    "rewards(uint256)"(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, BigNumber, BigNumber] & {
+        paid: boolean;
+        amount: BigNumber;
+        atBlock: BigNumber;
+      }
+    >;
 
     stakeTarget(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -454,41 +380,23 @@ export class TransferUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    updateAndGetBalanceOf(
-      userAddress: string,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
+    unstakeWaitPeriod(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    "updateAndGetBalanceOf(address)"(
-      userAddress: string,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    updateAndGetBalanceOfAt(
-      userAddress: string,
-      fromBlock: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    "updateAndGetBalanceOfAt(address,uint256)"(
-      userAddress: string,
-      fromBlock: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
+    "unstakeWaitPeriod()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     updateCoeff(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "updateCoeff()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    updateUserState(
+    updateUserLock(
       userAddress: string,
-      targetBlock: BigNumberish,
+      targetEpoch: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "updateUserState(address,uint256)"(
+    "updateUserLock(address,uint256)"(
       userAddress: string,
-      targetBlock: BigNumberish,
+      targetEpoch: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -496,12 +404,22 @@ export class TransferUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber
+      ] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        lastStateUpdateTargetBlock: BigNumber;
         unstakeScheduledAt: BigNumber;
         unstakeAmount: BigNumber;
+        lastUpdateBlock: BigNumber;
+        lastUpdateEpoch: BigNumber;
+        lastUpdateClaimIndex: BigNumber;
       }
     >;
 
@@ -509,12 +427,22 @@ export class TransferUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber
+      ] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        lastStateUpdateTargetBlock: BigNumber;
         unstakeScheduledAt: BigNumber;
         unstakeAmount: BigNumber;
+        lastUpdateBlock: BigNumber;
+        lastUpdateEpoch: BigNumber;
+        lastUpdateClaimIndex: BigNumber;
       }
     >;
 
@@ -550,24 +478,14 @@ export class TransferUtils extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  claimReleaseReferenceBlocks(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  "claimReleaseReferenceBlocks(uint256)"(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  claimReleases(
+  claimLocks(
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
     [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
   >;
 
-  "claimReleases(uint256)"(
+  "claimLocks(uint256)"(
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
@@ -592,19 +510,13 @@ export class TransferUtils extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  locks(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-  >;
+  genesisEpoch(overrides?: CallOverrides): Promise<BigNumber>;
 
-  "locks(uint256)"(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-  >;
+  "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  lastUpdateBlock(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "lastUpdateBlock()"(overrides?: CallOverrides): Promise<BigNumber>;
 
   maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -614,57 +526,35 @@ export class TransferUtils extends Contract {
 
   "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  rewardAmounts(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  "rewardAmounts(uint256)"(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  rewardBlocks(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  "rewardBlocks(uint256)"(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   rewardEpochLength(overrides?: CallOverrides): Promise<BigNumber>;
 
   "rewardEpochLength()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  rewardPaidForEpoch(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  "rewardPaidForEpoch(uint256)"(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  rewardReleases(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-  >;
-
-  "rewardReleases(uint256)"(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-  >;
-
   rewardVestingPeriod(overrides?: CallOverrides): Promise<BigNumber>;
 
   "rewardVestingPeriod()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  rewards(
+    arg0: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [boolean, BigNumber, BigNumber] & {
+      paid: boolean;
+      amount: BigNumber;
+      atBlock: BigNumber;
+    }
+  >;
+
+  "rewards(uint256)"(
+    arg0: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [boolean, BigNumber, BigNumber] & {
+      paid: boolean;
+      amount: BigNumber;
+      atBlock: BigNumber;
+    }
+  >;
 
   stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -726,41 +616,23 @@ export class TransferUtils extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  updateAndGetBalanceOf(
-    userAddress: string,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
+  unstakeWaitPeriod(overrides?: CallOverrides): Promise<BigNumber>;
 
-  "updateAndGetBalanceOf(address)"(
-    userAddress: string,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  updateAndGetBalanceOfAt(
-    userAddress: string,
-    fromBlock: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  "updateAndGetBalanceOfAt(address,uint256)"(
-    userAddress: string,
-    fromBlock: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
+  "unstakeWaitPeriod()"(overrides?: CallOverrides): Promise<BigNumber>;
 
   updateCoeff(overrides?: CallOverrides): Promise<BigNumber>;
 
   "updateCoeff()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  updateUserState(
+  updateUserLock(
     userAddress: string,
-    targetBlock: BigNumberish,
+    targetEpoch: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "updateUserState(address,uint256)"(
+  "updateUserLock(address,uint256)"(
     userAddress: string,
-    targetBlock: BigNumberish,
+    targetEpoch: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -768,12 +640,22 @@ export class TransferUtils extends Contract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+    [
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber
+    ] & {
       unstaked: BigNumber;
       locked: BigNumber;
-      lastStateUpdateTargetBlock: BigNumber;
       unstakeScheduledAt: BigNumber;
       unstakeAmount: BigNumber;
+      lastUpdateBlock: BigNumber;
+      lastUpdateEpoch: BigNumber;
+      lastUpdateClaimIndex: BigNumber;
     }
   >;
 
@@ -781,12 +663,22 @@ export class TransferUtils extends Contract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+    [
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber
+    ] & {
       unstaked: BigNumber;
       locked: BigNumber;
-      lastStateUpdateTargetBlock: BigNumber;
       unstakeScheduledAt: BigNumber;
       unstakeAmount: BigNumber;
+      lastUpdateBlock: BigNumber;
+      lastUpdateEpoch: BigNumber;
+      lastUpdateClaimIndex: BigNumber;
     }
   >;
 
@@ -825,24 +717,14 @@ export class TransferUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    claimReleaseReferenceBlocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "claimReleaseReferenceBlocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    claimReleases(
+    claimLocks(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
     >;
 
-    "claimReleases(uint256)"(
+    "claimLocks(uint256)"(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
@@ -867,19 +749,13 @@ export class TransferUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    locks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
+    genesisEpoch(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "locks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
+    "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    lastUpdateBlock(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "lastUpdateBlock()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -889,57 +765,35 @@ export class TransferUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    rewardAmounts(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "rewardAmounts(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    rewardBlocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "rewardBlocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     rewardEpochLength(overrides?: CallOverrides): Promise<BigNumber>;
 
     "rewardEpochLength()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    rewardPaidForEpoch(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
-    "rewardPaidForEpoch(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
-    rewardReleases(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
-
-    "rewardReleases(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
-
     rewardVestingPeriod(overrides?: CallOverrides): Promise<BigNumber>;
 
     "rewardVestingPeriod()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    rewards(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, BigNumber, BigNumber] & {
+        paid: boolean;
+        amount: BigNumber;
+        atBlock: BigNumber;
+      }
+    >;
+
+    "rewards(uint256)"(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, BigNumber, BigNumber] & {
+        paid: boolean;
+        amount: BigNumber;
+        atBlock: BigNumber;
+      }
+    >;
 
     stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1001,41 +855,23 @@ export class TransferUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    updateAndGetBalanceOf(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    unstakeWaitPeriod(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "updateAndGetBalanceOf(address)"(
-      userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    updateAndGetBalanceOfAt(
-      userAddress: string,
-      fromBlock: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "updateAndGetBalanceOfAt(address,uint256)"(
-      userAddress: string,
-      fromBlock: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    "unstakeWaitPeriod()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     updateCoeff(overrides?: CallOverrides): Promise<BigNumber>;
 
     "updateCoeff()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    updateUserState(
+    updateUserLock(
       userAddress: string,
-      targetBlock: BigNumberish,
+      targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "updateUserState(address,uint256)"(
+    "updateUserLock(address,uint256)"(
       userAddress: string,
-      targetBlock: BigNumberish,
+      targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1043,12 +879,22 @@ export class TransferUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber
+      ] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        lastStateUpdateTargetBlock: BigNumber;
         unstakeScheduledAt: BigNumber;
         unstakeAmount: BigNumber;
+        lastUpdateBlock: BigNumber;
+        lastUpdateEpoch: BigNumber;
+        lastUpdateClaimIndex: BigNumber;
       }
     >;
 
@@ -1056,12 +902,22 @@ export class TransferUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber
+      ] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        lastStateUpdateTargetBlock: BigNumber;
         unstakeScheduledAt: BigNumber;
         unstakeAmount: BigNumber;
+        lastUpdateBlock: BigNumber;
+        lastUpdateEpoch: BigNumber;
+        lastUpdateClaimIndex: BigNumber;
       }
     >;
 
@@ -1103,22 +959,12 @@ export class TransferUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    claimReleaseReferenceBlocks(
+    claimLocks(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "claimReleaseReferenceBlocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    claimReleases(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "claimReleases(uint256)"(
+    "claimLocks(uint256)"(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1141,12 +987,13 @@ export class TransferUtils extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    locks(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    genesisEpoch(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "locks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    lastUpdateBlock(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "lastUpdateBlock()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1156,53 +1003,20 @@ export class TransferUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    rewardAmounts(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "rewardAmounts(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    rewardBlocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "rewardBlocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     rewardEpochLength(overrides?: CallOverrides): Promise<BigNumber>;
 
     "rewardEpochLength()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    rewardPaidForEpoch(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "rewardPaidForEpoch(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    rewardReleases(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "rewardReleases(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     rewardVestingPeriod(overrides?: CallOverrides): Promise<BigNumber>;
 
     "rewardVestingPeriod()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    rewards(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "rewards(uint256)"(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1256,41 +1070,23 @@ export class TransferUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    updateAndGetBalanceOf(
-      userAddress: string,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
+    unstakeWaitPeriod(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "updateAndGetBalanceOf(address)"(
-      userAddress: string,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    updateAndGetBalanceOfAt(
-      userAddress: string,
-      fromBlock: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    "updateAndGetBalanceOfAt(address,uint256)"(
-      userAddress: string,
-      fromBlock: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
+    "unstakeWaitPeriod()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     updateCoeff(overrides?: CallOverrides): Promise<BigNumber>;
 
     "updateCoeff()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    updateUserState(
+    updateUserLock(
       userAddress: string,
-      targetBlock: BigNumberish,
+      targetEpoch: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "updateUserState(address,uint256)"(
+    "updateUserLock(address,uint256)"(
       userAddress: string,
-      targetBlock: BigNumberish,
+      targetEpoch: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -1337,22 +1133,12 @@ export class TransferUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    claimReleaseReferenceBlocks(
+    claimLocks(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "claimReleaseReferenceBlocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    claimReleases(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "claimReleases(uint256)"(
+    "claimLocks(uint256)"(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1375,13 +1161,13 @@ export class TransferUtils extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    locks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    genesisEpoch(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    "locks(uint256)"(
-      arg0: BigNumberish,
+    "genesisEpoch()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    lastUpdateBlock(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "lastUpdateBlock()"(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1393,49 +1179,9 @@ export class TransferUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    rewardAmounts(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "rewardAmounts(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    rewardBlocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "rewardBlocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     rewardEpochLength(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "rewardEpochLength()"(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    rewardPaidForEpoch(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "rewardPaidForEpoch(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    rewardReleases(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "rewardReleases(uint256)"(
-      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1444,6 +1190,16 @@ export class TransferUtils extends Contract {
     ): Promise<PopulatedTransaction>;
 
     "rewardVestingPeriod()"(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    rewards(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "rewards(uint256)"(
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1499,41 +1255,25 @@ export class TransferUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    updateAndGetBalanceOf(
-      userAddress: string,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
+    unstakeWaitPeriod(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    "updateAndGetBalanceOf(address)"(
-      userAddress: string,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    updateAndGetBalanceOfAt(
-      userAddress: string,
-      fromBlock: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    "updateAndGetBalanceOfAt(address,uint256)"(
-      userAddress: string,
-      fromBlock: BigNumberish,
-      overrides?: Overrides
+    "unstakeWaitPeriod()"(
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     updateCoeff(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "updateCoeff()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    updateUserState(
+    updateUserLock(
       userAddress: string,
-      targetBlock: BigNumberish,
+      targetEpoch: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "updateUserState(address,uint256)"(
+    "updateUserLock(address,uint256)"(
       userAddress: string,
-      targetBlock: BigNumberish,
+      targetEpoch: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 

@@ -27,7 +27,7 @@ contract TransferUtils is GetterUtils {
         )
         public
     {
-        if (users[msg.sender].lastUpdate.atBlock < lastUpdateBlock) {
+        if (users[msg.sender].lastUpdateBlock < lastUpdateBlock) {
             updateUserLock(msg.sender, block.number);
         }
         require(users[msg.sender].unstaked - users[msg.sender].locked >= amount);
