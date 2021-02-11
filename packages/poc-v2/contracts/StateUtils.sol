@@ -148,6 +148,7 @@ contract StateUtils {
         external view returns(uint256)
     {
         uint256 currentEpoch = now.div(rewardEpochLength);
+        require(targetEpoch <= currentEpoch, "Invalid target");
         uint256 firstUnlockEpoch = genesisEpoch.add(rewardVestingPeriod);
         uint256 oldestLockedEpoch = currentEpoch >= firstUnlockEpoch ?
                                     currentEpoch.sub(rewardVestingPeriod) : genesisEpoch;
@@ -156,7 +157,7 @@ contract StateUtils {
         uint256 lastUpdateEpoch = user.lastUpdateEpoch;
         uint256 locked = user.locked;
         for (
-            uint256 ind = user.lastUpdateEpoch < oldestLockedEpoch ? oldestLockedEpoch : user.lastUpdateEpoch.add(1);
+            uint256 ind = lastUpdateEpoch < oldestLockedEpoch ? oldestLockedEpoch : lastUpdateEpoch.add(1);
             ind <= currentEpoch;
             ind = ind.add(1)
         ) {
@@ -167,7 +168,7 @@ contract StateUtils {
         }
         if (currentEpoch >= firstUnlockEpoch) {
             for (
-                uint256 ind = user.lastUpdateEpoch < firstUnlockEpoch ? firstUnlockEpoch : user.lastUpdateEpoch.add(1);
+                uint256 ind = lastUpdateEpoch < firstUnlockEpoch ? firstUnlockEpoch : lastUpdateEpoch.add(1);
                 ind <= currentEpoch;
                 ind = ind.add(1)
             ) {
@@ -214,8 +215,8 @@ contract StateUtils {
     function getIndexOf(Checkpoint[] storage checkpoints, uint _block) 
     internal view returns (uint) {
         // Repeating the shortcut
-        if (_block >= checkpoints[checkpoints.length-1].fromBlock)
-            return checkpoints.length-1;
+        if (_block >= checkpoints[checkpoints.length.sub(1)].fromBlock)
+            return checkpoints.length.sub(1);
         
         // Binary search of the value in the array
         uint min = 0;

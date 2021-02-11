@@ -18,7 +18,7 @@ contract TestPool is Api3Pool {
 
     function testPayReward(uint256 deltaTotalStaked) public {
         uint256 _totalStaked = this.totalSupply();
-        totalStaked.push(Checkpoint(block.number, _totalStaked + deltaTotalStaked));
+        totalStaked.push(Checkpoint(block.number, _totalStaked.add(deltaTotalStaked)));
         payReward();
     }
 }

@@ -22,7 +22,6 @@ import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 
 interface TransferUtilsInterface extends ethers.utils.Interface {
   functions: {
-    "BEHIND_CURRENT_EPOCH()": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "balanceOfAt(uint256,address)": FunctionFragment;
     "currentApr()": FunctionFragment;
@@ -48,10 +47,6 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     "withdraw(address,uint256)": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "BEHIND_CURRENT_EPOCH",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(
     functionFragment: "balanceOfAt",
@@ -133,10 +128,6 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "BEHIND_CURRENT_EPOCH",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "balanceOfAt",
@@ -228,10 +219,6 @@ export class TransferUtils extends Contract {
   interface: TransferUtilsInterface;
 
   functions: {
-    BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<[string]>;
-
-    "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<[string]>;
-
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides
@@ -445,10 +432,6 @@ export class TransferUtils extends Contract {
     ): Promise<ContractTransaction>;
   };
 
-  BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<string>;
-
-  "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<string>;
-
   balanceOf(userAddress: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   "balanceOf(address)"(
@@ -659,10 +642,6 @@ export class TransferUtils extends Contract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<string>;
-
-    "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<string>;
-
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides
@@ -893,10 +872,6 @@ export class TransferUtils extends Contract {
   };
 
   estimateGas: {
-    BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<BigNumber>;
-
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides
@@ -1069,14 +1044,6 @@ export class TransferUtils extends Contract {
   };
 
   populateTransaction: {
-    BEHIND_CURRENT_EPOCH(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "BEHIND_CURRENT_EPOCH()"(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides

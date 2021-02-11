@@ -21,6 +21,9 @@ contract TimelockUtils is ClaimUtils {
     // transferring them here, the record will be kept at userToDepositorToTimelock[X][Y]
     mapping(address => mapping(address => Timelock)) public userToDepositorToTimelock;
 
+    event VestingDeposit(address indexed user, uint256 amount, uint256 start, uint256 end);
+    event TimelockUpdate(address indexed user, uint256 locked, uint256 remaining);
+
     constructor(address api3TokenAddress)
         ClaimUtils(api3TokenAddress)
         public
@@ -41,6 +44,7 @@ contract TimelockUtils is ClaimUtils {
         users[userAddress].locked = users[userAddress].locked.add(amount);
         userToDepositorToTimelock[userAddress][msg.sender] = Timelock(amount, amount, releaseStart, releaseEnd);
         api3Token.transferFrom(source, address(this), amount);
+        emit VestingDeposit(userAddress, amount, releaseStart, releaseEnd);
     }
 
     // This method can simply be called from Etherscan, no need to have it on the dashboard
@@ -66,5 +70,6 @@ contract TimelockUtils is ClaimUtils {
         uint256 newlyUnlocked = totalUnlocked.sub(previouslyUnlocked);
         users[userAddress].locked = users[userAddress].locked.sub(newlyUnlocked);
         userToDepositorToTimelock[userAddress][timelockContractAddress].remainingAmount = timelock.remainingAmount.sub(newlyUnlocked);
+        emit TimelockUpdate(userAddress, users[userAddress].locked, timelock.remainingAmount.sub(newlyUnlocked));
     }
 }

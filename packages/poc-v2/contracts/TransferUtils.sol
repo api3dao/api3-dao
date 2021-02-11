@@ -9,10 +9,9 @@ contract TransferUtils is GetterUtils {
         public
     {}
 
-    string public constant BEHIND_CURRENT_EPOCH = 'User state behind current epoch';
-
     modifier forceFastForward(address userAddress) {
-        require(users[userAddress].lastUpdateEpoch == now.div(rewardEpochLength), BEHIND_CURRENT_EPOCH);
+        require(users[userAddress].lastUpdateEpoch == now.div(rewardEpochLength), 
+        "User behind current epoch");
         _;
     }
 
@@ -38,7 +37,8 @@ contract TransferUtils is GetterUtils {
         )
         public forceFastForward(msg.sender)
     {
-        require(users[msg.sender].unstaked.sub(users[msg.sender].locked) >= amount);
+        require(users[msg.sender].unstaked.sub(users[msg.sender].locked) >= amount, 
+        "Amount exceeds available balance");
         users[msg.sender].unstaked = users[msg.sender].unstaked.sub(amount);
         api3Token.transfer(destination, amount);
         emit Withdrawal(msg.sender, destination, amount);

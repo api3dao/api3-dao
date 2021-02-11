@@ -22,7 +22,6 @@ import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 
 interface TestPoolInterface extends ethers.utils.Interface {
   functions: {
-    "BEHIND_CURRENT_EPOCH()": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "balanceOfAt(uint256,address)": FunctionFragment;
     "currentApr()": FunctionFragment;
@@ -64,10 +63,6 @@ interface TestPoolInterface extends ethers.utils.Interface {
     "withdraw(address,uint256)": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "BEHIND_CURRENT_EPOCH",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(
     functionFragment: "balanceOfAt",
@@ -207,10 +202,6 @@ interface TestPoolInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "BEHIND_CURRENT_EPOCH",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "balanceOfAt",
@@ -340,7 +331,9 @@ interface TestPoolInterface extends ethers.utils.Interface {
     "NewUpdateCoefficient(uint256,uint256)": EventFragment;
     "ScheduleUnstake(address,uint256,uint256)": EventFragment;
     "Stake(address,uint256)": EventFragment;
+    "TimelockUpdate(address,uint256,uint256)": EventFragment;
     "Unstake(address,uint256)": EventFragment;
+    "VestingDeposit(address,uint256,uint256,uint256)": EventFragment;
     "Withdrawal(address,address,uint256)": EventFragment;
   };
 
@@ -354,7 +347,9 @@ interface TestPoolInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "NewUpdateCoefficient"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ScheduleUnstake"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Stake"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TimelockUpdate"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unstake"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "VestingDeposit"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Withdrawal"): EventFragment;
 }
 
@@ -372,10 +367,6 @@ export class TestPool extends Contract {
   interface: TestPoolInterface;
 
   functions: {
-    BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<[string]>;
-
-    "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<[string]>;
-
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides
@@ -781,10 +772,6 @@ export class TestPool extends Contract {
     ): Promise<ContractTransaction>;
   };
 
-  BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<string>;
-
-  "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<string>;
-
   balanceOf(userAddress: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   "balanceOf(address)"(
@@ -1187,10 +1174,6 @@ export class TestPool extends Contract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<string>;
-
-    "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<string>;
-
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides
@@ -1616,7 +1599,20 @@ export class TestPool extends Contract {
 
     Stake(user: string | null, amount: null): EventFilter;
 
+    TimelockUpdate(
+      user: string | null,
+      locked: null,
+      remaining: null
+    ): EventFilter;
+
     Unstake(user: string | null, amount: null): EventFilter;
+
+    VestingDeposit(
+      user: string | null,
+      amount: null,
+      start: null,
+      end: null
+    ): EventFilter;
 
     Withdrawal(
       user: string | null,
@@ -1626,10 +1622,6 @@ export class TestPool extends Contract {
   };
 
   estimateGas: {
-    BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<BigNumber>;
-
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides
@@ -1971,14 +1963,6 @@ export class TestPool extends Contract {
   };
 
   populateTransaction: {
-    BEHIND_CURRENT_EPOCH(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "BEHIND_CURRENT_EPOCH()"(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides

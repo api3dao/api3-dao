@@ -49,6 +49,8 @@ describe('StakeUtils', () => {
     expect(unstaked).to.equal(0)
     const unpooled = await token.balanceOf(accounts[2])
     expect(unpooled).to.equal(0)
+    const apr = await pool.currentApr()
+    console.log(`\n\n\n\n ${apr} \n\n\n\n\n`)
   })
 
   it('schedules unstake', async () => {

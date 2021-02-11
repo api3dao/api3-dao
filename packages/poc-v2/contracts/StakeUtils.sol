@@ -18,7 +18,7 @@ contract StakeUtils is TransferUtils {
         public triggerEpochBefore
     {
         User storage user = users[msg.sender];
-        require(user.unstaked >= amount);
+        require(user.unstaked >= amount, "Amount exceeds user deposit");
         user.unstaked = user.unstaked.sub(amount);
         uint256 totalSharesNow = getValue(totalShares);
         uint256 totalStakedNow = getValue(totalStaked);
@@ -80,10 +80,8 @@ contract StakeUtils is TransferUtils {
         public triggerEpochAfter
     {
         User storage user = users[msg.sender];
-        require(
-            now > user.unstakeScheduledFor
-                && now < user.unstakeScheduledFor.add(rewardEpochLength)
-            );
+        require(now > user.unstakeScheduledFor, "Waiting period incomplete");
+        require(now < user.unstakeScheduledFor.add(rewardEpochLength), "Unstake window has expired");
         uint256 amount = user.unstakeAmount;
         uint256 totalSharesNow = getValue(totalShares);
         uint256 totalStakedNow = getValue(totalStaked);
