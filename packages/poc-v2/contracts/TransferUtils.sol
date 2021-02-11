@@ -9,15 +9,15 @@ contract TransferUtils is GetterUtils {
         public
     {}
 
-    event Deposit(address indexed user, uint256 amount);
-    event Withdrawal(address indexed user, address indexed destination, uint256 amount);
+    string public constant BEHIND_CURRENT_EPOCH = 'User state behind current epoch';
 
     modifier forceFastForward(address userAddress) {
-        if (users[userAddress].lastUpdateBlock < lastUpdateBlock) {
-            updateUserLock(userAddress, block.number);
-        }
+        require(users[userAddress].lastUpdateEpoch == now.div(rewardEpochLength), BEHIND_CURRENT_EPOCH);
         _;
     }
+
+    event Deposit(address indexed user, uint256 amount);
+    event Withdrawal(address indexed user, address indexed destination, uint256 amount);
 
     // Note that this method is used by TimelockManager.sol
     function deposit(
@@ -27,7 +27,7 @@ contract TransferUtils is GetterUtils {
         )
         public
     {
-        users[userAddress].unstaked += amount;
+        users[userAddress].unstaked = users[userAddress].unstaked.add(amount);
         api3Token.transferFrom(source, address(this), amount);
         emit Deposit(userAddress, amount);
     }
@@ -38,8 +38,8 @@ contract TransferUtils is GetterUtils {
         )
         public forceFastForward(msg.sender)
     {
-        require(users[msg.sender].unstaked - users[msg.sender].locked >= amount);
-        users[msg.sender].unstaked -= amount;
+        require(users[msg.sender].unstaked.sub(users[msg.sender].locked) >= amount);
+        users[msg.sender].unstaked = users[msg.sender].unstaked.sub(amount);
         api3Token.transfer(destination, amount);
         emit Withdrawal(msg.sender, destination, amount);
     }

@@ -13,14 +13,9 @@ contract GovernanceUtils is TimelockUtils {
     event NewMinApr(uint256 oldMin, uint256 newMin);
     event NewUnstakeWaitPeriod(uint256 oldPeriod, uint256 newPeriod);
     event NewUpdateCoefficient(uint256 oldCoeff, uint256 newCoeff);
-    
-    modifier noZeroValue(uint256 value) {
-        require(value > 0);
-        _;
-    }
 
     function setStakeTarget(uint256 _stakeTarget)
-        external noZeroValue(_stakeTarget) triggerEpochBefore
+        external triggerEpochBefore
         //onlyDao
     {
         uint256 oldTarget = stakeTarget;
@@ -39,7 +34,7 @@ contract GovernanceUtils is TimelockUtils {
     }
 
     function setMinApr(uint256 _minApr)
-        external noZeroValue(_minApr) triggerEpochAfter
+        external triggerEpochAfter
         //onlyDao
     {
         require(_minApr < maxApr);
@@ -52,24 +47,18 @@ contract GovernanceUtils is TimelockUtils {
         external
         //onlyDao
     {
-        //Sanity check at 1 year max, 2 week min, 50% rate of change
-        require(_unstakeWaitPeriod <= 2246400 
-                && _unstakeWaitPeriod >= rewardEpochLength * 2);
-        uint256 delta = _unstakeWaitPeriod < unstakeWaitPeriod ? 
-                        unstakeWaitPeriod - _unstakeWaitPeriod : 
-                        _unstakeWaitPeriod - unstakeWaitPeriod;
-        require(delta * 2 <= unstakeWaitPeriod);
+        require(_unstakeWaitPeriod <= 2246400 && _unstakeWaitPeriod >= 604800);
         uint256 oldPeriod = unstakeWaitPeriod;
         unstakeWaitPeriod = _unstakeWaitPeriod;
         emit NewUnstakeWaitPeriod(oldPeriod, unstakeWaitPeriod);
     }
 
     function setUpdateCoefficient(uint256 _updateCoeff)
-        external noZeroValue(_updateCoeff) triggerEpochAfter
+        external triggerEpochAfter
         //onlyDao
     {
-        //Sanity check at 100X
-        require(_updateCoeff < 100000000);
+        //Sanity check at 1000X
+        require(_updateCoeff < 1000000000 && _updateCoeff > 0);
         uint256 oldCoeff = updateCoeff;
         updateCoeff = _updateCoeff;
         emit NewUpdateCoefficient(oldCoeff, updateCoeff);

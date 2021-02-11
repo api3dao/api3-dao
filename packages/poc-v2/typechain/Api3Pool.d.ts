@@ -22,20 +22,18 @@ import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 
 interface Api3PoolInterface extends ethers.utils.Interface {
   functions: {
+    "BEHIND_CURRENT_EPOCH()": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "balanceOfAt(uint256,address)": FunctionFragment;
-    "claimLocks(uint256)": FunctionFragment;
     "currentApr()": FunctionFragment;
     "deposit(address,uint256,address)": FunctionFragment;
     "depositAndStake(address,uint256,address)": FunctionFragment;
     "depositWithVesting(address,uint256,address,uint256,uint256)": FunctionFragment;
     "genesisEpoch()": FunctionFragment;
-    "lastUpdateBlock()": FunctionFragment;
-    "makeClaim(uint256)": FunctionFragment;
+    "getCurrentUserLock(address,uint256)": FunctionFragment;
     "maxApr()": FunctionFragment;
     "minApr()": FunctionFragment;
     "payOutClaim(uint256,uint256)": FunctionFragment;
-    "releaseClaim(uint256)": FunctionFragment;
     "rewardEpochLength()": FunctionFragment;
     "rewardVestingPeriod()": FunctionFragment;
     "rewards(uint256)": FunctionFragment;
@@ -64,14 +62,14 @@ interface Api3PoolInterface extends ethers.utils.Interface {
     "withdraw(address,uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "BEHIND_CURRENT_EPOCH",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(
     functionFragment: "balanceOfAt",
     values: [BigNumberish, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "claimLocks",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "currentApr",
@@ -94,22 +92,14 @@ interface Api3PoolInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "lastUpdateBlock",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "makeClaim",
-    values: [BigNumberish]
+    functionFragment: "getCurrentUserLock",
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "maxApr", values?: undefined): string;
   encodeFunctionData(functionFragment: "minApr", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "payOutClaim",
     values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "releaseClaim",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "rewardEpochLength",
@@ -207,12 +197,15 @@ interface Api3PoolInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "BEHIND_CURRENT_EPOCH",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "balanceOfAt",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "claimLocks", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "currentApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
   decodeFunctionResult(
@@ -228,18 +221,13 @@ interface Api3PoolInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "lastUpdateBlock",
+    functionFragment: "getCurrentUserLock",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "makeClaim", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "minApr", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "payOutClaim",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "releaseClaim",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -324,9 +312,7 @@ interface Api3PoolInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
-    "Claim(uint256)": EventFragment;
     "ClaimPayout(uint256,uint256)": EventFragment;
-    "ClaimRelease(uint256,uint256)": EventFragment;
     "Deposit(address,uint256)": EventFragment;
     "Epoch(uint256,uint256,uint256)": EventFragment;
     "NewMaxApr(uint256,uint256)": EventFragment;
@@ -334,15 +320,13 @@ interface Api3PoolInterface extends ethers.utils.Interface {
     "NewStakeTarget(uint256,uint256)": EventFragment;
     "NewUnstakeWaitPeriod(uint256,uint256)": EventFragment;
     "NewUpdateCoefficient(uint256,uint256)": EventFragment;
-    "ScheduleUnstake(address,uint256)": EventFragment;
+    "ScheduleUnstake(address,uint256,uint256)": EventFragment;
     "Stake(address,uint256)": EventFragment;
     "Unstake(address,uint256)": EventFragment;
     "Withdrawal(address,address,uint256)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "Claim"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ClaimPayout"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ClaimRelease"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Deposit"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Epoch"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NewMaxApr"): EventFragment;
@@ -370,6 +354,10 @@ export class Api3Pool extends Contract {
   interface: Api3PoolInterface;
 
   functions: {
+    BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<[string]>;
+
+    "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<[string]>;
+
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides
@@ -391,20 +379,6 @@ export class Api3Pool extends Contract {
       userAddress: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
-
-    claimLocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
-
-    "claimLocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
 
     currentApr(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -460,19 +434,17 @@ export class Api3Pool extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    lastUpdateBlock(overrides?: CallOverrides): Promise<[BigNumber]>;
+    getCurrentUserLock(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
-    "lastUpdateBlock()"(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    makeClaim(
-      amount: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    "makeClaim(uint256)"(
-      amount: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
+    "getCurrentUserLock(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     maxApr(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -490,16 +462,6 @@ export class Api3Pool extends Contract {
 
     "payOutClaim(uint256,uint256)"(
       payoutAmount: BigNumberish,
-      claimReferenceBlock: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    releaseClaim(
-      claimReferenceBlock: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    "releaseClaim(uint256)"(
       claimReferenceBlock: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
@@ -742,22 +704,12 @@ export class Api3Pool extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        unstakeScheduledAt: BigNumber;
+        unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
-        lastUpdateBlock: BigNumber;
         lastUpdateEpoch: BigNumber;
-        lastUpdateClaimIndex: BigNumber;
       }
     >;
 
@@ -765,22 +717,12 @@ export class Api3Pool extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        unstakeScheduledAt: BigNumber;
+        unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
-        lastUpdateBlock: BigNumber;
         lastUpdateEpoch: BigNumber;
-        lastUpdateClaimIndex: BigNumber;
       }
     >;
 
@@ -796,6 +738,10 @@ export class Api3Pool extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
   };
+
+  BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<string>;
+
+  "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<string>;
 
   balanceOf(userAddress: string, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -815,20 +761,6 @@ export class Api3Pool extends Contract {
     userAddress: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
-
-  claimLocks(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-  >;
-
-  "claimLocks(uint256)"(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-  >;
 
   currentApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -884,19 +816,17 @@ export class Api3Pool extends Contract {
 
   "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  lastUpdateBlock(overrides?: CallOverrides): Promise<BigNumber>;
+  getCurrentUserLock(
+    userAddress: string,
+    targetEpoch: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
-  "lastUpdateBlock()"(overrides?: CallOverrides): Promise<BigNumber>;
-
-  makeClaim(
-    amount: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  "makeClaim(uint256)"(
-    amount: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
+  "getCurrentUserLock(address,uint256)"(
+    userAddress: string,
+    targetEpoch: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -914,16 +844,6 @@ export class Api3Pool extends Contract {
 
   "payOutClaim(uint256,uint256)"(
     payoutAmount: BigNumberish,
-    claimReferenceBlock: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  releaseClaim(
-    claimReferenceBlock: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  "releaseClaim(uint256)"(
     claimReferenceBlock: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
@@ -1166,22 +1086,12 @@ export class Api3Pool extends Contract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber
-    ] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
       unstaked: BigNumber;
       locked: BigNumber;
-      unstakeScheduledAt: BigNumber;
+      unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
-      lastUpdateBlock: BigNumber;
       lastUpdateEpoch: BigNumber;
-      lastUpdateClaimIndex: BigNumber;
     }
   >;
 
@@ -1189,22 +1099,12 @@ export class Api3Pool extends Contract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber
-    ] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
       unstaked: BigNumber;
       locked: BigNumber;
-      unstakeScheduledAt: BigNumber;
+      unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
-      lastUpdateBlock: BigNumber;
       lastUpdateEpoch: BigNumber;
-      lastUpdateClaimIndex: BigNumber;
     }
   >;
 
@@ -1221,6 +1121,10 @@ export class Api3Pool extends Contract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<string>;
+
+    "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<string>;
+
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides
@@ -1242,20 +1146,6 @@ export class Api3Pool extends Contract {
       userAddress: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    claimLocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
-
-    "claimLocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
 
     currentApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1311,16 +1201,17 @@ export class Api3Pool extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    lastUpdateBlock(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "lastUpdateBlock()"(overrides?: CallOverrides): Promise<BigNumber>;
-
-    makeClaim(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
-
-    "makeClaim(uint256)"(
-      amount: BigNumberish,
+    getCurrentUserLock(
+      userAddress: string,
+      targetEpoch: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
+
+    "getCurrentUserLock(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1338,16 +1229,6 @@ export class Api3Pool extends Contract {
 
     "payOutClaim(uint256,uint256)"(
       payoutAmount: BigNumberish,
-      claimReferenceBlock: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    releaseClaim(
-      claimReferenceBlock: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "releaseClaim(uint256)"(
       claimReferenceBlock: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -1581,22 +1462,12 @@ export class Api3Pool extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        unstakeScheduledAt: BigNumber;
+        unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
-        lastUpdateBlock: BigNumber;
         lastUpdateEpoch: BigNumber;
-        lastUpdateClaimIndex: BigNumber;
       }
     >;
 
@@ -1604,22 +1475,12 @@ export class Api3Pool extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        unstakeScheduledAt: BigNumber;
+        unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
-        lastUpdateBlock: BigNumber;
         lastUpdateEpoch: BigNumber;
-        lastUpdateClaimIndex: BigNumber;
       }
     >;
 
@@ -1637,11 +1498,7 @@ export class Api3Pool extends Contract {
   };
 
   filters: {
-    Claim(amount: null): EventFilter;
-
     ClaimPayout(claimBlock: BigNumberish | null, amount: null): EventFilter;
-
-    ClaimRelease(claimBlock: BigNumberish | null, amount: null): EventFilter;
 
     Deposit(user: string | null, amount: null): EventFilter;
 
@@ -1661,7 +1518,11 @@ export class Api3Pool extends Contract {
 
     NewUpdateCoefficient(oldCoeff: null, newCoeff: null): EventFilter;
 
-    ScheduleUnstake(user: string | null, amount: null): EventFilter;
+    ScheduleUnstake(
+      user: string | null,
+      amount: null,
+      scheduledFor: null
+    ): EventFilter;
 
     Stake(user: string | null, amount: null): EventFilter;
 
@@ -1675,6 +1536,10 @@ export class Api3Pool extends Contract {
   };
 
   estimateGas: {
+    BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides
@@ -1694,16 +1559,6 @@ export class Api3Pool extends Contract {
     "balanceOfAt(uint256,address)"(
       fromBlock: BigNumberish,
       userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    claimLocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "claimLocks(uint256)"(
-      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1761,15 +1616,16 @@ export class Api3Pool extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    lastUpdateBlock(overrides?: CallOverrides): Promise<BigNumber>;
+    getCurrentUserLock(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    "lastUpdateBlock()"(overrides?: CallOverrides): Promise<BigNumber>;
-
-    makeClaim(amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
-
-    "makeClaim(uint256)"(
-      amount: BigNumberish,
-      overrides?: Overrides
+    "getCurrentUserLock(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     maxApr(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1788,16 +1644,6 @@ export class Api3Pool extends Contract {
 
     "payOutClaim(uint256,uint256)"(
       payoutAmount: BigNumberish,
-      claimReferenceBlock: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    releaseClaim(
-      claimReferenceBlock: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    "releaseClaim(uint256)"(
       claimReferenceBlock: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
@@ -2011,6 +1857,14 @@ export class Api3Pool extends Contract {
   };
 
   populateTransaction: {
+    BEHIND_CURRENT_EPOCH(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "BEHIND_CURRENT_EPOCH()"(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides
@@ -2030,16 +1884,6 @@ export class Api3Pool extends Contract {
     "balanceOfAt(uint256,address)"(
       fromBlock: BigNumberish,
       userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    claimLocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "claimLocks(uint256)"(
-      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2097,20 +1941,16 @@ export class Api3Pool extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    lastUpdateBlock(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    "lastUpdateBlock()"(
+    getCurrentUserLock(
+      userAddress: string,
+      targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    makeClaim(
-      amount: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    "makeClaim(uint256)"(
-      amount: BigNumberish,
-      overrides?: Overrides
+    "getCurrentUserLock(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     maxApr(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -2129,16 +1969,6 @@ export class Api3Pool extends Contract {
 
     "payOutClaim(uint256,uint256)"(
       payoutAmount: BigNumberish,
-      claimReferenceBlock: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    releaseClaim(
-      claimReferenceBlock: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    "releaseClaim(uint256)"(
       claimReferenceBlock: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;

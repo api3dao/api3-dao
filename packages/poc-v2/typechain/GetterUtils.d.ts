@@ -24,10 +24,9 @@ interface GetterUtilsInterface extends ethers.utils.Interface {
   functions: {
     "balanceOf(address)": FunctionFragment;
     "balanceOfAt(uint256,address)": FunctionFragment;
-    "claimLocks(uint256)": FunctionFragment;
     "currentApr()": FunctionFragment;
     "genesisEpoch()": FunctionFragment;
-    "lastUpdateBlock()": FunctionFragment;
+    "getCurrentUserLock(address,uint256)": FunctionFragment;
     "maxApr()": FunctionFragment;
     "minApr()": FunctionFragment;
     "rewardEpochLength()": FunctionFragment;
@@ -52,10 +51,6 @@ interface GetterUtilsInterface extends ethers.utils.Interface {
     values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "claimLocks",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "currentApr",
     values?: undefined
   ): string;
@@ -64,8 +59,8 @@ interface GetterUtilsInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "lastUpdateBlock",
-    values?: undefined
+    functionFragment: "getCurrentUserLock",
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "maxApr", values?: undefined): string;
   encodeFunctionData(functionFragment: "minApr", values?: undefined): string;
@@ -128,14 +123,13 @@ interface GetterUtilsInterface extends ethers.utils.Interface {
     functionFragment: "balanceOfAt",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "claimLocks", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "currentApr", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "genesisEpoch",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "lastUpdateBlock",
+    functionFragment: "getCurrentUserLock",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
@@ -231,20 +225,6 @@ export class GetterUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    claimLocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
-
-    "claimLocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
-
     currentApr(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "currentApr()"(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -253,9 +233,17 @@ export class GetterUtils extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    lastUpdateBlock(overrides?: CallOverrides): Promise<[BigNumber]>;
+    getCurrentUserLock(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
-    "lastUpdateBlock()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+    "getCurrentUserLock(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     maxApr(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -379,22 +367,12 @@ export class GetterUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        unstakeScheduledAt: BigNumber;
+        unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
-        lastUpdateBlock: BigNumber;
         lastUpdateEpoch: BigNumber;
-        lastUpdateClaimIndex: BigNumber;
       }
     >;
 
@@ -402,22 +380,12 @@ export class GetterUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        unstakeScheduledAt: BigNumber;
+        unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
-        lastUpdateBlock: BigNumber;
         lastUpdateEpoch: BigNumber;
-        lastUpdateClaimIndex: BigNumber;
       }
     >;
   };
@@ -441,20 +409,6 @@ export class GetterUtils extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  claimLocks(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-  >;
-
-  "claimLocks(uint256)"(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-  >;
-
   currentApr(overrides?: CallOverrides): Promise<BigNumber>;
 
   "currentApr()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -463,9 +417,17 @@ export class GetterUtils extends Contract {
 
   "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  lastUpdateBlock(overrides?: CallOverrides): Promise<BigNumber>;
+  getCurrentUserLock(
+    userAddress: string,
+    targetEpoch: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
-  "lastUpdateBlock()"(overrides?: CallOverrides): Promise<BigNumber>;
+  "getCurrentUserLock(address,uint256)"(
+    userAddress: string,
+    targetEpoch: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -589,22 +551,12 @@ export class GetterUtils extends Contract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber
-    ] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
       unstaked: BigNumber;
       locked: BigNumber;
-      unstakeScheduledAt: BigNumber;
+      unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
-      lastUpdateBlock: BigNumber;
       lastUpdateEpoch: BigNumber;
-      lastUpdateClaimIndex: BigNumber;
     }
   >;
 
@@ -612,22 +564,12 @@ export class GetterUtils extends Contract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber
-    ] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
       unstaked: BigNumber;
       locked: BigNumber;
-      unstakeScheduledAt: BigNumber;
+      unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
-      lastUpdateBlock: BigNumber;
       lastUpdateEpoch: BigNumber;
-      lastUpdateClaimIndex: BigNumber;
     }
   >;
 
@@ -654,20 +596,6 @@ export class GetterUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    claimLocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
-
-    "claimLocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
-
     currentApr(overrides?: CallOverrides): Promise<BigNumber>;
 
     "currentApr()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -676,9 +604,17 @@ export class GetterUtils extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    lastUpdateBlock(overrides?: CallOverrides): Promise<BigNumber>;
+    getCurrentUserLock(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    "lastUpdateBlock()"(overrides?: CallOverrides): Promise<BigNumber>;
+    "getCurrentUserLock(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -802,22 +738,12 @@ export class GetterUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        unstakeScheduledAt: BigNumber;
+        unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
-        lastUpdateBlock: BigNumber;
         lastUpdateEpoch: BigNumber;
-        lastUpdateClaimIndex: BigNumber;
       }
     >;
 
@@ -825,22 +751,12 @@ export class GetterUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        unstakeScheduledAt: BigNumber;
+        unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
-        lastUpdateBlock: BigNumber;
         lastUpdateEpoch: BigNumber;
-        lastUpdateClaimIndex: BigNumber;
       }
     >;
   };
@@ -876,16 +792,6 @@ export class GetterUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    claimLocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "claimLocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     currentApr(overrides?: CallOverrides): Promise<BigNumber>;
 
     "currentApr()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -894,9 +800,17 @@ export class GetterUtils extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    lastUpdateBlock(overrides?: CallOverrides): Promise<BigNumber>;
+    getCurrentUserLock(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    "lastUpdateBlock()"(overrides?: CallOverrides): Promise<BigNumber>;
+    "getCurrentUserLock(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1024,16 +938,6 @@ export class GetterUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    claimLocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "claimLocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     currentApr(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "currentApr()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1042,9 +946,15 @@ export class GetterUtils extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    lastUpdateBlock(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getCurrentUserLock(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
-    "lastUpdateBlock()"(
+    "getCurrentUserLock(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

@@ -11,7 +11,7 @@ contract StakeUtils is TransferUtils {
     {}
 
     event Stake(address indexed user, uint256 amount);
-    event ScheduleUnstake(address indexed user, uint256 amount);
+    event ScheduleUnstake(address indexed user, uint256 amount, uint256 scheduledFor);
     event Unstake(address indexed user, uint256 amount);
     
     function stake(uint256 amount)
@@ -19,14 +19,14 @@ contract StakeUtils is TransferUtils {
     {
         User storage user = users[msg.sender];
         require(user.unstaked >= amount);
-        user.unstaked -= amount;
+        user.unstaked = user.unstaked.sub(amount);
         uint256 totalSharesNow = getValue(totalShares);
         uint256 totalStakedNow = getValue(totalStaked);
         uint256 sharesToMint = totalSharesNow.mul(amount).div(totalStakedNow);
         uint256 userSharesNow = getValue(user.shares);
-        user.shares.push(Checkpoint(block.number, userSharesNow + sharesToMint));
-        totalShares.push(Checkpoint(block.number, totalSharesNow + sharesToMint));
-        totalStaked.push(Checkpoint(block.number, totalStakedNow + amount));
+        user.shares.push(Checkpoint(block.number, userSharesNow.add(sharesToMint)));
+        totalShares.push(Checkpoint(block.number, totalSharesNow.add(sharesToMint)));
+        totalStaked.push(Checkpoint(block.number, totalStakedNow.add(amount)));
         emit Stake(msg.sender, amount);
     }
 
@@ -39,21 +39,6 @@ contract StakeUtils is TransferUtils {
         stake(amount);
     }
 
-    // We can't let the user unstake on demand. Otherwise, they would be able to unstake
-    // instantly as soon as anything went wrong, evading being slashed by an insurance claim.
-    // As a solution, we require the user to "schedule an unstake" `rewardEpochLength` (1 week)
-    // in advance.
-    // This system by itself is also open to abuse, as the user can schedule an unstake event, but
-    // not execute it. Then, as soon as an event occurs that will result in an insurance claim, they will
-    // execute the unstake. As a solution, scheduled unstake events "go stale" `2 * rewardEpochLength`
-    // (2 weeks) after they are scheduled. In other words, the user has a 1 week window to unstake,
-    // starting from 1 week after the unstake has been scheduled.
-    // This system is again open to abuse, as the users will schedule unstake events biweekly
-    // even though they have no intention of unstaking, just to be able to unstake at will in one
-    // in every two weeks (i.e., the user is able to evade claims 50% of the time). As a solution,
-    // scheduling an unstake event costs the user their inflationary rewards for the epoch they
-    // are in. In other words, always having an active unstake scheduling will also cost the user
-    // 50% of their inflationary rewards.
     function scheduleUnstake(uint256 amount)
         external
     {
@@ -63,7 +48,7 @@ contract StakeUtils is TransferUtils {
         uint256 userSharesNow = getValue(user.shares);
 
         // Revoke this epoch's reward if we haven't already
-        uint256 current = now / rewardEpochLength;
+        uint256 current = now.div(rewardEpochLength);
         uint256 tokensToRevoke = 0;
         if (!user.revokedEpochReward[current] && rewards[current].amount != 0) {
             RewardEpoch storage currentEpoch = rewards[current];
@@ -76,22 +61,19 @@ contract StakeUtils is TransferUtils {
                 sharesToBurn = userSharesNow;
             }
 
-            userSharesNow -= sharesToBurn;
-            totalSharesNow -= sharesToBurn;
+            userSharesNow = userSharesNow.sub(sharesToBurn);
+            totalSharesNow = totalSharesNow.sub(sharesToBurn);
             user.shares.push(Checkpoint(block.number, userSharesNow));
             totalShares.push(Checkpoint(block.number, totalSharesNow));
             
-            user.locked -= tokensToRevoke;
+            user.locked = user.locked > tokensToRevoke ? user.locked.sub(tokensToRevoke) : 0;
             user.revokedEpochReward[current] = true;
         }
         uint256 userStakedNow = userSharesNow.mul(totalStakedNow).div(totalSharesNow);
-        // We have to check this because otherwise the user can schedule an unstake 1 week ago
-        // for infinite tokens, take a flash loan, vote on a proposal, unstake, withdraw and return
-        // the loan.
-        require(amount <= userStakedNow + tokensToRevoke, "Insufficient amount");
-        user.unstakeScheduledAt = now;
+        require(amount <= userStakedNow.add(tokensToRevoke), "Insufficient amount");
+        user.unstakeScheduledFor = now.add(unstakeWaitPeriod);
         user.unstakeAmount = amount;
-        emit ScheduleUnstake(msg.sender, amount);
+        emit ScheduleUnstake(msg.sender, amount, user.unstakeScheduledFor);
     }
 
     function unstake()
@@ -99,26 +81,24 @@ contract StakeUtils is TransferUtils {
     {
         User storage user = users[msg.sender];
         require(
-            now > user.unstakeScheduledAt + unstakeWaitPeriod
-                && now < user.unstakeScheduledAt + unstakeWaitPeriod + rewardEpochLength * 2
+            now > user.unstakeScheduledFor
+                && now < user.unstakeScheduledFor.add(rewardEpochLength)
             );
         uint256 amount = user.unstakeAmount;
         uint256 totalSharesNow = getValue(totalShares);
         uint256 totalStakedNow = getValue(totalStaked);
         uint256 userSharesNow = getValue(user.shares);
-        uint256 sharesToBurn = totalSharesNow.div(amount).div(totalStakedNow);
-        // If the user doesn't have the tokens to be unstaked, unstake as much as possible
+        uint256 sharesToBurn = totalSharesNow.mul(amount).div(totalStakedNow);
         if (sharesToBurn > userSharesNow)
         {
             sharesToBurn = userSharesNow;
             amount = sharesToBurn.mul(totalStakedNow).div(totalSharesNow);
         }
-        user.unstaked += amount;
-        user.shares.push(Checkpoint(block.number, userSharesNow - sharesToBurn));
-        totalShares.push(Checkpoint(block.number, totalSharesNow - sharesToBurn));
-        totalStaked.push(Checkpoint(block.number, totalStakedNow - amount));
-        // Reset the schedule
-        user.unstakeScheduledAt = 0;
+        user.unstaked = user.unstaked.add(amount);
+        user.shares.push(Checkpoint(block.number, userSharesNow.sub(sharesToBurn)));
+        totalShares.push(Checkpoint(block.number, totalSharesNow.sub(sharesToBurn)));
+        totalStaked.push(Checkpoint(block.number, totalStakedNow.sub(amount)));
+        user.unstakeScheduledFor = 0;
         user.unstakeAmount = 0;
         emit Unstake(msg.sender, amount);
     }

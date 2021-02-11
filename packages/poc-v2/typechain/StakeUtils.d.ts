@@ -22,14 +22,14 @@ import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 
 interface StakeUtilsInterface extends ethers.utils.Interface {
   functions: {
+    "BEHIND_CURRENT_EPOCH()": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "balanceOfAt(uint256,address)": FunctionFragment;
-    "claimLocks(uint256)": FunctionFragment;
     "currentApr()": FunctionFragment;
     "deposit(address,uint256,address)": FunctionFragment;
     "depositAndStake(address,uint256,address)": FunctionFragment;
     "genesisEpoch()": FunctionFragment;
-    "lastUpdateBlock()": FunctionFragment;
+    "getCurrentUserLock(address,uint256)": FunctionFragment;
     "maxApr()": FunctionFragment;
     "minApr()": FunctionFragment;
     "rewardEpochLength()": FunctionFragment;
@@ -53,14 +53,14 @@ interface StakeUtilsInterface extends ethers.utils.Interface {
     "withdraw(address,uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "BEHIND_CURRENT_EPOCH",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(
     functionFragment: "balanceOfAt",
     values: [BigNumberish, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "claimLocks",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "currentApr",
@@ -79,8 +79,8 @@ interface StakeUtilsInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "lastUpdateBlock",
-    values?: undefined
+    functionFragment: "getCurrentUserLock",
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "maxApr", values?: undefined): string;
   encodeFunctionData(functionFragment: "minApr", values?: undefined): string;
@@ -152,12 +152,15 @@ interface StakeUtilsInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "BEHIND_CURRENT_EPOCH",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "balanceOfAt",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "claimLocks", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "currentApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
   decodeFunctionResult(
@@ -169,7 +172,7 @@ interface StakeUtilsInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "lastUpdateBlock",
+    functionFragment: "getCurrentUserLock",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
@@ -236,7 +239,7 @@ interface StakeUtilsInterface extends ethers.utils.Interface {
   events: {
     "Deposit(address,uint256)": EventFragment;
     "Epoch(uint256,uint256,uint256)": EventFragment;
-    "ScheduleUnstake(address,uint256)": EventFragment;
+    "ScheduleUnstake(address,uint256,uint256)": EventFragment;
     "Stake(address,uint256)": EventFragment;
     "Unstake(address,uint256)": EventFragment;
     "Withdrawal(address,address,uint256)": EventFragment;
@@ -264,6 +267,10 @@ export class StakeUtils extends Contract {
   interface: StakeUtilsInterface;
 
   functions: {
+    BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<[string]>;
+
+    "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<[string]>;
+
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides
@@ -285,20 +292,6 @@ export class StakeUtils extends Contract {
       userAddress: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
-
-    claimLocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
-
-    "claimLocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
 
     currentApr(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -336,9 +329,17 @@ export class StakeUtils extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    lastUpdateBlock(overrides?: CallOverrides): Promise<[BigNumber]>;
+    getCurrentUserLock(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
-    "lastUpdateBlock()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+    "getCurrentUserLock(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     maxApr(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -498,22 +499,12 @@ export class StakeUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        unstakeScheduledAt: BigNumber;
+        unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
-        lastUpdateBlock: BigNumber;
         lastUpdateEpoch: BigNumber;
-        lastUpdateClaimIndex: BigNumber;
       }
     >;
 
@@ -521,22 +512,12 @@ export class StakeUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        unstakeScheduledAt: BigNumber;
+        unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
-        lastUpdateBlock: BigNumber;
         lastUpdateEpoch: BigNumber;
-        lastUpdateClaimIndex: BigNumber;
       }
     >;
 
@@ -552,6 +533,10 @@ export class StakeUtils extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
   };
+
+  BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<string>;
+
+  "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<string>;
 
   balanceOf(userAddress: string, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -571,20 +556,6 @@ export class StakeUtils extends Contract {
     userAddress: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
-
-  claimLocks(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-  >;
-
-  "claimLocks(uint256)"(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-  >;
 
   currentApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -622,9 +593,17 @@ export class StakeUtils extends Contract {
 
   "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  lastUpdateBlock(overrides?: CallOverrides): Promise<BigNumber>;
+  getCurrentUserLock(
+    userAddress: string,
+    targetEpoch: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
-  "lastUpdateBlock()"(overrides?: CallOverrides): Promise<BigNumber>;
+  "getCurrentUserLock(address,uint256)"(
+    userAddress: string,
+    targetEpoch: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -784,22 +763,12 @@ export class StakeUtils extends Contract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber
-    ] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
       unstaked: BigNumber;
       locked: BigNumber;
-      unstakeScheduledAt: BigNumber;
+      unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
-      lastUpdateBlock: BigNumber;
       lastUpdateEpoch: BigNumber;
-      lastUpdateClaimIndex: BigNumber;
     }
   >;
 
@@ -807,22 +776,12 @@ export class StakeUtils extends Contract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber
-    ] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
       unstaked: BigNumber;
       locked: BigNumber;
-      unstakeScheduledAt: BigNumber;
+      unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
-      lastUpdateBlock: BigNumber;
       lastUpdateEpoch: BigNumber;
-      lastUpdateClaimIndex: BigNumber;
     }
   >;
 
@@ -839,6 +798,10 @@ export class StakeUtils extends Contract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<string>;
+
+    "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<string>;
+
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides
@@ -860,20 +823,6 @@ export class StakeUtils extends Contract {
       userAddress: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    claimLocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
-
-    "claimLocks(uint256)"(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
-    >;
 
     currentApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -911,9 +860,17 @@ export class StakeUtils extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    lastUpdateBlock(overrides?: CallOverrides): Promise<BigNumber>;
+    getCurrentUserLock(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    "lastUpdateBlock()"(overrides?: CallOverrides): Promise<BigNumber>;
+    "getCurrentUserLock(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1070,22 +1027,12 @@ export class StakeUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        unstakeScheduledAt: BigNumber;
+        unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
-        lastUpdateBlock: BigNumber;
         lastUpdateEpoch: BigNumber;
-        lastUpdateClaimIndex: BigNumber;
       }
     >;
 
@@ -1093,22 +1040,12 @@ export class StakeUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
-        unstakeScheduledAt: BigNumber;
+        unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
-        lastUpdateBlock: BigNumber;
         lastUpdateEpoch: BigNumber;
-        lastUpdateClaimIndex: BigNumber;
       }
     >;
 
@@ -1134,7 +1071,11 @@ export class StakeUtils extends Contract {
       newApr: null
     ): EventFilter;
 
-    ScheduleUnstake(user: string | null, amount: null): EventFilter;
+    ScheduleUnstake(
+      user: string | null,
+      amount: null,
+      scheduledFor: null
+    ): EventFilter;
 
     Stake(user: string | null, amount: null): EventFilter;
 
@@ -1148,6 +1089,10 @@ export class StakeUtils extends Contract {
   };
 
   estimateGas: {
+    BEHIND_CURRENT_EPOCH(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "BEHIND_CURRENT_EPOCH()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides
@@ -1167,16 +1112,6 @@ export class StakeUtils extends Contract {
     "balanceOfAt(uint256,address)"(
       fromBlock: BigNumberish,
       userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    claimLocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "claimLocks(uint256)"(
-      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1216,9 +1151,17 @@ export class StakeUtils extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    lastUpdateBlock(overrides?: CallOverrides): Promise<BigNumber>;
+    getCurrentUserLock(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    "lastUpdateBlock()"(overrides?: CallOverrides): Promise<BigNumber>;
+    "getCurrentUserLock(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1369,6 +1312,14 @@ export class StakeUtils extends Contract {
   };
 
   populateTransaction: {
+    BEHIND_CURRENT_EPOCH(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "BEHIND_CURRENT_EPOCH()"(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     balanceOf(
       userAddress: string,
       overrides?: CallOverrides
@@ -1388,16 +1339,6 @@ export class StakeUtils extends Contract {
     "balanceOfAt(uint256,address)"(
       fromBlock: BigNumberish,
       userAddress: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    claimLocks(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "claimLocks(uint256)"(
-      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1437,9 +1378,15 @@ export class StakeUtils extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    lastUpdateBlock(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getCurrentUserLock(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
-    "lastUpdateBlock()"(
+    "getCurrentUserLock(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

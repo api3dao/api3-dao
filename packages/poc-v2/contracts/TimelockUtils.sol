@@ -37,8 +37,8 @@ contract TimelockUtils is ClaimUtils {
         external
     {
         require(userToDepositorToTimelock[userAddress][msg.sender].remainingAmount == 0);
-        users[userAddress].unstaked += amount;
-        users[userAddress].locked += amount;
+        users[userAddress].unstaked = users[userAddress].unstaked.add(amount);
+        users[userAddress].locked = users[userAddress].locked.add(amount);
         userToDepositorToTimelock[userAddress][msg.sender] = Timelock(amount, amount, releaseStart, releaseEnd);
         api3Token.transferFrom(source, address(this), amount);
     }
@@ -58,13 +58,13 @@ contract TimelockUtils is ClaimUtils {
         }
         else if (now > timelock.releaseStart)
         {
-            uint256 passedTime = now - timelock.releaseStart;
-            uint256 totalTime = timelock.releaseEnd - timelock.releaseStart;
-            totalUnlocked = timelock.totalAmount * passedTime / totalTime;
+            uint256 passedTime = now.sub(timelock.releaseStart);
+            uint256 totalTime = timelock.releaseEnd.sub(timelock.releaseStart);
+            totalUnlocked = timelock.totalAmount.mul(passedTime.div(totalTime));
         }
-        uint256 previouslyUnlocked = timelock.totalAmount - timelock.remainingAmount;
-        uint256 newlyUnlocked = totalUnlocked - previouslyUnlocked;
-        users[userAddress].locked -= newlyUnlocked;
-        userToDepositorToTimelock[userAddress][timelockContractAddress].remainingAmount = timelock.remainingAmount - newlyUnlocked;
+        uint256 previouslyUnlocked = timelock.totalAmount.sub(timelock.remainingAmount);
+        uint256 newlyUnlocked = totalUnlocked.sub(previouslyUnlocked);
+        users[userAddress].locked = users[userAddress].locked.sub(newlyUnlocked);
+        userToDepositorToTimelock[userAddress][timelockContractAddress].remainingAmount = timelock.remainingAmount.sub(newlyUnlocked);
     }
 }
