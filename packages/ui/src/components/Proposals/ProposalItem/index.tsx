@@ -14,8 +14,8 @@ import {
   WarningIcon,
   CloseIcon,
   DoneIcon,
-  ChangeHistoryIcon,
   KeyboardArrowRightIcon,
+  ArrowDropUpIcon,
 } from "components/@material-icons";
 
 import useStyles from "components/Proposals/ProposalItem/styles";
@@ -58,9 +58,9 @@ function ProposalItem(props: any) {
                   <Typography variant="subtitle2" color="secondary" className={classes.reject}>Rejected</Typography>
                 </Box>
             }
-            <Box display="flex">
+            <Box display="flex" alignItems="center">
               <Typography variant="subtitle2" className={classes.active} color="textSecondary">00</Typography>
-              <ChangeHistoryIcon style={{ color: "#4A4A4A" }}  fontSize="small" />
+              <ArrowDropUpIcon style={{ color: "#4A4A4A" }}  fontSize="large" />
             </Box>
             <Box>
               <Typography variant="subtitle2" className={classes.active} color="textSecondary">

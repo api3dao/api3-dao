@@ -1,9 +1,9 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Container, Box, Typography } from '@material-ui/core';
 
 import { Voting } from "services/aragon";
 import { AragonContext } from "contexts"; 
-import { VotesList, BasicButton } from "components";
+import { VotesList, BasicButton, NewProposalModal } from "components";
 
 import useStyles from "containers/dao-gov/styles";
 import useCommonStyles from "styles/common-styles";
@@ -11,7 +11,7 @@ import useCommonStyles from "styles/common-styles";
 function DAOGov() {
   const classes = useStyles();
   const commonClasses = useCommonStyles();
-
+  const [newProposalModal, setProposalModal] = useState(false);
   const aragonContext = useContext<any>(AragonContext);
   
   const componentDidMount = () => {
@@ -34,11 +34,12 @@ function DAOGov() {
           </Box>
 
       <Box display="flex" justifyContent="flex-end" marginTop="6%">
-        <BasicButton color="black" title="New Proposal" />
+        <BasicButton color="black" title="New Proposal" onClick={() => setProposalModal(true)} />
       </Box>
       <Box className={commonClasses.borderContainer}>
         <VotesList />
       </Box>
+      <NewProposalModal newProposalModal={newProposalModal} setProposalModal={setProposalModal}/>
     </Container>
   );
 }

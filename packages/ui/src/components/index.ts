@@ -19,6 +19,7 @@ import StakingContainer from "components/Staking/StakingContainer";
 import ProposalItem from "components/Proposals/ProposalItem";
 import VoteModal from "components/Modal/Vote";
 import DelegateModal from "components/Modal/Delegate";
+import NewProposalModal from "components/Modal/NewProposal";
 
 export {
   Navbar,
@@ -45,5 +46,6 @@ export {
   ProposalItem,
   VoteModal,
   DelegateModal,
+  NewProposalModal,
 
 }
