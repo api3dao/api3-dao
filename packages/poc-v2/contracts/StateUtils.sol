@@ -123,6 +123,7 @@ contract StateUtils {
             return;
         }
         if (rewardAmount == 0) {
+            emit Epoch(indEpoch, rewardAmount, currentApr);
             return;
         }
         uint epochsElapsed = 1;
@@ -136,6 +137,9 @@ contract StateUtils {
         totalStaked.push(Checkpoint(block.number, totalStakedNow.add(rewardAmount.mul(epochsElapsed))));
     }
 
+    //Even though this function is intended to address the case in which payReward() runs out of gas, we still trigger payReward()
+    //at the beginning to prevent this function being called on the epoch one behind present while the present epoch is unpaid, as this would
+    //cause it to be filled with an incorrect zero value.
     function payRewardAtEpoch(uint256 epoch) 
     external triggerEpochBefore {
         require(epoch >= genesisEpoch && epoch < now.div(rewardEpochLength), "Invalid target");
@@ -153,8 +157,8 @@ contract StateUtils {
                     uint256 totalStakedNow = getValue(totalStaked);
                     totalStaked.push(Checkpoint(nextPaidEpoch.atBlock, totalStakedNow.add(nextPaidEpoch.amount)));
                     api3Token.mint(address(this), nextPaidEpoch.amount);
-                    emit Epoch(indEpoch.add(1), nextPaidEpoch.amount, nextPaidEpoch.atBlock);
                 }
+                emit Epoch(indEpoch.add(1), nextPaidEpoch.amount, nextPaidEpoch.atBlock);
             }
             indEpoch = indEpoch.add(1);
         }
