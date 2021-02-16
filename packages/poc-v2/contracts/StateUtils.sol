@@ -128,12 +128,16 @@ contract StateUtils {
         uint epochsElapsed = 1;
         while (!rewards[indEpoch].paid) {
             rewards[indEpoch] = RewardEpoch(true, rewardAmount, block.number);
-            totalStaked.push(Checkpoint(block.number, totalStakedNow.add(rewardAmount.mul(epochsElapsed))));
             api3Token.mint(address(this), rewardAmount);
             emit Epoch(indEpoch, rewardAmount, currentApr);
             indEpoch = indEpoch.sub(1);
             epochsElapsed = epochsElapsed.add(1);
         }
+        totalStaked.push(Checkpoint(block.number, totalStakedNow.add(rewardAmount.mul(epochsElapsed))));
+    }
+
+    function payRewardAtEpoch(uint256 epoch) {
+
     }
 
     function updateUserLock(address userAddress, uint256 targetEpoch)
