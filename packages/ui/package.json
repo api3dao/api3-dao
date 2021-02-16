@@ -16,6 +16,7 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-material-ui-carousel": "^2.1.2",
+    "react-number-format": "^4.4.4",
     "react-router-dom": "^5.2.0"
   },
   "devDependencies": {

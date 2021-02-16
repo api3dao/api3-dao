@@ -14,7 +14,6 @@ import {
   WarningIcon,
   CloseIcon,
   DoneIcon,
-  ChangeHistoryIcon,
   KeyboardArrowRightIcon,
   ArrowDropUpIcon,
 } from "components/@material-icons";

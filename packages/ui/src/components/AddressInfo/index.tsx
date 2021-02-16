@@ -11,12 +11,12 @@ function AddressInfo(props: any) {
   const classes = useStyles();
   const { address } = props
   return (
-    <Box className={classes.root}>
+    <Box className={classes.root} display="flex">
       <Box>
         <Typography variant="subtitle2">
           { address.slice(0, 5) }...{ address.slice(-5) }
         </Typography>
-        <Typography variant="subtitle2">
+        <Typography variant="subtitle2" className={classes.connectedText}>
           Connected to __
         </Typography>
       </Box>
