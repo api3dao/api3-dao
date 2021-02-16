@@ -9,12 +9,6 @@ contract TransferUtils is GetterUtils {
         public
     {}
 
-    modifier forceFastForward(address userAddress) {
-        require(users[userAddress].lastUpdateEpoch == now.div(rewardEpochLength), 
-        "User behind current epoch");
-        _;
-    }
-
     event Deposit(address indexed user, uint256 amount);
     event Withdrawal(address indexed user, address indexed destination, uint256 amount);
 
@@ -24,19 +18,20 @@ contract TransferUtils is GetterUtils {
         uint256 amount,
         address userAddress
         )
-        public
+    public
     {
         users[userAddress].unstaked = users[userAddress].unstaked.add(amount);
         api3Token.transferFrom(source, address(this), amount);
         emit Deposit(userAddress, amount);
     }
 
-    function withdraw(
-        address destination,
-        uint256 amount
-        )
-        public forceFastForward(msg.sender)
+    function withdraw(address destination, uint256 amount)
+    public
     {
+        uint256 currentEpoch = now.div(rewardEpochLength);
+        if(users[msg.sender].lastUpdateEpoch != currentEpoch) {
+            updateUserLock(msg.sender, currentEpoch);
+        }
         require(users[msg.sender].unstaked.sub(users[msg.sender].locked) >= amount, 
         "Amount exceeds available balance");
         users[msg.sender].unstaked = users[msg.sender].unstaked.sub(amount);

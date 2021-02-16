@@ -77,7 +77,7 @@ contract StakeUtils is TransferUtils {
     }
 
     function unstake()
-        public triggerEpochAfter
+        public triggerEpochBefore returns (uint256)
     {
         User storage user = users[msg.sender];
         require(now > user.unstakeScheduledFor, "Waiting period incomplete");
@@ -99,10 +99,11 @@ contract StakeUtils is TransferUtils {
         user.unstakeScheduledFor = 0;
         user.unstakeAmount = 0;
         emit Unstake(msg.sender, amount);
+        return amount;
     }
 
-    function unstakeAndWithdraw(address destination, uint256 amount) external {
-        unstake();
-        withdraw(destination, amount);
+    function unstakeAndWithdraw(address destination) external {
+        uint256 unstaked = unstake();
+        withdraw(destination, unstaked);
     }
 }

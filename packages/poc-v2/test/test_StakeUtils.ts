@@ -35,6 +35,7 @@ describe('StakeUtils', () => {
     await stakers[1].stake(50)
 
     const staked = await pool.balanceOf(accounts[1])
+    // console.log(JSON.stringify(staked))
     expect(staked).to.equal(50)
     const unstaked = (await pool.users(accounts[1])).unstaked
     expect(unstaked).to.equal(50)

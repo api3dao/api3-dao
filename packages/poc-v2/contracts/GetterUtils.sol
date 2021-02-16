@@ -17,7 +17,7 @@ contract GetterUtils is StateUtils {
 
     function balanceOf(address userAddress)
     public view returns (uint256) {
-        return this.balanceOfAt(block.number, userAddress);
+        return balanceOfAt(block.number, userAddress);
     }
 
     function totalSupplyAt(uint256 fromBlock)
@@ -27,7 +27,7 @@ contract GetterUtils is StateUtils {
 
     function totalSupply()
     public view returns (uint256) {
-        return this.totalSupplyAt(block.number);
+        return totalSupplyAt(block.number);
     }
 
     function totalStakeAt(uint256 fromBlock)
@@ -37,6 +37,6 @@ contract GetterUtils is StateUtils {
 
     function totalStake()
     public view returns (uint256) {
-        return this.totalStakeAt(block.number);
+        return totalStakeAt(block.number);
     }
 }

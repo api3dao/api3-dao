@@ -46,7 +46,7 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
     "totalSupply()": FunctionFragment;
     "totalSupplyAt(uint256)": FunctionFragment;
     "unstake()": FunctionFragment;
-    "unstakeAndWithdraw(address,uint256)": FunctionFragment;
+    "unstakeAndWithdraw(address)": FunctionFragment;
     "unstakeWaitPeriod()": FunctionFragment;
     "updateCoeff()": FunctionFragment;
     "updateTimelockStatus(address,address)": FunctionFragment;
@@ -139,7 +139,7 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "unstake", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "unstakeAndWithdraw",
-    values: [string, BigNumberish]
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "unstakeWaitPeriod",
@@ -524,13 +524,11 @@ export class TimelockUtils extends Contract {
 
     unstakeAndWithdraw(
       destination: string,
-      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "unstakeAndWithdraw(address,uint256)"(
+    "unstakeAndWithdraw(address)"(
       destination: string,
-      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -852,13 +850,11 @@ export class TimelockUtils extends Contract {
 
   unstakeAndWithdraw(
     destination: string,
-    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "unstakeAndWithdraw(address,uint256)"(
+  "unstakeAndWithdraw(address)"(
     destination: string,
-    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -1174,19 +1170,17 @@ export class TimelockUtils extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    unstake(overrides?: CallOverrides): Promise<void>;
+    unstake(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "unstake()"(overrides?: CallOverrides): Promise<void>;
+    "unstake()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     unstakeAndWithdraw(
       destination: string,
-      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "unstakeAndWithdraw(address,uint256)"(
+    "unstakeAndWithdraw(address)"(
       destination: string,
-      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1527,13 +1521,11 @@ export class TimelockUtils extends Contract {
 
     unstakeAndWithdraw(
       destination: string,
-      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "unstakeAndWithdraw(address,uint256)"(
+    "unstakeAndWithdraw(address)"(
       destination: string,
-      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -1812,13 +1804,11 @@ export class TimelockUtils extends Contract {
 
     unstakeAndWithdraw(
       destination: string,
-      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "unstakeAndWithdraw(address,uint256)"(
+    "unstakeAndWithdraw(address)"(
       destination: string,
-      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 

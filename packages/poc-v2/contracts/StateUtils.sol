@@ -31,8 +31,8 @@ contract StateUtils {
 
     IApi3Token internal api3Token;
 
-    //1 week in blocks @ 14sec/block
-    uint256 public constant rewardEpochLength = 43200;
+    //1 week in seconds
+    uint256 public constant rewardEpochLength = 604800;
     //1 year in epochs
     uint256 public constant rewardVestingPeriod = 52;
     uint256 public immutable genesisEpoch;
@@ -50,7 +50,7 @@ contract StateUtils {
     uint256 public maxApr = 75000000; // 75%
     uint256 public stakeTarget = 10e6 ether;
     uint256 public updateCoeff = 1000000;
-    uint256 public unstakeWaitPeriod = 604800; //1 week in seconds
+    uint256 public unstakeWaitPeriod = rewardEpochLength;
     // ^^^ These parameters will be governable by the DAO ^^^
 
     uint256 public currentApr = minApr;
@@ -102,10 +102,10 @@ contract StateUtils {
             ? currentApr.mul(hundredPercent.add(aprUpdate)).div(hundredPercent) 
             : currentApr.mul(hundredPercent.sub(aprUpdate)).div(hundredPercent);
         
-        if (currentApr < minApr) {
+        if (newApr < minApr) {
             currentApr = minApr;
         }
-        else if (currentApr > maxApr) {
+        else if (newApr > maxApr) {
             currentApr = maxApr;
         } else {
             currentApr = newApr;
@@ -117,23 +117,23 @@ contract StateUtils {
     {
         updateCurrentApr();
         uint256 totalStakedNow = getValue(totalStaked);
-        uint256 rewardAmount = totalStakedNow.mul(currentApr).div(52).div(100000000);
+        uint256 rewardAmount = totalStakedNow.mul(currentApr).div(rewardVestingPeriod).div(hundredPercent);
         uint256 indEpoch = now.div(rewardEpochLength);
-        rewards[indEpoch] = RewardEpoch(true, rewardAmount, block.number);
-        emit Epoch(indEpoch, rewardAmount, currentApr);
-        while (!rewards[indEpoch.sub(1)].paid && indEpoch.sub(1) >= genesisEpoch) {
-            rewards[indEpoch.sub(1)] = RewardEpoch(true, rewardAmount, block.number);
-            emit Epoch(indEpoch, rewardAmount, currentApr);
-            indEpoch = indEpoch.sub(1);
-        }
         if (!api3Token.getMinterStatus(address(this))) {
             return;
         }
         if (rewardAmount == 0) {
             return;
         }
-        totalStaked.push(Checkpoint(block.number, totalStakedNow.add(rewardAmount)));
-        api3Token.mint(address(this), rewardAmount);
+        uint epochsElapsed = 1;
+        while (!rewards[indEpoch].paid) {
+            rewards[indEpoch] = RewardEpoch(true, rewardAmount, block.number);
+            totalStaked.push(Checkpoint(block.number, totalStakedNow.add(rewardAmount.mul(epochsElapsed))));
+            api3Token.mint(address(this), rewardAmount);
+            emit Epoch(indEpoch, rewardAmount, currentApr);
+            indEpoch = indEpoch.sub(1);
+            epochsElapsed = epochsElapsed.add(1);
+        }
     }
 
     function updateUserLock(address userAddress, uint256 targetEpoch)

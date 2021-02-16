@@ -15,7 +15,7 @@ contract ClaimUtils is StakeUtils {
         uint256 payoutAmount,
         uint256 claimReferenceBlock
         )
-        external triggerEpochAfter
+        external triggerEpochBefore
         // `onlyClaimsManager`
     {
         uint256 totalStakedNow = getValue(totalStaked);
