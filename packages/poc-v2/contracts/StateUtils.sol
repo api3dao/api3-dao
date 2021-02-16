@@ -136,8 +136,28 @@ contract StateUtils {
         totalStaked.push(Checkpoint(block.number, totalStakedNow.add(rewardAmount.mul(epochsElapsed))));
     }
 
-    function payRewardAtEpoch(uint256 epoch) {
-
+    function payRewardAtEpoch(uint256 epoch) 
+    external triggerEpochBefore {
+        require(epoch >= genesisEpoch && epoch < now.div(rewardEpochLength), "Invalid target");
+        uint256 indEpoch = epoch;
+        while (!rewards[indEpoch].paid) {
+            if (rewards[indEpoch.add(1)].paid) {
+                RewardEpoch storage nextPaidEpoch = rewards[indEpoch.add(1)];
+                rewards[epoch] = RewardEpoch(
+                    true,
+                    nextPaidEpoch.amount,
+                    //We set the atBlock to what it would have been if all missed epochs had been paid at once because user shares are checkpointed by block
+                    nextPaidEpoch.atBlock
+                );
+                if (nextPaidEpoch.amount > 0) {
+                    uint256 totalStakedNow = getValue(totalStaked);
+                    totalStaked.push(Checkpoint(nextPaidEpoch.atBlock, totalStakedNow.add(nextPaidEpoch.amount)));
+                    api3Token.mint(address(this), nextPaidEpoch.amount);
+                    emit Epoch(indEpoch.add(1), nextPaidEpoch.amount, nextPaidEpoch.atBlock);
+                }
+            }
+            indEpoch = indEpoch.add(1);
+        }
     }
 
     function updateUserLock(address userAddress, uint256 targetEpoch)

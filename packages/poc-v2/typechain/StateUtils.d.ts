@@ -27,6 +27,7 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     "getCurrentUserLock(address,uint256)": FunctionFragment;
     "maxApr()": FunctionFragment;
     "minApr()": FunctionFragment;
+    "payRewardAtEpoch(uint256)": FunctionFragment;
     "rewardEpochLength()": FunctionFragment;
     "rewardVestingPeriod()": FunctionFragment;
     "rewards(uint256)": FunctionFragment;
@@ -53,6 +54,10 @@ interface StateUtilsInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "maxApr", values?: undefined): string;
   encodeFunctionData(functionFragment: "minApr", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "payRewardAtEpoch",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "rewardEpochLength",
     values?: undefined
@@ -102,6 +107,10 @@ interface StateUtilsInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "minApr", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "payRewardAtEpoch",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "rewardEpochLength",
     data: BytesLike
@@ -185,6 +194,16 @@ export class StateUtils extends Contract {
     minApr(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "minApr()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    payRewardAtEpoch(
+      epoch: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "payRewardAtEpoch(uint256)"(
+      epoch: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     rewardEpochLength(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -323,6 +342,16 @@ export class StateUtils extends Contract {
 
   "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+  payRewardAtEpoch(
+    epoch: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "payRewardAtEpoch(uint256)"(
+    epoch: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   rewardEpochLength(overrides?: CallOverrides): Promise<BigNumber>;
 
   "rewardEpochLength()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -459,6 +488,16 @@ export class StateUtils extends Contract {
     minApr(overrides?: CallOverrides): Promise<BigNumber>;
 
     "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    payRewardAtEpoch(
+      epoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "payRewardAtEpoch(uint256)"(
+      epoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     rewardEpochLength(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -606,6 +645,16 @@ export class StateUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    payRewardAtEpoch(
+      epoch: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "payRewardAtEpoch(uint256)"(
+      epoch: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
     rewardEpochLength(overrides?: CallOverrides): Promise<BigNumber>;
 
     "rewardEpochLength()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -701,6 +750,16 @@ export class StateUtils extends Contract {
     minApr(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "minApr()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    payRewardAtEpoch(
+      epoch: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "payRewardAtEpoch(uint256)"(
+      epoch: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
 
     rewardEpochLength(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
