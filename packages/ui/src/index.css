@@ -1,14 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 button[aria-label='Previous'] {
-    background-color: #030303;
+    background-color: transparent;
     border: 0;
     color: #fff;
     opacity: 1;
     }
 
 button[aria-label='Next'] {
-    background-color: #030303;
+    background-color: transparent;
     border: 0;
     color: #fff;
     opacity: 1;

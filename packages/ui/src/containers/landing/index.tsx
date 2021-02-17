@@ -1,10 +1,10 @@
 import React, { } from "react";
 import { Container, Typography, Box } from "@material-ui/core";
-import Carousel from "react-material-ui-carousel";
+// import Carousel from "react-material-ui-carousel";
 
 import useStyles from "containers/landing/styles";
 import useCommonStyles from "styles/common-styles";
-import { BalanceContainer, StakingContainer, InsurancePool } from "components";
+import { BalanceContainer, StakingContainer, InsurancePool, Carousel } from "components";
 
 function Item(props: any) {
   return (
@@ -49,11 +49,13 @@ function Landing() {
         <Typography variant="body1" color="secondary">
           How This Works
         </Typography>
-        <Box padding="5%" className={commonClasses.borderContainer}> 
+        <Carousel />
+        {/*<Box padding="5%" className={commonClasses.borderContainer}> 
           <Carousel autoPlay={false} navButtonsAlwaysVisible>
             { items.map(renderItems) }
           </Carousel>
-        </Box>
+          
+        </Box>*/}
       </Box>
       <InsurancePool />
       <Box display="flex">

@@ -8,6 +8,8 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
+import ArrowForward from '@material-ui/icons/ArrowForwardIos'; 
+import ArrowBack from '@material-ui/icons/ArrowBackIos';
 
 export {
   CloseIcon,
@@ -20,5 +22,6 @@ export {
   OpenInNewIcon,
   ArrowDropUpIcon,
   ArrowDropDownIcon,
-
+  ArrowBack,
+  ArrowForward,
 }
