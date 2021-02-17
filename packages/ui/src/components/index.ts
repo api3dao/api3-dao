@@ -21,6 +21,7 @@ import ProposalItem from "components/Proposals/ProposalItem";
 import API3Buttons from "components/testing/API3Buttons";
 import VoteModal from "components/Modal/Vote";
 import DelegateModal from "components/Modal/Delegate";
+import NewProposalModal from "components/Modal/NewProposal";
 
 
 export {
@@ -47,11 +48,7 @@ export {
   StakingContainer,
   API3Buttons,
   ProposalItem,
-<<<<<<< HEAD
-=======
   VoteModal,
   DelegateModal,
   NewProposalModal,
-
->>>>>>> 2c3ceb7a3abc08ac6c6ecf2c84c3405520f667b5
 }
