@@ -5,6 +5,7 @@
   "private": true,
   "dependencies": {
     "@aragon/connect": "^0.7.0",
+    "@aragon/connect-finance": "^0.7.0",
     "@aragon/connect-voting": "0.7.0",
     "@devexpress/dx-react-chart": "^2.7.4",
     "@devexpress/dx-react-chart-material-ui": "^2.7.4",
