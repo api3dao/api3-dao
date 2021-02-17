@@ -49,7 +49,7 @@ export const CustomSelect = withStyles((theme: Theme) =>
       position: 'relative',
       backgroundColor: theme.palette.background.paper,
       border: "1px solid #000000",
-      fontSize: 16,
+      fontSize: "16 !important",
       padding: '10px 26px 10px 12px',
       transition: theme.transitions.create(['border-color', 'box-shadow']),
       '&:focus': {
@@ -68,7 +68,8 @@ export const useStyles = makeStyles((theme: Theme) =>
     input: {
       border: "1px solid #000000",
       paddingLeft: "16px",
-      paddingTop: "6px"
+      paddingTop: "6px",
+      fontSize: 16,
     },
     ...modals,
   }),
