@@ -9,7 +9,39 @@ export const useStyles = makeStyles((theme: Theme) =>
     },
     box: {
       padding: 10
-    }
+    },
+    rejectIcon: {
+      color: "#823FB1",
+      paddingRight: "3px"
+    },
+    doneIcon: {
+      paddingRight: "3px",
+      color: theme.palette.info.main
+    },
+    activeIcon: {
+      paddingRight: "3px"
+    },
+    proposalSubtitle: {
+      "& > *": {
+        paddingRight: "4%",
+      }
+    },
+    modal: {
+      height: "256px",
+      width: "268px",
+      padding: "0 2%",
+      "& > *": {
+        paddingBottom: "7%"
+      }
+    },
+    delegateModal: {
+      height: "224px",
+      width: "520px",
+      padding: "0 2%",
+      "& > *": {
+        paddingBottom: "7%"
+      }
+    },
   }),
 );
 

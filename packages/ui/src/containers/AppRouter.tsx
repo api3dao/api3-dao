@@ -16,26 +16,26 @@ import {
 
 function AppRouter() {
   return (
-      <Switch>
+    <Switch>
       <Route path={"/testing"}>
         <Testing  />
       </Route>
-        <Route path={"/proposals"}>
-          <DAOGov />
-        </Route>
-        <Route path={"/proposals/:id"}>
-          <ProposalDetails />
-        </Route>
-        <Route path={"/staking"}>
-          <Staking />
-        </Route>
-        <Route path={"/dashboard"}>
-          <Dashboard />
-        </Route>
-        <Route path={"/"}>
-          <Landing />
-        </Route>
-      </Switch>
+      <Route exact path={"/proposals"}>
+        <DAOGov />
+      </Route>
+      <Route path={"/proposals/:id"}>
+        <ProposalDetails />
+      </Route>
+      <Route path={"/staking"}>
+        <Staking />
+      </Route>
+      <Route path={"/dashboard"}>
+        <Dashboard />
+      </Route>
+      <Route path={"/"}>
+        <Landing />
+      </Route>
+    </Switch>
   );
 }
 

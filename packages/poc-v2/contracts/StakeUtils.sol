@@ -24,6 +24,7 @@ contract StakeUtils is TransferUtils {
         uint256 userSharesNow = user.shares.length > 0 ? user.shares[user.shares.length - 1].value : 0;
         users[msg.sender].shares.push(Checkpoint(block.number, userSharesNow + sharesToMint));
         totalShares.push(Checkpoint(block.number, totalSharesNow + sharesToMint));
+        totalStaked.push(Checkpoint(block.number, totalStakedNow + amount));
     }
 
     // We can't let the user unstake on demand. Otherwise, they would be able to unstake
@@ -71,6 +72,8 @@ contract StakeUtils is TransferUtils {
             // reward payment was made, but that's not feasible to implement.)
             userSharesNow -= sharesToBurn;
             totalSharesNow -= sharesToBurn;
+            console.log('userSharesNow 2');
+            console.log(userSharesNow);
             users[msg.sender].shares.push(Checkpoint(block.number, userSharesNow));
             totalShares.push(Checkpoint(block.number, totalSharesNow));
             // Also unlock the tokens. Note that these tokens will be unlocked again 1 year later (so
@@ -84,7 +87,7 @@ contract StakeUtils is TransferUtils {
         // We have to check this because otherwise the user can schedule an unstake 1 week ago
         // for infinite tokens, take a flash loan, vote on a proposal, unstake, withdraw and return
         // the loan.
-        require(amount <= userStakedNow + tokensToRevoke);
+        require(amount <= userStakedNow + tokensToRevoke, "Insufficient amount");
         users[msg.sender].unstakeScheduledAt = now;
         users[msg.sender].unstakeAmount = amount;
     }
@@ -113,6 +116,7 @@ contract StakeUtils is TransferUtils {
         users[msg.sender].unstaked += amount;
         users[msg.sender].shares.push(Checkpoint(block.number, userSharesNow - sharesToBurn));
         totalShares.push(Checkpoint(block.number, totalSharesNow - sharesToBurn));
+        totalStaked.push(Checkpoint(block.number, totalStakedNow - amount));
         // Reset the schedule
         users[msg.sender].unstakeScheduledAt = 0;
         users[msg.sender].unstakeAmount = 0;

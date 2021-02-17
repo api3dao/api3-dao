@@ -50,7 +50,7 @@ function Landing() {
           How This Works
         </Typography>
         <Box padding="5%" className={commonClasses.borderContainer}> 
-          <Carousel>
+          <Carousel autoPlay={false} navButtonsAlwaysVisible>
             { items.map(renderItems) }
           </Carousel>
         </Box>

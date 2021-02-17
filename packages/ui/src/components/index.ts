@@ -17,7 +17,11 @@ import InsurancePool from "components/Insurance/Pool";
 import BalanceContainer from "components/Balance/BalanceContainer";
 import StakingContainer from "components/Staking/StakingContainer";
 import ProposalItem from "components/Proposals/ProposalItem";
+
 import API3Buttons from "components/testing/API3Buttons";
+import VoteModal from "components/Modal/Vote";
+import DelegateModal from "components/Modal/Delegate";
+
 
 export {
   Navbar,
@@ -43,4 +47,11 @@ export {
   StakingContainer,
   API3Buttons,
   ProposalItem,
+<<<<<<< HEAD
+=======
+  VoteModal,
+  DelegateModal,
+  NewProposalModal,
+
+>>>>>>> 2c3ceb7a3abc08ac6c6ecf2c84c3405520f667b5
 }

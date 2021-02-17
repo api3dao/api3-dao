@@ -2,9 +2,12 @@
 pragma solidity 0.6.12;
 
 import "./auxiliary/interfaces/IApi3Token.sol";
+import "./auxiliary/SafeMath.sol";
 import "hardhat/console.sol";
 
 contract StateUtils {
+    using SafeMath for uint256;
+
     struct Checkpoint
     {
         uint256 fromBlock;
@@ -53,8 +56,10 @@ contract StateUtils {
     // Note that we don't need to keep the blocks rewards were paid out at. That's
     // because we know that it was `rewardVestingPeriod` before it will be released.
 
+    uint256 onePercent = 1000000;
+    uint256 hundredPercent = 100000000;
     // VVV These parameters will be governable by the DAO VVV
-    // Percentages are multiplied by 1,000,000.
+    // Percentages are multipl1ied by 1,000,000.
     uint256 public minApr = 2500000; // 2.5%
     uint256 public maxApr = 75000000; // 75%
     uint256 public stakeTarget = 10e6 ether; // 10M API3
@@ -79,38 +84,40 @@ contract StateUtils {
     }
 
     function updateCurrentApr()
-        private
+        internal
     {
-        if (stakeTarget == 0)
-        {
+        uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
+        if (stakeTarget < totalStakedNow) {
             currentApr = minApr;
             return;
         }
-        uint256 totalStakedNow = totalStaked[totalStaked.length - 1].value;
 
-        uint256 deltaAbsolute = totalStakedNow < stakeTarget 
-            ? stakeTarget - totalStakedNow : totalStakedNow - stakeTarget;
-        uint256 deltaPercentage = deltaAbsolute * 100000000 / stakeTarget;
+        uint256 deltaAbsolute = totalStakedNow < stakeTarget
+            ? stakeTarget.sub(totalStakedNow) : totalStakedNow.sub(stakeTarget);
+        uint256 deltaPercentage = deltaAbsolute.mul(hundredPercent).div(stakeTarget);
         
         // An updateCoeff of 1,000,000 means that for each 1% deviation from the 
         // stake target, APR will be updated by 1%.
-        uint256 aprUpdate = deltaPercentage * updateCoeff / 1000000;
+        uint256 aprUpdate = deltaPercentage.mul(updateCoeff).div(onePercent);
+        // console.log('CONTRACT_APR_UPDATE');
+        // console.log(aprUpdate);
 
-        currentApr = totalStakedNow < stakeTarget
-            ? currentApr * (100000000 + aprUpdate) / 100000000 : currentApr * (100000000 - aprUpdate) / 100000000;
+        currentApr = currentApr.mul(aprUpdate.add(hundredPercent)).div(hundredPercent);
+        // console.log('CONTRACT_BELOW_TARGET');
+        // console.log(totalStakedNow < stakeTarget);
+        // console.log('CONTRACT_APR_CALC');
+        // console.log(currentApr);
         
-        if (currentApr < minApr)
-        {
-            currentApr = minApr;
-        }
-        else if (currentApr > maxApr)
+        if (currentApr > maxApr)
         {
             currentApr = maxApr;
         }
+        // console.log('CONTRACT_NEW_APR');
+        // console.log(currentApr);
     }
 
     function payReward()
-        private
+        internal
     {
         updateCurrentApr();
         uint256 indEpoch = now / rewardEpochLength;
@@ -310,13 +317,28 @@ contract StateUtils {
     {
         // If we don't require this, the user may vote with shares that are supposed to have been slashed
         // require(users[userAddress].lastStateUpdateTargetBlock >= fromBlock);
-        User memory user = users[userAddress];
-        uint256 shares = getValueAt(user.shares, fromBlock);
+        uint256 shares = getValueAt(users[userAddress].shares, fromBlock);
         return shares;
     }
 
     function balanceOf(address userAddress) external view returns (uint256) {
         return this.balanceOfAt(block.number, userAddress);
+    }
+
+    function getUnstakeAmount(address userAddress) external view returns (uint256) {
+        return users[userAddress].unstakeAmount;
+    }
+
+    function totalSupplyAt(uint256 fromBlock) external view returns (uint256) {
+        return getValueAt(totalStaked, fromBlock);
+    }
+
+    function totalSupply() external view returns (uint256) {
+        return this.totalSupplyAt(block.number);
+    }
+
+    function getScheduledUnstake(address userAddress) external view returns (uint256) {
+        return users[userAddress].unstakeScheduledAt;
     }
 
     // Getters that will be used to populate the dashboard etc. should be preceded
@@ -331,5 +353,9 @@ contract StateUtils {
     {
         updateUserState(userAddress, fromBlock);
         return getValueAt(users[userAddress].shares, fromBlock);
+    }
+
+    function updateAndGetBalanceOf(address userAddress) external returns (uint256) {
+        return this.updateAndGetBalanceOfAt(userAddress, block.number);
     }
 }

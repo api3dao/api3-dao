@@ -10,6 +10,7 @@ export type { IApi3Token } from "./IApi3Token";
 export type { ClaimUtils } from "./ClaimUtils";
 export type { StakeUtils } from "./StakeUtils";
 export type { StateUtils } from "./StateUtils";
+export type { TestPool } from "./TestPool";
 export type { TimelockUtils } from "./TimelockUtils";
 export type { TransferUtils } from "./TransferUtils";
 
@@ -22,5 +23,6 @@ export { IApi3Token__factory } from "./factories/IApi3Token__factory";
 export { ClaimUtils__factory } from "./factories/ClaimUtils__factory";
 export { StakeUtils__factory } from "./factories/StakeUtils__factory";
 export { StateUtils__factory } from "./factories/StateUtils__factory";
+export { TestPool__factory } from "./factories/TestPool__factory";
 export { TimelockUtils__factory } from "./factories/TimelockUtils__factory";
 export { TransferUtils__factory } from "./factories/TransferUtils__factory";

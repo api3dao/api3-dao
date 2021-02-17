@@ -1,4 +1,6 @@
 import React, { useContext } from "react";
+import { Link } from "react-router-dom";
+
 import {
   Box,
   Typography,
@@ -11,7 +13,7 @@ import {
   // VoteProposalButtons,
   ProposalItem
 } from "components";
-import useStyles from "components/VotesList/styles";
+import useStyles from "components/Vote/VotesList/styles";
 
 function VotesList() {  
   const classes = useStyles();
@@ -20,24 +22,6 @@ function VotesList() {
   const voteItems = (vote: Vote, voteIndex: number) => {
     voteIndex = Number(vote.id.slice(- 4));
     return <ProposalItem vote={vote} voteIndex={voteIndex} key={voteIndex}/>
-     /*  <Box className={classes.voteItem} key={voteIndex}>
-        <Link to={`proposals/${voteIndex}`}>
-          <Box>
-            <Typography variant="body1">Vote #: { voteIndex }</Typography>
-            <Typography variant="body1">Vote ID: { vote.id.slice(- 4) }</Typography>
-          </Box>
-          <Box>
-            <Typography variant="body1">Description of Vote:</Typography>
-            <Typography variant="body1"> { vote.metadata } </Typography>
-          </Box>
-          {/*
-          <Box>
-            <Counter countDownDate="Jan 1, 2021 00:00:00" />
-          </Box>
-          *
-        </Link>
-        <VoteProposalButtons voteIndex={voteIndex} proposalType="vote"/>
-      </Box> */
   }
   const votes = aragonContext.votes.map(voteItems).slice(0, 5)
   return (
@@ -55,6 +39,11 @@ function VotesList() {
           votes
         }
       </Box>
+      <Link to="/proposals" style={{ textDecoration: "none"}}>
+        <Box display="flex" justifyContent="center" alignItems="center" padding="2.5%">
+          <Typography variant="subtitle2" color="textSecondary">View All Proposals</Typography>
+        </Box>
+      </Link>
     </>
   );
 }

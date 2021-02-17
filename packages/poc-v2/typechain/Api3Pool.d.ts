@@ -29,6 +29,8 @@ interface Api3PoolInterface extends ethers.utils.Interface {
     "currentApr()": FunctionFragment;
     "deposit(address,uint256,address)": FunctionFragment;
     "depositWithVesting(address,uint256,address,uint256,uint256)": FunctionFragment;
+    "getScheduledUnstake(address)": FunctionFragment;
+    "getUnstakeAmount(address)": FunctionFragment;
     "locks(uint256)": FunctionFragment;
     "makeClaim(uint256)": FunctionFragment;
     "maxApr()": FunctionFragment;
@@ -42,11 +44,18 @@ interface Api3PoolInterface extends ethers.utils.Interface {
     "rewardReleases(uint256)": FunctionFragment;
     "rewardVestingPeriod()": FunctionFragment;
     "scheduleUnstake(uint256)": FunctionFragment;
+    "setMaxApr(uint256)": FunctionFragment;
+    "setMinApr(uint256)": FunctionFragment;
+    "setStakeTarget(uint256)": FunctionFragment;
+    "setUpdateCoeff(uint256)": FunctionFragment;
     "stake(uint256)": FunctionFragment;
     "stakeTarget()": FunctionFragment;
     "totalShares(uint256)": FunctionFragment;
     "totalStaked(uint256)": FunctionFragment;
+    "totalSupply()": FunctionFragment;
+    "totalSupplyAt(uint256)": FunctionFragment;
     "unstake()": FunctionFragment;
+    "updateAndGetBalanceOf(address)": FunctionFragment;
     "updateAndGetBalanceOfAt(address,uint256)": FunctionFragment;
     "updateCoeff()": FunctionFragment;
     "updateTimelockStatus(address,address)": FunctionFragment;
@@ -80,6 +89,14 @@ interface Api3PoolInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "depositWithVesting",
     values: [string, BigNumberish, string, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getScheduledUnstake",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getUnstakeAmount",
+    values: [string]
   ): string;
   encodeFunctionData(functionFragment: "locks", values: [BigNumberish]): string;
   encodeFunctionData(
@@ -124,6 +141,22 @@ interface Api3PoolInterface extends ethers.utils.Interface {
     functionFragment: "scheduleUnstake",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "setMaxApr",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setMinApr",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setStakeTarget",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setUpdateCoeff",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "stake", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "stakeTarget",
@@ -137,7 +170,19 @@ interface Api3PoolInterface extends ethers.utils.Interface {
     functionFragment: "totalStaked",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "totalSupply",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalSupplyAt",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "unstake", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "updateAndGetBalanceOf",
+    values: [string]
+  ): string;
   encodeFunctionData(
     functionFragment: "updateAndGetBalanceOfAt",
     values: [string, BigNumberish]
@@ -183,6 +228,14 @@ interface Api3PoolInterface extends ethers.utils.Interface {
     functionFragment: "depositWithVesting",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getScheduledUnstake",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getUnstakeAmount",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "locks", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "makeClaim", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
@@ -223,6 +276,16 @@ interface Api3PoolInterface extends ethers.utils.Interface {
     functionFragment: "scheduleUnstake",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setMaxApr", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setMinApr", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setStakeTarget",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setUpdateCoeff",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "stake", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "stakeTarget",
@@ -236,7 +299,19 @@ interface Api3PoolInterface extends ethers.utils.Interface {
     functionFragment: "totalStaked",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSupply",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSupplyAt",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "unstake", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "updateAndGetBalanceOf",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "updateAndGetBalanceOfAt",
     data: BytesLike
@@ -260,7 +335,17 @@ interface Api3PoolInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "users", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
-  events: {};
+  events: {
+    "newMaxApr(uint256,uint256)": EventFragment;
+    "newMinApr(uint256,uint256)": EventFragment;
+    "newStakeTarget(uint256,uint256)": EventFragment;
+    "newUpdateCoeff(uint256,uint256)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "newMaxApr"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "newMinApr"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "newStakeTarget"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "newUpdateCoeff"): EventFragment;
 }
 
 export class Api3Pool extends Contract {
@@ -358,6 +443,26 @@ export class Api3Pool extends Contract {
       releaseEnd: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
+
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     locks(
       arg0: BigNumberish,
@@ -477,6 +582,46 @@ export class Api3Pool extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
+    setMaxApr(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setMaxApr(uint256)"(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setMinApr(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setMinApr(uint256)"(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setStakeTarget(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setStakeTarget(uint256)"(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setUpdateCoeff(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setUpdateCoeff(uint256)"(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
     stake(
       amount: BigNumberish,
       overrides?: Overrides
@@ -519,9 +664,33 @@ export class Api3Pool extends Contract {
       [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
     >;
 
+    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     unstake(overrides?: Overrides): Promise<ContractTransaction>;
 
     "unstake()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     updateAndGetBalanceOfAt(
       userAddress: string,
@@ -707,6 +876,26 @@ export class Api3Pool extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  getScheduledUnstake(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "getScheduledUnstake(address)"(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getUnstakeAmount(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "getUnstakeAmount(address)"(
+    userAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   locks(
     arg0: BigNumberish,
     overrides?: CallOverrides
@@ -825,6 +1014,46 @@ export class Api3Pool extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  setMaxApr(
+    _maxApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setMaxApr(uint256)"(
+    _maxApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setMinApr(
+    _minApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setMinApr(uint256)"(
+    _minApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setStakeTarget(
+    _stakeTarget: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setStakeTarget(uint256)"(
+    _stakeTarget: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setUpdateCoeff(
+    _updateCoeff: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setUpdateCoeff(uint256)"(
+    _updateCoeff: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   stake(
     amount: BigNumberish,
     overrides?: Overrides
@@ -867,9 +1096,33 @@ export class Api3Pool extends Contract {
     [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
   >;
 
+  totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  totalSupplyAt(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "totalSupplyAt(uint256)"(
+    fromBlock: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   unstake(overrides?: Overrides): Promise<ContractTransaction>;
 
   "unstake()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+  updateAndGetBalanceOf(
+    userAddress: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "updateAndGetBalanceOf(address)"(
+    userAddress: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
 
   updateAndGetBalanceOfAt(
     userAddress: string,
@@ -1058,6 +1311,26 @@ export class Api3Pool extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     locks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1173,6 +1446,40 @@ export class Api3Pool extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setMaxApr(_maxApr: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    "setMaxApr(uint256)"(
+      _maxApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setMinApr(_minApr: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    "setMinApr(uint256)"(
+      _minApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setStakeTarget(
+      _stakeTarget: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setStakeTarget(uint256)"(
+      _stakeTarget: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setUpdateCoeff(
+      _updateCoeff: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setUpdateCoeff(uint256)"(
+      _updateCoeff: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     stake(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     "stake(uint256)"(
@@ -1212,9 +1519,33 @@ export class Api3Pool extends Contract {
       [BigNumber, BigNumber] & { fromBlock: BigNumber; value: BigNumber }
     >;
 
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     unstake(overrides?: CallOverrides): Promise<void>;
 
     "unstake()"(overrides?: CallOverrides): Promise<void>;
+
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     updateAndGetBalanceOfAt(
       userAddress: string,
@@ -1321,7 +1652,15 @@ export class Api3Pool extends Contract {
     ): Promise<void>;
   };
 
-  filters: {};
+  filters: {
+    newMaxApr(oldMaxApr: null, newMaxApr: null): EventFilter;
+
+    newMinApr(oldMinApr: null, newMinApr: null): EventFilter;
+
+    newStakeTarget(oldStakeTarget: null, newStakeTarget: null): EventFilter;
+
+    newUpdateCoeff(oldUpdateCoeff: null, newUpdateCoeff: null): EventFilter;
+  };
 
   estimateGas: {
     balanceOf(
@@ -1400,6 +1739,26 @@ export class Api3Pool extends Contract {
       releaseStart: BigNumberish,
       releaseEnd: BigNumberish,
       overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     locks(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
@@ -1506,6 +1865,40 @@ export class Api3Pool extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
+    setMaxApr(_maxApr: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+
+    "setMaxApr(uint256)"(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setMinApr(_minApr: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+
+    "setMinApr(uint256)"(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setStakeTarget(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setStakeTarget(uint256)"(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setUpdateCoeff(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setUpdateCoeff(uint256)"(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
     stake(amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
 
     "stake(uint256)"(
@@ -1537,9 +1930,33 @@ export class Api3Pool extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     unstake(overrides?: Overrides): Promise<BigNumber>;
 
     "unstake()"(overrides?: Overrides): Promise<BigNumber>;
+
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
 
     updateAndGetBalanceOfAt(
       userAddress: string,
@@ -1692,6 +2109,26 @@ export class Api3Pool extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
+    getScheduledUnstake(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getScheduledUnstake(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getUnstakeAmount(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getUnstakeAmount(address)"(
+      userAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     locks(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1808,6 +2245,46 @@ export class Api3Pool extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
+    setMaxApr(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setMaxApr(uint256)"(
+      _maxApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setMinApr(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setMinApr(uint256)"(
+      _minApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setStakeTarget(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setStakeTarget(uint256)"(
+      _stakeTarget: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setUpdateCoeff(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setUpdateCoeff(uint256)"(
+      _updateCoeff: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
     stake(
       amount: BigNumberish,
       overrides?: Overrides
@@ -1842,9 +2319,33 @@ export class Api3Pool extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    totalSupplyAt(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "totalSupplyAt(uint256)"(
+      fromBlock: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     unstake(overrides?: Overrides): Promise<PopulatedTransaction>;
 
     "unstake()"(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    updateAndGetBalanceOf(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "updateAndGetBalanceOf(address)"(
+      userAddress: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
 
     updateAndGetBalanceOfAt(
       userAddress: string,
