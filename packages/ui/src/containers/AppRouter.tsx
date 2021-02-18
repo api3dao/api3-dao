@@ -11,12 +11,13 @@ import {
   ProposalDetails,
   Landing,
   Testing,
-
+  ProtectedRouter,
 } from "containers";
 
 function AppRouter() {
   return (
     <Switch>
+      <ProtectedRouter path="/dashboard" component={Dashboard} />
       <Route path={"/testing"}>
         <Testing  />
       </Route>
@@ -28,9 +29,6 @@ function AppRouter() {
       </Route>
       <Route path={"/staking"}>
         <Staking />
-      </Route>
-      <Route path={"/dashboard"}>
-        <Dashboard />
       </Route>
       <Route path={"/"}>
         <Landing />
