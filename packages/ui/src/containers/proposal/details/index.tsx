@@ -52,7 +52,7 @@ function ProposalDetails() {
   // VoteModal
   // const { voteIndex, voteModal, setVoteModal, setVoted } = props;
   // this is hardcoded for now
-  const countDownDate = new Date().setDate(new Date().getDate() + 6)
+  const countDownDate = '02/21/2021'
   
   return (
     <Container className={classes.root}>
@@ -111,7 +111,7 @@ function ProposalDetails() {
         </Box>
         <Box display="flex" flexDirection="column" justifyContent="center" alignItems="flex-end">
           <Box display="flex">
-            <Typography variant="body1"  color="secondary">0.1%  My Voting Weight</Typography>
+            <Typography variant="body1"  color="secondary">My Voting Weight: {0.1}%"</Typography>
             <HelpOutlineIcon color="secondary" fontSize="small" />
           </Box>
           {
@@ -128,7 +128,7 @@ function ProposalDetails() {
             ) : (
               <Box onClick={() => setDelegateModal(true)}>
                 <Typography variant="body1"  color="secondary" style={{ textDecoration: "underline", cursor: "pointer" }}>
-                  Delegate My Votes
+                  Delegate My Vote
                 </Typography>
               </Box>
             )

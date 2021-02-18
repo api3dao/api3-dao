@@ -103,7 +103,7 @@ function StakingContainer(props?: IStakingContainer | undefined | any ) {
             !nextTabModal ? (
               <Paper className={classes.modal}>
                 <Typography variant="body1" color="primary">
-                How many tokens would you like to unstake?
+                How many API3 would you like to unstake?
                 </Typography>
                 <TextField 
                   required 
@@ -120,7 +120,16 @@ function StakingContainer(props?: IStakingContainer | undefined | any ) {
               <Paper>
                 <Box padding="2%">
                   <Typography variant="body1" color="primary">
-                    Are you sure you would like to unstake { unstakeAmount } tokens?
+                    Are you sure you want to unstake { unstakeAmount } API3?
+                  </Typography>
+                  <Typography variant="body1" color="primary">
+                    After the cool-down period, you have 7 days to finalize the unstake.
+                  </Typography>
+                  <Typography variant="body1" color="primary">
+                    Initiating unstake will start a 7-day cool-down period. 
+                  </Typography>
+                  <Typography variant="body1" color="primary">
+                    During the cool-down period your tokens will remain in the insurance pool but do not earn staking rewards.
                   </Typography>
                 </Box>
                 <Box display="flex" alignItems="center" justifyContent="center" flexDirection="row">

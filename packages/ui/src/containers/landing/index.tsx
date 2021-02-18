@@ -6,17 +6,6 @@ import useStyles from "containers/landing/styles";
 import useCommonStyles from "styles/common-styles";
 import { BalanceContainer, StakingContainer, InsurancePool, Carousel } from "components";
 
-function Item(props: any) {
-  return (
-    <Box display="flex" alignItems="center" justifyContent="center" flexDirection="column">
-      <Typography color="textSecondary">{props.item.name}</Typography>
-      <Typography variant="h2" color="secondary">{props.item.description}</Typography>
-    </Box>
-  )
-}
-
-const renderItems = (item: any, index: number) => <Item key={index} item={item} />
-
 function Landing() {
   const classes = useStyles();
   const commonClasses = useCommonStyles();

@@ -13,7 +13,7 @@ function Counter(props: any) {
   const componentDidMount = () => {
     const count = async () => {
       // for now lets hard code date
-      const date = "02/09/2021";
+      const date = "02/21/2021";
       if(date) {
         // Get today's date and time
         const now = new Date().getTime();
