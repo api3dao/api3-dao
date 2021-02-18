@@ -31,7 +31,6 @@ const modals = {
     padding: "16px"
   },
   newProposalType2: {
-    height: "806px",
     width: "529px",
     borderRadius: 2,
     padding: "16px"
