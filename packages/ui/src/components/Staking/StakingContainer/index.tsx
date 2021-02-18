@@ -29,6 +29,8 @@ interface IStakingContainer {
   setUnstakeStatus?: any;
   setActualUnstakeAmount?: any;
   setUnstakeTimeAvailable?: any;
+  unstakeModal: boolean;
+  setUnstakeModal(): void;
 }
 
 function StakingContainer(props?: IStakingContainer | undefined | any ) { 
@@ -44,10 +46,12 @@ function StakingContainer(props?: IStakingContainer | undefined | any ) {
     setActualUnstakeAmount,
     unstakeAmount, 
     setUnstakeAmount,
+    unstakeModal,
+    setUnstakeModal,
   } = props;
   const classes = useStyles();
   const commonClasses = useCommonStyles();
-  const [modal, setUnstakeModal] = useState(false);
+  // const [modal, setUnstakeModal] = useState(false);
 
   const UnstakeModal = () => {
     const [nextTabModal, setTabModal] = useState(false);
@@ -89,7 +93,7 @@ function StakingContainer(props?: IStakingContainer | undefined | any ) {
     
     return (
       <Modal
-        open={modal}
+        open={unstakeModal}
         onClose={onClose}
         aria-labelledby="simple-modal-title"
         aria-describedby="simple-modal-description"

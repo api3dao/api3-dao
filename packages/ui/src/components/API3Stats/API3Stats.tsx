@@ -23,6 +23,7 @@ function API3Stats() {
   const [unstakeStatus, setUnstakeStatus] = useState(true);
   const [actualUnstakeAmount, setActualUnstakeAmount ] = useState(0);
   const [unstakeAmount, setUnstakeAmount] = useState(0);
+  const [unstakeModal, setUnstakeModal] = useState(false);
   const LoadingAccountInfo = () => {
     return (
       <> 
@@ -75,6 +76,8 @@ function API3Stats() {
               setActualUnstakeAmount={setActualUnstakeAmount}
               unstakeAmount={unstakeAmount}
               setUnstakeAmount={setUnstakeAmount}
+              unstakeModal={unstakeModal}
+              setUnstakeModal={setUnstakeModal}
             />
           </Box>
         {/* <Grid container justify="space-evenly" spacing={2}>
