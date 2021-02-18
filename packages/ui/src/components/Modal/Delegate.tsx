@@ -44,7 +44,7 @@ function DelegateModal(props: any) {
         </Box>
         <Paper className={classes.delegate}>
           <Box paddingTop="6%">
-            <Typography variant="body1" color="primary">Delegate my votes to:</Typography>
+            <Typography variant="body1" color="primary">Delegate my vote to:</Typography>
           </Box>
             <TextField 
               required
@@ -53,7 +53,7 @@ function DelegateModal(props: any) {
               value={address} 
             />
         <Box display="flex" justifyContent="flex-end">
-          <BasicButton title="Delegate Tokens" color="white" onClick={() => onSubmit()} />
+          <BasicButton title="Delegate Vote" color="white" onClick={() => onSubmit()} />
         </Box> 
         </Paper>
       </Box>

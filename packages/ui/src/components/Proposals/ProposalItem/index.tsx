@@ -22,7 +22,7 @@ import useStyles from "components/Proposals/ProposalItem/styles";
 
 function ProposalItem(props: any) {
   const classes = useStyles(props);
-  // console.log(props)
+  console.log(props);
   // let total = parseInt(props.vote.yea + props.vote.no);
   // let percentageYes = parseInt(props.vote.yea) / total * 100;
   // let percentageNo = parseInt(props.vote.no) / total * 100;

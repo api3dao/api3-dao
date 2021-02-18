@@ -54,7 +54,7 @@ function VoteModal(props: any) {
       </RadioGroup>
       </FormControl>
       <Box>
-        <BasicButton title="Create Transaction" color="white" onClick={() => onSubmit()} />
+        <BasicButton title="Vote" color="white" onClick={() => onSubmit()} />
       </Box> 
       </Paper>
     </Box>
