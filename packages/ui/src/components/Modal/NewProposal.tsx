@@ -240,10 +240,26 @@ function NewProposalModal(props: any) {
                 </Select>
                 </Box>
             </Box>
-            <Box marginTop="4vh" marginBottom="8vh">
-              <Box display="flex" justifyContent="space-between" marginBottom="4vh">
-                  <Typography variant="body2" color="primary">Stake Target</Typography>
-                  <Box>
+            <Box marginTop="4vh" marginBottom="8vh" display="flex">
+              <Box width="50%" display="flex" justifyContent="space-between" flexDirection="column">
+                  <Box marginBottom="4vh">
+                    <Typography variant="body2" color="primary">Stake Target</Typography>
+                  </Box>
+                  <Box marginBottom="4vh">
+                    <Typography variant="body2" color="primary">Minimum APR</Typography>
+                  </Box>
+                  <Box marginBottom="4vh">
+                    <Typography variant="body2" color="primary">Maximum APR</Typography>
+                  </Box>
+                  <Box marginBottom="4vh">
+                    <Typography variant="body2" color="primary">APR Update Rate</Typography>
+                  </Box>
+                  <Box width="75%">
+                    <Typography variant="body2" color="primary">Minimum voting weight to create a proposal</Typography>
+                  </Box>
+              </Box>
+              <Box width="50%">
+                <Box marginBottom="4vh">
                     {
                     stakeTarget === "staketarget" ? 
                      <TextField 
@@ -260,12 +276,9 @@ function NewProposalModal(props: any) {
                       )
                     }
                   </Box>
-              </Box>
-              <Box display="flex" justifyContent="space-between" marginBottom="4vh">
-                  <Typography variant="body2" color="primary">Minimum APR</Typography>
-                  <Box>
+                  <Box marginBottom="4vh">
                   {stakeTarget === "minapr" ? 
-                  <Box width="35vh">
+                  <Box width="8vh">
                      <TextField 
                       required
                       onChange={(event) => onChange(event, setMinAmountAPR)}  
@@ -278,12 +291,9 @@ function NewProposalModal(props: any) {
                      :
                     <Typography variant="body2" color="primary">{minAmountAPR}%</Typography>}
                   </Box>
-              </Box>
-              <Box display="flex" justifyContent="space-between" marginBottom="4vh">
-                  <Typography variant="body2" color="primary">Maximum APR</Typography>
-                  <Box>
+                  <Box marginBottom="4vh">
                   {stakeTarget === "maxapr" ? 
-                  <Box width="35%">
+                  <Box width="8vh">
                      <TextField 
                       required
                       onChange={(event) => onChange(event, setMaxAmountAPR)}  
@@ -296,10 +306,7 @@ function NewProposalModal(props: any) {
                      :
                     <Typography variant="body2" color="primary">{maxAmountAPR}%</Typography>}
                   </Box>
-              </Box>
-              <Box display="flex" justifyContent="space-between" marginBottom="4vh">
-                  <Typography variant="body2" color="primary">APR Update Rate</Typography>
-                  <Box>
+                  <Box marginBottom="4vh">
                   {stakeTarget === "updateapr" ? 
                      <TextField 
                       required
@@ -311,14 +318,9 @@ function NewProposalModal(props: any) {
                     /> : <Typography variant="body2" color="primary"><NumberFormat value={updateRateAPR} displayType={'text'} thousandSeparator={true} suffix={' API3'} /></Typography>
                     }  
                   </Box>
-              </Box>
-              <Box display="flex" justifyContent="space-between" marginBottom="4vh">
-                  <Box width="44%">
-                    <Typography variant="body2" color="primary">Minimum voting weight to create a proposal</Typography>
-                  </Box>
                   <Box>
                   {stakeTarget === "voteweight" ? 
-                  <Box width="35%">
+                  <Box width="8vh">
                      <TextField 
                       required
                       onChange={(event) => onChange(event, setVoteWeightAmount)}  

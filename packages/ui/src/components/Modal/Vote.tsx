@@ -41,23 +41,23 @@ function VoteModal(props: any) {
       aria-labelledby="simple-modal-title"
       aria-describedby="simple-modal-description"
     >
-    <Box display="flex" alignItems="center" justifyContent="center" flexDirection="column" height="100%">
-      <Box onClick={onClose} marginLeft="23%">
-        <CloseIcon color="secondary" fontSize="large" />
+      <Box display="flex" alignItems="center" justifyContent="center" flexDirection="column" height="100%">
+        <Box onClick={onClose} marginLeft="23%">
+          <CloseIcon color="secondary" fontSize="large" />
+        </Box>
+        <Paper className={classes.vote}>
+          <Typography variant="body1" color="primary">Vote on Proposal {voteIndex}</Typography>
+          <FormControl>
+            <RadioGroup aria-label="gender" name="gender1" value={voter} onChange={onChange}>
+              <FormControlLabel value="for" control={<Radio />} label="For" />
+              <FormControlLabel value="against" control={<Radio />} label="Against" />
+            </RadioGroup>
+          </FormControl>
+          <Box>
+            <BasicButton title="Vote" color="white" onClick={() => onSubmit()} />
+          </Box> 
+        </Paper>
       </Box>
-      <Paper className={classes.vote}>
-      <Typography variant="body1" color="primary">Vote on Proposal {voteIndex}</Typography>
-      <FormControl>
-      <RadioGroup aria-label="gender" name="gender1" value={voter} onChange={onChange}>
-        <FormControlLabel value="for" control={<Radio />} label="For" />
-        <FormControlLabel value="against" control={<Radio />} label="Against" />
-      </RadioGroup>
-      </FormControl>
-      <Box>
-        <BasicButton title="Vote" color="white" onClick={() => onSubmit()} />
-      </Box> 
-      </Paper>
-    </Box>
     </Modal>
   )
 }
