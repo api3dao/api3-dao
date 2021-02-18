@@ -9,7 +9,7 @@ import useStyles from "components/AddressInfo/styles";
 
 function AddressInfo(props: any) {
   const classes = useStyles();
-  const { address } = props
+  const { address, disconnect } = props
   return (
     <Box className={classes.root} display="flex">
       <Box>
@@ -20,7 +20,7 @@ function AddressInfo(props: any) {
           Connected to __
         </Typography>
       </Box>
-      <ArrowDropDownIcon />        
+      <ArrowDropDownIcon onClick={disconnect}/>        
     </Box>
   );
 }

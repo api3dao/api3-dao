@@ -1,4 +1,5 @@
 import AppRouter from "containers/AppRouter";
+import ProtectedRouter from "containers/ProtectedRouter";
 import Dashboard from "containers/dashboard";
 import UserDashboard from "containers/dashboard/user";
 import Claims from "containers/claims";
@@ -18,5 +19,6 @@ export {
   ProposalDetails,
   Landing,
   Testing,
+  ProtectedRouter,
 
 }

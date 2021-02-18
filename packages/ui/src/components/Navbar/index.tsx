@@ -18,7 +18,7 @@ import vector from "assets/icons/vector.png";
 
 function Navbar() {
   const classes = useStyles();
-  const context = useContext(Web3Context)
+  const web3Context = useContext(Web3Context);
   return (
     <Box className={classes.root}>
       <AppBar position="static" >
@@ -27,10 +27,10 @@ function Navbar() {
           <Logo />
         </Link>
           {
-            context.address ? (
+            web3Context.address ? (
               <Box className={classes.addressContainer}>
                 <img src={vector} alt="" className={classes.logo} />
-                <AddressInfo address={context.address}/>
+                <AddressInfo address={web3Context.address} disconnect={()=>{ web3Context.setAddress(null)}}/>
               </Box>
             ) : (
               <ConnectButton />

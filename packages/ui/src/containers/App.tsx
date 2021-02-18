@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import {
   BrowserRouter,
 } from "react-router-dom";
@@ -6,7 +6,7 @@ import { ThemeProvider, CssBaseline } from "@material-ui/core";
 
 import { AppRouter }from "containers";
 import { Navbar, Sidebar } from "components";
-import { MainProvider } from "contexts";
+import { MainProvider, Web3Context } from "contexts";
 import { getEnvVariables } from "utils/environment";
 
 import styles from "styles";
@@ -28,7 +28,6 @@ function App() {
                 <Sidebar />
                 <AppRouter />
               </div>
-              
             </ThemeProvider>
           </MainProvider>
       </BrowserRouter>
