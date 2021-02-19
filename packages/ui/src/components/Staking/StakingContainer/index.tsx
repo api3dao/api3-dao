@@ -68,16 +68,15 @@ function StakingContainer(props?: IStakingContainer | undefined | any ) {
     
     const onClose = () => changeTabModal(false, 0);
     
-    const onClick = unstakeAmount !== 0 ? () => setTabModal(true) : "";
+    const onClick = unstakeAmount !== 0 ? () => setTabModal(true) : () => {};
     
     const onChange = (event: any) => {
       setUnstakeAmount(parseInt(event.target.value));
     }
     
     const inputProps: any = { 
-      style: { 
-        textAlign: 'center',
-      }
+      style: { textAlign: 'center' }, 
+      autoFocus: true 
     }
     
     const onCancel = () => {
@@ -93,7 +92,7 @@ function StakingContainer(props?: IStakingContainer | undefined | any ) {
     
     return (
       <Modal
-        open={unstakeModal}
+        open={unstakeModal ? unstakeModal : false}
         onClose={onClose}
         aria-labelledby="simple-modal-title"
         aria-describedby="simple-modal-description"

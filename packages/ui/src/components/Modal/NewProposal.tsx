@@ -74,7 +74,18 @@ function NewProposalModal(props: any) {
       />
     );
   }
-
+  
+  const maxButtonStyles = { textDecoration: "underline", cursor: "pointer", marginLeft: "-50px" }
+  const MaxButton = (
+    <Typography 
+      variant="body2" 
+      color="primary" 
+      style={maxButtonStyles}
+    >
+      MAX
+    </Typography>
+  );
+  
   function NumberFormatPercentage(props: any) {
     const { inputRef, onChange, ...other } = props;
 
@@ -268,7 +279,7 @@ function NewProposalModal(props: any) {
                       placeholder="10,000,000" 
                       value={stakeAmount}
                       className={classes.input}
-                      InputProps={{ disableUnderline: true, inputComponent: NumberFormatCustom }}
+                      InputProps={{ disableUnderline: true, inputComponent: NumberFormatCustom, autoFocus: true, endAdornment: MaxButton }}
                     /> : (
                       <Typography variant="body2" color="primary">
                         <NumberFormat value={stakeAmount} displayType={'text'} thousandSeparator={true} suffix={' API3'} />
@@ -278,14 +289,14 @@ function NewProposalModal(props: any) {
                   </Box>
                   <Box marginBottom="4vh">
                   {stakeTarget === "minapr" ? 
-                  <Box width="8vh">
+                  <Box width="12vh">
                      <TextField 
                       required
                       onChange={(event) => onChange(event, setMinAmountAPR)}  
                       placeholder={"2.5"}
                       value={minAmountAPR}
                       className={classes.input}
-                      InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage }}
+                      InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage,  autoFocus: true, }}
                     />
                     </Box>
                      :
@@ -293,14 +304,14 @@ function NewProposalModal(props: any) {
                   </Box>
                   <Box marginBottom="4vh">
                   {stakeTarget === "maxapr" ? 
-                  <Box width="8vh">
+                  <Box width="12vh">
                      <TextField 
                       required
                       onChange={(event) => onChange(event, setMaxAmountAPR)}  
                       placeholder={"75"}
                       value={maxAmountAPR}
                       className={classes.input}
-                      InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage }}
+                      InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage, autoFocus: true }}
                     />
                     </Box>
                      :
@@ -314,20 +325,20 @@ function NewProposalModal(props: any) {
                       placeholder="1,000,000" 
                       value={updateRateAPR}
                       className={classes.input}
-                      InputProps={{ disableUnderline: true, inputComponent: NumberFormatCustom }}
+                      InputProps={{ disableUnderline: true, inputComponent: NumberFormatCustom, autoFocus: true, endAdornment: MaxButton }}
                     /> : <Typography variant="body2" color="primary"><NumberFormat value={updateRateAPR} displayType={'text'} thousandSeparator={true} suffix={' API3'} /></Typography>
-                    }  
+                    }
                   </Box>
                   <Box>
                   {stakeTarget === "voteweight" ? 
-                  <Box width="8vh">
+                  <Box width="12vh">
                      <TextField 
                       required
                       onChange={(event) => onChange(event, setVoteWeightAmount)}  
                       placeholder={"0.1"}
                       value={voteWeightAmount}
                       className={classes.input}
-                      InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage }}
+                      InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage, autoFocus: true }}
                     />
                     </Box>
                      :
@@ -345,7 +356,7 @@ function NewProposalModal(props: any) {
                     placeholder="Link to more information" 
                     value={linkInfo}
                     className={classes.input}
-                    InputProps={{ disableUnderline: true }}
+                    InputProps={{ disableUnderline: true, autoFocus: true }}
                 />
             </Box>
             </Box>
