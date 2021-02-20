@@ -25,6 +25,8 @@ contract StakeUtils is TransferUtils {
         uint256 sharesToMint = totalSharesNow.mul(amount).div(totalStakedNow);
         uint256 userSharesNow = getValue(user.shares);
         user.shares.push(Checkpoint(block.number, userSharesNow.add(sharesToMint)));
+        user.lastUpdateEpoch = now.div(rewardEpochLength);
+        
         totalShares.push(Checkpoint(block.number, totalSharesNow.add(sharesToMint)));
         totalStaked.push(Checkpoint(block.number, totalStakedNow.add(amount)));
         emit Stake(msg.sender, amount);
@@ -40,7 +42,7 @@ contract StakeUtils is TransferUtils {
     }
 
     function scheduleUnstake(uint256 amount)
-        external
+        external triggerEpochBefore
     {
         uint256 totalStakedNow = getValue(totalStaked);
         uint256 totalSharesNow = getValue(totalShares);
