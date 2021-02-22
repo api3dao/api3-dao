@@ -1,0 +1,13 @@
+{
+  "description": "An example proposal to demonstrate how proposals specs are verified. This one sends 1 USDC to 0x47adCDcaA250C257C6e4db6dD091C6A6739333C9. Note that USDC has 6 decimals.",
+  "specs": {
+    "proposalNo": "0",
+    "targetContractAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "targetFunction": "transfer(address,uint256)",
+    "value": "0",
+    "parameters": [
+      "0x47adCDcaA250C257C6e4db6dD091C6A6739333C9",
+      "1000000"
+    ]
+  }
+}

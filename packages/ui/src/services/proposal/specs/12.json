@@ -1,0 +1,13 @@
+{
+  "description": "Withdraws the public distribution proceeds from the Gnosis Protocol to the DAO Agent",
+  "specs": {
+    "proposalNo": "12",
+    "targetContractAddress": "0x6F400810b62df8E13fded51bE75fF5393eaa841F",
+    "targetFunction": "withdraw(address,address)",
+    "value": "0",
+    "parameters": [
+      "0xe7aF7c5982e073aC6525a34821fe1B3e8E432099",
+      "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+    ]
+  }
+}

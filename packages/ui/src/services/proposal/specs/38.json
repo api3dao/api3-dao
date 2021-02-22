@@ -1,0 +1,13 @@
+{
+  "description": "Approve 4045 * 5 / 6 API3 tokens to be timelocked for Pocket Network. The previous attempt is refunded https://etherscan.io/tx/0x7694bf15bf39642dd98ecd552dca64447bf881de95e9e22b71fb0844f86e264b",
+  "specs": {
+    "proposalNo": "38",
+    "targetContractAddress": "0x0b38210ea11411557c13457D4dA7dC6ea731B88a",
+    "targetFunction": "approve(address,uint256)",
+    "value": "0",
+    "parameters": [
+      "0xFaef86994a37F1c8b2A5c73648F07dd4eFF02baA",
+      "3370833333333333333333"
+    ]
+  }
+}

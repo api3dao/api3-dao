@@ -1,0 +1,13 @@
+{
+  "description": "Requests withdrawal of the public distribution proceeds from the Gnosis Protocol",
+  "specs": {
+    "proposalNo": "11",
+    "targetContractAddress": "0x6F400810b62df8E13fded51bE75fF5393eaa841F",
+    "targetFunction": "requestWithdraw(address,uint256)",
+    "value": "0",
+    "parameters": [
+      "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "22957771233974"
+    ]
+  }
+}

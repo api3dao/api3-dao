@@ -8,11 +8,15 @@ import React, {
 interface ISession {
   votes: any[] | null;
   setVotes: Dispatch<SetStateAction< any | null>>;
+  vote: any;
+  setVote: Dispatch<SetStateAction< any | null>>;
 }
 
 export const AragonContext = createContext<ISession>({
   votes: [],
   setVotes: () => {},
+  vote: {},
+  setVote: () => {}
 });
 
 interface IProps {
@@ -21,9 +25,12 @@ interface IProps {
 
 export function AragonProvider(props: IProps) {
   const [votes, setVotes] = useState<any[]>([]);
+  const [vote, setVote] = useState<any>(null);
   const aragonProviderValue = {
     votes,
     setVotes,
+    vote, 
+    setVote,
   };
   
   return (
