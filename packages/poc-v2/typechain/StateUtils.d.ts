@@ -24,10 +24,12 @@ interface StateUtilsInterface extends ethers.utils.Interface {
   functions: {
     "currentApr()": FunctionFragment;
     "genesisEpoch()": FunctionFragment;
-    "getCurrentUserLock(address,uint256)": FunctionFragment;
+    "getUserLocked(address,uint256)": FunctionFragment;
+    "lastEpochPaid()": FunctionFragment;
     "maxApr()": FunctionFragment;
     "minApr()": FunctionFragment;
-    "payRewardAtEpoch(uint256)": FunctionFragment;
+    "payOldestUnpaidReward()": FunctionFragment;
+    "payReward()": FunctionFragment;
     "rewardEpochLength()": FunctionFragment;
     "rewardVestingPeriod()": FunctionFragment;
     "rewards(uint256)": FunctionFragment;
@@ -36,7 +38,7 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     "totalStaked(uint256)": FunctionFragment;
     "unstakeWaitPeriod()": FunctionFragment;
     "updateCoeff()": FunctionFragment;
-    "updateUserLock(address,uint256)": FunctionFragment;
+    "updateUserLocked(address,uint256)": FunctionFragment;
     "users(address)": FunctionFragment;
   };
 
@@ -49,15 +51,20 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getCurrentUserLock",
+    functionFragment: "getUserLocked",
     values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "lastEpochPaid",
+    values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "maxApr", values?: undefined): string;
   encodeFunctionData(functionFragment: "minApr", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "payRewardAtEpoch",
-    values: [BigNumberish]
+    functionFragment: "payOldestUnpaidReward",
+    values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "payReward", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "rewardEpochLength",
     values?: undefined
@@ -91,7 +98,7 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "updateUserLock",
+    functionFragment: "updateUserLocked",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "users", values: [string]): string;
@@ -102,15 +109,20 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getCurrentUserLock",
+    functionFragment: "getUserLocked",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "lastEpochPaid",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "minApr", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "payRewardAtEpoch",
+    functionFragment: "payOldestUnpaidReward",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "payReward", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "rewardEpochLength",
     data: BytesLike
@@ -141,16 +153,18 @@ interface StateUtilsInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateUserLock",
+    functionFragment: "updateUserLocked",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "users", data: BytesLike): Result;
 
   events: {
     "Epoch(uint256,uint256,uint256)": EventFragment;
+    "UserUpdate(address,uint256,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Epoch"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "UserUpdate"): EventFragment;
 }
 
 export class StateUtils extends Contract {
@@ -175,17 +189,21 @@ export class StateUtils extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    getCurrentUserLock(
+    getUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    "getCurrentUserLock(address,uint256)"(
+    "getUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    lastEpochPaid(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "lastEpochPaid()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     maxApr(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -195,15 +213,15 @@ export class StateUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    payRewardAtEpoch(
-      epoch: BigNumberish,
+    payOldestUnpaidReward(overrides?: Overrides): Promise<ContractTransaction>;
+
+    "payOldestUnpaidReward()"(
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "payRewardAtEpoch(uint256)"(
-      epoch: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
+    payReward(overrides?: Overrides): Promise<ContractTransaction>;
+
+    "payReward()"(overrides?: Overrides): Promise<ContractTransaction>;
 
     rewardEpochLength(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -275,13 +293,13 @@ export class StateUtils extends Contract {
 
     "updateCoeff()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    updateUserLock(
+    updateUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "updateUserLock(address,uint256)"(
+    "updateUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: Overrides
@@ -291,12 +309,13 @@ export class StateUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
+        oldestLockedEpoch: BigNumber;
       }
     >;
 
@@ -304,12 +323,13 @@ export class StateUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
+        oldestLockedEpoch: BigNumber;
       }
     >;
   };
@@ -322,17 +342,21 @@ export class StateUtils extends Contract {
 
   "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  getCurrentUserLock(
+  getUserLocked(
     userAddress: string,
     targetEpoch: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  "getCurrentUserLock(address,uint256)"(
+  "getUserLocked(address,uint256)"(
     userAddress: string,
     targetEpoch: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  lastEpochPaid(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "lastEpochPaid()"(overrides?: CallOverrides): Promise<BigNumber>;
 
   maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -342,15 +366,15 @@ export class StateUtils extends Contract {
 
   "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  payRewardAtEpoch(
-    epoch: BigNumberish,
+  payOldestUnpaidReward(overrides?: Overrides): Promise<ContractTransaction>;
+
+  "payOldestUnpaidReward()"(
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "payRewardAtEpoch(uint256)"(
-    epoch: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
+  payReward(overrides?: Overrides): Promise<ContractTransaction>;
+
+  "payReward()"(overrides?: Overrides): Promise<ContractTransaction>;
 
   rewardEpochLength(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -422,13 +446,13 @@ export class StateUtils extends Contract {
 
   "updateCoeff()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  updateUserLock(
+  updateUserLocked(
     userAddress: string,
     targetEpoch: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "updateUserLock(address,uint256)"(
+  "updateUserLocked(address,uint256)"(
     userAddress: string,
     targetEpoch: BigNumberish,
     overrides?: Overrides
@@ -438,12 +462,13 @@ export class StateUtils extends Contract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
       unstaked: BigNumber;
       locked: BigNumber;
       unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
       lastUpdateEpoch: BigNumber;
+      oldestLockedEpoch: BigNumber;
     }
   >;
 
@@ -451,12 +476,13 @@ export class StateUtils extends Contract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
       unstaked: BigNumber;
       locked: BigNumber;
       unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
       lastUpdateEpoch: BigNumber;
+      oldestLockedEpoch: BigNumber;
     }
   >;
 
@@ -469,17 +495,21 @@ export class StateUtils extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getCurrentUserLock(
+    getUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "getCurrentUserLock(address,uint256)"(
+    "getUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    lastEpochPaid(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "lastEpochPaid()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -489,15 +519,13 @@ export class StateUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    payRewardAtEpoch(
-      epoch: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    payOldestUnpaidReward(overrides?: CallOverrides): Promise<void>;
 
-    "payRewardAtEpoch(uint256)"(
-      epoch: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    "payOldestUnpaidReward()"(overrides?: CallOverrides): Promise<void>;
+
+    payReward(overrides?: CallOverrides): Promise<void>;
+
+    "payReward()"(overrides?: CallOverrides): Promise<void>;
 
     rewardEpochLength(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -569,13 +597,13 @@ export class StateUtils extends Contract {
 
     "updateCoeff()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    updateUserLock(
+    updateUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "updateUserLock(address,uint256)"(
+    "updateUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
@@ -585,12 +613,13 @@ export class StateUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
+        oldestLockedEpoch: BigNumber;
       }
     >;
 
@@ -598,12 +627,13 @@ export class StateUtils extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
+        oldestLockedEpoch: BigNumber;
       }
     >;
   };
@@ -614,6 +644,8 @@ export class StateUtils extends Contract {
       rewardAmount: null,
       newApr: null
     ): EventFilter;
+
+    UserUpdate(user: string | null, toEpoch: null, locked: null): EventFilter;
   };
 
   estimateGas: {
@@ -625,17 +657,21 @@ export class StateUtils extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getCurrentUserLock(
+    getUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "getCurrentUserLock(address,uint256)"(
+    "getUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    lastEpochPaid(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "lastEpochPaid()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -645,15 +681,13 @@ export class StateUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    payRewardAtEpoch(
-      epoch: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
+    payOldestUnpaidReward(overrides?: Overrides): Promise<BigNumber>;
 
-    "payRewardAtEpoch(uint256)"(
-      epoch: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
+    "payOldestUnpaidReward()"(overrides?: Overrides): Promise<BigNumber>;
+
+    payReward(overrides?: Overrides): Promise<BigNumber>;
+
+    "payReward()"(overrides?: Overrides): Promise<BigNumber>;
 
     rewardEpochLength(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -702,13 +736,13 @@ export class StateUtils extends Contract {
 
     "updateCoeff()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    updateUserLock(
+    updateUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "updateUserLock(address,uint256)"(
+    "updateUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: Overrides
@@ -731,17 +765,21 @@ export class StateUtils extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    getCurrentUserLock(
+    getUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "getCurrentUserLock(address,uint256)"(
+    "getUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    lastEpochPaid(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "lastEpochPaid()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     maxApr(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -751,15 +789,15 @@ export class StateUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    payRewardAtEpoch(
-      epoch: BigNumberish,
+    payOldestUnpaidReward(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    "payOldestUnpaidReward()"(
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "payRewardAtEpoch(uint256)"(
-      epoch: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
+    payReward(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    "payReward()"(overrides?: Overrides): Promise<PopulatedTransaction>;
 
     rewardEpochLength(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -819,13 +857,13 @@ export class StateUtils extends Contract {
 
     "updateCoeff()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    updateUserLock(
+    updateUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "updateUserLock(address,uint256)"(
+    "updateUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: Overrides

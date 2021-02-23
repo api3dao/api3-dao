@@ -29,11 +29,13 @@ interface TestPoolInterface extends ethers.utils.Interface {
     "depositAndStake(address,uint256,address)": FunctionFragment;
     "depositWithVesting(address,uint256,address,uint256,uint256)": FunctionFragment;
     "genesisEpoch()": FunctionFragment;
-    "getCurrentUserLock(address,uint256)": FunctionFragment;
+    "getUserLocked(address,uint256)": FunctionFragment;
+    "lastEpochPaid()": FunctionFragment;
     "maxApr()": FunctionFragment;
     "minApr()": FunctionFragment;
+    "payOldestUnpaidReward()": FunctionFragment;
     "payOutClaim(uint256,uint256)": FunctionFragment;
-    "payRewardAtEpoch(uint256)": FunctionFragment;
+    "payReward()": FunctionFragment;
     "rewardEpochLength()": FunctionFragment;
     "rewardVestingPeriod()": FunctionFragment;
     "rewards(uint256)": FunctionFragment;
@@ -58,7 +60,7 @@ interface TestPoolInterface extends ethers.utils.Interface {
     "unstakeWaitPeriod()": FunctionFragment;
     "updateCoeff()": FunctionFragment;
     "updateTimelockStatus(address,address)": FunctionFragment;
-    "updateUserLock(address,uint256)": FunctionFragment;
+    "updateUserLocked(address,uint256)": FunctionFragment;
     "userToDepositorToTimelock(address,address)": FunctionFragment;
     "users(address)": FunctionFragment;
     "withdraw(address,uint256)": FunctionFragment;
@@ -90,19 +92,24 @@ interface TestPoolInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getCurrentUserLock",
+    functionFragment: "getUserLocked",
     values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "lastEpochPaid",
+    values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "maxApr", values?: undefined): string;
   encodeFunctionData(functionFragment: "minApr", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "payOldestUnpaidReward",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "payOutClaim",
     values: [BigNumberish, BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: "payRewardAtEpoch",
-    values: [BigNumberish]
-  ): string;
+  encodeFunctionData(functionFragment: "payReward", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "rewardEpochLength",
     values?: undefined
@@ -194,7 +201,7 @@ interface TestPoolInterface extends ethers.utils.Interface {
     values: [string, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "updateUserLock",
+    functionFragment: "updateUserLocked",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
@@ -227,19 +234,24 @@ interface TestPoolInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getCurrentUserLock",
+    functionFragment: "getUserLocked",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "lastEpochPaid",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "minApr", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "payOutClaim",
+    functionFragment: "payOldestUnpaidReward",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "payRewardAtEpoch",
+    functionFragment: "payOutClaim",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "payReward", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "rewardEpochLength",
     data: BytesLike
@@ -319,7 +331,7 @@ interface TestPoolInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateUserLock",
+    functionFragment: "updateUserLocked",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -342,6 +354,7 @@ interface TestPoolInterface extends ethers.utils.Interface {
     "Stake(address,uint256)": EventFragment;
     "TimelockUpdate(address,uint256,uint256)": EventFragment;
     "Unstake(address,uint256)": EventFragment;
+    "UserUpdate(address,uint256,uint256)": EventFragment;
     "VestingDeposit(address,uint256,uint256,uint256)": EventFragment;
     "Withdrawal(address,address,uint256)": EventFragment;
   };
@@ -358,6 +371,7 @@ interface TestPoolInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "Stake"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TimelockUpdate"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unstake"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "UserUpdate"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "VestingDeposit"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Withdrawal"): EventFragment;
 }
@@ -452,17 +466,21 @@ export class TestPool extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    getCurrentUserLock(
+    getUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    "getCurrentUserLock(address,uint256)"(
+    "getUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    lastEpochPaid(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "lastEpochPaid()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     maxApr(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -471,6 +489,12 @@ export class TestPool extends Contract {
     minApr(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "minApr()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    payOldestUnpaidReward(overrides?: Overrides): Promise<ContractTransaction>;
+
+    "payOldestUnpaidReward()"(
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     payOutClaim(
       payoutAmount: BigNumberish,
@@ -484,15 +508,9 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    payRewardAtEpoch(
-      epoch: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
+    payReward(overrides?: Overrides): Promise<ContractTransaction>;
 
-    "payRewardAtEpoch(uint256)"(
-      epoch: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
+    "payReward()"(overrides?: Overrides): Promise<ContractTransaction>;
 
     rewardEpochLength(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -712,13 +730,13 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    updateUserLock(
+    updateUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "updateUserLock(address,uint256)"(
+    "updateUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: Overrides
@@ -754,12 +772,13 @@ export class TestPool extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
+        oldestLockedEpoch: BigNumber;
       }
     >;
 
@@ -767,12 +786,13 @@ export class TestPool extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
+        oldestLockedEpoch: BigNumber;
       }
     >;
 
@@ -862,17 +882,21 @@ export class TestPool extends Contract {
 
   "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  getCurrentUserLock(
+  getUserLocked(
     userAddress: string,
     targetEpoch: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  "getCurrentUserLock(address,uint256)"(
+  "getUserLocked(address,uint256)"(
     userAddress: string,
     targetEpoch: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  lastEpochPaid(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "lastEpochPaid()"(overrides?: CallOverrides): Promise<BigNumber>;
 
   maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -881,6 +905,12 @@ export class TestPool extends Contract {
   minApr(overrides?: CallOverrides): Promise<BigNumber>;
 
   "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  payOldestUnpaidReward(overrides?: Overrides): Promise<ContractTransaction>;
+
+  "payOldestUnpaidReward()"(
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
 
   payOutClaim(
     payoutAmount: BigNumberish,
@@ -894,15 +924,9 @@ export class TestPool extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  payRewardAtEpoch(
-    epoch: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
+  payReward(overrides?: Overrides): Promise<ContractTransaction>;
 
-  "payRewardAtEpoch(uint256)"(
-    epoch: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
+  "payReward()"(overrides?: Overrides): Promise<ContractTransaction>;
 
   rewardEpochLength(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1122,13 +1146,13 @@ export class TestPool extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  updateUserLock(
+  updateUserLocked(
     userAddress: string,
     targetEpoch: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "updateUserLock(address,uint256)"(
+  "updateUserLocked(address,uint256)"(
     userAddress: string,
     targetEpoch: BigNumberish,
     overrides?: Overrides
@@ -1164,12 +1188,13 @@ export class TestPool extends Contract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
       unstaked: BigNumber;
       locked: BigNumber;
       unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
       lastUpdateEpoch: BigNumber;
+      oldestLockedEpoch: BigNumber;
     }
   >;
 
@@ -1177,12 +1202,13 @@ export class TestPool extends Contract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
       unstaked: BigNumber;
       locked: BigNumber;
       unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
       lastUpdateEpoch: BigNumber;
+      oldestLockedEpoch: BigNumber;
     }
   >;
 
@@ -1275,17 +1301,21 @@ export class TestPool extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getCurrentUserLock(
+    getUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "getCurrentUserLock(address,uint256)"(
+    "getUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    lastEpochPaid(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "lastEpochPaid()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1294,6 +1324,10 @@ export class TestPool extends Contract {
     minApr(overrides?: CallOverrides): Promise<BigNumber>;
 
     "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    payOldestUnpaidReward(overrides?: CallOverrides): Promise<void>;
+
+    "payOldestUnpaidReward()"(overrides?: CallOverrides): Promise<void>;
 
     payOutClaim(
       payoutAmount: BigNumberish,
@@ -1307,15 +1341,9 @@ export class TestPool extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    payRewardAtEpoch(
-      epoch: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    payReward(overrides?: CallOverrides): Promise<void>;
 
-    "payRewardAtEpoch(uint256)"(
-      epoch: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    "payReward()"(overrides?: CallOverrides): Promise<void>;
 
     rewardEpochLength(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1526,13 +1554,13 @@ export class TestPool extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    updateUserLock(
+    updateUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "updateUserLock(address,uint256)"(
+    "updateUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
@@ -1568,12 +1596,13 @@ export class TestPool extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
+        oldestLockedEpoch: BigNumber;
       }
     >;
 
@@ -1581,12 +1610,13 @@ export class TestPool extends Contract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         unstaked: BigNumber;
         locked: BigNumber;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
+        oldestLockedEpoch: BigNumber;
       }
     >;
 
@@ -1639,6 +1669,8 @@ export class TestPool extends Contract {
     ): EventFilter;
 
     Unstake(user: string | null, amount: null): EventFilter;
+
+    UserUpdate(user: string | null, toEpoch: null, locked: null): EventFilter;
 
     VestingDeposit(
       user: string | null,
@@ -1731,17 +1763,21 @@ export class TestPool extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getCurrentUserLock(
+    getUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "getCurrentUserLock(address,uint256)"(
+    "getUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    lastEpochPaid(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "lastEpochPaid()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     maxApr(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1750,6 +1786,10 @@ export class TestPool extends Contract {
     minApr(overrides?: CallOverrides): Promise<BigNumber>;
 
     "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    payOldestUnpaidReward(overrides?: Overrides): Promise<BigNumber>;
+
+    "payOldestUnpaidReward()"(overrides?: Overrides): Promise<BigNumber>;
 
     payOutClaim(
       payoutAmount: BigNumberish,
@@ -1763,15 +1803,9 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    payRewardAtEpoch(
-      epoch: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
+    payReward(overrides?: Overrides): Promise<BigNumber>;
 
-    "payRewardAtEpoch(uint256)"(
-      epoch: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
+    "payReward()"(overrides?: Overrides): Promise<BigNumber>;
 
     rewardEpochLength(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1959,13 +1993,13 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    updateUserLock(
+    updateUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "updateUserLock(address,uint256)"(
+    "updateUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: Overrides
@@ -2080,17 +2114,21 @@ export class TestPool extends Contract {
 
     "genesisEpoch()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    getCurrentUserLock(
+    getUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "getCurrentUserLock(address,uint256)"(
+    "getUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    lastEpochPaid(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "lastEpochPaid()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     maxApr(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -2099,6 +2137,12 @@ export class TestPool extends Contract {
     minApr(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "minApr()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    payOldestUnpaidReward(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    "payOldestUnpaidReward()"(
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
 
     payOutClaim(
       payoutAmount: BigNumberish,
@@ -2112,15 +2156,9 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    payRewardAtEpoch(
-      epoch: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
+    payReward(overrides?: Overrides): Promise<PopulatedTransaction>;
 
-    "payRewardAtEpoch(uint256)"(
-      epoch: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
+    "payReward()"(overrides?: Overrides): Promise<PopulatedTransaction>;
 
     rewardEpochLength(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -2328,13 +2366,13 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    updateUserLock(
+    updateUserLocked(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "updateUserLock(address,uint256)"(
+    "updateUserLocked(address,uint256)"(
       userAddress: string,
       targetEpoch: BigNumberish,
       overrides?: Overrides
