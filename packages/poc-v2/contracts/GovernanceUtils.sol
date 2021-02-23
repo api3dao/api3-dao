@@ -14,6 +14,10 @@ contract GovernanceUtils is TimelockUtils {
     event NewUnstakeWaitPeriod(uint256 oldPeriod, uint256 newPeriod);
     event NewUpdateCoefficient(uint256 oldCoeff, uint256 newCoeff);
 
+    //setMax, setMin, and setUpdateCoeff have triggerEpochAfter to ensure
+    //updateApr and payReward are using the most current parameters intended
+    //by the DAO
+
     function setStakeTarget(uint256 _stakeTarget)
         external triggerEpochBefore
         //onlyDao
@@ -27,7 +31,7 @@ contract GovernanceUtils is TimelockUtils {
         external triggerEpochAfter
         //onlyDao
     {
-        require(_maxApr > minApr, "Invalid value");
+        require(_maxApr >= minApr, "Invalid value");
         uint256 oldMax = maxApr;
         maxApr = _maxApr;
         emit NewMaxApr(oldMax, maxApr);
@@ -37,7 +41,7 @@ contract GovernanceUtils is TimelockUtils {
         external triggerEpochAfter
         //onlyDao
     {
-        require(_minApr < maxApr, "Invalid value");
+        require(_minApr <= maxApr, "Invalid value");
         uint256 oldMin = minApr;
         minApr = _minApr;
         emit NewMinApr(oldMin, minApr);
@@ -47,7 +51,7 @@ contract GovernanceUtils is TimelockUtils {
         external
         //onlyDao
     {
-        require(_unstakeWaitPeriod <= 2246400 && _unstakeWaitPeriod >= 604800, "Invalid value");
+        require(_unstakeWaitPeriod <= 7776000 && _unstakeWaitPeriod >= 604800, "Invalid value");
         uint256 oldPeriod = unstakeWaitPeriod;
         unstakeWaitPeriod = _unstakeWaitPeriod;
         emit NewUnstakeWaitPeriod(oldPeriod, unstakeWaitPeriod);
@@ -57,7 +61,6 @@ contract GovernanceUtils is TimelockUtils {
         external triggerEpochAfter
         //onlyDao
     {
-        //Sanity check at 1000X
         require(_updateCoeff < 1000000000 && _updateCoeff > 0, "Invalid value");
         uint256 oldCoeff = updateCoeff;
         updateCoeff = _updateCoeff;

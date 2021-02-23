@@ -12,7 +12,7 @@ contract TestPool is Api3Pool {
         totalStaked.push(Checkpoint(block.number, _totalStaked));
         currentApr = _currentApr;
         stakeTarget = _stakeTarget;
-        updateCurrentApr();
+        updateCurrentApr(_totalStaked);
         // totalStaked.pop();
     }
 

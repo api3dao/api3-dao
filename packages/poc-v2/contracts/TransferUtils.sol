@@ -29,12 +29,13 @@ contract TransferUtils is GetterUtils {
     public
     {
         uint256 currentEpoch = now.div(rewardEpochLength);
-        if(users[msg.sender].lastUpdateEpoch != currentEpoch) {
-            updateUserLock(msg.sender, currentEpoch);
+        User storage user = users[msg.sender];
+        if (user.lastUpdateEpoch != currentEpoch) {
+            updateUserLocked(msg.sender, currentEpoch);
         }
-        require(users[msg.sender].unstaked.sub(users[msg.sender].locked) >= amount, 
-        "Amount exceeds available balance");
-        users[msg.sender].unstaked = users[msg.sender].unstaked.sub(amount);
+        uint256 unlocked = user.unstaked > user.locked ? user.unstaked.sub(user.locked) : 0;
+        require(unlocked >= amount, "Amount exceeds available balance");
+        user.unstaked = user.unstaked.sub(amount);
         api3Token.transfer(destination, amount);
         emit Withdrawal(msg.sender, destination, amount);
     }

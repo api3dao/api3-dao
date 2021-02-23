@@ -40,6 +40,8 @@ contract TimelockUtils is ClaimUtils {
         external
     {
         require(userToDepositorToTimelock[userAddress][msg.sender].remainingAmount == 0);
+        require(releaseEnd > releaseStart, "Invalid date range");
+        require(amount != 0, "No zero amount");
         users[userAddress].unstaked = users[userAddress].unstaked.add(amount);
         users[userAddress].locked = users[userAddress].locked.add(amount);
         userToDepositorToTimelock[userAddress][msg.sender] = Timelock(amount, amount, releaseStart, releaseEnd);
@@ -64,7 +66,7 @@ contract TimelockUtils is ClaimUtils {
         {
             uint256 passedTime = now.sub(timelock.releaseStart);
             uint256 totalTime = timelock.releaseEnd.sub(timelock.releaseStart);
-            totalUnlocked = timelock.totalAmount.mul(passedTime.div(totalTime));
+            totalUnlocked = timelock.totalAmount.mul(passedTime).div(totalTime);
         }
         uint256 previouslyUnlocked = timelock.totalAmount.sub(timelock.remainingAmount);
         uint256 newlyUnlocked = totalUnlocked.sub(previouslyUnlocked);

@@ -25,7 +25,7 @@ contract StakeUtils is TransferUtils {
         uint256 sharesToMint = totalSharesNow.mul(amount).div(totalStakedNow);
         uint256 userSharesNow = getValue(user.shares);
         user.shares.push(Checkpoint(block.number, userSharesNow.add(sharesToMint)));
-        user.lastUpdateEpoch = now.div(rewardEpochLength);
+        // user.lastUpdateEpoch = now.div(rewardEpochLength);
         
         totalShares.push(Checkpoint(block.number, totalSharesNow.add(sharesToMint)));
         totalStaked.push(Checkpoint(block.number, totalStakedNow.add(amount)));
@@ -62,7 +62,6 @@ contract StakeUtils is TransferUtils {
             if (sharesToBurn > userSharesNow) {
                 sharesToBurn = userSharesNow;
             }
-
             userSharesNow = userSharesNow.sub(sharesToBurn);
             totalSharesNow = totalSharesNow.sub(sharesToBurn);
             user.shares.push(Checkpoint(block.number, userSharesNow));
@@ -79,7 +78,7 @@ contract StakeUtils is TransferUtils {
     }
 
     function unstake()
-        public triggerEpochBefore returns (uint256)
+        public triggerEpochAfter returns (uint256)
     {
         User storage user = users[msg.sender];
         require(now > user.unstakeScheduledFor, "Waiting period incomplete");
@@ -95,9 +94,12 @@ contract StakeUtils is TransferUtils {
             amount = sharesToBurn.mul(totalStakedNow).div(totalSharesNow);
         }
         user.unstaked = user.unstaked.add(amount);
+        //The if block above prevents the following two subtractions from underflowing.
         user.shares.push(Checkpoint(block.number, userSharesNow.sub(sharesToBurn)));
         totalShares.push(Checkpoint(block.number, totalSharesNow.sub(sharesToBurn)));
-        totalStaked.push(Checkpoint(block.number, totalStakedNow.sub(amount)));
+        //Theoretically the below could underflow, so it's clipped
+        uint256 newTotalStaked = totalStakedNow > amount ? totalStakedNow.sub(amount) : 0;
+        totalStaked.push(Checkpoint(block.number, newTotalStaked));
         user.unstakeScheduledFor = 0;
         user.unstakeAmount = 0;
         emit Unstake(msg.sender, amount);
