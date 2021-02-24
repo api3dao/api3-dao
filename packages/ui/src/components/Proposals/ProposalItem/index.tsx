@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import {
   Box,
@@ -9,6 +9,8 @@ import {
     BarSeries
   } from '@devexpress/dx-react-chart-material-ui';
 import { Animation, Palette } from '@devexpress/dx-react-chart';
+
+import { AragonContext } from "contexts";
 
 import {
   WarningIcon,
@@ -22,18 +24,28 @@ import useStyles from "components/Proposals/ProposalItem/styles";
 
 function ProposalItem(props: any) {
   const classes = useStyles(props);
-  console.log(props);
+  const aragonContext = useContext(AragonContext);
+  // console.log(props);
   // let total = parseInt(props.vote.yea + props.vote.no);
   // let percentageYes = parseInt(props.vote.yea) / total * 100;
   // let percentageNo = parseInt(props.vote.no) / total * 100;
-
   const data = [
-      { label: 'yes', yes: 0 }, // for some reason they are inverted
-      { label: 'no', no: 100 }, 
-    ];
-    
+    { label: 'yes', yes: 0 }, // for some reason they are inverted
+    { label: 'no', no: 100 }, 
+  ];
+
+  const setVote = () => {
+    // console.log("setVote props", props)
+    console.log('aragonContext in ProposalItem', aragonContext);
+    const vote = {
+      ...props.vote,
+      voteIndex: props.voteIndex
+    }
+    aragonContext.setVote(vote);
+  }
+  
   return (
-    <Link to={{ pathname: `/proposals/${props.voteIndex}`, state: props }} style={{ textDecoration: "none"}}>
+    <Link to={{ pathname: `/proposals/${props.voteIndex}`, state: props }} style={{ textDecoration: "none"}} onClick={setVote}>
     <Box className={classes.proposalitem} padding="16px" display="flex" justifyContent="space-between">
         <Box width="50%">
           <Typography variant="body1" color="secondary">
@@ -65,7 +77,7 @@ function ProposalItem(props: any) {
             <Box>
               <Typography variant="subtitle2" className={classes.active} color="textSecondary">
                 { 
-                  new Date(parseInt(props.vote.startDate)).toLocaleString()
+                  new Date(parseInt(props.vote.startDate)*1000).toLocaleString()
                 }
               </Typography>
             </Box>
@@ -90,12 +102,15 @@ function ProposalItem(props: any) {
               height={50}
               width={100}
             >
-                {!props.vote.executed ? <Palette scheme={['#FFFFFF', '#FFFFFF', '#00C853', '#FFEB3B', '#FF4081', '#E040FB']} />
-            : props.vote.executed && parseInt(props.vote.yea) > parseInt(props.vote.nay) ? 
-                <Palette scheme={['#878888', '#7CE3CB', '#00C853', '#FFEB3B', '#FF4081', '#E040FB']} />
-            :
-            <Palette scheme={['#823FB1', '#878888', '#00C853', '#FFEB3B', '#FF4081', '#E040FB']} />
-            }
+              {
+                !props.vote.executed ? (
+                  <Palette scheme={['#FFFFFF', '#FFFFFF', '#00C853', '#FFEB3B', '#FF4081', '#E040FB']} />
+                ) : props.vote.executed && parseInt(props.vote.yea) > parseInt(props.vote.nay) ? (
+                  <Palette scheme={['#878888', '#7CE3CB', '#00C853', '#FFEB3B', '#FF4081', '#E040FB']} />
+                ) : (
+                  <Palette scheme={['#823FB1', '#878888', '#00C853', '#FFEB3B', '#FF4081', '#E040FB']} />
+                )
+              }
               <BarSeries
                 valueField="yes"
                 argumentField="label"
