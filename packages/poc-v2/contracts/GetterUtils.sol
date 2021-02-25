@@ -1,23 +1,53 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
-import "./StateUtils.sol";
+import "./DelegationUtils.sol";
 
-contract GetterUtils is StateUtils {
+contract GetterUtils is DelegationUtils {
     constructor(address api3TokenAddress)
-        StateUtils(api3TokenAddress)
+        DelegationUtils(api3TokenAddress)
         public
     {}
 
-    function balanceOfAt(uint256 fromBlock,address userAddress)
-    public view returns(uint256)
-    {
+    function sharesAt(uint256 fromBlock, address userAddress)
+    public view returns (uint256) {
         return getValueAt(users[userAddress].shares, fromBlock);
+    }
+
+    function shares(address userAddress)
+    public view returns (uint256) {
+        return sharesAt(block.number, userAddress);
+    }
+
+    function delegatedToAt(uint256 fromBlock, address userAddress)
+    public view returns (uint256) {
+        return getValueAt(users[userAddress].delegatedTo, fromBlock);
+    }
+
+    function delegatedTo(address userAddress)
+    public view returns (uint256) {
+        return delegatedToAt(block.number, userAddress);
+    }
+
+    function balanceOfAt(uint256 fromBlock, address userAddress)
+    public view returns(uint256) {
+        if (userDelegatingAt(userAddress, fromBlock)) {
+            return 0;
+        }
+
+        uint256 userSharesThen = sharesAt(fromBlock, userAddress);
+        uint256 delegatedToUserThen = delegatedToAt(fromBlock, userAddress);
+        return userSharesThen.add(delegatedToUserThen);
     }
 
     function balanceOf(address userAddress)
     public view returns (uint256) {
         return balanceOfAt(block.number, userAddress);
+    }
+
+    function userStaked(address userAddress)
+    public view returns (uint256) {
+        return shares(userAddress).mul(totalStake()).div(totalSupply());
     }
 
     function totalSupplyAt(uint256 fromBlock)

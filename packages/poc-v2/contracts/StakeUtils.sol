@@ -24,11 +24,10 @@ contract StakeUtils is TransferUtils {
         uint256 totalStakedNow = getValue(totalStaked);
         uint256 sharesToMint = totalSharesNow.mul(amount).div(totalStakedNow);
         uint256 userSharesNow = getValue(user.shares);
-        user.shares.push(Checkpoint(block.number, userSharesNow.add(sharesToMint)));
-        // user.lastUpdateEpoch = now.div(rewardEpochLength);
-        
+        user.shares.push(Checkpoint(block.number, userSharesNow.add(sharesToMint)));      
         totalShares.push(Checkpoint(block.number, totalSharesNow.add(sharesToMint)));
         totalStaked.push(Checkpoint(block.number, totalStakedNow.add(amount)));
+        updateDelegatedUserShares(sharesToMint, true);
         emit Stake(msg.sender, amount);
     }
 
@@ -48,8 +47,8 @@ contract StakeUtils is TransferUtils {
         uint256 totalSharesNow = getValue(totalShares);
         User storage user = users[msg.sender];
         uint256 userSharesNow = getValue(user.shares);
+        require(userSharesNow.mul(totalStakedNow).div(totalSharesNow) >= amount);
 
-        // Revoke this epoch's reward if we haven't already
         uint256 current = now.div(rewardEpochLength);
         uint256 tokensToRevoke = 0;
         if (!user.revokedEpochReward[current] && rewards[current].amount != 0) {
@@ -66,19 +65,17 @@ contract StakeUtils is TransferUtils {
             totalSharesNow = totalSharesNow.sub(sharesToBurn);
             user.shares.push(Checkpoint(block.number, userSharesNow));
             totalShares.push(Checkpoint(block.number, totalSharesNow));
-            
-            user.locked = user.locked > tokensToRevoke ? user.locked.sub(tokensToRevoke) : 0;
+            updateDelegatedUserShares(sharesToBurn, false);
+            user.locked = user.locked > tokensToRevoke ? user.locked.sub(tokensToRevoke) : 1;
             user.revokedEpochReward[current] = true;
         }
-        uint256 userStakedNow = userSharesNow.mul(totalStakedNow).div(totalSharesNow);
-        require(amount <= userStakedNow.add(tokensToRevoke), "Insufficient amount");
         user.unstakeScheduledFor = now.add(unstakeWaitPeriod);
         user.unstakeAmount = amount;
         emit ScheduleUnstake(msg.sender, amount, user.unstakeScheduledFor);
     }
 
     function unstake()
-        public triggerEpochAfter returns (uint256)
+        public triggerEpochBefore returns (uint256)
     {
         User storage user = users[msg.sender];
         require(now > user.unstakeScheduledFor, "Waiting period incomplete");
@@ -97,6 +94,7 @@ contract StakeUtils is TransferUtils {
         //The if block above prevents the following two subtractions from underflowing.
         user.shares.push(Checkpoint(block.number, userSharesNow.sub(sharesToBurn)));
         totalShares.push(Checkpoint(block.number, totalSharesNow.sub(sharesToBurn)));
+        updateDelegatedUserShares(sharesToBurn, false);
         //Theoretically the below could underflow, so it's clipped
         uint256 newTotalStaked = totalStakedNow > amount ? totalStakedNow.sub(amount) : 0;
         totalStaked.push(Checkpoint(block.number, newTotalStaked));

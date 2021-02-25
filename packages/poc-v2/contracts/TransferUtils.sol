@@ -34,7 +34,8 @@ contract TransferUtils is GetterUtils {
             updateUserLocked(msg.sender, currentEpoch);
         }
         uint256 unlocked = user.unstaked > user.locked ? user.unstaked.sub(user.locked) : 0;
-        require(unlocked >= amount, "Amount exceeds available balance");
+        uint256 unlockedNonVesting = unlocked > user.vesting ? unlocked.sub(user.vesting) : 0;
+        require(unlockedNonVesting >= amount, "Amount exceeds available balance");
         user.unstaked = user.unstaked.sub(amount);
         api3Token.transfer(destination, amount);
         emit Withdrawal(msg.sender, destination, amount);

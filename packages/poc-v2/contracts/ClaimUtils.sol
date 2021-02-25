@@ -19,7 +19,8 @@ contract ClaimUtils is StakeUtils {
         // `onlyClaimsManager`
     {
         uint256 totalStakedNow = getValue(totalStaked);
-        totalStaked.push(Checkpoint(block.number, totalStakedNow.sub(payoutAmount)));
+        uint256 totalStakedAfter = totalStakedNow > payoutAmount ? totalStakedNow.sub(payoutAmount) : 1;
+        totalStaked.push(Checkpoint(block.number, totalStakedAfter));
         api3Token.transfer(msg.sender, payoutAmount);
         emit ClaimPayout(claimReferenceBlock, payoutAmount);
     }

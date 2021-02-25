@@ -19,7 +19,7 @@ contract GovernanceUtils is TimelockUtils {
     //by the DAO
 
     function setStakeTarget(uint256 _stakeTarget)
-        external triggerEpochBefore
+        external triggerEpochAfter
         //onlyDao
     {
         uint256 oldTarget = stakeTarget;

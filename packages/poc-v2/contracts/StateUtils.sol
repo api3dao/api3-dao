@@ -7,22 +7,29 @@ import "hardhat/console.sol";
 
 contract StateUtils {
     using SafeMath for uint256;
-    struct Checkpoint
-    {
+    struct Checkpoint {
         uint256 fromBlock;
         uint256 value;
     }
 
     struct RewardEpoch {
-        bool paid;
         uint256 amount;
         uint256 atBlock;
+    }
+
+    struct Delegation {
+        uint256 fromBlock;
+        address delegate;
     }
 
     struct User {
         uint256 unstaked;
         Checkpoint[] shares;
         uint256 locked;
+        uint256 vesting;
+        bool delegating;
+        Delegation[] delegates;
+        Checkpoint[] delegatedTo;
         uint256 unstakeScheduledFor;
         uint256 unstakeAmount;
         mapping(uint256 => bool) revokedEpochReward;
@@ -39,7 +46,7 @@ contract StateUtils {
     uint256 public immutable genesisEpoch;
 
     mapping(address => User) public users;
-
+    
     Checkpoint[] public totalShares;
     Checkpoint[] public totalStaked;
 
@@ -64,13 +71,15 @@ contract StateUtils {
     event UserUpdate(address indexed user, uint256 toEpoch, uint256 locked);
 
     modifier triggerEpochBefore {
-        payReward();
+        uint256 targetEpoch = getRewardTargetEpoch();
+        payReward(targetEpoch);
         _;
     }
 
     modifier triggerEpochAfter {
         _;
-        payReward();
+        uint256 targetEpoch = getRewardTargetEpoch();
+        payReward(targetEpoch);
     }
     
     constructor(address api3TokenAddress)
@@ -80,6 +89,7 @@ contract StateUtils {
         totalStaked.push(Checkpoint(block.number, 1));
         api3Token = IApi3Token(api3TokenAddress);
         genesisEpoch = now.div(rewardEpochLength);
+        lastEpochPaid = now.div(rewardEpochLength);
     }
 
     function updateCurrentApr(uint256 totalStakedNow)
@@ -117,71 +127,46 @@ contract StateUtils {
         }
     }
 
-    function payReward()
+    function payReward(uint256 targetEpoch)
         public
     {
-        uint256 indEpoch = now.div(rewardEpochLength);
-        if (lastEpochPaid == 0) {
-            lastEpochPaid = genesisEpoch.sub(1);
-        }
-
-        if (lastEpochPaid < indEpoch) {
+        if (lastEpochPaid < targetEpoch) {
             uint256 epochToPay = lastEpochPaid.add(1);
             uint256 totalStakedNow = getValue(totalStaked);
 
-            if (!api3Token.getMinterStatus(address(this))) {
-                rewards[indEpoch] = RewardEpoch(true, 0, block.number);
-                lastEpochPaid = indEpoch;
-                emit Epoch(indEpoch, 0, currentApr);
-                return;
-            }
+            bool minted = false;
+            while (epochToPay <= targetEpoch) {
+                if (!api3Token.getMinterStatus(address(this))) {
+                    rewards[epochToPay] = RewardEpoch(0, block.number);
+                    lastEpochPaid = targetEpoch;
+                    emit Epoch(epochToPay, 0, currentApr);
+                } else {
+                    updateCurrentApr(totalStakedNow);
+                    uint256 rewardAmount = totalStakedNow.mul(currentApr).div(rewardVestingPeriod).div(hundredPercent);
+                    rewards[epochToPay] = RewardEpoch(rewardAmount, block.number);
 
-            while (epochToPay <= indEpoch) {
-                updateCurrentApr(totalStakedNow);
-                uint256 rewardAmount = totalStakedNow.mul(currentApr).div(rewardVestingPeriod).div(hundredPercent);
-                rewards[epochToPay] = RewardEpoch(true, rewardAmount, block.number);
+                    if (rewardAmount > 0) {
+                        api3Token.mint(address(this), rewardAmount);
+                        totalStakedNow = totalStakedNow.add(rewardAmount);
+                        minted = true;
+                    }
 
-                if (rewardAmount > 0) {
-                    api3Token.mint(address(this), rewardAmount);
-                    totalStakedNow = totalStakedNow.add(rewardAmount);
+                    emit Epoch(epochToPay, rewardAmount, currentApr);
+                    epochToPay = epochToPay.add(1);
                 }
-
-                lastEpochPaid = epochToPay;
-                emit Epoch(epochToPay, rewardAmount, currentApr);
-                epochToPay = epochToPay.add(1);
             }
 
-            if (totalStakedNow != getValue(totalStaked)) {
+            lastEpochPaid = epochToPay;
+            if (minted) {
                 totalStaked.push(Checkpoint(block.number, totalStakedNow));
             }
         }
     }
 
-    function payOldestUnpaidReward()
-    external {
-        uint256 indEpoch = lastEpochPaid.add(1);
-
-        require(indEpoch < now.div(rewardEpochLength), "Invalid target");
-        require(api3Token.getMinterStatus(address(this)), "Minting to this contract is currently disabled");
-        
-        uint256 totalStakedNow = getValue(totalStaked);
-        updateCurrentApr(totalStakedNow);
-        uint256 rewardAmount = totalStakedNow.mul(currentApr).div(rewardVestingPeriod).div(hundredPercent);
-        rewards[indEpoch] = RewardEpoch(true, rewardAmount, block.number);
-
-        if (rewardAmount > 0) {
-            api3Token.mint(address(this), rewardAmount);
-            totalStaked.push(Checkpoint(block.number, totalStakedNow.add(rewardAmount)));
-        }
-
-        lastEpochPaid = indEpoch;
-        emit Epoch(indEpoch, rewardAmount, currentApr);
-    }
-
     function updateUserLocked(address userAddress, uint256 targetEpoch)
-        public triggerEpochBefore
+        public
     {
-        uint256 newLocked = getUserLocked(userAddress, targetEpoch);
+        uint256 newLocked = getUserLockedAt(userAddress, targetEpoch);
 
         User storage user = users[userAddress];
         user.locked = newLocked;
@@ -191,8 +176,8 @@ contract StateUtils {
         emit UserUpdate(userAddress, targetEpoch, user.locked);
     }
 
-    function getUserLocked(address userAddress, uint256 targetEpoch)
-        public view returns(uint256)
+    function getUserLockedAt(address userAddress, uint256 targetEpoch)
+        public triggerEpochBefore returns(uint256)
     {
         uint256 currentEpoch = now.div(rewardEpochLength);
         uint256 oldestLockedEpoch = getOldestLockedEpoch();
@@ -249,16 +234,33 @@ contract StateUtils {
         return locked;
     }
 
+    function getUserLocked(address userAddress)
+        external returns(uint256)
+    {
+        return getUserLockedAt(userAddress, now.div(rewardEpochLength));
+    }
+
     function getOldestLockedEpoch()
-    internal view returns(uint256) {
+        internal view returns(uint256)
+    {
         uint256 currentEpoch = now.div(rewardEpochLength);
         return currentEpoch >= genesisEpoch.add(rewardVestingPeriod) ?
                 currentEpoch.sub(rewardVestingPeriod) : genesisEpoch;
     }
 
+    //Cutting off the payReward loop at 5 and setting the intermediate target to depth / 2
+    function getRewardTargetEpoch()
+        internal view returns(uint256)
+    {
+        uint256 currentEpoch = now.div(rewardEpochLength);
+        uint256 unpaidEpochs = currentEpoch.sub(lastEpochPaid);
+        return unpaidEpochs <= 5 ? currentEpoch : lastEpochPaid.add(unpaidEpochs.div(2));
+    }
+
     // From https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
     function getValueAt(Checkpoint[] storage checkpoints, uint _block)
-    internal view returns (uint) {
+        internal view returns (uint)
+    {
         if (checkpoints.length == 0)
             return 0;
 
@@ -283,7 +285,8 @@ contract StateUtils {
     }
 
     function getValue(Checkpoint[] storage checkpoints)
-    internal view returns (uint256) {
+        internal view returns (uint256)
+    {
         return getValueAt(checkpoints, block.number);
     }
 }

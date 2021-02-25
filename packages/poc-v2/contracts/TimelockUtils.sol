@@ -22,7 +22,7 @@ contract TimelockUtils is ClaimUtils {
     mapping(address => mapping(address => Timelock)) public userToDepositorToTimelock;
 
     event VestingDeposit(address indexed user, uint256 amount, uint256 start, uint256 end);
-    event TimelockUpdate(address indexed user, uint256 locked, uint256 remaining);
+    event TimelockUpdate(address indexed user, uint256 vesting, uint256 remaining);
 
     constructor(address api3TokenAddress)
         ClaimUtils(api3TokenAddress)
@@ -43,7 +43,7 @@ contract TimelockUtils is ClaimUtils {
         require(releaseEnd > releaseStart, "Invalid date range");
         require(amount != 0, "No zero amount");
         users[userAddress].unstaked = users[userAddress].unstaked.add(amount);
-        users[userAddress].locked = users[userAddress].locked.add(amount);
+        users[userAddress].vesting = users[userAddress].vesting.add(amount);
         userToDepositorToTimelock[userAddress][msg.sender] = Timelock(amount, amount, releaseStart, releaseEnd);
         api3Token.transferFrom(source, address(this), amount);
         emit VestingDeposit(userAddress, amount, releaseStart, releaseEnd);
@@ -70,8 +70,10 @@ contract TimelockUtils is ClaimUtils {
         }
         uint256 previouslyUnlocked = timelock.totalAmount.sub(timelock.remainingAmount);
         uint256 newlyUnlocked = totalUnlocked.sub(previouslyUnlocked);
-        users[userAddress].locked = users[userAddress].locked.sub(newlyUnlocked);
+        User storage user = users[userAddress];
+        uint256 newUserVesting = user.vesting > newlyUnlocked ? user.vesting.sub(newlyUnlocked) : 0;
+        user.vesting = newUserVesting;
         userToDepositorToTimelock[userAddress][timelockContractAddress].remainingAmount = timelock.remainingAmount.sub(newlyUnlocked);
-        emit TimelockUpdate(userAddress, users[userAddress].locked, timelock.remainingAmount.sub(newlyUnlocked));
+        emit TimelockUpdate(userAddress, user.vesting, timelock.remainingAmount.sub(newlyUnlocked));
     }
 }
