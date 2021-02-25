@@ -19,6 +19,7 @@ import {
   KeyboardArrowRightIcon,
   ArrowDropUpIcon,
 } from "components/@material-icons";
+import { proposalStatusTime } from "utils/time";
 
 import useStyles from "components/Proposals/ProposalItem/styles";
 
@@ -43,7 +44,7 @@ function ProposalItem(props: any) {
     }
     aragonContext.setVote(vote);
   }
-  
+  const { vote } = props;
   return (
     <Link to={{ pathname: `/proposals/${props.voteIndex}`, state: props }} style={{ textDecoration: "none"}} onClick={setVote}>
     <Box className={classes.proposalitem} padding="16px" display="flex" justifyContent="space-between">
@@ -53,11 +54,23 @@ function ProposalItem(props: any) {
           </Typography>
           <Box display="flex" justifyContent="space-between">
             {
-              !props.vote.executed ? 
+              !props.vote.executed ? (
                 <Box display="flex" alignItems="center"> 
-                  <WarningIcon className={classes.active} color="secondary" fontSize="small" />
-                  <Typography variant="subtitle2" color="secondary">Active</Typography>
+                  {
+                    proposalStatusTime(vote.executed, vote.startDate) ? (
+                      <>
+                        <CloseIcon className={classes.reject} fontSize="small" />
+                        <Typography variant="subtitle2" color="secondary" className={classes.reject}>Rejected</Typography>
+                      </>
+                    ) : (
+                      <>
+                        <WarningIcon className={classes.active} color="secondary" fontSize="small" />
+                        <Typography variant="subtitle2" color="secondary">Active</Typography>
+                      </>
+                    )
+                  }
                 </Box>
+              )
             : 
               props.vote.executed && parseInt(props.vote.yea) > parseInt(props.vote.nay) ? 
                 <Box display="flex" alignItems="center"> 

@@ -18,6 +18,7 @@ import {
 
 import useCommonStyles from "styles/common-styles";
 import useStyles from "containers/proposal/details/styles";
+import { proposalStatusTime } from "utils/time";
 
 interface StateProps {
   state: {
@@ -51,42 +52,22 @@ function ProposalDetails() {
   const [delegateModal, setDelegateModal] = useState(false);
   // DelegateModal
   // const { setDelegateModal, setDelegateAddress, delegateModal } = props;
-  // VoteModal
-  // const { voteIndex, voteModal, setVoteModal, setVoted } = props;
-  // this is hardcoded for now
-  const countDownDate = '02/25/2021'
+  const countDownDate = '02/30/2021'
   const { vote, votes } = aragonContext;
   const length = votes.length;
   const componentDidMount = () => {
     const getVote = async () => {
-      // console.log('aragonContext in proposalDetails', aragonContext);
-      // console.log('useLocation()', location)
-      // console.log('length', length)
       if(length <= 0) {
-        // console.log('get vote', vote)
         const voteIndex = Number(location.pathname.replace( /^\D+/g, ''));
-        // console.log("voteIndex", voteIndex);
         const voting = await Voting.getInstance();
         console.log("voting", await voting.voteById(voteIndex));
-        // const votes = await voting.votes();
         const vote = await voting.voteById(voteIndex);
         aragonContext.setVote(vote);
-        // console.log('votes 2', votes[0]);
-        // aragonContext.setVotes(votes);
       }
     }
     getVote();
   }
-  // const getVotes = async () => {
-  //   console.log('aragonContext.votes.length', aragonContext.votes.length)
-  //   if(aragonContext.votes.length < 0) {
-  //     const voting = await Voting.getInstance();
-  //     const votes = await voting.votes();
-  //     console.log('votes 2', votes[0]);
-  //     aragonContext.setVotes(votes);
-  //   }
-  // }
-  
+
   // const lipsumLorem = `  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
   //   Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
   //   Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
@@ -119,26 +100,37 @@ function ProposalDetails() {
 
       <Box display="flex" justifyContent="space-between">
         <Box marginLeft="32px" display="flex" width="100%" alignItems="center" className={classes.proposalSubtitle}>
-          {!vote.executed ? 
+          {
+            !vote.executed ?
               <Box display="flex" alignItems="center"> 
+                {
+                  proposalStatusTime(vote.executed, vote.startDate) ? (
+                  <>
+                    <CloseIcon className={classes.rejectIcon} fontSize="small" />
+                    <Typography variant="body1" color="secondary" className={classes.rejectIcon}>Rejected</Typography>
+                  </>
+                  ) : (
+                  <>
                   <WarningIcon className={classes.activeIcon} color="secondary" fontSize="small" />
-                  <Typography variant="body1" color="secondary">Active</Typography>
+                  <Typography variant="body1" color="secondary">
+                    Active
+                  </Typography>
+                  </>
+                  )
+                }
               </Box>
-          : vote.executed && parseInt(vote.yea) > parseInt(vote.nay) ? 
-              <Box display="flex" alignItems="center"> 
-                  <DoneIcon className={classes.doneIcon} fontSize="small" />
-                  <Typography variant="body1" className={classes.doneIcon}>Passed</Typography>
-              </Box >
-          :
-              <Box display="flex" alignItems="center"> 
-                  <CloseIcon className={classes.rejectIcon} fontSize="small" />
-                  <Typography variant="body1" color="secondary" className={classes.rejectIcon}>Rejected</Typography>
+            : vote.executed && parseInt(vote.yea) > parseInt(vote.nay) ?
+              <Box display="flex" alignItems="center">
+                <DoneIcon className={classes.doneIcon} fontSize="small" />
+                <Typography variant="body1" className={classes.doneIcon}>Passed</Typography>
               </Box>
+            :
+            <Box display="flex" alignItems="center"> 
+              <CloseIcon className={classes.rejectIcon} fontSize="small" />
+              <Typography variant="body1" color="secondary" className={classes.rejectIcon}>Rejected</Typography>
+            </Box>
           }
-          <Box display="flex">
-              <Typography variant="subtitle2" className={classes.activeIcon} color="textSecondary">00</Typography>
-              <ArrowDropUpIcon style={{ color: "#4A4A4A" }}  fontSize="large" />
-          </Box>    
+  
           <Box>
               <Typography variant="subtitle2" className={classes.activeIcon} color="textSecondary">{ voteStartDate }</Typography>
           </Box>
