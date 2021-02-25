@@ -1,18 +1,51 @@
-import React from "react";
+import React, { useState, } from "react";
 import {
   Box,
   Button,
+  TextField,
 } from "@material-ui/core";
+import NumberFormat from 'react-number-format';
 
 import { API3 } from "services/api3";
+
+import { verifyProposalId } from "services/proposal/verifier";
 // import { API3ContractAddresses } from "services/api3/addresses";
 import useStyles from "components/testing/styles";
 
 // const { API3Pool } = API3ContractAddresses;
 
+const styles = {
+  font16: {
+    fontSize: 16,
+    height: 0,
+  }
+}
+
+function NumberFormatCustom(props: any) {
+  const { inputRef, onChange, ...other } = props;
+  const onChangeNumber = (values: any) => {
+    const { value } = values;
+    const toNumber = Number(value)
+    onChange(toNumber);
+  }
+  return (
+    <NumberFormat
+      {...other}
+      style={styles.font16}
+      getInputRef={inputRef}
+      allowNegative={false}
+      onValueChange={onChangeNumber}
+    />
+  );
+}
 
 function API3Buttons() {
   const classes = useStyles();
+  const [proposalSpecId, setProposalSpecId] = useState(0);
+  
+  const onChange = (event: any, setState: Function ) => {
+    setState(event);
+  }
   
   const print = async () => {
     const instance = await API3.getInstance();
@@ -63,9 +96,13 @@ function API3Buttons() {
   const insurancepool = async () => {
     // const instance = await API3.getInstance();
   }
+  
+  const verifyProposal = async () => {
+    verifyProposalId(proposalSpecId);
+  }
 
   return (
-    <Box>
+    <Box style={{ color: 'red' }}>
       <Button onClick={print} color="primary" className={classes.button}>Print</Button>
       <Button onClick={deposit} color="primary" className={classes.button}>Deposit</Button>
       <Button onClick={withdraw} color="primary" className={classes.button}>Withdraw</Button>
@@ -77,6 +114,15 @@ function API3Buttons() {
       <Button onClick={vote} color="primary" className={classes.button}>Vote</Button>
       <Button onClick={unvote} color="primary" className={classes.button}>Unvote</Button>
       <Button onClick={insurancepool} color="primary" className={classes.button}>Insurance pool</Button>
+      <Button onClick={verifyProposal} color="primary" className={classes.button}>Verify Proposal #{ proposalSpecId } </Button>
+      <TextField 
+       required
+       onChange={(event) => onChange(event, setProposalSpecId)}  
+       placeholder="1,000,000" 
+       value={proposalSpecId}
+       className={classes.input}
+       InputProps={{ disableUnderline: true, inputComponent: NumberFormatCustom, autoFocus: true }}
+      />
     </Box>
   );
 }

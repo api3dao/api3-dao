@@ -1,0 +1,16 @@
+{
+  "description": "Transfer and lock 4045 / 6 API3 tokens for Pocket Network.",
+  "specs": {
+    "proposalNo": "41",
+    "targetContractAddress": "0x32D228B5d44Fd18FefBfd68BfE5A5F3f75C873AE",
+    "targetFunction": "transferAndLock(address,address,uint256,uint256,uint256)",
+    "value": "0",
+    "parameters": [
+      "0xe7aF7c5982e073aC6525a34821fe1B3e8E432099",
+      "0x58b043397F5BE36d402C4d008A49eF852BB8A554",
+      "674166666666666666666",
+      "1628942400",
+      "1628942401"
+    ]
+  }
+}

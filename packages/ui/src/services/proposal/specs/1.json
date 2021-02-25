@@ -1,0 +1,13 @@
+{
+  "description": "Approve 10+5 million API3 tokens to be timelocked for investors.",
+  "specs": {
+    "proposalNo": "1",
+    "targetContractAddress": "0x0b38210ea11411557c13457D4dA7dC6ea731B88a",
+    "targetFunction": "approve(address,uint256)",
+    "value": "0",
+    "parameters": [
+      "0xFaef86994a37F1c8b2A5c73648F07dd4eFF02baA",
+      "15000000000000000000000000"
+    ]
+  }
+}

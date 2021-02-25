@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useLocation, Link } from "react-router-dom";
 import { Container,  Typography, Box } from "@material-ui/core";
 import {
@@ -7,6 +7,8 @@ import {
 } from '@devexpress/dx-react-chart-material-ui';
 import { Animation, Palette } from '@devexpress/dx-react-chart';
 
+import { Voting } from "services/aragon/"
+import { AragonContext } from "contexts";
 import { BasicButton, Counter, DelegateModal, VoteModal } from "components";
 import { 
   WarningIcon, DoneIcon, HelpOutlineIcon, 
@@ -16,6 +18,7 @@ import {
 
 import useCommonStyles from "styles/common-styles";
 import useStyles from "containers/proposal/details/styles";
+import { proposalStatusTime } from "utils/time";
 
 interface StateProps {
   state: {
@@ -39,22 +42,43 @@ const data = [
 const palleteScheme = ['#FFFFFF', '#FFFFFF', '#00C853', '#FFEB3B', '#FF4081', '#E040FB'];
 
 function ProposalDetails() {
+  const location = useLocation()
+  const aragonContext: any = useContext(AragonContext);
   const classes = useStyles();
   const commonClasses = useCommonStyles();
-  const { state } : StateProps = useLocation();
-  const { vote, voteIndex } = state;
-  const [voted, setVoted] = useState("")
+  const [voted, setVoted] = useState("");
   const [voteModal, setVoteModal] = useState(false);
   const [delegateAddress, setDelegateAddress] = useState('');
   const [delegateModal, setDelegateModal] = useState(false);
   // DelegateModal
   // const { setDelegateModal, setDelegateAddress, delegateModal } = props;
-  // VoteModal
-  // const { voteIndex, voteModal, setVoteModal, setVoted } = props;
-  // this is hardcoded for now
-  const countDownDate = '02/21/2021'
+  const countDownDate = '02/30/2021'
+  const { vote, votes } = aragonContext;
+  const length = votes.length;
+  const componentDidMount = () => {
+    const getVote = async () => {
+      if(length <= 0) {
+        const voteIndex = Number(location.pathname.replace( /^\D+/g, ''));
+        const voting = await Voting.getInstance();
+        console.log("voting", await voting.voteById(voteIndex));
+        const vote = await voting.voteById(voteIndex);
+        aragonContext.setVote(vote);
+      }
+    }
+    getVote();
+  }
+
+  // const lipsumLorem = `  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+  //   Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+  //   Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+  //   Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+  //   Link to discussion: _______        `;
   
-  return (
+  useEffect(componentDidMount, []);
+  
+  const ProposalDetailsContainer = () => {
+    const voteStartDate = new Date(parseInt(vote.startDate)*1000).toLocaleString();
+    return (
     <Container className={classes.root}>
       <Link to="/proposals">
         <Box display="flex" alignItems="center" marginLeft="6%">
@@ -67,7 +91,7 @@ function ProposalDetails() {
         <Typography variant="h1" color="textSecondary" className={commonClasses.textBackground}>Proposals</Typography>
         <Box marginLeft="32px">
           <Typography variant="subtitle2" color="textSecondary">Proposals</Typography>
-          <Typography variant="h2" color="secondary">Proposals {voteIndex}</Typography>
+          <Typography variant="h2" color="secondary">Proposals {vote.voteIndex}</Typography>
         </Box>
         <Box display="flex" justifyContent="center" flexDirection="column" margin="16px" width="12%">
             <Counter countDownDate={countDownDate} />
@@ -76,28 +100,39 @@ function ProposalDetails() {
 
       <Box display="flex" justifyContent="space-between">
         <Box marginLeft="32px" display="flex" width="100%" alignItems="center" className={classes.proposalSubtitle}>
-          {!vote.executed ? 
+          {
+            !vote.executed ?
               <Box display="flex" alignItems="center"> 
+                {
+                  proposalStatusTime(vote.executed, vote.startDate) ? (
+                  <>
+                    <CloseIcon className={classes.rejectIcon} fontSize="small" />
+                    <Typography variant="body1" color="secondary" className={classes.rejectIcon}>Rejected</Typography>
+                  </>
+                  ) : (
+                  <>
                   <WarningIcon className={classes.activeIcon} color="secondary" fontSize="small" />
-                  <Typography variant="body1" color="secondary">Active</Typography>
+                  <Typography variant="body1" color="secondary">
+                    Active
+                  </Typography>
+                  </>
+                  )
+                }
               </Box>
-          : vote.executed && parseInt(vote.yea) > parseInt(vote.nay) ? 
-              <Box display="flex" alignItems="center"> 
-                  <DoneIcon className={classes.doneIcon} fontSize="small" />
-                  <Typography variant="body1" className={classes.doneIcon}>Passed</Typography>
-              </Box >
-          :
-              <Box display="flex" alignItems="center"> 
-                  <CloseIcon className={classes.rejectIcon} fontSize="small" />
-                  <Typography variant="body1" color="secondary" className={classes.rejectIcon}>Rejected</Typography>
+            : vote.executed && parseInt(vote.yea) > parseInt(vote.nay) ?
+              <Box display="flex" alignItems="center">
+                <DoneIcon className={classes.doneIcon} fontSize="small" />
+                <Typography variant="body1" className={classes.doneIcon}>Passed</Typography>
               </Box>
+            :
+            <Box display="flex" alignItems="center"> 
+              <CloseIcon className={classes.rejectIcon} fontSize="small" />
+              <Typography variant="body1" color="secondary" className={classes.rejectIcon}>Rejected</Typography>
+            </Box>
           }
-          <Box display="flex">
-              <Typography variant="subtitle2" className={classes.activeIcon} color="textSecondary">00</Typography>
-              <ArrowDropUpIcon style={{ color: "#4A4A4A" }}  fontSize="large" />
-          </Box>    
+  
           <Box>
-              <Typography variant="subtitle2" className={classes.activeIcon} color="textSecondary">{new Date(parseInt(vote.startDate)).toLocaleString()}</Typography>
+              <Typography variant="subtitle2" className={classes.activeIcon} color="textSecondary">{ voteStartDate }</Typography>
           </Box>
         </Box>
         <Box>
@@ -111,7 +146,7 @@ function ProposalDetails() {
         </Box>
         <Box display="flex" flexDirection="column" justifyContent="center" alignItems="flex-end">
           <Box display="flex">
-            <Typography variant="body1"  color="secondary">My Voting Weight: {0.1}%"</Typography>
+            <Typography variant="body1"  color="secondary">My Voting Weight: {0.1}%</Typography>
             <HelpOutlineIcon color="secondary" fontSize="small" />
           </Box>
           {
@@ -214,18 +249,15 @@ function ProposalDetails() {
         </Box>
         <Box className={commonClasses.borderContainer} padding="4%">
           <Typography variant="body1" color="secondary" style={{ lineHeight: "32px" }}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
-            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-            Link to discussion: _______                
+            { vote.metadata } 
           </Typography>
-          <VoteModal voteIndex={voteIndex} voteModal={voteModal} setVoteModal={setVoteModal} setVoted={setVoted} />
+          <VoteModal voteIndex={vote.voteIndex} voteModal={voteModal} setVoteModal={setVoteModal} setVoted={setVoted} />
           <DelegateModal setDelegateModal={setDelegateModal} setDelegateAddress={setDelegateAddress} delegateModal={delegateModal} />
         </Box>
       </Box>
     </Container>
-  );
+  );}
+  return vote ? <ProposalDetailsContainer /> : <></>;
 }
 
 export default ProposalDetails;

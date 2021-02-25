@@ -1,0 +1,13 @@
+{
+  "description": "Deposit 20 million API3 tokens to the Gnosis Protocol contract. See https://docs.gnosis.io/protocol/docs/tutorial-limit-orders/ and https://docs.gnosis.io/protocol/docs/tutorial-multiple-orders/",
+  "specs": {
+    "proposalNo": "6",
+    "targetContractAddress": "0x6F400810b62df8E13fded51bE75fF5393eaa841F",
+    "targetFunction": "deposit(address,uint256)",
+    "value": "0",
+    "parameters": [
+      "0x0b38210ea11411557c13457D4dA7dC6ea731B88a",
+      "20000000000000000000000000"
+    ]
+  }
+}

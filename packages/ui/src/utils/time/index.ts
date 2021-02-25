@@ -16,7 +16,23 @@ const formattedTime = (time: number | string ): (number | string) => {
   return time;
 }
 
+const proposalStatusTime = (executed: boolean, startDate: Date, votingDurationMinutes: number = 15) => {
+  if(!executed) {
+    const now = new Date()
+    const start = new Date(Number(startDate)*1000)
+    const end = new Date(start);
+    end.setMinutes(start.getMinutes() + votingDurationMinutes);
+    if(now.getTime() > end.getTime()) {
+      console.log('time has ended')
+      return true;
+    }
+  } else {
+    return false 
+  }
+}
+
 export {
   counter,
+  proposalStatusTime,
 
 }
