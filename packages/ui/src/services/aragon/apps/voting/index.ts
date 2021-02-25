@@ -42,6 +42,11 @@ export class Voting extends Aragon {
     return votes;
   }
   
+  public async voteById(id: number) {
+    const votes = await this.votes();
+    return votes.reverse()[id];
+  }
+  
   public async newVote(description?: string, callback?: Function | any) {
     description = description ?  description : "no description was provided";
     

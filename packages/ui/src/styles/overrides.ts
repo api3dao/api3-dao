@@ -1,4 +1,6 @@
-export const overrides = {
+import { Overrides } from "@material-ui/core/styles/overrides";
+
+export const overrides: Overrides = {
   MuiContainer: {
     root: {
       
@@ -43,6 +45,11 @@ export const overrides = {
     }
   },
   MuiListItem: {
+    root: {
+      border: "unset"
+    }
+  },
+  MuiRadio: {
     root: {
       border: "unset"
     }

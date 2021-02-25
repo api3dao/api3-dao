@@ -1,8 +1,9 @@
 node_modules
-
 #Hardhat files
+cache
+artifacts
+.env
 cache/
 artifacts/
-
 #Typescript output
 dist/

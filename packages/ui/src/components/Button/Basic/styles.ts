@@ -45,7 +45,7 @@ export const useStyles = makeStyles((theme: Theme) =>
     }),
     firstSpan: (props: Props) => ({
       marginTop: "3px",
-      borderBottom: props.color === "black" ? "1px solid #878888" : "1px solid #000000",
+      borderBottom: props.color === "black" ? "1px solid #878888" : props.color === "white" ? "1px solid #000000" : "1px solid #383838",
       display: "flex",
       bottom: "-6px",
     }),

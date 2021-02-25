@@ -6,7 +6,7 @@ import {
 
 import { Voting } from "services/aragon";
 
-import useStyles from "components/VoteProposalButtons/styles";
+import useStyles from "components/Vote/VoteProposalButtons/styles";
 
 function VoteProposalButton(props: any) {
   const classes = useStyles();
@@ -15,15 +15,16 @@ function VoteProposalButton(props: any) {
   const castVote = async (voteIndex: number, favor: boolean) => {
     // depending of ProposalType castVote is gonna have a different logic.
     const voting = await Voting.getInstance();
+    console.log('voting', voting);
     if(proposalType === "vote") {
       voting.vote(voteIndex, favor);
     }
   }
-
+  
   return (
     <Box>
-      <Button className={classes.button} onClick={() => castVote(voteIndex, true)} color="inherit">Yes</Button>
-      <Button className={classes.button} onClick={() => castVote(voteIndex, false)} color="inherit">No</Button>
+      <Button color="primary" className={classes.button} onClick={() => castVote(voteIndex, true)}>Yes</Button>
+      <Button color="primary" className={classes.button} onClick={() => castVote(voteIndex, false)}>No</Button>
     </Box>
   );
 }

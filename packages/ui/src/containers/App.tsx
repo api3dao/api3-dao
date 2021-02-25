@@ -28,7 +28,6 @@ function App() {
                 <Sidebar />
                 <AppRouter />
               </div>
-              
             </ThemeProvider>
           </MainProvider>
       </BrowserRouter>
