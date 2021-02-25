@@ -1,8 +1,7 @@
 import * as hre from 'hardhat'
-import { Api3Token, TestPool } from '../typechain'
-import { BigNumber } from 'ethers'
-import { testCases } from '../test_config'
-import { writeFile } from 'fs'
+import {Api3Token, TestPool} from '../typechain'
+import {BigNumber} from 'ethers'
+import {TestCase, testCases} from '../test_config'
 
 export interface ExpectedResults {
     staked: string,
@@ -60,3 +59,18 @@ export const calculateExpected = async (pool: TestPool) => {
 }
 
 // calculateExpected()
+
+export const calculateExpectedApr = (testCase: TestCase, sensitivity: BigNumber, minApr: BigNumber, maxApr: BigNumber): BigNumber => {
+    const {staked, target, apr} = testCase;
+    const delta = target.sub(staked);
+    const deltaPercent = delta.mul(100000000).div(target);
+    const aprUpdate = deltaPercent.mul(sensitivity).div(1000000);
+    const nextApr = apr.mul(aprUpdate.add(100000000)).div(100000000);
+    let nextExpectedApr = nextApr;
+    if (nextApr.gt(maxApr)) {
+        nextExpectedApr = maxApr;
+    } else if (nextApr.lt(minApr)) {
+        nextExpectedApr = minApr
+    }
+    return nextExpectedApr;
+}
