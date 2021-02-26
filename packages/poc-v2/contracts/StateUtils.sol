@@ -138,7 +138,6 @@ contract StateUtils {
             while (epochToPay <= targetEpoch) {
                 if (!api3Token.getMinterStatus(address(this))) {
                     rewards[epochToPay] = RewardEpoch(0, block.number);
-                    lastEpochPaid = targetEpoch;
                     emit Epoch(epochToPay, 0, currentApr);
                 } else {
                     updateCurrentApr(totalStakedNow);
@@ -150,13 +149,12 @@ contract StateUtils {
                         totalStakedNow = totalStakedNow.add(rewardAmount);
                         minted = true;
                     }
-
                     emit Epoch(epochToPay, rewardAmount, currentApr);
-                    epochToPay = epochToPay.add(1);
                 }
+                epochToPay = epochToPay.add(1);
             }
 
-            lastEpochPaid = epochToPay;
+            lastEpochPaid = targetEpoch;
             if (minted) {
                 totalStaked.push(Checkpoint(block.number, totalStakedNow));
             }
