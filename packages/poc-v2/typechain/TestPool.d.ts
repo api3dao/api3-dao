@@ -46,12 +46,14 @@ interface TestPoolInterface extends ethers.utils.Interface {
     "setMaxApr(uint256)": FunctionFragment;
     "setMinApr(uint256)": FunctionFragment;
     "setStakeTarget(uint256)": FunctionFragment;
+    "setTestCase(uint256,uint256,uint256)": FunctionFragment;
     "setUnstakeWaitPeriod(uint256)": FunctionFragment;
     "setUpdateCoefficient(uint256)": FunctionFragment;
     "shares(address)": FunctionFragment;
     "sharesAt(uint256,address)": FunctionFragment;
     "stake(uint256)": FunctionFragment;
     "stakeTarget()": FunctionFragment;
+    "testUpdateCurrentApr(uint256,uint256,uint256)": FunctionFragment;
     "totalShares(uint256)": FunctionFragment;
     "totalStake()": FunctionFragment;
     "totalStakeAt(uint256)": FunctionFragment;
@@ -158,6 +160,10 @@ interface TestPoolInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "setTestCase",
+    values: [BigNumberish, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setUnstakeWaitPeriod",
     values: [BigNumberish]
   ): string;
@@ -174,6 +180,10 @@ interface TestPoolInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "stakeTarget",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "testUpdateCurrentApr",
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "totalShares",
@@ -313,6 +323,10 @@ interface TestPoolInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setTestCase",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setUnstakeWaitPeriod",
     data: BytesLike
   ): Result;
@@ -325,6 +339,10 @@ interface TestPoolInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "stake", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "stakeTarget",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "testUpdateCurrentApr",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -668,6 +686,20 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
+    setTestCase(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setTestCase(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
     setUnstakeWaitPeriod(
       _unstakeWaitPeriod: BigNumberish,
       overrides?: Overrides
@@ -723,6 +755,20 @@ export class TestPool extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    testUpdateCurrentApr(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "testUpdateCurrentApr(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     totalShares(
       arg0: BigNumberish,
@@ -1174,6 +1220,20 @@ export class TestPool extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  setTestCase(
+    _totalStaked: BigNumberish,
+    _stakeTarget: BigNumberish,
+    _currentApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setTestCase(uint256,uint256,uint256)"(
+    _totalStaked: BigNumberish,
+    _stakeTarget: BigNumberish,
+    _currentApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   setUnstakeWaitPeriod(
     _unstakeWaitPeriod: BigNumberish,
     overrides?: Overrides
@@ -1226,6 +1286,20 @@ export class TestPool extends Contract {
   stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
   "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  testUpdateCurrentApr(
+    _totalStaked: BigNumberish,
+    _stakeTarget: BigNumberish,
+    _currentApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "testUpdateCurrentApr(uint256,uint256,uint256)"(
+    _totalStaked: BigNumberish,
+    _stakeTarget: BigNumberish,
+    _currentApr: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
 
   totalShares(
     arg0: BigNumberish,
@@ -1671,6 +1745,20 @@ export class TestPool extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setTestCase(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setTestCase(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     setUnstakeWaitPeriod(
       _unstakeWaitPeriod: BigNumberish,
       overrides?: CallOverrides
@@ -1720,6 +1808,20 @@ export class TestPool extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    testUpdateCurrentApr(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "testUpdateCurrentApr(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     totalShares(
       arg0: BigNumberish,
@@ -2216,6 +2318,20 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
+    setTestCase(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setTestCase(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
     setUnstakeWaitPeriod(
       _unstakeWaitPeriod: BigNumberish,
       overrides?: Overrides
@@ -2265,6 +2381,20 @@ export class TestPool extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    testUpdateCurrentApr(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "testUpdateCurrentApr(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
 
     totalShares(
       arg0: BigNumberish,
@@ -2657,6 +2787,20 @@ export class TestPool extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
+    setTestCase(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setTestCase(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
     setUnstakeWaitPeriod(
       _unstakeWaitPeriod: BigNumberish,
       overrides?: Overrides
@@ -2712,6 +2856,20 @@ export class TestPool extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    testUpdateCurrentApr(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "testUpdateCurrentApr(uint256,uint256,uint256)"(
+      _totalStaked: BigNumberish,
+      _stakeTarget: BigNumberish,
+      _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
 
     totalShares(
       arg0: BigNumberish,

@@ -8,17 +8,21 @@ contract TestPool is Api3Pool {
         public
     {}
 
-    // function testUpdateCurrentApr(uint256 _totalStaked, uint256 _stakeTarget, uint256 _currentApr) public {
-    //     totalStaked.push(Checkpoint(block.number, _totalStaked));
-    //     currentApr = _currentApr;
-    //     stakeTarget = _stakeTarget;
-    //     updateCurrentApr(_totalStaked);
-    //     // totalStaked.pop();
-    // }
+    function setTestCase(uint256 _totalStaked, uint256 _stakeTarget, uint256 _currentApr) public {
+        totalStaked.push(Checkpoint(block.number, _totalStaked));
+        currentApr = _currentApr;
+        stakeTarget = _stakeTarget;
+    }
 
-    // function testPayReward(uint256 deltaTotalStaked) public {
-    //     uint256 _totalStaked = this.totalSupply();
-    //     totalStaked.push(Checkpoint(block.number, _totalStaked.add(deltaTotalStaked)));
-    //     payReward();
-    // }
+    function testUpdateCurrentApr(uint256 _totalStaked, uint256 _stakeTarget, uint256 _currentApr) public {
+        setTestCase(_totalStaked, _stakeTarget, _currentApr);
+        updateCurrentApr(_totalStaked);
+        // totalStaked.pop();
+    }
+
+//    function testPayReward(uint256 deltaTotalStaked) public {
+//        uint256 _totalStaked = this.totalSupply();
+//        totalStaked.push(Checkpoint(block.number, _totalStaked + deltaTotalStaked));
+//        payReward();
+//    }
 }

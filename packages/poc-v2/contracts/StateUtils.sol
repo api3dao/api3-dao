@@ -289,4 +289,6 @@ contract StateUtils {
     {
         return getValueAt(checkpoints, block.number);
     }
+
+
 }
