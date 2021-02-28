@@ -37,9 +37,35 @@ const solidity = {
   compilers,
 }
 
+// const config: HardhatUserConfig = {
+//   solidity,
+//   networks,
+// }
+
 const config: HardhatUserConfig = {
-  solidity,
-  networks,
+  defaultNetwork: "hardhat",
+  networks: {
+    hardhat: {
+    },
+  },
+  solidity: {
+    version: "0.6.12",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
+  },
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts"
+  },
+  mocha: {
+    timeout: 20000
+  }
 }
 
 export default config

@@ -5,7 +5,7 @@ import { Api3Token, TestPool } from '../typechain'
 import { BigNumber } from 'ethers'
 import {TestCase, testCases} from '../test_config'
 import {calculateExpected, ExpectedResults} from '../scripts/helpers'
-import {getBlockTimestamp} from "./test_StakeUtils";
+import {getBlockTimestamp, jumpTo} from "./test_StakeUtils";
 
 const tokenDigits = BigNumber.from('1000000000000000000')
 const paramDigits = BigNumber.from('1000000')
@@ -62,81 +62,44 @@ describe('StateUtils', () => {
 
   testCases.map(({ staked, target, apr}, index) => {
     it(`pay rewards: case ${index}`, async () => {
+      // jump to future epoch
+      const currentTimestamp = await getBlockTimestamp();
+      const epochLength = await pool.rewardEpochLength();
+      const epochsToJump = Math.ceil(Math.random() * 5);
+      const futureEpochTimeStamp = currentTimestamp.add(epochLength.mul(epochsToJump)).toNumber()
+      await jumpTo(futureEpochTimeStamp);
       // set test case
       await pool.setTestCase(staked, target, apr);
       const startPoolBalance = await token.balanceOf(pool.address);
-      const startPoolStaked = await pool.totalStakedNow();
-      // function call
-      await pool.testPayReward();
+      const startPoolStaked = await pool.totalStake();
+      // epoch range
+      const startEpoch = await pool.lastEpochPaid();
+      const targetEpoch = await pool.getRewardTargetEpochTest();
       // calculate expected results
-      const currentApr = await pool.currentApr();
-      const expectedReward = startPoolStaked.mul(BigNumber.from(currentApr)).div(52).div(100000000);
-      // get epoch index
-      const blockNumber = await hre.ethers.provider.getBlockNumber();
-      const rewardEpochLength = await pool.rewardEpochLength();
-      const now = await getBlockTimestamp();
-      const indEpoch = now.div(rewardEpochLength);
-
-      // check results
-      const rewardRecord = await pool.rewardAmounts(indEpoch);
-      expect(rewardRecord).to.equal(expectedReward);
-
-      const poolStaked = await pool.totalStakedNow();
-      const expectedStaked = startPoolStaked.add(expectedReward);
+      const expectedReward: BigNumber[] = await calculatePayReward(startEpoch, targetEpoch, startPoolStaked, target, pool);
+      // function call
+      await pool.payReward(targetEpoch);
+      // check reward for each epoch
+      let epochToPay = startEpoch.add(1);
+      let expectedStaked = startPoolStaked;
+      let i = 0;
+      while (epochToPay <= targetEpoch) {
+        const rewardEpoch = await pool.rewards(epochToPay);
+        const rewardAmount = rewardEpoch.amount;
+        expect(rewardAmount).to.equal(expectedReward[i]);
+        expectedStaked = expectedStaked.add(expectedReward[i]);
+        i++;
+        epochToPay = epochToPay.add(1);
+      }
+      // make sure total staked increases by total reward amount
+      const poolStaked = await pool.totalStake();
       expect(poolStaked).to.equal(expectedStaked);
-
-      const locked = await pool.getLockedAt(blockNumber);
-      expect(locked).to.equal(expectedReward);
-
-      const rewardVestingPeriod = await pool.rewardVestingPeriod();
-      const rewardReleaseBlock = BigNumber.from(blockNumber).add(rewardVestingPeriod)
-      const rewardRelease = await pool.getRewardReleaseAt(rewardReleaseBlock);
-      expect(rewardRelease).to.equal(expectedReward);
-
+      // make sure pool balance increases by total reward amount
       const poolBalance = await token.balanceOf(pool.address);
-      const expectedBalance = startPoolBalance.add(expectedReward);
+      const expectedBalance = startPoolBalance.add(expectedStaked).sub(startPoolStaked);
       expect(poolBalance).to.equal(expectedBalance);
     })
   })
-
-  // testCases.map(({ staked, target, apr}, index) => {
-  //   it(`update user state: case ${index}`, async () => {
-  //     // set test case
-  //     await pool.setTestCase(staked, target, apr);
-  //     const startPoolBalance = await token.balanceOf(pool.address);
-  //     const startPoolStaked = await pool.totalStakedNow();
-  //     // function call
-  //     const blockNumber = await hre.ethers.provider.getBlockNumber();
-  //     await pool.updateUserState(accounts[1], blockNumber)
-  //     // calculate expected results
-  //     const currentApr = await pool.currentApr();
-  //     const expectedReward = startPoolStaked.mul(BigNumber.from(currentApr)).div(52).div(100000000);
-  //     // get epoch index
-  //     const rewardEpochLength = await pool.rewardEpochLength();
-  //     const now = await getBlockTimestamp();
-  //     const indEpoch = now.div(rewardEpochLength);
-  //
-  //     // check results
-  //     const rewardRecord = await pool.rewardAmounts(indEpoch);
-  //     expect(rewardRecord).to.equal(expectedReward);
-  //
-  //     const poolStaked = await pool.totalStakedNow();
-  //     const expectedStaked = startPoolStaked.add(expectedReward);
-  //     expect(poolStaked).to.equal(expectedStaked);
-  //
-  //     const locked = await pool.getLockedAt(blockNumber);
-  //     expect(locked).to.equal(expectedReward);
-  //
-  //     const rewardVestingPeriod = await pool.rewardVestingPeriod();
-  //     const rewardReleaseBlock = BigNumber.from(blockNumber).add(rewardVestingPeriod)
-  //     const rewardRelease = await pool.getRewardReleaseAt(rewardReleaseBlock);
-  //     expect(rewardRelease).to.equal(expectedReward);
-  //
-  //     const poolBalance = await token.balanceOf(pool.address);
-  //     const expectedBalance = startPoolBalance.add(expectedReward);
-  //     expect(poolBalance).to.equal(expectedBalance);
-  //   })
-  // })
 
 })
 
@@ -156,4 +119,26 @@ export const calculateExpectedApr = (testCase: TestCase, sensitivity: BigNumber,
     nextExpectedApr = minApr
   }
   return nextExpectedApr;
+}
+
+const calculatePayReward = async (startEpoch: BigNumber, targetEpoch: BigNumber, startStaked: BigNumber, stakeTarget: BigNumber, pool: TestPool): Promise<BigNumber[]> => {
+  const minApr = await pool.minApr();
+  const maxApr = await pool.maxApr();
+  const sensitivity = await pool.updateCoeff();
+  const startApr = await pool.currentApr();
+  let epochToPay = startEpoch.add(1);
+  let expectedStaked = startStaked;
+  let expectedApr = startApr;
+  const expectedReward: BigNumber[] = [];
+  while (epochToPay <= targetEpoch) {
+    // calc apr
+    expectedApr = calculateExpectedApr({ staked: expectedStaked, target: stakeTarget, apr: expectedApr}, sensitivity, minApr, maxApr);
+    // calc reward
+    const reward = expectedStaked.mul(expectedApr).div(52).div(100000000);
+    expectedReward.push(reward);
+    // update parameters
+    expectedStaked = expectedStaked.add(reward);
+    epochToPay = epochToPay.add(1);
+  }
+  return expectedReward;
 }
