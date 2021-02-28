@@ -25,4 +25,18 @@ contract TestPool is Api3Pool {
 //        totalStaked.push(Checkpoint(block.number, _totalStaked + deltaTotalStaked));
 //        payReward();
 //    }
+
+    function getRewardTargetEpochTest() external view returns(uint256) {
+        uint256 currentEpoch = now.div(rewardEpochLength);
+        uint256 unpaidEpochs = currentEpoch.sub(lastEpochPaid);
+        return unpaidEpochs <= 5 ? currentEpoch : lastEpochPaid.add(unpaidEpochs.div(2));
+    }
+
+    function updateCurrentAprTest() public {
+        updateCurrentApr(totalStake());
+    }
+
+    function getCurrentEpoch() external view returns(uint256) {
+        return now.div(rewardEpochLength);
+    }
 }
