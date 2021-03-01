@@ -60,6 +60,7 @@ describe('StateUtils', () => {
     })
   })
 
+  // TODO: test with !minterStatus
   testCases.map(({ staked, target, apr}, index) => {
     it(`pay rewards: case ${index}`, async () => {
       // jump to future epoch
@@ -98,6 +99,68 @@ describe('StateUtils', () => {
       const poolBalance = await token.balanceOf(pool.address);
       const expectedBalance = startPoolBalance.add(expectedStaked).sub(startPoolStaked);
       expect(poolBalance).to.equal(expectedBalance);
+    })
+  })
+
+})
+
+describe('StateUtils_Locked', () => {
+  let accounts: string[]
+  let token: Api3Token
+  let pool: TestPool
+  let ownerAccount: Api3Token
+
+  beforeEach(async () => {
+    accounts = await hre.waffle.provider.listAccounts()
+    const api3TokenFactory = await hre.ethers.getContractFactory("Api3Token")
+    token = (await api3TokenFactory.deploy(accounts[0], accounts[0])) as Api3Token
+    const testPoolFactory = await hre.ethers.getContractFactory("TestPool")
+    pool = (await testPoolFactory.deploy(token.address)) as TestPool
+    const signer0 = hre.waffle.provider.getSigner(0)
+    ownerAccount = token.connect(signer0)
+    await ownerAccount.updateMinterStatus(pool.address, true)
+  })
+
+  testCases.map(({ staked, target, apr}, index) => {
+    it(`updateUserLocked: case ${index}`, async () => {
+      // deposit and stake
+      const amount = staked.div(2)
+      for (let i = 1; i <= 2; i++) {
+        await ownerAccount.transfer(accounts[i], amount);
+        const signer = hre.waffle.provider.getSigner(i)
+        await token.connect(signer).approve(pool.address, amount)
+        await pool.connect(signer).deposit(accounts[i], amount, accounts[i])
+        await pool.connect(signer).stake(amount);
+      }
+      // set test case
+      await pool.setTestCase(amount.mul(2), target, apr);
+      const startPoolStaked = await pool.totalStake();
+      const startUserShares1 = await pool.shares(accounts[1]);
+      const startUserShares2 = await pool.shares(accounts[2]);
+      const startTotalShares = await pool.totalSupply();
+      // jump to future epoch
+      const currentTimestamp = await getBlockTimestamp();
+      const epochLength = await pool.rewardEpochLength();
+      const epochsToJump = Math.ceil(Math.random() * 5);
+      const futureEpochTimeStamp = currentTimestamp.add(epochLength.mul(epochsToJump)).toNumber()
+      await jumpTo(futureEpochTimeStamp);
+      // epoch range
+      const startEpoch = await pool.lastEpochPaid();
+      const targetEpoch = await pool.getRewardTargetEpochTest();
+      // calculate rewards
+      const expectedReward: BigNumber[] = await calculatePayReward(startEpoch, targetEpoch, startPoolStaked, target, pool);
+      const expectedTotalLocked: BigNumber = expectedReward.reduce((prev, curr) => prev.add(curr));
+      // check result
+      const expectedUserLocked1 = expectedTotalLocked.mul(startUserShares1).div(startTotalShares);
+      const expectedUserLocked2 = expectedTotalLocked.mul(startUserShares2).div(startTotalShares);
+      // function call
+      await pool.updateUserLocked(accounts[1], targetEpoch);
+      await pool.updateUserLocked(accounts[2], targetEpoch);
+      const userLocked1 = (await pool.users(accounts[1])).locked;
+      const userLocked2 = (await pool.users(accounts[2])).locked;
+      // check result
+      expect(userLocked1).to.equal(expectedUserLocked1);
+      expect(userLocked2).to.equal(expectedUserLocked2);
     })
   })
 
