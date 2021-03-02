@@ -90,6 +90,7 @@ contract StateUtils {
         api3Token = IApi3Token(api3TokenAddress);
         genesisEpoch = now.div(rewardEpochLength);
         lastEpochPaid = now.div(rewardEpochLength);
+        rewards[now.div(rewardEpochLength)] = RewardEpoch(0, block.number);
     }
 
     function updateCurrentApr(uint256 totalStakedNow)

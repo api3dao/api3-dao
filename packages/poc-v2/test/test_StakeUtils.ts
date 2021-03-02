@@ -118,10 +118,10 @@ describe('StakeUtils_MultiCase', () => {
       sumStaked = sumStaked.add(stakeAmount);
       sumUnstaked = sumUnstaked.add(testValue.sub(stakeAmount));
       // check stake
-      const staked = await getStaked(pool, accounts[1]);
+      const staked = await pool.userStaked(accounts[1]);
       expect(staked).to.equal(sumStaked);
       // check unstaked
-      const unstaked = await staker.getUnstaked(accounts[1]);
+      const unstaked = (await pool.users(accounts[1])).unstaked;
       expect(unstaked).to.equal(sumUnstaked);
       // check total
       expect(staked.add(unstaked)).to.equal(sumDeposited);
@@ -131,37 +131,37 @@ describe('StakeUtils_MultiCase', () => {
   testValues.map((testValue, index) => {
     it(`schedule unstake: case ${index}`, async () => {
       const staker = pool.connect(hre.waffle.provider.getSigner(1));
-      const staked = await getStaked(pool, accounts[1]);
+      const staked = await pool.userStaked(accounts[1]);
       if (testValue.gt(staked)) {
         await expect(staker.scheduleUnstake(testValue)).to.be.reverted;
       } else {
         await staker.scheduleUnstake(testValue);
         // check unstake request amount
-        const unstakeAmount = await staker.getUnstakeAmount(accounts[1]);
+        const unstakeAmount = (await pool.users(accounts[1])).unstakeAmount;
         expect(unstakeAmount).to.equal(testValue);
         // check unstake request timestamp
-        const now = await getBlockTimestamp();
-        const unstakeScheduleAt = await staker.getScheduledUnstake(accounts[1]);
-        expect(unstakeScheduleAt).to.equal(now);
+        const now = await getBlockTimestamp()
+        const wait = await pool.unstakeWaitPeriod();
+        const unstakeScheduleAt = (await pool.users(accounts[1])).unstakeScheduledFor;
+        expect(unstakeScheduleAt).to.equal(now.add(wait));
       }
     })
   })
 
   it('unstake all staked tokens', async () => {
     const staker = pool.connect(hre.waffle.provider.getSigner(1));
-    const alreadyUnstaked = await staker.getUnstaked(accounts[1]);
-    const minWait = await pool.rewardEpochLength();
+    const startUnstaked = (await pool.users(accounts[1])).unstaked;
+    const startStaked = await pool.userStaked(accounts[1]);
     // request unstake
-    const staked = await getStaked(pool, accounts[1]);
-    await staker.scheduleUnstake(staked);
+    await staker.scheduleUnstake(startStaked);
     // forward time to be within unstake time window
-    const unstakeScheduleAt = await staker.getScheduledUnstake(accounts[1]);
-    const inWindow = unstakeScheduleAt.add(minWait).add(3600).toNumber();
+    const unstakeScheduleAt = (await pool.users(accounts[1])).unstakeScheduledFor;
+    const inWindow = unstakeScheduleAt.add(3600).toNumber();
     await jumpTo(inWindow);
     // unstake tokens
     await staker.unstake();
-    const unstaked = await staker.getUnstaked(accounts[1]);
-    expect(unstaked).to.equal(alreadyUnstaked.add(staked));
+    const unstaked = (await pool.users(accounts[1])).unstaked;
+    expect(unstaked).to.equal(startUnstaked.add(startStaked));
   })
 })
 
@@ -173,8 +173,7 @@ describe('StakeUtils_UnstakeDeep', () => {
   let ownerAccount: Api3Token
 
   let staker: TestPool;
-  let minWait: BigNumber;
-  let maxWait: BigNumber;
+  let wait: BigNumber;
 
   before(async () => {
     accounts = await hre.waffle.provider.listAccounts()
@@ -186,39 +185,38 @@ describe('StakeUtils_UnstakeDeep', () => {
     ownerAccount = token.connect(signer0)
     staker = pool.connect(hre.waffle.provider.getSigner(1));
     // unstake request wait period
-    minWait = await pool.rewardEpochLength();
-    maxWait = minWait.mul(2);
+    wait = await pool.rewardEpochLength();
   })
 
   testValues.map((testValue, index) => {
 
     it(`early unstake attempt then valid unstake: case ${index}`, async () => {
       await resetUnstakedTo(testValue, accounts[1], accounts[0], token, pool);
-      const expectedUnstaked = await staker.getUnstaked(accounts[1]);
+      const expectedUnstaked = (await pool.users(accounts[1])).unstaked;
       const [unstakeScheduleAt, unstakeAmount] = await resetUnstakeRequest(staker, accounts[1], testValue);
       // forward time by less than minWait
-      const oneMinuteBeforeWindow = unstakeScheduleAt.add(minWait).sub(60).toNumber();
+      const oneMinuteBeforeWindow = unstakeScheduleAt.sub(60).toNumber();
       await jumpTo(oneMinuteBeforeWindow);
       await expect(staker.unstake()).to.be.reverted;
       // forward time to be just within unstake time window
-      const oneMinuteInWindow = unstakeScheduleAt.add(minWait).add(60).toNumber();
+      const oneMinuteInWindow = unstakeScheduleAt.add(60).toNumber();
       await jumpTo(oneMinuteInWindow);
       // unstake tokens
       await staker.unstake();
-      const unstaked = await staker.getUnstaked(accounts[1]);
+      const unstaked = (await pool.users(accounts[1])).unstaked;
       expect(unstaked).to.equal(expectedUnstaked);
     })
 
     it(`unstake just before invalid: case ${index}`, async () => {
       await resetUnstakedTo(testValue, accounts[1], accounts[0], token, pool);
-      const expectedUnstaked = await staker.getUnstaked(accounts[1]);
+      const expectedUnstaked = (await pool.users(accounts[1])).unstaked;
       const [unstakeScheduleAt, unstakeAmount] = await resetUnstakeRequest(staker, accounts[1], testValue);
       // forward time by just before end of window
-      const oneMinuteBeforeWindowClose = unstakeScheduleAt.add(maxWait).sub(60).toNumber();
+      const oneMinuteBeforeWindowClose = unstakeScheduleAt.add(wait).sub(60).toNumber();
       await jumpTo(oneMinuteBeforeWindowClose);
       // unstake tokens
       await staker.unstake();
-      const unstaked = await staker.getUnstaked(accounts[1]);
+      const unstaked = (await pool.users(accounts[1])).unstaked;
       expect(unstaked).to.equal(expectedUnstaked);
     })
 
@@ -226,7 +224,7 @@ describe('StakeUtils_UnstakeDeep', () => {
       await resetUnstakedTo(testValue, accounts[1], accounts[0], token, pool);
       const [unstakeScheduleAt, _] = await resetUnstakeRequest(staker, accounts[1], testValue);
       // forward time by more than maxWait
-      const oneMinuteAfterWindow = unstakeScheduleAt.add(maxWait).add(60).toNumber();
+      const oneMinuteAfterWindow = unstakeScheduleAt.add(wait).add(60).toNumber();
       await jumpTo(oneMinuteAfterWindow);
       await expect(staker.unstake()).to.be.reverted;
     })
@@ -249,40 +247,31 @@ export const jumpTo = async (timestamp: number) => {
   await hre.network.provider.send("evm_mine");
 }
 
-export async function getStaked(pool: TestPool, address: string): Promise<BigNumber> {
-  const shares = await pool.balanceOf(address);
-  const totalStaked = await pool.totalSupply();
-  const totalShares = await pool.getTotalShares();
-  return shares.mul(totalStaked).div(totalShares);
-}
-
 export async function resetUnstakeRequest(staker: TestPool, address: string, amount: BigNumber) {
-  const alreadyUnstaked = await staker.getUnstaked(address);
+  const alreadyUnstaked = (await staker.users(address)).unstaked;
   if (amount.gt(alreadyUnstaked)) {
     expect(await staker.stake(amount)).to.be.reverted;
   }
   await staker.stake(amount);
   await staker.scheduleUnstake(amount);
-  const unstakeScheduleAt = await staker.getScheduledUnstake(address);
-  const unstakeAmount = await staker.getUnstakeAmount(address);
-  return [unstakeScheduleAt, unstakeAmount];
+  const user = await staker.users(address);
+  return [user.unstakeScheduledFor, user.unstakeAmount];
 }
 
 export const resetUnstakedTo = async (amount: BigNumber, stakerAddress: string, ownerAddress: string, token: Api3Token, pool: TestPool) => {
   // get values
   const staker = pool.connect(hre.waffle.provider.getSigner(stakerAddress));
-  const minWait = await pool.rewardEpochLength();
-  const staked = await getStaked(pool, stakerAddress);
+  const staked = await pool.userStaked(stakerAddress);
   // unstake all
   if (staked.gt(0)) {
     await staker.scheduleUnstake(staked);
-    const unstakeScheduleAt = await staker.getScheduledUnstake(stakerAddress);
-    const inWindow = unstakeScheduleAt.add(minWait).add(3600).toNumber();
+    const unstakeScheduleAt = (await staker.users(stakerAddress)).unstakeScheduledFor;
+    const inWindow = unstakeScheduleAt.add(3600).toNumber();
     await jumpTo(inWindow);
     await staker.unstake();
   }
   // transfer all to owner account
-  const unstaked = await staker.getUnstaked(stakerAddress);
+  const unstaked = (await staker.users(stakerAddress)).unstaked;
   if (unstaked.gt(0)) {
     await token.transfer(ownerAddress, unstaked);
   }
