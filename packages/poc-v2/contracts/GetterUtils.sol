@@ -69,4 +69,6 @@ contract GetterUtils is DelegationUtils {
     public view returns (uint256) {
         return totalStakeAt(block.number);
     }
+
+    // function getWithdrawable(address userAddress)
 }

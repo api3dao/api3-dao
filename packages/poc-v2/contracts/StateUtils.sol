@@ -130,6 +130,8 @@ contract StateUtils {
     function payReward(uint256 targetEpoch)
         public
     {
+        require(targetEpoch <= now.div(rewardEpochLength));
+        
         if (lastEpochPaid < targetEpoch) {
             uint256 epochToPay = lastEpochPaid.add(1);
             uint256 totalStakedNow = getValue(totalStaked);

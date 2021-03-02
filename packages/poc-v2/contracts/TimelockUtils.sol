@@ -49,6 +49,9 @@ contract TimelockUtils is ClaimUtils {
         emit VestingDeposit(userAddress, amount, releaseStart, releaseEnd);
     }
 
+    // function getTimelockStatus(address userAddress, timelockContractAddress)
+    //     public view returns uint
+
     // This method can simply be called from Etherscan, no need to have it on the dashboard
     function updateTimelockStatus(
         address userAddress,
