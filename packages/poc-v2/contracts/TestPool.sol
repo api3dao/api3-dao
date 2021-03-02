@@ -48,4 +48,22 @@ contract TestPool is Api3Pool {
         return getOldestLockedEpoch();
     }
 
+    function getUserLockedConvenience(address userAddress) external view returns(uint256) {
+        return users[userAddress].locked;
+    }
+
+    function getUserLockedAtConvenience(address userAddress, uint256 targetEpoch) external view returns(uint256) {
+        uint256 locked = 0;
+        // TODO: make sure that using >= is correct and not >... i am too tired to think about that clearly at the moment
+        uint256 i = targetEpoch.sub(genesisEpoch) >= rewardVestingPeriod ? targetEpoch.sub(genesisEpoch) : genesisEpoch;
+        for (i; i <= targetEpoch; i++) {
+            RewardEpoch storage reward = rewards[i];
+            uint256 userSharesAt = sharesAt(reward.atBlock, userAddress);
+            uint256 totalSharesAt = totalSupplyAt(reward.atBlock);
+            uint256 lockAmount = reward.amount.mul(userSharesAt).div(totalSharesAt);
+            locked.add(lockAmount);
+        }
+        return locked;
+    }
+
 }
