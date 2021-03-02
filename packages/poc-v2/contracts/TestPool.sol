@@ -39,4 +39,13 @@ contract TestPool is Api3Pool {
     function getCurrentEpoch() external view returns(uint256) {
         return now.div(rewardEpochLength);
     }
+
+    function setApr(uint256 _currentApr) public {
+        currentApr = _currentApr;
+    }
+
+    function getOldestLockedEpochTest() public view returns(uint256) {
+        return getOldestLockedEpoch();
+    }
+
 }
