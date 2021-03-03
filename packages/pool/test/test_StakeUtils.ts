@@ -328,7 +328,6 @@ describe('StakeUtils_singleTransactionActions_and_reverts', () => {
     await token.connect(signer).approve(pool.address, testValue);
     await staker.depositAndStake(accounts[1], testValue, accounts[1]);
     // get starting values
-    const startUserShares = await pool.shares(accounts[1]);
     const startUserBalance = await token.balanceOf(accounts[1]);
     const startUnstaked = (await pool.users(accounts[1])).unstaked;
     const startStaked = await pool.userStaked(accounts[1]);
@@ -345,6 +344,8 @@ describe('StakeUtils_singleTransactionActions_and_reverts', () => {
     const totalStakeAtUnstake = await pool.totalStake();
     const totalSharesAtUnstake = await pool.totalSupply();
     const sharesToBurn = totalSharesAtUnstake.mul(startStaked).div(totalStakeAtUnstake);
+    const userSharesAtUnstake = await pool.shares(accounts[1]);
+    const expectedEndShares = userSharesAtUnstake.sub(sharesToBurn);
     // unstake and withdraw tokens
     await staker.unstakeAndWithdraw(accounts[1]);
     // // calculate expected remaining stake
@@ -353,11 +354,13 @@ describe('StakeUtils_singleTransactionActions_and_reverts', () => {
     const endUserBalance = await token.balanceOf(accounts[1]);
     const endUnstaked = (await pool.users(accounts[1])).unstaked;
     const endStaked = await pool.userStaked(accounts[1]);
+    const endTotalShares = await pool.totalSupply();
     // check result
     expect(endUserBalance).to.equal(startUserBalance.add(startStaked));
-    expect(endUserShares).to.equal(startUserShares.sub(sharesToBurn));
+    expect(endUserShares).to.equal(expectedEndShares);
     expect(endUnstaked).to.equal(startUnstaked);
     expect(endStaked).to.equal(0);
+    expect(endTotalShares).to.equal(totalSharesAtUnstake.sub(sharesToBurn));
   })
 
 })
