@@ -35,6 +35,7 @@ interface TestPoolInterface extends ethers.utils.Interface {
     "genesisEpoch()": FunctionFragment;
     "getCurrentEpoch()": FunctionFragment;
     "getOldestLockedEpochTest()": FunctionFragment;
+    "getRevokedEpochReward(address,uint256)": FunctionFragment;
     "getRewardTargetEpochTest()": FunctionFragment;
     "getUserLocked(address)": FunctionFragment;
     "getUserLockedAt(address,uint256)": FunctionFragment;
@@ -126,6 +127,10 @@ interface TestPoolInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "getOldestLockedEpochTest",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getRevokedEpochReward",
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getRewardTargetEpochTest",
@@ -324,6 +329,10 @@ interface TestPoolInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getOldestLockedEpochTest",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRevokedEpochReward",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -632,6 +641,18 @@ export class TestPool extends Contract {
     "getOldestLockedEpochTest()"(
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    getRevokedEpochReward(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    "getRevokedEpochReward(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     getRewardTargetEpochTest(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -1201,6 +1222,18 @@ export class TestPool extends Contract {
 
   "getOldestLockedEpochTest()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+  getRevokedEpochReward(
+    userAddress: string,
+    targetEpoch: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  "getRevokedEpochReward(address,uint256)"(
+    userAddress: string,
+    targetEpoch: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   getRewardTargetEpochTest(overrides?: CallOverrides): Promise<BigNumber>;
 
   "getRewardTargetEpochTest()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1761,6 +1794,18 @@ export class TestPool extends Contract {
     getOldestLockedEpochTest(overrides?: CallOverrides): Promise<BigNumber>;
 
     "getOldestLockedEpochTest()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getRevokedEpochReward(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    "getRevokedEpochReward(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     getRewardTargetEpochTest(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -2369,6 +2414,18 @@ export class TestPool extends Contract {
 
     "getOldestLockedEpochTest()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getRevokedEpochReward(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getRevokedEpochReward(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getRewardTargetEpochTest(overrides?: CallOverrides): Promise<BigNumber>;
 
     "getRewardTargetEpochTest()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -2856,6 +2913,18 @@ export class TestPool extends Contract {
     ): Promise<PopulatedTransaction>;
 
     "getOldestLockedEpochTest()"(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getRevokedEpochReward(
+      userAddress: string,
+      targetEpoch: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getRevokedEpochReward(address,uint256)"(
+      userAddress: string,
+      targetEpoch: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
