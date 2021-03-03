@@ -3,6 +3,7 @@ import {expect} from 'chai'
 import 'mocha'
 import {Api3Token, TestPool} from '../typechain'
 import {BigNumber} from "ethers";
+import {Test} from "mocha";
 
 const testCaseNumbers: string[] =  ['0', '6', '13', '100000000000000000000000', '10000001', '47777', '40000000', '1437589347', '1000000000000']
 const testValues: BigNumber[] = testCaseNumbers.map((value) => BigNumber.from(value));
@@ -30,6 +31,7 @@ describe('StakeUtils', () => {
       await holder.approve(pool.address, 100)
       return pool.connect(signer)
     }))
+    await ownerAccount.updateMinterStatus(pool.address, true)
   })
 
   it('stakes a deposit', async () => {
@@ -88,6 +90,7 @@ describe('StakeUtils_MultiCase', () => {
     pool = (await api3PoolFactory.deploy(token.address)) as TestPool
     const signer0 = hre.waffle.provider.getSigner(0)
     ownerAccount = token.connect(signer0)
+    await ownerAccount.updateMinterStatus(pool.address, true)
   })
 
   testValues.map((testValue, index) => {
@@ -100,7 +103,7 @@ describe('StakeUtils_MultiCase', () => {
   })
 
   testValues.map((testValue, index) => {
-    it(`deposit and stake tokens: case ${index}`, async () => {
+    it(`deposit and then stake tokens: case ${index}`, async () => {
       // get signer
       const signer = hre.waffle.provider.getSigner(1)
       const account = token.connect(signer)
@@ -113,60 +116,259 @@ describe('StakeUtils_MultiCase', () => {
       await staker.deposit(accounts[1], testValue, accounts[1])
       sumDeposited = sumDeposited.add(testValue);
       // stake api3
-      const stakeAmount = testValue.div(2);
-      await staker.stake(stakeAmount);
-      sumStaked = sumStaked.add(stakeAmount);
-      sumUnstaked = sumUnstaked.add(testValue.sub(stakeAmount));
+      const toStake = testValue.div(2);
+      await staker.stake(toStake);
+      sumStaked = sumStaked.add(toStake);
+      sumUnstaked = sumUnstaked.add(testValue.sub(toStake));
       // check stake
       const staked = await pool.userStaked(accounts[1]);
       expect(staked).to.equal(sumStaked);
       // check unstaked
       const unstaked = (await pool.users(accounts[1])).unstaked;
       expect(unstaked).to.equal(sumUnstaked);
-      // check total
+      // check total tokens
       expect(staked.add(unstaked)).to.equal(sumDeposited);
+      // check shares
+      const shares = await pool.shares(accounts[1]);
+      const totalStaked = await pool.totalStake();
+      const totalShares = await pool.totalSupply();
+      expect(shares).to.equal(totalShares.mul(staked).div(totalStaked));
+      // check delegated
+      // TODO: ensure stake updates delegated
     })
   })
 
   testValues.map((testValue, index) => {
     it(`schedule unstake: case ${index}`, async () => {
       const staker = pool.connect(hre.waffle.provider.getSigner(1));
-      const staked = await pool.userStaked(accounts[1]);
-      if (testValue.gt(staked)) {
-        await expect(staker.scheduleUnstake(testValue)).to.be.reverted;
-      } else {
-        await staker.scheduleUnstake(testValue);
-        // check unstake request amount
-        const unstakeAmount = (await pool.users(accounts[1])).unstakeAmount;
-        expect(unstakeAmount).to.equal(testValue);
-        // check unstake request timestamp
-        const now = await getBlockTimestamp()
-        const wait = await pool.unstakeWaitPeriod();
-        const unstakeScheduleAt = (await pool.users(accounts[1])).unstakeScheduledFor;
-        expect(unstakeScheduleAt).to.equal(now.add(wait));
-      }
+      // schedule unstake
+      // TODO: fails on case #3 because require(userSharesNow.mul(totalStakedNow).div(totalSharesNow) >= amount)
+      await staker.scheduleUnstake(testValue);
+      // check unstake request amount
+      const unstakeAmount = (await pool.users(accounts[1])).unstakeAmount;
+      expect(unstakeAmount).to.equal(testValue);
+      // check unstake request timestamp
+      const now = await getBlockTimestamp()
+      const wait = await pool.unstakeWaitPeriod();
+      const unstakeScheduleAt = (await pool.users(accounts[1])).unstakeScheduledFor;
+      expect(unstakeScheduleAt).to.equal(now.add(wait));
     })
   })
 
   it('unstake all staked tokens', async () => {
     const staker = pool.connect(hre.waffle.provider.getSigner(1));
+    for (let i = 0; i < 2; i++) {
+      // get starting values
+      const startUnstaked = (await pool.users(accounts[1])).unstaked;
+      const startStaked = await pool.userStaked(accounts[1]);
+      // unstake tokens
+      await staker.scheduleUnstake(startStaked);
+      await jumpOneEpoch(pool);
+      await staker.unstake();
+      // check result
+      const unstaked = (await pool.users(accounts[1])).unstaked;
+      expect(unstaked).to.equal(startUnstaked.add(startStaked));
+    }
+  })
+
+  testValues.map((testValue, index) => {
+    it(`withdraw tokens: case ${index}`, async () => {
+      // const unstaked = (await pool.users(accounts[1])).unstaked
+      // const locked = (await pool.users(accounts[1])).locked
+      // const reward = (await pool.rewards(await pool.getCurrentEpoch())).amount
+      // const staked = await pool.userStaked(accounts[1]);
+      // console.log(testValues.reduce((prev, curr) => prev.add(curr)).toString())
+      // console.log('locked ' + locked.toString())
+      // console.log('unstaked ' + unstaked.toString())
+      // console.log('reward ' + reward.toString());
+      // console.log('locked ' + locked.toString())
+      // console.log('staked ' + staked.toString())
+      // console.log('unlocked staked ' + staked.sub(locked))
+      // console.log('staked+unstaked-reward ' + staked.add(unstaked).sub(reward).toString())
+      // console.log('staked+unstaked-locked ' + staked.add(unstaked).sub(locked).toString())
+      // console.log('withdrawable ' + unstaked.sub(locked));
+      // console.log(testValue.toString())
+      const toWithdraw = testValue.div(2);
+      // get signer
+      const signer = hre.waffle.provider.getSigner(1)
+      const staker = pool.connect(signer)
+      // get starting values
+      const startUserBalance = await token.balanceOf(accounts[1]);
+      const startUnstaked = (await pool.users(accounts[1])).unstaked;
+      // withdraw
+      await staker.withdraw(accounts[1], toWithdraw);
+      // get ending values
+      const endUserBalance = await token.balanceOf(accounts[1]);
+      const endUnstaked = (await pool.users(accounts[1])).unstaked;
+      // check result
+      expect(endUserBalance).to.equal(startUserBalance.add(toWithdraw));
+      expect(endUnstaked).to.equal(startUnstaked.sub(toWithdraw));
+    })
+  })
+
+})
+
+
+describe('StakeUtils_singleTransactionActions_and_reverts', () => {
+  let accounts: string[]
+  let token: Api3Token
+  let pool: TestPool
+  let ownerAccount: Api3Token
+
+  before(async () => {
+    accounts = await hre.waffle.provider.listAccounts()
+    const api3TokenFactory = await hre.ethers.getContractFactory("Api3Token")
+    token = (await api3TokenFactory.deploy(accounts[0], accounts[0])) as Api3Token
+    const api3PoolFactory = await hre.ethers.getContractFactory("TestPool")
+    pool = (await api3PoolFactory.deploy(token.address)) as TestPool
+    const signer0 = hre.waffle.provider.getSigner(0)
+    ownerAccount = token.connect(signer0)
+    await ownerAccount.updateMinterStatus(pool.address, true)
+  })
+
+  before(async () => {
+    // transfer tokens
+    const transferValue = 1000000000;
+    await ownerAccount.transfer(accounts[1], transferValue);
+  })
+
+  it('deposit and stake in one transaction', async () => {
+    const testValue = BigNumber.from(1000000);
+    // get signer
+    const signer = hre.waffle.provider.getSigner(1)
+    const staker = pool.connect(signer)
+    // get starting values
+    const startUserBalance = await token.balanceOf(accounts[1]);
     const startUnstaked = (await pool.users(accounts[1])).unstaked;
     const startStaked = await pool.userStaked(accounts[1]);
+    // deposit and stake
+    await token.connect(signer).approve(pool.address, testValue);
+    await staker.depositAndStake(accounts[1], testValue, accounts[1]);
+    // get ending values
+    const endUserBalance = await token.balanceOf(accounts[1]);
+    const endUnstaked = (await pool.users(accounts[1])).unstaked;
+    const endStaked = await pool.userStaked(accounts[1]);
+    // TODO: somehow the depositAndStake is not only not working, it is eating tokens!
+    // console.log(startUserBalance.toString())
+    // console.log(endUserBalance.toString())
+    // console.log(startUnstaked.toString())
+    // console.log(endUnstaked.toString())
+    // console.log(startStaked.toString())
+    // console.log(endStaked.toString())
+    // check result
+    expect(endUserBalance).to.equal(startUserBalance.sub(testValue));
+    expect(endUnstaked).to.equal(startUnstaked);
+    expect(endStaked).to.equal(startStaked.add(testValue));
+  })
+
+  it('multi-account stake and check shares while advancing epochs', async () => {
+    let expectedTotalShares = await pool.totalSupply();
+    for (let i = 1; i < 6; i++) {
+      const testValue = BigNumber.from(Math.ceil(Math.random() * 1000));
+      await ownerAccount.transfer(accounts[i], testValue);
+      // get signer
+      const signer = hre.waffle.provider.getSigner(i)
+      const staker = pool.connect(signer)
+      // get starting values
+      const startUserBalance = await token.balanceOf(accounts[i]);
+      const startUnstaked = (await pool.users(accounts[i])).unstaked;
+      const startStaked = await pool.userStaked(accounts[i]);
+      const startTotalStaked = await pool.totalStake()
+      // update expected shares
+      const sharesToMint = expectedTotalShares.mul(testValue).div(startTotalStaked);
+      expectedTotalShares = expectedTotalShares.add(sharesToMint);
+      // deposit and stake
+      await token.connect(signer).approve(pool.address, testValue);
+      await staker.depositAndStake(accounts[i], testValue, accounts[i]);
+      // get ending values
+      const endUserBalance = await token.balanceOf(accounts[i]);
+      const endUnstaked = (await pool.users(accounts[i])).unstaked;
+      const endStaked = await pool.userStaked(accounts[i]);
+      // check result
+      expect(endUserBalance).to.equal(startUserBalance.sub(testValue));
+      expect(endUnstaked).to.equal(startUnstaked);
+      expect(endStaked).to.equal(startStaked.add(testValue));
+      // jump to next epoch and trigger epoch
+      await jumpOneEpoch(pool);
+      const targetEpoch = await pool.getRewardTargetEpochTest();
+      await pool.updateUserLocked(accounts[i], targetEpoch);
+    }
+    const totalShares = await pool.totalSupply();
+    expect(totalShares).to.equal(expectedTotalShares);
+    for (let i = 1; i < 6; i++) {
+      // expected shares
+      const totalStake = await pool.totalStake();
+      const endStaked = await pool.userStaked(accounts[i]);
+      const expectedShares = totalShares.mul(endStaked).div(totalStake);
+      // jump to next epoch and trigger epoch
+      await jumpOneEpoch(pool);
+      const targetEpoch = await pool.getRewardTargetEpochTest();
+      await pool.updateUserLocked(accounts[i], targetEpoch);
+      // check shares
+      const endShares = await pool.shares(accounts[i]);
+      expect(endShares).to.equal(expectedShares);
+    }
+  })
+
+  it('attempt to stake more tokens than are unstaked', async () => {
+    const testValue = BigNumber.from(1000);
+    // get signer
+    const signer = hre.waffle.provider.getSigner(1);
+    const staker = pool.connect(signer);
+    // deposit
+    await token.connect(signer).approve(pool.address, testValue);
+    await staker.deposit(accounts[1], testValue, accounts[1]);
+    // attempt to stake 1 too many tokens
+    const startUnstaked = (await pool.users(accounts[1])).unstaked;
+    const oneTooMany = startUnstaked.add(1);
+    await expect(staker.stake(oneTooMany)).to.be.revertedWith("Amount exceeds user deposit");
+  })
+
+  it('attempt to schedule unstake for more tokens than are staked', async () => {
+    const staker = pool.connect(hre.waffle.provider.getSigner(1));
+    // get starting values
+    const startStaked = await pool.userStaked(accounts[1]);
+    // request unstake
+    const oneTooMany = startStaked.add(1);
+    await expect(staker.scheduleUnstake(oneTooMany)).to.be.reverted;
+  })
+
+  it('unstake and withdraw in one transaction', async () => {
+    //
+    const testValue = BigNumber.from(1000);
+    // get signer
+    const signer = hre.waffle.provider.getSigner(1)
+    const staker = pool.connect(signer)
+    // stake
+    await token.connect(signer).approve(pool.address, testValue);
+    await staker.depositAndStake(accounts[1], testValue, accounts[1]);
+    // get starting values
+    const startUserBalance = await token.balanceOf(accounts[1]);
+    const startUnstaked = (await pool.users(accounts[1])).unstaked;
+    const startStaked = await pool.userStaked(accounts[1]);
+    expect(startStaked).to.be.gt(0);
     // request unstake
     await staker.scheduleUnstake(startStaked);
     // forward time to be within unstake time window
     const unstakeScheduleAt = (await pool.users(accounts[1])).unstakeScheduledFor;
     const inWindow = unstakeScheduleAt.add(3600).toNumber();
     await jumpTo(inWindow);
-    // unstake tokens
-    await staker.unstake();
-    const unstaked = (await pool.users(accounts[1])).unstaked;
-    expect(unstaked).to.equal(startUnstaked.add(startStaked));
+    // unstake and withdraw tokens
+    await staker.unstakeAndWithdraw(accounts[1]);
+    // get ending values
+    const endUserBalance = await token.balanceOf(accounts[1]);
+    const endUnstaked = (await pool.users(accounts[1])).unstaked;
+    const endStaked = await pool.userStaked(accounts[1]);
+    // check result
+    expect(endUserBalance).to.equal(startUserBalance.add(startStaked));
+    expect(endUnstaked).to.equal(startUnstaked);
+    expect(endStaked).to.equal(0);
   })
+
 })
 
 
-describe('StakeUtils_UnstakeDeep', () => {
+describe('StakeUtils_Unstake_Window', () => {
   let accounts: string[]
   let token: Api3Token
   let pool: TestPool
@@ -184,6 +386,7 @@ describe('StakeUtils_UnstakeDeep', () => {
     const signer0 = hre.waffle.provider.getSigner(0)
     ownerAccount = token.connect(signer0)
     staker = pool.connect(hre.waffle.provider.getSigner(1));
+    await ownerAccount.updateMinterStatus(pool.address, true)
     // unstake request wait period
     wait = await pool.rewardEpochLength();
   })
@@ -231,6 +434,70 @@ describe('StakeUtils_UnstakeDeep', () => {
   })
 })
 
+
+describe('StakeUtils_scheduleUnstake_Revoke_Rewards', () => {
+  let accounts: string[]
+  let token: Api3Token
+  let pool: TestPool
+  let ownerAccount: Api3Token
+
+  before(async () => {
+    accounts = await hre.waffle.provider.listAccounts()
+    const api3TokenFactory = await hre.ethers.getContractFactory("Api3Token")
+    token = (await api3TokenFactory.deploy(accounts[0], accounts[0])) as Api3Token
+    const api3PoolFactory = await hre.ethers.getContractFactory("TestPool")
+    pool = (await api3PoolFactory.deploy(token.address)) as TestPool
+    const signer0 = hre.waffle.provider.getSigner(0)
+    ownerAccount = token.connect(signer0)
+    await ownerAccount.updateMinterStatus(pool.address, true)
+  })
+
+  before(async () => {
+    const testValue = 1000;
+    const numAccounts = 3;
+    // transfer, deposit, and stake tokens
+    for (let i = 1; i <= numAccounts; i++) {
+      await ownerAccount.transfer(accounts[i], testValue);
+      const signer = hre.waffle.provider.getSigner(i)
+      const staker = pool.connect(signer)
+      await token.connect(signer).approve(pool.address, testValue);
+      await staker.depositAndStake(accounts[i], testValue, accounts[i]);
+    }
+    // jump ahead in time by one epoch and trigger epoch
+    await jumpOneEpoch(pool);
+    const targetEpoch = await pool.getRewardTargetEpochTest();
+    for (let i = 1; i <= numAccounts; i++) {
+      await pool.updateUserLocked(accounts[i], targetEpoch);
+    }
+  })
+
+  it('schedule unstake and check reward revocation', async () => {
+    // get signer
+    const signer = hre.waffle.provider.getSigner(1)
+    const staker = pool.connect(signer)
+    // check starting values
+    const startUserLocked = (await pool.users(accounts[1])).locked;
+    expect(startUserLocked).to.be.gt(0);
+    const currentEpoch = await pool.getCurrentEpoch();
+    const currentRewardEpoch = await pool.rewards(currentEpoch);
+    expect(currentRewardEpoch.amount).to.be.gt(0);
+    // request unstake
+    const userStaked = await pool.userStaked(accounts[1]);
+    await staker.scheduleUnstake(userStaked);
+    // check ending values
+    const endUserLocked = (await pool.users(accounts[1])).locked;
+    const endUserShares = await pool.shares(accounts[1]);
+    const endTotalShares = await pool.totalSupply();
+    const expectedRevokedTokens = currentRewardEpoch.amount.mul(endUserShares).div(endTotalShares);
+    const expectedEndUserLocked = startUserLocked.sub(expectedRevokedTokens);
+    expect(endUserLocked).to.equal(expectedEndUserLocked);
+    const revoked = await pool.getRevokedEpochReward(accounts[1], currentEpoch);
+    expect(revoked).to.be.true;
+  })
+
+})
+
+
 export async function getBlockTimestamp(blockNumber?: string | number | BigNumber): Promise<BigNumber> {
   let block;
   if (blockNumber) {
@@ -245,6 +512,13 @@ export async function getBlockTimestamp(blockNumber?: string | number | BigNumbe
 export const jumpTo = async (timestamp: number) => {
   await hre.network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
   await hre.network.provider.send("evm_mine");
+}
+
+export const jumpOneEpoch = async (pool: TestPool) => {
+  const currentTimestamp = await getBlockTimestamp();
+  const epochLength = await pool.rewardEpochLength();
+  const futureEpochTimeStamp = currentTimestamp.add(epochLength).toNumber();
+  await jumpTo(futureEpochTimeStamp);
 }
 
 export async function resetUnstakeRequest(staker: TestPool, address: string, amount: BigNumber) {

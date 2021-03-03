@@ -66,4 +66,8 @@ contract TestPool is Api3Pool {
         return locked;
     }
 
+    function getRevokedEpochReward(address userAddress, uint256 targetEpoch) external view returns(bool) {
+        return users[userAddress].revokedEpochReward[targetEpoch];
+    }
+
 }
