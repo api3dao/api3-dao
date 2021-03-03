@@ -1,21 +1,21 @@
 import { HardhatUserConfig } from "hardhat/types"
 import "@nomiclabs/hardhat-waffle"
 import "hardhat-typechain"
-import dotenv from "dotenv"
-import "hardhat-gas-reporter"
+import dotenv from "dotenv";
+import "hardhat-gas-reporter";
 
 dotenv.config()
 
-const {
-  INFURA_ID,
-  RINKEBY_PRIVATE_KEY,
+const { 
+  INFURA_ID, 
+  RINKEBY_PRIVATE_KEY, 
   RINKEBY_INFURA_URL,
 
 } = process.env
 
 console.log(
-  INFURA_ID,
-  RINKEBY_PRIVATE_KEY,
+  INFURA_ID, 
+  RINKEBY_PRIVATE_KEY, 
   RINKEBY_INFURA_URL,
 );
 
@@ -69,4 +69,11 @@ const config: HardhatUserConfig = {
   }
 }
 
-export default config
+module.exports = {
+  ...config,
+  gasReporter: {
+    enabled: false,
+    currency: 'USD',
+    coinmarketcap: '61f2d7e8-6385-4d8e-8932-bde736ba05bf'
+  }
+}
