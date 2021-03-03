@@ -348,7 +348,6 @@ describe('StakeUtils_singleTransactionActions_and_reverts', () => {
     const expectedEndShares = userSharesAtUnstake.sub(sharesToBurn);
     // unstake and withdraw tokens
     await staker.unstakeAndWithdraw(accounts[1]);
-    // // calculate expected remaining stake
     // get ending values
     const endUserShares = await pool.shares(accounts[1]);
     const endUserBalance = await token.balanceOf(accounts[1]);
@@ -464,7 +463,7 @@ describe('StakeUtils_scheduleUnstake_Revoke_Rewards', () => {
       await token.connect(signer).approve(pool.address, testValue);
       await staker.depositAndStake(accounts[i], testValue, accounts[i]);
     }
-    // jump ahead in time by one epoch and trigger epoch
+    // jump ahead in time and trigger epochs
     await jumpOneEpoch(pool);
     await jumpOneEpoch(pool);
     const targetEpoch = await pool.getRewardTargetEpochTest();
