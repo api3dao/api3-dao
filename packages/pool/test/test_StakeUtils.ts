@@ -177,21 +177,6 @@ describe('StakeUtils_MultiCase', () => {
 
   testValues.map((testValue, index) => {
     it(`withdraw tokens: case ${index}`, async () => {
-      // const unstaked = (await pool.users(accounts[1])).unstaked
-      // const locked = (await pool.users(accounts[1])).locked
-      // const reward = (await pool.rewards(await pool.getCurrentEpoch())).amount
-      // const staked = await pool.userStaked(accounts[1]);
-      // console.log(testValues.reduce((prev, curr) => prev.add(curr)).toString())
-      // console.log('locked ' + locked.toString())
-      // console.log('unstaked ' + unstaked.toString())
-      // console.log('reward ' + reward.toString());
-      // console.log('locked ' + locked.toString())
-      // console.log('staked ' + staked.toString())
-      // console.log('unlocked staked ' + staked.sub(locked))
-      // console.log('staked+unstaked-reward ' + staked.add(unstaked).sub(reward).toString())
-      // console.log('staked+unstaked-locked ' + staked.add(unstaked).sub(locked).toString())
-      // console.log('withdrawable ' + unstaked.sub(locked));
-      // console.log(testValue.toString())
       const toWithdraw = testValue.div(2);
       // get signer
       const signer = hre.waffle.provider.getSigner(1)
@@ -481,6 +466,8 @@ describe('StakeUtils_scheduleUnstake_Revoke_Rewards', () => {
     const signer = hre.waffle.provider.getSigner(1)
     const staker = pool.connect(signer)
     // check starting values
+    const startUserShares = await pool.shares(accounts[1]);
+    const startTotalShares = await pool.totalSupply();
     const startUserLocked = (await pool.users(accounts[1])).locked;
     expect(startUserLocked).to.be.gt(0);
     const currentEpoch = await pool.getCurrentEpoch();
@@ -492,11 +479,14 @@ describe('StakeUtils_scheduleUnstake_Revoke_Rewards', () => {
     // check ending values
     const endUserLocked = (await pool.users(accounts[1])).locked;
     const endUserShares = await pool.shares(accounts[1]);
+    const endTotalStake = await pool.totalStake();
     const endTotalShares = await pool.totalSupply();
     const expectedRevokedTokens = currentRewardEpoch.amount.mul(endUserShares).div(endTotalShares);
+    const expectedSharesBurned = startTotalShares.mul(expectedRevokedTokens).div(endTotalStake);
     const expectedEndUserLocked = startUserLocked.sub(expectedRevokedTokens);
-    expect(endUserLocked).to.equal(expectedEndUserLocked);
     const revoked = await pool.getRevokedEpochReward(accounts[1], currentEpoch);
+    expect(endUserShares).to.equal(startUserShares.sub(expectedSharesBurned));
+    expect(endUserLocked).to.equal(expectedEndUserLocked);
     expect(revoked).to.be.true;
   })
 
