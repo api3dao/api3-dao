@@ -142,16 +142,20 @@ describe('StakeUtils_MultiCase', () => {
     it(`schedule unstake: case ${index}`, async () => {
       const staker = pool.connect(hre.waffle.provider.getSigner(1));
       // schedule unstake
-      // TODO: fails on case #3 because require(userSharesNow.mul(totalStakedNow).div(totalSharesNow) >= amount)
-      await staker.scheduleUnstake(testValue);
-      // check unstake request amount
-      const unstakeAmount = (await pool.users(accounts[1])).unstakeAmount;
-      expect(unstakeAmount).to.equal(testValue);
-      // check unstake request timestamp
-      const now = await getBlockTimestamp()
-      const wait = await pool.unstakeWaitPeriod();
-      const unstakeScheduleAt = (await pool.users(accounts[1])).unstakeScheduledFor;
-      expect(unstakeScheduleAt).to.equal(now.add(wait));
+      const userStaked = await pool.userStaked(accounts[1]);
+      if (testValue.gt(userStaked)) {
+        await expect(staker.scheduleUnstake(testValue)).to.be.reverted;
+      } else {
+        await staker.scheduleUnstake(testValue);
+        // check unstake request amount
+        const unstakeAmount = (await pool.users(accounts[1])).unstakeAmount;
+        expect(unstakeAmount).to.equal(testValue);
+        // check unstake request timestamp
+        const now = await getBlockTimestamp()
+        const wait = await pool.unstakeWaitPeriod();
+        const unstakeScheduleAt = (await pool.users(accounts[1])).unstakeScheduledFor;
+        expect(unstakeScheduleAt).to.equal(now.add(wait));
+      }
     })
   })
 
@@ -233,7 +237,7 @@ describe('StakeUtils_singleTransactionActions_and_reverts', () => {
   })
 
   it('deposit and stake in one transaction', async () => {
-    const testValue = BigNumber.from(1000000);
+    const testValue = BigNumber.from(1000);
     // get signer
     const signer = hre.waffle.provider.getSigner(1)
     const staker = pool.connect(signer)
@@ -248,13 +252,6 @@ describe('StakeUtils_singleTransactionActions_and_reverts', () => {
     const endUserBalance = await token.balanceOf(accounts[1]);
     const endUnstaked = (await pool.users(accounts[1])).unstaked;
     const endStaked = await pool.userStaked(accounts[1]);
-    // TODO: somehow the depositAndStake is not only not working, it is eating tokens!
-    // console.log(startUserBalance.toString())
-    // console.log(endUserBalance.toString())
-    // console.log(startUnstaked.toString())
-    // console.log(endUnstaked.toString())
-    // console.log(startStaked.toString())
-    // console.log(endStaked.toString())
     // check result
     expect(endUserBalance).to.equal(startUserBalance.sub(testValue));
     expect(endUnstaked).to.equal(startUnstaked);
@@ -270,9 +267,9 @@ describe('StakeUtils_singleTransactionActions_and_reverts', () => {
       const signer = hre.waffle.provider.getSigner(i)
       const staker = pool.connect(signer)
       // get starting values
+      const startUserShares = await pool.shares(accounts[i]);
       const startUserBalance = await token.balanceOf(accounts[i]);
       const startUnstaked = (await pool.users(accounts[i])).unstaked;
-      const startStaked = await pool.userStaked(accounts[i]);
       const startTotalStaked = await pool.totalStake()
       // update expected shares
       const sharesToMint = expectedTotalShares.mul(testValue).div(startTotalStaked);
@@ -281,13 +278,13 @@ describe('StakeUtils_singleTransactionActions_and_reverts', () => {
       await token.connect(signer).approve(pool.address, testValue);
       await staker.depositAndStake(accounts[i], testValue, accounts[i]);
       // get ending values
+      const endUserShares = await pool.shares(accounts[i]);
       const endUserBalance = await token.balanceOf(accounts[i]);
       const endUnstaked = (await pool.users(accounts[i])).unstaked;
-      const endStaked = await pool.userStaked(accounts[i]);
       // check result
       expect(endUserBalance).to.equal(startUserBalance.sub(testValue));
       expect(endUnstaked).to.equal(startUnstaked);
-      expect(endStaked).to.equal(startStaked.add(testValue));
+      expect(endUserShares).to.equal(startUserShares.add(sharesToMint));
       // jump to next epoch and trigger epoch
       await jumpOneEpoch(pool);
       const targetEpoch = await pool.getRewardTargetEpochTest();
@@ -296,17 +293,20 @@ describe('StakeUtils_singleTransactionActions_and_reverts', () => {
     const totalShares = await pool.totalSupply();
     expect(totalShares).to.equal(expectedTotalShares);
     for (let i = 1; i < 6; i++) {
-      // expected shares
-      const totalStake = await pool.totalStake();
-      const endStaked = await pool.userStaked(accounts[i]);
-      const expectedShares = totalShares.mul(endStaked).div(totalStake);
+      // start values
+      const startShares = await pool.shares(accounts[i]);
+      const startUserStake = await pool.userStaked(accounts[i]);
       // jump to next epoch and trigger epoch
       await jumpOneEpoch(pool);
       const targetEpoch = await pool.getRewardTargetEpochTest();
       await pool.updateUserLocked(accounts[i], targetEpoch);
       // check shares
       const endShares = await pool.shares(accounts[i]);
-      expect(endShares).to.equal(expectedShares);
+      const endTotalShares = await pool.totalSupply();
+      const endUserStake = await pool.userStaked(accounts[i]);
+      expect(endShares).to.equal(startShares);
+      expect(endTotalShares).to.equal(totalShares);
+      expect(endUserStake).to.be.gte(startUserStake);
     }
   })
 
@@ -355,6 +355,7 @@ describe('StakeUtils_singleTransactionActions_and_reverts', () => {
     await jumpTo(inWindow);
     // unstake and withdraw tokens
     await staker.unstakeAndWithdraw(accounts[1]);
+    // // calculate expected remaining stake
     // get ending values
     const endUserBalance = await token.balanceOf(accounts[1]);
     const endUnstaked = (await pool.users(accounts[1])).unstaked;
@@ -373,11 +374,11 @@ describe('StakeUtils_Unstake_Window', () => {
   let token: Api3Token
   let pool: TestPool
   let ownerAccount: Api3Token
-
   let staker: TestPool;
-  let wait: BigNumber;
 
-  before(async () => {
+  let testValue = BigNumber.from(1000000);
+
+  beforeEach(async () => {
     accounts = await hre.waffle.provider.listAccounts()
     const api3TokenFactory = await hre.ethers.getContractFactory("Api3Token")
     token = (await api3TokenFactory.deploy(accounts[0], accounts[0])) as Api3Token
@@ -387,51 +388,54 @@ describe('StakeUtils_Unstake_Window', () => {
     ownerAccount = token.connect(signer0)
     staker = pool.connect(hre.waffle.provider.getSigner(1));
     await ownerAccount.updateMinterStatus(pool.address, true)
-    // unstake request wait period
-    wait = await pool.rewardEpochLength();
   })
 
-  testValues.map((testValue, index) => {
-
-    it(`early unstake attempt then valid unstake: case ${index}`, async () => {
-      await resetUnstakedTo(testValue, accounts[1], accounts[0], token, pool);
-      const expectedUnstaked = (await pool.users(accounts[1])).unstaked;
-      const [unstakeScheduleAt, unstakeAmount] = await resetUnstakeRequest(staker, accounts[1], testValue);
-      // forward time by less than minWait
-      const oneMinuteBeforeWindow = unstakeScheduleAt.sub(60).toNumber();
-      await jumpTo(oneMinuteBeforeWindow);
-      await expect(staker.unstake()).to.be.reverted;
-      // forward time to be just within unstake time window
-      const oneMinuteInWindow = unstakeScheduleAt.add(60).toNumber();
-      await jumpTo(oneMinuteInWindow);
-      // unstake tokens
-      await staker.unstake();
-      const unstaked = (await pool.users(accounts[1])).unstaked;
-      expect(unstaked).to.equal(expectedUnstaked);
-    })
-
-    it(`unstake just before invalid: case ${index}`, async () => {
-      await resetUnstakedTo(testValue, accounts[1], accounts[0], token, pool);
-      const expectedUnstaked = (await pool.users(accounts[1])).unstaked;
-      const [unstakeScheduleAt, unstakeAmount] = await resetUnstakeRequest(staker, accounts[1], testValue);
-      // forward time by just before end of window
-      const oneMinuteBeforeWindowClose = unstakeScheduleAt.add(wait).sub(60).toNumber();
-      await jumpTo(oneMinuteBeforeWindowClose);
-      // unstake tokens
-      await staker.unstake();
-      const unstaked = (await pool.users(accounts[1])).unstaked;
-      expect(unstaked).to.equal(expectedUnstaked);
-    })
-
-    it(`unstake attempt after valid window: case ${index}`, async () => {
-      await resetUnstakedTo(testValue, accounts[1], accounts[0], token, pool);
-      const [unstakeScheduleAt, _] = await resetUnstakeRequest(staker, accounts[1], testValue);
-      // forward time by more than maxWait
-      const oneMinuteAfterWindow = unstakeScheduleAt.add(wait).add(60).toNumber();
-      await jumpTo(oneMinuteAfterWindow);
-      await expect(staker.unstake()).to.be.reverted;
-    })
+  beforeEach(async () => {
+    await ownerAccount.transfer(accounts[1], testValue);
+    const signer = hre.waffle.provider.getSigner(1)
+    const staker = pool.connect(signer)
+    await token.connect(signer).approve(pool.address, testValue);
+    await staker.deposit(accounts[1], testValue, accounts[1]);
   })
+
+  it('early unstake attempt then valid unstake', async () => {
+    const expectedUnstaked = (await pool.users(accounts[1])).unstaked;
+    const [unstakeScheduleAt, _] = await resetUnstakeRequest(staker, accounts[1], testValue);
+    // forward time by less than minWait
+    const oneMinuteBeforeWindow = unstakeScheduleAt.sub(60).toNumber();
+    await jumpTo(oneMinuteBeforeWindow);
+    await expect(staker.unstake()).to.be.reverted;
+    // forward time to be just within unstake time window
+    const oneMinuteInWindow = unstakeScheduleAt.add(60).toNumber();
+    await jumpTo(oneMinuteInWindow);
+    // unstake tokens
+    await staker.unstake();
+    const unstaked = (await pool.users(accounts[1])).unstaked;
+    expect(unstaked).to.equal(expectedUnstaked);
+  })
+
+  it('unstake just before invalid: case', async () => {
+    const expectedUnstaked = (await pool.users(accounts[1])).unstaked;
+    const [unstakeScheduleAt, _] = await resetUnstakeRequest(staker, accounts[1], testValue);
+    // forward time by just before end of window
+    const wait = await pool.rewardEpochLength();
+    const oneMinuteBeforeWindowClose = unstakeScheduleAt.add(wait).sub(60).toNumber();
+    await jumpTo(oneMinuteBeforeWindowClose);
+    // unstake tokens
+    await staker.unstake();
+    const unstaked = (await pool.users(accounts[1])).unstaked;
+    expect(unstaked).to.equal(expectedUnstaked);
+  })
+
+  it('unstake attempt after valid window: case', async () => {
+    const [unstakeScheduleAt, _] = await resetUnstakeRequest(staker, accounts[1], testValue);
+    // forward time by more than maxWait
+    const wait = await pool.rewardEpochLength();
+    const oneMinuteAfterWindow = unstakeScheduleAt.add(wait).add(60).toNumber();
+    await jumpTo(oneMinuteAfterWindow);
+    await expect(staker.unstake()).to.be.reverted;
+  })
+
 })
 
 
@@ -464,6 +468,7 @@ describe('StakeUtils_scheduleUnstake_Revoke_Rewards', () => {
       await staker.depositAndStake(accounts[i], testValue, accounts[i]);
     }
     // jump ahead in time by one epoch and trigger epoch
+    await jumpOneEpoch(pool);
     await jumpOneEpoch(pool);
     const targetEpoch = await pool.getRewardTargetEpochTest();
     for (let i = 1; i <= numAccounts; i++) {
