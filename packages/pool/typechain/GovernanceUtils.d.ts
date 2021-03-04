@@ -930,7 +930,6 @@ export class GovernanceUtils extends Contract {
         BigNumber,
         BigNumber,
         BigNumber,
-        boolean,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -939,7 +938,6 @@ export class GovernanceUtils extends Contract {
         unstaked: BigNumber;
         locked: BigNumber;
         vesting: BigNumber;
-        delegating: boolean;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
@@ -955,7 +953,6 @@ export class GovernanceUtils extends Contract {
         BigNumber,
         BigNumber,
         BigNumber,
-        boolean,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -964,7 +961,6 @@ export class GovernanceUtils extends Contract {
         unstaked: BigNumber;
         locked: BigNumber;
         vesting: BigNumber;
-        delegating: boolean;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
@@ -1447,7 +1443,6 @@ export class GovernanceUtils extends Contract {
       BigNumber,
       BigNumber,
       BigNumber,
-      boolean,
       BigNumber,
       BigNumber,
       BigNumber,
@@ -1456,7 +1451,6 @@ export class GovernanceUtils extends Contract {
       unstaked: BigNumber;
       locked: BigNumber;
       vesting: BigNumber;
-      delegating: boolean;
       unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
       lastUpdateEpoch: BigNumber;
@@ -1472,7 +1466,6 @@ export class GovernanceUtils extends Contract {
       BigNumber,
       BigNumber,
       BigNumber,
-      boolean,
       BigNumber,
       BigNumber,
       BigNumber,
@@ -1481,7 +1474,6 @@ export class GovernanceUtils extends Contract {
       unstaked: BigNumber;
       locked: BigNumber;
       vesting: BigNumber;
-      delegating: boolean;
       unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
       lastUpdateEpoch: BigNumber;
@@ -1955,7 +1947,6 @@ export class GovernanceUtils extends Contract {
         BigNumber,
         BigNumber,
         BigNumber,
-        boolean,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -1964,7 +1955,6 @@ export class GovernanceUtils extends Contract {
         unstaked: BigNumber;
         locked: BigNumber;
         vesting: BigNumber;
-        delegating: boolean;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
@@ -1980,7 +1970,6 @@ export class GovernanceUtils extends Contract {
         BigNumber,
         BigNumber,
         BigNumber,
-        boolean,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -1989,7 +1978,6 @@ export class GovernanceUtils extends Contract {
         unstaked: BigNumber;
         locked: BigNumber;
         vesting: BigNumber;
-        delegating: boolean;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;

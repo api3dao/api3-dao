@@ -49,9 +49,6 @@ contract TimelockUtils is ClaimUtils {
         emit VestingDeposit(userAddress, amount, releaseStart, releaseEnd);
     }
 
-    // function getTimelockStatus(address userAddress, address timelockContractAddress)
-    //     public view returns uint
-
     function updateTimelockStatus(
         address userAddress,
         address timelockContractAddress
