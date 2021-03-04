@@ -76,17 +76,17 @@ contract GetterUtils is DelegationUtils {
     }
 
     function decimals()
-    public view returns (uint8) {
-        return api3Token.decimals();
+    public pure returns (uint8) {
+        return 18;
     }
 
     function symbol()
-    public view returns (string memory) {
+    public pure returns (string memory) {
         return "API3DAO";
     }
 
     function name()
-    public view returns (string memory) {
+    public pure returns (string memory) {
         return "API3 Stake DAO";
     }
 }

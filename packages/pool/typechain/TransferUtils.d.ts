@@ -26,6 +26,7 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     "balanceOfAt(uint256,address)": FunctionFragment;
     "claimsManager()": FunctionFragment;
     "currentApr()": FunctionFragment;
+    "decimals()": FunctionFragment;
     "delegateShares(address)": FunctionFragment;
     "delegatedTo(address)": FunctionFragment;
     "delegatedToAt(uint256,address)": FunctionFragment;
@@ -36,6 +37,7 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     "lastEpochPaid()": FunctionFragment;
     "maxApr()": FunctionFragment;
     "minApr()": FunctionFragment;
+    "name()": FunctionFragment;
     "payReward(uint256)": FunctionFragment;
     "rewardEpochLength()": FunctionFragment;
     "rewardVestingPeriod()": FunctionFragment;
@@ -43,6 +45,7 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     "shares(address)": FunctionFragment;
     "sharesAt(uint256,address)": FunctionFragment;
     "stakeTarget()": FunctionFragment;
+    "symbol()": FunctionFragment;
     "totalShares(uint256)": FunctionFragment;
     "totalStake()": FunctionFragment;
     "totalStakeAt(uint256)": FunctionFragment;
@@ -73,6 +76,7 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     functionFragment: "currentApr",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "delegateShares",
     values: [string]
@@ -104,6 +108,7 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "maxApr", values?: undefined): string;
   encodeFunctionData(functionFragment: "minApr", values?: undefined): string;
+  encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "payReward",
     values: [BigNumberish]
@@ -129,6 +134,7 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     functionFragment: "stakeTarget",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "totalShares",
     values: [BigNumberish]
@@ -194,6 +200,7 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "currentApr", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "delegateShares",
     data: BytesLike
@@ -225,6 +232,7 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "minApr", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "payReward", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "rewardEpochLength",
@@ -241,6 +249,7 @@ interface TransferUtilsInterface extends ethers.utils.Interface {
     functionFragment: "stakeTarget",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalShares",
     data: BytesLike
@@ -351,6 +360,10 @@ export class TransferUtils extends Contract {
 
     "currentApr()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    decimals(overrides?: CallOverrides): Promise<[number]>;
+
+    "decimals()"(overrides?: CallOverrides): Promise<[number]>;
+
     delegateShares(
       delegate: string,
       overrides?: Overrides
@@ -435,6 +448,10 @@ export class TransferUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    name(overrides?: CallOverrides): Promise<[string]>;
+
+    "name()"(overrides?: CallOverrides): Promise<[string]>;
+
     payReward(
       targetEpoch: BigNumberish,
       overrides?: Overrides
@@ -492,6 +509,10 @@ export class TransferUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    symbol(overrides?: CallOverrides): Promise<[string]>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<[string]>;
 
     totalShares(
       arg0: BigNumberish,
@@ -691,6 +712,10 @@ export class TransferUtils extends Contract {
 
   "currentApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+  decimals(overrides?: CallOverrides): Promise<number>;
+
+  "decimals()"(overrides?: CallOverrides): Promise<number>;
+
   delegateShares(
     delegate: string,
     overrides?: Overrides
@@ -775,6 +800,10 @@ export class TransferUtils extends Contract {
 
   "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+  name(overrides?: CallOverrides): Promise<string>;
+
+  "name()"(overrides?: CallOverrides): Promise<string>;
+
   payReward(
     targetEpoch: BigNumberish,
     overrides?: Overrides
@@ -829,6 +858,10 @@ export class TransferUtils extends Contract {
   stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
   "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  symbol(overrides?: CallOverrides): Promise<string>;
+
+  "symbol()"(overrides?: CallOverrides): Promise<string>;
 
   totalShares(
     arg0: BigNumberish,
@@ -1031,6 +1064,10 @@ export class TransferUtils extends Contract {
 
     "currentApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    decimals(overrides?: CallOverrides): Promise<number>;
+
+    "decimals()"(overrides?: CallOverrides): Promise<number>;
+
     delegateShares(delegate: string, overrides?: CallOverrides): Promise<void>;
 
     "delegateShares(address)"(
@@ -1112,6 +1149,10 @@ export class TransferUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    name(overrides?: CallOverrides): Promise<string>;
+
+    "name()"(overrides?: CallOverrides): Promise<string>;
+
     payReward(
       targetEpoch: BigNumberish,
       overrides?: CallOverrides
@@ -1166,6 +1207,10 @@ export class TransferUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    symbol(overrides?: CallOverrides): Promise<string>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<string>;
 
     totalShares(
       arg0: BigNumberish,
@@ -1391,6 +1436,10 @@ export class TransferUtils extends Contract {
 
     "currentApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    decimals(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "decimals()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     delegateShares(delegate: string, overrides?: Overrides): Promise<BigNumber>;
 
     "delegateShares(address)"(
@@ -1472,6 +1521,10 @@ export class TransferUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    name(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "name()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     payReward(
       targetEpoch: BigNumberish,
       overrides?: Overrides
@@ -1519,6 +1572,10 @@ export class TransferUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    symbol(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalShares(
       arg0: BigNumberish,
@@ -1675,6 +1732,10 @@ export class TransferUtils extends Contract {
 
     "currentApr()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "decimals()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     delegateShares(
       delegate: string,
       overrides?: Overrides
@@ -1759,6 +1820,10 @@ export class TransferUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "name()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     payReward(
       targetEpoch: BigNumberish,
       overrides?: Overrides
@@ -1818,6 +1883,10 @@ export class TransferUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     totalShares(
       arg0: BigNumberish,
