@@ -49,6 +49,7 @@ interface TestPoolInterface extends ethers.utils.Interface {
     "rewards(uint256)": FunctionFragment;
     "scheduleUnstake(uint256)": FunctionFragment;
     "setApr(uint256)": FunctionFragment;
+    "setClaimsManager(address)": FunctionFragment;
     "setMaxApr(uint256)": FunctionFragment;
     "setMinApr(uint256)": FunctionFragment;
     "setStakeTarget(uint256)": FunctionFragment;
@@ -177,6 +178,10 @@ interface TestPoolInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "setApr",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setClaimsManager",
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "setMaxApr",
@@ -372,6 +377,10 @@ interface TestPoolInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setApr", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setClaimsManager",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "setMaxApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setMinApr", data: BytesLike): Result;
   decodeFunctionResult(
@@ -472,6 +481,7 @@ interface TestPoolInterface extends ethers.utils.Interface {
     "Delegated(address,address)": EventFragment;
     "Deposit(address,uint256)": EventFragment;
     "Epoch(uint256,uint256,uint256)": EventFragment;
+    "NewClaimsManager(address,address)": EventFragment;
     "NewMaxApr(uint256,uint256)": EventFragment;
     "NewMinApr(uint256,uint256)": EventFragment;
     "NewStakeTarget(uint256,uint256)": EventFragment;
@@ -491,6 +501,7 @@ interface TestPoolInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "Delegated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Deposit"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Epoch"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "NewClaimsManager"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NewMaxApr"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NewMinApr"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NewStakeTarget"): EventFragment;
@@ -755,6 +766,16 @@ export class TestPool extends Contract {
 
     "setApr(uint256)"(
       _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setClaimsManager(
+      _claimsManager: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setClaimsManager(address)"(
+      _claimsManager: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -1336,6 +1357,16 @@ export class TestPool extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  setClaimsManager(
+    _claimsManager: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setClaimsManager(address)"(
+    _claimsManager: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   setMaxApr(
     _maxApr: BigNumberish,
     overrides?: Overrides
@@ -1906,6 +1937,16 @@ export class TestPool extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setClaimsManager(
+      _claimsManager: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setClaimsManager(address)"(
+      _claimsManager: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     setMaxApr(_maxApr: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     "setMaxApr(uint256)"(
@@ -2252,6 +2293,8 @@ export class TestPool extends Contract {
       newApr: null
     ): EventFilter;
 
+    NewClaimsManager(oldClaimsManager: null, claimsManager: null): EventFilter;
+
     NewMaxApr(oldMax: null, newMax: null): EventFilter;
 
     NewMinApr(oldMin: null, newMin: null): EventFilter;
@@ -2518,6 +2561,16 @@ export class TestPool extends Contract {
 
     "setApr(uint256)"(
       _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setClaimsManager(
+      _claimsManager: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setClaimsManager(address)"(
+      _claimsManager: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -3033,6 +3086,16 @@ export class TestPool extends Contract {
 
     "setApr(uint256)"(
       _currentApr: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setClaimsManager(
+      _claimsManager: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setClaimsManager(address)"(
+      _claimsManager: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 

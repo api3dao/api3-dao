@@ -27,7 +27,6 @@ contract StateUtils {
         Checkpoint[] shares;
         uint256 locked;
         uint256 vesting;
-        bool delegating;
         Delegation[] delegates;
         Checkpoint[] delegatedTo;
         uint256 unstakeScheduledFor;
