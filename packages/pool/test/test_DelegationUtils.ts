@@ -1,5 +1,4 @@
 import {Api3Token, TestPool} from "../typechain";
-import {BigNumber} from "ethers";
 import * as hre from "hardhat";
 import {expect} from "chai";
 import {jumpOneEpoch} from "./test_StakeUtils";

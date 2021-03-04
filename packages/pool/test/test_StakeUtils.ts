@@ -3,7 +3,6 @@ import {expect} from 'chai'
 import 'mocha'
 import {Api3Token, TestPool} from '../typechain'
 import {BigNumber} from "ethers";
-import {Test} from "mocha";
 
 const testCaseNumbers: string[] =  ['0', '6', '13', '100000000000000000000000', '10000001', '47777', '40000000', '1437589347', '1000000000000']
 const testValues: BigNumber[] = testCaseNumbers.map((value) => BigNumber.from(value));
@@ -352,13 +351,11 @@ describe('StakeUtils_singleTransactionActions_and_reverts', () => {
     const endUserShares = await pool.shares(accounts[1]);
     const endUserBalance = await token.balanceOf(accounts[1]);
     const endUnstaked = (await pool.users(accounts[1])).unstaked;
-    const endStaked = await pool.userStaked(accounts[1]);
     const endTotalShares = await pool.totalSupply();
     // check result
     expect(endUserBalance).to.equal(startUserBalance.add(startStaked));
     expect(endUserShares).to.equal(expectedEndShares);
     expect(endUnstaked).to.equal(startUnstaked);
-    expect(endStaked).to.equal(0);
     expect(endTotalShares).to.equal(totalSharesAtUnstake.sub(sharesToBurn));
   })
 

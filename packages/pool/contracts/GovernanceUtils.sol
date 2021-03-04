@@ -67,6 +67,7 @@ contract GovernanceUtils is TimelockUtils {
     //function setClaimsManager(address _claimsManager)
 
     function setClaimsManager(address _claimsManager)
+        external
         //onlyDao
     {
         address oldClaimsManager = claimsManager;
