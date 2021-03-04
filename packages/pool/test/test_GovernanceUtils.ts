@@ -65,4 +65,12 @@ describe('GovernanceUtils', () => {
     await expect(pool.setUpdateCoefficient(1000000000)).to.be.reverted;
   })
 
+  it('set claims manager', async () => {
+    const startValue = await pool.claimsManager();
+    const expectedResult = accounts[2];
+    await pool.setClaimsManager(expectedResult);
+    const result = await pool.claimsManager();
+    expect(result).to.equal(expectedResult);
+  })
+
 })
