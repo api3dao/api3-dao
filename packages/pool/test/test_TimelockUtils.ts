@@ -30,10 +30,10 @@ describe('TimelockUtils', () => {
 
   // set up accounts with timelocks
   before(async () => {
-    const now = (await getBlockTimestamp()).add(oneWeek.mul(2)); // vesting release beings in two weeks
-    const oneYearLater = now.add(oneYear); // vesting ends one year after release start
+    const now = (await getBlockTimestamp()).add(oneWeek.mul(2)); // vesting start date is in two weeks
+    const oneYearLater = now.add(oneYear); // vesting end date is one year after release start
     const signer = hre.waffle.provider.getSigner(0);
-    await token.connect(signer).approve(timelockManager.address, testValue.mul(2));
+    await token.connect(signer).approve(timelockManager.address, testValue.mul(3));
     await timelockManager.connect(signer).updateApi3Pool(pool.address);
     await timelockManager.connect(signer).transferAndLock(accounts[0], accounts[1], testValue, now, oneYearLater);
     await timelockManager.connect(signer).transferAndLock(accounts[0], accounts[2], testValue, now, oneYearLater);
@@ -88,7 +88,6 @@ describe('TimelockUtils', () => {
     expect(endPoolBalance).to.equal(startPoolBalance.add(testValue));
   })
 
-
   it('update deposited vesting from pool after time passes', async () => {
     const userAddress = accounts[2];
     const startVesting = (await pool.users(userAddress)).vesting;
@@ -102,6 +101,20 @@ describe('TimelockUtils', () => {
     const expectedReleased = testValue.mul(oneWeek).mul(4).div(oneWeek).div(52);
     const endVesting = (await pool.users(userAddress)).vesting;
     expect(endVesting).to.equal(startVesting.sub(expectedReleased));
+  })
+
+  it('test timelock require statements', async () => {
+    // try adding a second timelock
+    const signer1 = hre.waffle.provider.getSigner(1);
+    await expect(timelockManager.connect(signer1).withdrawToPool(pool.address, accounts[1])).to.be.reverted;
+    // try adding timelock with 0 amount (note that it is actually reverted by TimelockManager before pool can revert it)
+    const signer3 = hre.waffle.provider.getSigner(3);
+    await expect(timelockManager.connect(signer3).withdrawToPool(pool.address, accounts[3])).to.be.reverted;
+    // make sure timelockManager prevents releaseDate < startDate
+    const now = (await getBlockTimestamp()).add(oneWeek.mul(2)); // vesting start date is in two weeks
+    const oneYearLater = now.add(oneYear); // vesting end date is one year after release start
+    const signer0 = hre.waffle.provider.getSigner(0);
+    await expect(timelockManager.connect(signer0).transferAndLock(accounts[0], accounts[4], testValue, oneYearLater, now)).to.be.reverted;
   })
 
 })
