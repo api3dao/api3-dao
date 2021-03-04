@@ -75,6 +75,18 @@ contract GetterUtils is DelegationUtils {
         return totalStakeAt(block.number);
     }
 
-    //TODO break out static updateTimelock getter
-    // function getWithdrawable(address userAddress)
+    function decimals()
+    public pure returns (uint8) {
+        return 18;
+    }
+
+    function symbol()
+    public pure returns (string memory) {
+        return "API3DAO";
+    }
+
+    function name()
+    public pure returns (string memory) {
+        return "API3 Stake DAO";
+    }
 }

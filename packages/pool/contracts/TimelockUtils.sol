@@ -49,9 +49,6 @@ contract TimelockUtils is ClaimUtils {
         emit VestingDeposit(userAddress, amount, releaseStart, releaseEnd);
     }
 
-    // function getTimelockStatus(address userAddress, address timelockContractAddress)
-    //     public view returns uint
-
     function updateTimelockStatus(
         address userAddress,
         address timelockContractAddress
@@ -75,7 +72,7 @@ contract TimelockUtils is ClaimUtils {
         User storage user = users[userAddress];
         uint256 newUserVesting = user.vesting > newlyUnlocked ? user.vesting.sub(newlyUnlocked) : 0;
         user.vesting = newUserVesting;
-        userToDepositorToTimelock[userAddress][timelockContractAddress].remainingAmount = timelock.remainingAmount.sub(newlyUnlocked);
-        emit TimelockUpdate(userAddress, user.vesting, timelock.remainingAmount.sub(newlyUnlocked));
+        timelock.remainingAmount = timelock.remainingAmount.sub(newlyUnlocked);
+        emit TimelockUpdate(userAddress, user.vesting, timelock.remainingAmount);
     }
 }

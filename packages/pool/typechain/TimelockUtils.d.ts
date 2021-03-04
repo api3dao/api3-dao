@@ -26,6 +26,7 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
     "balanceOfAt(uint256,address)": FunctionFragment;
     "claimsManager()": FunctionFragment;
     "currentApr()": FunctionFragment;
+    "decimals()": FunctionFragment;
     "delegateShares(address)": FunctionFragment;
     "delegatedTo(address)": FunctionFragment;
     "delegatedToAt(uint256,address)": FunctionFragment;
@@ -38,6 +39,7 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
     "lastEpochPaid()": FunctionFragment;
     "maxApr()": FunctionFragment;
     "minApr()": FunctionFragment;
+    "name()": FunctionFragment;
     "payOutClaim(uint256,uint256)": FunctionFragment;
     "payReward(uint256)": FunctionFragment;
     "rewardEpochLength()": FunctionFragment;
@@ -48,6 +50,7 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
     "sharesAt(uint256,address)": FunctionFragment;
     "stake(uint256)": FunctionFragment;
     "stakeTarget()": FunctionFragment;
+    "symbol()": FunctionFragment;
     "totalShares(uint256)": FunctionFragment;
     "totalStake()": FunctionFragment;
     "totalStakeAt(uint256)": FunctionFragment;
@@ -82,6 +85,7 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
     functionFragment: "currentApr",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "delegateShares",
     values: [string]
@@ -121,6 +125,7 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "maxApr", values?: undefined): string;
   encodeFunctionData(functionFragment: "minApr", values?: undefined): string;
+  encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "payOutClaim",
     values: [BigNumberish, BigNumberish]
@@ -155,6 +160,7 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
     functionFragment: "stakeTarget",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "totalShares",
     values: [BigNumberish]
@@ -233,6 +239,7 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "currentApr", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "delegateShares",
     data: BytesLike
@@ -272,6 +279,7 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "maxApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "minApr", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "payOutClaim",
     data: BytesLike
@@ -297,6 +305,7 @@ interface TimelockUtilsInterface extends ethers.utils.Interface {
     functionFragment: "stakeTarget",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalShares",
     data: BytesLike
@@ -432,6 +441,10 @@ export class TimelockUtils extends Contract {
 
     "currentApr()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    decimals(overrides?: CallOverrides): Promise<[number]>;
+
+    "decimals()"(overrides?: CallOverrides): Promise<[number]>;
+
     delegateShares(
       delegate: string,
       overrides?: Overrides
@@ -548,6 +561,10 @@ export class TimelockUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    name(overrides?: CallOverrides): Promise<[string]>;
+
+    "name()"(overrides?: CallOverrides): Promise<[string]>;
+
     payOutClaim(
       amount: BigNumberish,
       atBlock: BigNumberish,
@@ -637,6 +654,10 @@ export class TimelockUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    symbol(overrides?: CallOverrides): Promise<[string]>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<[string]>;
 
     totalShares(
       arg0: BigNumberish,
@@ -888,6 +909,10 @@ export class TimelockUtils extends Contract {
 
   "currentApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+  decimals(overrides?: CallOverrides): Promise<number>;
+
+  "decimals()"(overrides?: CallOverrides): Promise<number>;
+
   delegateShares(
     delegate: string,
     overrides?: Overrides
@@ -1004,6 +1029,10 @@ export class TimelockUtils extends Contract {
 
   "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+  name(overrides?: CallOverrides): Promise<string>;
+
+  "name()"(overrides?: CallOverrides): Promise<string>;
+
   payOutClaim(
     amount: BigNumberish,
     atBlock: BigNumberish,
@@ -1090,6 +1119,10 @@ export class TimelockUtils extends Contract {
   stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
   "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  symbol(overrides?: CallOverrides): Promise<string>;
+
+  "symbol()"(overrides?: CallOverrides): Promise<string>;
 
   totalShares(
     arg0: BigNumberish,
@@ -1344,6 +1377,10 @@ export class TimelockUtils extends Contract {
 
     "currentApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    decimals(overrides?: CallOverrides): Promise<number>;
+
+    "decimals()"(overrides?: CallOverrides): Promise<number>;
+
     delegateShares(delegate: string, overrides?: CallOverrides): Promise<void>;
 
     "delegateShares(address)"(
@@ -1457,6 +1494,10 @@ export class TimelockUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    name(overrides?: CallOverrides): Promise<string>;
+
+    "name()"(overrides?: CallOverrides): Promise<string>;
+
     payOutClaim(
       amount: BigNumberish,
       atBlock: BigNumberish,
@@ -1540,6 +1581,10 @@ export class TimelockUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    symbol(overrides?: CallOverrides): Promise<string>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<string>;
 
     totalShares(
       arg0: BigNumberish,
@@ -1842,6 +1887,10 @@ export class TimelockUtils extends Contract {
 
     "currentApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    decimals(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "decimals()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     delegateShares(delegate: string, overrides?: Overrides): Promise<BigNumber>;
 
     "delegateShares(address)"(
@@ -1955,6 +2004,10 @@ export class TimelockUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    name(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "name()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     payOutClaim(
       amount: BigNumberish,
       atBlock: BigNumberish,
@@ -2031,6 +2084,10 @@ export class TimelockUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<BigNumber>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    symbol(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalShares(
       arg0: BigNumberish,
@@ -2225,6 +2282,10 @@ export class TimelockUtils extends Contract {
 
     "currentApr()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "decimals()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     delegateShares(
       delegate: string,
       overrides?: Overrides
@@ -2341,6 +2402,10 @@ export class TimelockUtils extends Contract {
 
     "minApr()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "name()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     payOutClaim(
       amount: BigNumberish,
       atBlock: BigNumberish,
@@ -2432,6 +2497,10 @@ export class TimelockUtils extends Contract {
     stakeTarget(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "stakeTarget()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     totalShares(
       arg0: BigNumberish,
