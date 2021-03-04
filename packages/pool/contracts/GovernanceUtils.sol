@@ -63,8 +63,6 @@ contract GovernanceUtils is TimelockUtils {
         updateCoeff = _updateCoeff;
         emit NewUpdateCoefficient(oldCoeff, updateCoeff);
     }
-    
-    //function setClaimsManager(address _claimsManager)
 
     function setClaimsManager(address _claimsManager)
         external
