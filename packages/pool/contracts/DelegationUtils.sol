@@ -12,7 +12,9 @@ contract DelegationUtils is StateUtils {
     event Delegated(address indexed user, address indexed delegate);
     event Undelegated(address indexed user, address indexed delegate);
 
-    function delegateShares(address delegate) external {
+    function delegateShares(address delegate) 
+        external 
+    {
         require(delegate != address(0) && delegate != msg.sender, "Invalid target");
         require(!userDelegating(delegate), "Cannot delegate to a user who is currently delegating");
 
@@ -38,7 +40,9 @@ contract DelegationUtils is StateUtils {
         emit Delegated(msg.sender, delegate);
     }
 
-    function undelegateShares() external {
+    function undelegateShares()
+        external
+    {
         User storage user = users[msg.sender];
         address userDelegate = getDelegateAddress(user.delegates);
         require(userDelegate != address(0), "Not currently delegating");
@@ -52,7 +56,9 @@ contract DelegationUtils is StateUtils {
         emit Undelegated(msg.sender, userDelegate);
     }
 
-    function updateDelegatedUserShares(uint256 shares, bool delta) internal {
+    function updateDelegatedUserShares(uint256 shares, bool delta)
+        internal
+    {
         address userDelegate = getDelegateAddress(users[msg.sender].delegates);
         if (userDelegate == address(0) || shares == 0) {
             return;

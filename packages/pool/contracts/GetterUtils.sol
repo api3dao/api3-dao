@@ -10,27 +10,32 @@ contract GetterUtils is DelegationUtils {
     {}
 
     function sharesAt(uint256 fromBlock, address userAddress)
-    public view returns (uint256) {
+        public view returns (uint256)
+    {
         return getValueAt(users[userAddress].shares, fromBlock);
     }
 
     function shares(address userAddress)
-    public view returns (uint256) {
+        public view returns (uint256)
+    {
         return sharesAt(block.number, userAddress);
     }
 
     function delegatedToAt(uint256 fromBlock, address userAddress)
-    public view returns (uint256) {
+        public view returns (uint256)
+    {
         return getValueAt(users[userAddress].delegatedTo, fromBlock);
     }
 
     function delegatedTo(address userAddress)
-    public view returns (uint256) {
+        public view returns (uint256)
+    {
         return delegatedToAt(block.number, userAddress);
     }
 
     function balanceOfAt(uint256 fromBlock, address userAddress)
-    public view returns(uint256) {
+        public view returns (uint256)
+    {
         if (userDelegatingAt(userAddress, fromBlock)) {
             return 0;
         }

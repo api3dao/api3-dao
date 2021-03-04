@@ -66,7 +66,7 @@ contract StakeUtils is TransferUtils {
             user.shares.push(Checkpoint(block.number, userSharesNow));
             totalShares.push(Checkpoint(block.number, totalSharesNow));
             updateDelegatedUserShares(sharesToBurn, false);
-            user.locked = user.locked > tokensToRevoke ? user.locked.sub(tokensToRevoke) : 1;
+            user.locked = user.locked > tokensToRevoke ? user.locked.sub(tokensToRevoke) : 0;
             user.revokedEpochReward[current] = true;
         }
         user.unstakeScheduledFor = now.add(unstakeWaitPeriod);

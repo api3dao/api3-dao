@@ -17,6 +17,7 @@ contract TestPool is Api3Pool {
     function testUpdateCurrentApr(uint256 _totalStaked, uint256 _stakeTarget, uint256 _currentApr) public {
         setTestCase(_totalStaked, _stakeTarget, _currentApr);
         updateCurrentApr(_totalStaked);
+        // totalStaked.pop();
     }
 
 //    function testPayReward(uint256 deltaTotalStaked) public {
@@ -46,4 +47,9 @@ contract TestPool is Api3Pool {
     function getOldestLockedEpochTest() public view returns(uint256) {
         return getOldestLockedEpoch();
     }
+
+    function getRevokedEpochReward(address userAddress, uint256 targetEpoch) external view returns(bool) {
+        return users[userAddress].revokedEpochReward[targetEpoch];
+    }
+
 }

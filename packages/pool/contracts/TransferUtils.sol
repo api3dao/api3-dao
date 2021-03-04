@@ -18,7 +18,7 @@ contract TransferUtils is GetterUtils {
         uint256 amount,
         address userAddress
         )
-    public
+        public
     {
         users[userAddress].unstaked = users[userAddress].unstaked.add(amount);
         api3Token.transferFrom(source, address(this), amount);
@@ -26,7 +26,7 @@ contract TransferUtils is GetterUtils {
     }
 
     function withdraw(address destination, uint256 amount)
-    public
+        public
     {
         uint256 currentEpoch = now.div(rewardEpochLength);
         User storage user = users[msg.sender];

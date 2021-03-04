@@ -44,6 +44,7 @@ interface GovernanceUtilsInterface extends ethers.utils.Interface {
     "rewardVestingPeriod()": FunctionFragment;
     "rewards(uint256)": FunctionFragment;
     "scheduleUnstake(uint256)": FunctionFragment;
+    "setClaimsManager(address)": FunctionFragment;
     "setMaxApr(uint256)": FunctionFragment;
     "setMinApr(uint256)": FunctionFragment;
     "setStakeTarget(uint256)": FunctionFragment;
@@ -149,6 +150,10 @@ interface GovernanceUtilsInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "scheduleUnstake",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setClaimsManager",
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "setMaxApr",
@@ -315,6 +320,10 @@ interface GovernanceUtilsInterface extends ethers.utils.Interface {
     functionFragment: "scheduleUnstake",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "setClaimsManager",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "setMaxApr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setMinApr", data: BytesLike): Result;
   decodeFunctionResult(
@@ -403,6 +412,7 @@ interface GovernanceUtilsInterface extends ethers.utils.Interface {
     "Delegated(address,address)": EventFragment;
     "Deposit(address,uint256)": EventFragment;
     "Epoch(uint256,uint256,uint256)": EventFragment;
+    "NewClaimsManager(address,address)": EventFragment;
     "NewMaxApr(uint256,uint256)": EventFragment;
     "NewMinApr(uint256,uint256)": EventFragment;
     "NewStakeTarget(uint256,uint256)": EventFragment;
@@ -422,6 +432,7 @@ interface GovernanceUtilsInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "Delegated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Deposit"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Epoch"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "NewClaimsManager"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NewMaxApr"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NewMinApr"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NewStakeTarget"): EventFragment;
@@ -648,6 +659,16 @@ export class GovernanceUtils extends Contract {
 
     "scheduleUnstake(uint256)"(
       amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setClaimsManager(
+      _claimsManager: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setClaimsManager(address)"(
+      _claimsManager: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -909,7 +930,6 @@ export class GovernanceUtils extends Contract {
         BigNumber,
         BigNumber,
         BigNumber,
-        boolean,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -918,7 +938,6 @@ export class GovernanceUtils extends Contract {
         unstaked: BigNumber;
         locked: BigNumber;
         vesting: BigNumber;
-        delegating: boolean;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
@@ -934,7 +953,6 @@ export class GovernanceUtils extends Contract {
         BigNumber,
         BigNumber,
         BigNumber,
-        boolean,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -943,7 +961,6 @@ export class GovernanceUtils extends Contract {
         unstaked: BigNumber;
         locked: BigNumber;
         vesting: BigNumber;
-        delegating: boolean;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
@@ -1158,6 +1175,16 @@ export class GovernanceUtils extends Contract {
 
   "scheduleUnstake(uint256)"(
     amount: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setClaimsManager(
+    _claimsManager: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setClaimsManager(address)"(
+    _claimsManager: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -1416,7 +1443,6 @@ export class GovernanceUtils extends Contract {
       BigNumber,
       BigNumber,
       BigNumber,
-      boolean,
       BigNumber,
       BigNumber,
       BigNumber,
@@ -1425,7 +1451,6 @@ export class GovernanceUtils extends Contract {
       unstaked: BigNumber;
       locked: BigNumber;
       vesting: BigNumber;
-      delegating: boolean;
       unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
       lastUpdateEpoch: BigNumber;
@@ -1441,7 +1466,6 @@ export class GovernanceUtils extends Contract {
       BigNumber,
       BigNumber,
       BigNumber,
-      boolean,
       BigNumber,
       BigNumber,
       BigNumber,
@@ -1450,7 +1474,6 @@ export class GovernanceUtils extends Contract {
       unstaked: BigNumber;
       locked: BigNumber;
       vesting: BigNumber;
-      delegating: boolean;
       unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
       lastUpdateEpoch: BigNumber;
@@ -1665,6 +1688,16 @@ export class GovernanceUtils extends Contract {
 
     "scheduleUnstake(uint256)"(
       amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setClaimsManager(
+      _claimsManager: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setClaimsManager(address)"(
+      _claimsManager: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1914,7 +1947,6 @@ export class GovernanceUtils extends Contract {
         BigNumber,
         BigNumber,
         BigNumber,
-        boolean,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -1923,7 +1955,6 @@ export class GovernanceUtils extends Contract {
         unstaked: BigNumber;
         locked: BigNumber;
         vesting: BigNumber;
-        delegating: boolean;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
@@ -1939,7 +1970,6 @@ export class GovernanceUtils extends Contract {
         BigNumber,
         BigNumber,
         BigNumber,
-        boolean,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -1948,7 +1978,6 @@ export class GovernanceUtils extends Contract {
         unstaked: BigNumber;
         locked: BigNumber;
         vesting: BigNumber;
-        delegating: boolean;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
@@ -1981,6 +2010,8 @@ export class GovernanceUtils extends Contract {
       rewardAmount: null,
       newApr: null
     ): EventFilter;
+
+    NewClaimsManager(oldClaimsManager: null, claimsManager: null): EventFilter;
 
     NewMaxApr(oldMax: null, newMax: null): EventFilter;
 
@@ -2214,6 +2245,16 @@ export class GovernanceUtils extends Contract {
 
     "scheduleUnstake(uint256)"(
       amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setClaimsManager(
+      _claimsManager: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setClaimsManager(address)"(
+      _claimsManager: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -2653,6 +2694,16 @@ export class GovernanceUtils extends Contract {
 
     "scheduleUnstake(uint256)"(
       amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setClaimsManager(
+      _claimsManager: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setClaimsManager(address)"(
+      _claimsManager: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
