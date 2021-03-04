@@ -2,6 +2,7 @@ import {Api3Token, TestPool} from "../typechain";
 import * as hre from "hardhat";
 import {expect} from "chai";
 import {jumpOneEpoch} from "./test_StakeUtils";
+import {BigNumber} from "ethers";
 
 describe('DelegationUtils_delegate_undelegate', () => {
   let accounts: string[]
@@ -61,7 +62,55 @@ describe('DelegationUtils_delegate_undelegate', () => {
     expect(endDelegateShareBalance).to.equal(startUserShareBalance.add(startUserShareBalance));
   })
 
+  it('attempt to delegate to same delegate again', async () => {
+    const signer = hre.waffle.provider.getSigner(1);
+    const userAddress = accounts[1];
+    const delegateAddress = accounts[2];
+    // get starting values
+    const startUserShares = await pool.shares(userAddress);
+    const startIsDelegating = await pool.userDelegating(userAddress);
+    const startDelegatedTo = await pool.delegatedTo(delegateAddress);
+    const startUserShareBalance = await pool.balanceOf(userAddress);
+    const startDelegateShareBalance = await pool.balanceOf(delegateAddress);
+    // check starting values
+    expect(startIsDelegating).to.be.true;
+    expect(startDelegatedTo).to.equal(startUserShares);
+    expect(startUserShareBalance).to.equal(0);
+    // delegate shares
+    await pool.connect(signer).delegateShares(delegateAddress);
+    // get ending values
+    const endUserShares = await pool.shares(userAddress);
+    const endIsDelegating = await pool.userDelegating(userAddress);
+    const endDelegatedTo = await pool.delegatedTo(delegateAddress);
+    const endUserShareBalance = await pool.balanceOf(userAddress);
+    const endDelegateShareBalance = await pool.balanceOf(delegateAddress);
+    // check ending values
+    expect(endIsDelegating).to.be.true;
+    expect(endDelegatedTo).to.equal(startUserShares);
+    expect(endUserShares).to.equal(startUserShares);
+    expect(endUserShareBalance).to.equal(startUserShareBalance);
+    expect(endDelegateShareBalance).to.equal(startDelegateShareBalance);
+  })
+
+  it('check require statements', async () => {
+    const signer1 = hre.waffle.provider.getSigner(1);
+    const signer2 = hre.waffle.provider.getSigner(2);
+    const userAddress = accounts[1];
+    const delegateAddress2 = accounts[2];
+    const delegateAddress3 = accounts[3];
+    // attempt delegate to address 0x0
+    await expect(pool.connect(signer1).delegateShares('0x0000000000000000000000000000000000000000')).to.be.revertedWith('Invalid target');
+    // attempt delegate to own address
+    await expect(pool.connect(signer1).delegateShares(userAddress)).to.be.revertedWith('Invalid target');
+    // attempt delegating to someone who is delegating
+    await pool.connect(signer2).delegateShares(delegateAddress3);
+    await expect(pool.connect(signer1).delegateShares(delegateAddress2)).to.be.revertedWith("Cannot delegate to a user who is currently delegating");
+  })
+
   it('undelegate shares', async () => {
+    const signer = hre.waffle.provider.getSigner(1);
+    const userAddress = accounts[1];
+    const delegateAddress = accounts[2];
     // jump ahead in time and trigger epochs
     await jumpOneEpoch(pool);
     await jumpOneEpoch(pool);
@@ -69,22 +118,21 @@ describe('DelegationUtils_delegate_undelegate', () => {
     for (let i = 1; i <= 3; i++) {
       await pool.updateUserLocked(accounts[i], targetEpoch);
     }
-    const signer = hre.waffle.provider.getSigner(1);
     // get starting values of user
-    const startUserShares = await pool.shares(accounts[1]);
-    const startIsDelegating = await pool.userDelegating(accounts[1]);
+    const startUserShares = await pool.shares(userAddress);
+    const startIsDelegating = await pool.userDelegating(userAddress);
     // get starting number of shares delegated to delegate
-    const startDelegatedTo = await pool.delegatedTo(accounts[2]);
+    const startDelegatedTo = await pool.delegatedTo(delegateAddress);
     // check starting values
     expect(startIsDelegating).to.be.true;
     expect(startDelegatedTo).to.equal(startUserShares);
     // undelegate shares
     await pool.connect(signer).undelegateShares();
     // get ending values of user
-    const endUserShares = await pool.shares(accounts[1]);
-    const endIsDelegating = await pool.userDelegating(accounts[1]);
+    const endUserShares = await pool.shares(userAddress);
+    const endIsDelegating = await pool.userDelegating(userAddress);
     // get ending number of shares delegated to delegate
-    const endDelegatedTo = await pool.delegatedTo(accounts[2]);
+    const endDelegatedTo = await pool.delegatedTo(delegateAddress);
     // check ending values
     expect(endIsDelegating).to.be.false;
     expect(endDelegatedTo).to.equal(0);
@@ -133,19 +181,22 @@ describe('DelegationUtils_changing_staking', () => {
 
   it('delegate shares and change delegates without undelegating', async () => {
     const signer = hre.waffle.provider.getSigner(1);
+    const userAddress = accounts[1];
+    const delegateAddress2 = accounts[2];
+    const delegateAddress3 = accounts[3];
     // get starting values
-    const startUserShares = await pool.shares(accounts[1]);
-    const startIsDelegating = await pool.userDelegating(accounts[1]);
-    const startDelegatedTo1 = await pool.delegatedTo(accounts[1]);
-    const startDelegatedTo2 = await pool.delegatedTo(accounts[2]);
-    const startDelegatedTo3 = await pool.delegatedTo(accounts[3]);
+    const startUserShares = await pool.shares(userAddress);
+    const startIsDelegating = await pool.userDelegating(userAddress);
+    const startDelegatedTo1 = await pool.delegatedTo(userAddress);
+    const startDelegatedTo2 = await pool.delegatedTo(delegateAddress2);
+    const startDelegatedTo3 = await pool.delegatedTo(delegateAddress3);
     // check starting values
     expect(startIsDelegating).to.be.false;
     expect(startDelegatedTo1).to.equal(0);
     expect(startDelegatedTo2).to.equal(0);
     expect(startDelegatedTo3).to.equal(0);
     // delegate shares to account 2
-    await pool.connect(signer).delegateShares(accounts[2]);
+    await pool.connect(signer).delegateShares(delegateAddress2);
     // jump ahead in time and trigger epochs
     await jumpOneEpoch(pool);
     await jumpOneEpoch(pool);
@@ -154,24 +205,24 @@ describe('DelegationUtils_changing_staking', () => {
       await pool.updateUserLocked(accounts[i], targetEpoch);
     }
     // get intermediate values
-    const midIsDelegating = await pool.userDelegating(accounts[1]);
-    const midDelegatedTo1 = await pool.delegatedTo(accounts[1]);
-    const midDelegatedTo2 = await pool.delegatedTo(accounts[2]);
-    const midDelegatedTo3 = await pool.delegatedTo(accounts[3]);
+    const midIsDelegating = await pool.userDelegating(userAddress);
+    const midDelegatedTo1 = await pool.delegatedTo(userAddress);
+    const midDelegatedTo2 = await pool.delegatedTo(delegateAddress2);
+    const midDelegatedTo3 = await pool.delegatedTo(delegateAddress3);
     // check intermediate values
     expect(midIsDelegating).to.be.true;
     expect(midDelegatedTo1).to.equal(0);
     expect(midDelegatedTo2).to.equal(startUserShares);
     expect(midDelegatedTo3).to.equal(0);
     // delegate shares to account 3
-    await pool.connect(signer).delegateShares(accounts[3]);
+    await pool.connect(signer).delegateShares(delegateAddress3);
     // jump ahead in time
     await jumpOneEpoch(pool);
     // get ending values
-    const endIsDelegating = await pool.userDelegating(accounts[1]);
-    const endDelegatedTo1 = await pool.delegatedTo(accounts[1]);
-    const endDelegatedTo2 = await pool.delegatedTo(accounts[2]);
-    const endDelegatedTo3 = await pool.delegatedTo(accounts[3]);
+    const endIsDelegating = await pool.userDelegating(userAddress);
+    const endDelegatedTo1 = await pool.delegatedTo(userAddress);
+    const endDelegatedTo2 = await pool.delegatedTo(delegateAddress2);
+    const endDelegatedTo3 = await pool.delegatedTo(delegateAddress3);
     // check ending values
     expect(endIsDelegating).to.be.true;
     expect(endDelegatedTo1).to.equal(0);
@@ -181,31 +232,34 @@ describe('DelegationUtils_changing_staking', () => {
 
   it('undelegate, delegate, unstake, then stake', async () => {
     const signer = hre.waffle.provider.getSigner(1);
+    const userAddress = accounts[1];
+    const delegateAddress2 = accounts[2];
+    const delegateAddress3 = accounts[3];
     // undelegate shares
     await pool.connect(signer).undelegateShares();
     // get starting values
-    const startUserShares = await pool.shares(accounts[1]);
-    const startIsDelegating = await pool.userDelegating(accounts[1]);
-    const startDelegatedTo2 = await pool.delegatedTo(accounts[2]);
-    const startDelegatedTo3 = await pool.delegatedTo(accounts[3]);
+    const startUserShares = await pool.shares(userAddress);
+    const startIsDelegating = await pool.userDelegating(userAddress);
+    const startDelegatedTo2 = await pool.delegatedTo(delegateAddress2);
+    const startDelegatedTo3 = await pool.delegatedTo(delegateAddress3);
     // check starting values
     expect(startIsDelegating).to.be.false;
     expect(startDelegatedTo2).to.equal(0);
     expect(startDelegatedTo3).to.equal(0);
     // delegate shares
-    await pool.connect(signer).delegateShares(accounts[2]);
-    const earlyDelegatedTo2 = await pool.delegatedTo(accounts[2]);
+    await pool.connect(signer).delegateShares(delegateAddress2);
+    const earlyDelegatedTo2 = await pool.delegatedTo(delegateAddress2);
     expect(earlyDelegatedTo2).to.equal(startUserShares);
     // schedule unstake for half of user's tokens
-    const userStake = await pool.userStaked(accounts[1]);
+    const userStake = await pool.userStaked(userAddress);
     await pool.connect(signer).scheduleUnstake(userStake.div(2));
     await jumpOneEpoch(pool);
     // get values for later and then unstake
     await pool.connect(signer).unstake();
     // get delegation values after unstake
-    const midUserShares = await pool.shares(accounts[1]);
-    const midIsDelegating = await pool.userDelegating(accounts[1]);
-    const midDelegatedTo2 = await pool.delegatedTo(accounts[2]);
+    const midUserShares = await pool.shares(userAddress);
+    const midIsDelegating = await pool.userDelegating(userAddress);
+    const midDelegatedTo2 = await pool.delegatedTo(delegateAddress2);
     // check delegation after unstake
     expect(midUserShares).to.be.gte(startUserShares.div(2));
     expect(midUserShares).to.be.lt(startUserShares);
@@ -214,9 +268,9 @@ describe('DelegationUtils_changing_staking', () => {
     // stake again
     await pool.connect(signer).stake(userStake.div(2));
     // get ending values
-    const endUserShares = await pool.shares(accounts[1]);
-    const endIsDelegating = await pool.userDelegating(accounts[1]);
-    const endDelegatedTo = await pool.delegatedTo(accounts[2]);
+    const endUserShares = await pool.shares(userAddress);
+    const endIsDelegating = await pool.userDelegating(userAddress);
+    const endDelegatedTo = await pool.delegatedTo(delegateAddress2);
     // check ending values
     expect(endIsDelegating).to.be.true;
     expect(endDelegatedTo).to.equal(endUserShares);

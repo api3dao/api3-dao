@@ -1071,7 +1071,6 @@ export class TestPool extends Contract {
         BigNumber,
         BigNumber,
         BigNumber,
-        boolean,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -1080,7 +1079,6 @@ export class TestPool extends Contract {
         unstaked: BigNumber;
         locked: BigNumber;
         vesting: BigNumber;
-        delegating: boolean;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
@@ -1096,7 +1094,6 @@ export class TestPool extends Contract {
         BigNumber,
         BigNumber,
         BigNumber,
-        boolean,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -1105,7 +1102,6 @@ export class TestPool extends Contract {
         unstaked: BigNumber;
         locked: BigNumber;
         vesting: BigNumber;
-        delegating: boolean;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
@@ -1654,7 +1650,6 @@ export class TestPool extends Contract {
       BigNumber,
       BigNumber,
       BigNumber,
-      boolean,
       BigNumber,
       BigNumber,
       BigNumber,
@@ -1663,7 +1658,6 @@ export class TestPool extends Contract {
       unstaked: BigNumber;
       locked: BigNumber;
       vesting: BigNumber;
-      delegating: boolean;
       unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
       lastUpdateEpoch: BigNumber;
@@ -1679,7 +1673,6 @@ export class TestPool extends Contract {
       BigNumber,
       BigNumber,
       BigNumber,
-      boolean,
       BigNumber,
       BigNumber,
       BigNumber,
@@ -1688,7 +1681,6 @@ export class TestPool extends Contract {
       unstaked: BigNumber;
       locked: BigNumber;
       vesting: BigNumber;
-      delegating: boolean;
       unstakeScheduledFor: BigNumber;
       unstakeAmount: BigNumber;
       lastUpdateEpoch: BigNumber;
@@ -2225,7 +2217,6 @@ export class TestPool extends Contract {
         BigNumber,
         BigNumber,
         BigNumber,
-        boolean,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -2234,7 +2225,6 @@ export class TestPool extends Contract {
         unstaked: BigNumber;
         locked: BigNumber;
         vesting: BigNumber;
-        delegating: boolean;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
@@ -2250,7 +2240,6 @@ export class TestPool extends Contract {
         BigNumber,
         BigNumber,
         BigNumber,
-        boolean,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -2259,7 +2248,6 @@ export class TestPool extends Contract {
         unstaked: BigNumber;
         locked: BigNumber;
         vesting: BigNumber;
-        delegating: boolean;
         unstakeScheduledFor: BigNumber;
         unstakeAmount: BigNumber;
         lastUpdateEpoch: BigNumber;
