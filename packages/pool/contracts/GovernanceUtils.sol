@@ -13,6 +13,7 @@ contract GovernanceUtils is TimelockUtils {
     event NewMinApr(uint256 oldMin, uint256 newMin);
     event NewUnstakeWaitPeriod(uint256 oldPeriod, uint256 newPeriod);
     event NewUpdateCoefficient(uint256 oldCoeff, uint256 newCoeff);
+    event NewClaimsManager(address oldClaimsManager, address claimsManager);
 
     function setStakeTarget(uint256 _stakeTarget)
         external triggerEpochAfter
@@ -64,4 +65,13 @@ contract GovernanceUtils is TimelockUtils {
     }
     
     //function setClaimsManager(address _claimsManager)
+
+    function setClaimsManager(address _claimsManager)
+        external
+        //onlyDao
+    {
+        address oldClaimsManager = claimsManager;
+        claimsManager = _claimsManager;
+        emit NewClaimsManager(oldClaimsManager, claimsManager);
+    }
 }
