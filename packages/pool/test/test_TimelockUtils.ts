@@ -103,6 +103,17 @@ describe('TimelockUtils', () => {
     expect(endVesting).to.equal(startVesting.sub(expectedReleased));
   })
 
+  it('update deposited vesting from pool after release end date passes', async () => {
+    const userAddress = accounts[2];
+    // jump forward in time by four weeks, trigger epoch, and update timelock
+    const now = await getBlockTimestamp();
+    await jumpTo(now.add(oneWeek.mul(52)).toNumber());
+    await pool.updateTimelockStatus(userAddress, timelockManager.address);
+    // check result
+    const endVesting = (await pool.users(userAddress)).vesting;
+    expect(endVesting).to.equal(0);
+  })
+
   it('test timelock require statements', async () => {
     // try adding a second timelock
     const signer1 = hre.waffle.provider.getSigner(1);
