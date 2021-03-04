@@ -11,10 +11,7 @@ contract ClaimUtils is StakeUtils {
 
     event ClaimPayout(uint256 indexed claimBlock, uint256 amount);
 
-    function payOutClaim(
-        uint256 amount,
-        uint256 atBlock
-        )
+    function payOutClaim(uint256 amount, uint256 atBlock)
         external triggerEpochBefore
         onlyClaimsManager(msg.sender)
     {
