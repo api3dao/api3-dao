@@ -1,8 +1,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./auxiliary/interfaces/IApi3Token.sol";
-import "./auxiliary/SafeMath.sol";
+
 
 contract StateUtils {
     using SafeMath for uint256;
