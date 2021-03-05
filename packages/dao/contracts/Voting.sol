@@ -303,7 +303,7 @@ contract Voting is IForwarder, AragonApp {
         uint64 snapshotBlock = getBlockNumber64() - 1; // avoid double voting in this very block
         uint256 votingPower = token.totalSupplyAt(snapshotBlock);
         require(votingPower > 0, ERROR_NO_VOTING_POWER);
-        require(lastUserProposalTimes[msg.sender] < block.now.sub(token.rewardEpochLength()), "Users limited to one proposal per epoch");
+        require(lastUserProposalTimes[msg.sender] < block.now.sub(token.epochLength()), "Users limited to one proposal per epoch");
         uint256 proposerVotingPower = token.balanceOf(msg.sender);
         require(proposerVotingPower >= minimumVotingPowerToPropose, "Insufficient stake");
 

@@ -28,7 +28,7 @@ contract TransferUtils is GetterUtils {
     function withdraw(address destination, uint256 amount)
         public
     {
-        uint256 currentEpoch = now.div(rewardEpochLength);
+        uint256 currentEpoch = now.div(epochLength);
         User storage user = users[msg.sender];
         if (user.lastUpdateEpoch != currentEpoch) {
             updateUserLocked(msg.sender, currentEpoch);

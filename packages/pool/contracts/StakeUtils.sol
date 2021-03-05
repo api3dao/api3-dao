@@ -14,7 +14,7 @@ contract StakeUtils is TransferUtils {
     event Unstake(address indexed user, uint256 amount);
     
     function stake(uint256 amount)
-        public triggerEpochBefore
+        public payEpochRewardBefore
     {
         User storage user = users[msg.sender];
         require(user.unstaked >= amount, "Amount exceeds user deposit");
@@ -40,7 +40,7 @@ contract StakeUtils is TransferUtils {
     }
 
     function scheduleUnstake(uint256 amount)
-        external triggerEpochBefore
+        external payEpochRewardBefore
     {
         uint256 totalStakedNow = getValue(totalStaked);
         uint256 totalSharesNow = getValue(totalShares);
@@ -48,10 +48,10 @@ contract StakeUtils is TransferUtils {
         uint256 userSharesNow = getValue(user.shares);
         require(userSharesNow.mul(totalStakedNow).div(totalSharesNow) >= amount);
 
-        uint256 current = now.div(rewardEpochLength);
+        uint256 current = now.div(epochLength);
         uint256 tokensToRevoke = 0;
-        if (!user.revokedEpochReward[current] && rewards[current].amount != 0) {
-            RewardEpoch storage currentEpoch = rewards[current];
+        if (!user.epochIndexToRewardRevocationStatus[current] && epochIndexToReward[current].amount != 0) {
+            Reward storage currentEpoch = epochIndexToReward[current];
             uint256 userSharesThen = getValueAt(user.shares, currentEpoch.atBlock);
             uint256 totalSharesThen = getValueAt(totalShares, currentEpoch.atBlock);
 
@@ -66,7 +66,7 @@ contract StakeUtils is TransferUtils {
             totalShares.push(Checkpoint(block.number, totalSharesNow));
             updateDelegatedUserShares(sharesToBurn, false);
             user.locked = user.locked > tokensToRevoke ? user.locked.sub(tokensToRevoke) : 0;
-            user.revokedEpochReward[current] = true;
+            user.epochIndexToRewardRevocationStatus[current] = true;
         }
         user.unstakeScheduledFor = now.add(unstakeWaitPeriod);
         user.unstakeAmount = amount;
@@ -74,11 +74,11 @@ contract StakeUtils is TransferUtils {
     }
 
     function unstake()
-        public triggerEpochBefore returns (uint256)
+        public payEpochRewardBefore returns (uint256)
     {
         User storage user = users[msg.sender];
         require(now > user.unstakeScheduledFor, "Waiting period incomplete");
-        require(now < user.unstakeScheduledFor.add(rewardEpochLength), "Unstake window has expired");
+        require(now < user.unstakeScheduledFor.add(epochLength), "Unstake window has expired");
         uint256 amount = user.unstakeAmount;
         uint256 totalSharesNow = getValue(totalShares);
         uint256 totalStakedNow = getValue(totalStaked);

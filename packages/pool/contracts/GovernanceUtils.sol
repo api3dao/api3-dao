@@ -14,10 +14,10 @@ contract GovernanceUtils is TimelockUtils {
     event NewMinApr(uint256 oldMin, uint256 newMin);
     event NewUnstakeWaitPeriod(uint256 oldPeriod, uint256 newPeriod);
     event NewUpdateCoefficient(uint256 oldCoeff, uint256 newCoeff);
-    event NewClaimsManager(address oldClaimsManager, address claimsManager);
+    event ClaimsManagerStatusSet(address claimsManager, bool status);
 
     function setStakeTarget(uint256 _stakeTarget)
-        external triggerEpochAfter
+        external payEpochRewardAfter
         //onlyDao
     {
         uint256 oldTarget = stakeTarget;
@@ -26,7 +26,7 @@ contract GovernanceUtils is TimelockUtils {
     }
 
     function setMaxApr(uint256 _maxApr)
-        external triggerEpochAfter
+        external payEpochRewardAfter
         //onlyDao
     {
         require(_maxApr >= minApr, "Invalid value");
@@ -36,7 +36,7 @@ contract GovernanceUtils is TimelockUtils {
     }
 
     function setMinApr(uint256 _minApr)
-        external triggerEpochAfter
+        external payEpochRewardAfter
         //onlyDao
     {
         require(_minApr <= maxApr, "Invalid value");
@@ -56,7 +56,7 @@ contract GovernanceUtils is TimelockUtils {
     }
 
     function setUpdateCoefficient(uint256 _updateCoeff)
-        external triggerEpochAfter
+        external payEpochRewardAfter
         //onlyDao
     {
         require(_updateCoeff < 1000000000 && _updateCoeff > 0, "Invalid value");
@@ -65,12 +65,11 @@ contract GovernanceUtils is TimelockUtils {
         emit NewUpdateCoefficient(oldCoeff, updateCoeff);
     }
 
-    function setClaimsManager(address _claimsManager)
+    function setClaimsManagerStatus(address claimsManager, bool status)
         external
         //onlyDao
     {
-        address oldClaimsManager = claimsManager;
-        claimsManager = _claimsManager;
-        emit NewClaimsManager(oldClaimsManager, claimsManager);
+        claimsManagerStatus[claimsManager] = status;
+        emit ClaimsManagerStatusSet(claimsManager, status);
     }
 }
