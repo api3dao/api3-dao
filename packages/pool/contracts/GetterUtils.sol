@@ -3,7 +3,7 @@ pragma solidity 0.6.12;
 
 import "./DelegationUtils.sol";
 
-/// @title Contract that implement the getters
+/// @title Contract that implements the getters
 contract GetterUtils is DelegationUtils {
     /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)

@@ -3,7 +3,7 @@ pragma solidity 0.6.12;
 
 import "./GetterUtils.sol";
 
-/// @title Contract that implement the token transfer functionality
+/// @title Contract that implements token transfer functionality
 contract TransferUtils is GetterUtils {
     /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
