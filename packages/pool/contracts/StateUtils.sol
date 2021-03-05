@@ -57,7 +57,6 @@ contract StateUtils {
     uint256 public stakeTarget = 10e6 ether;
     uint256 public updateCoeff = 1000000;
     uint256 public unstakeWaitPeriod = rewardEpochLength;
-    uint256 public directGovernanceThreshold = 100000;
 
     uint256 public currentApr = minApr;
 

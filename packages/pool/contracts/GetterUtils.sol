@@ -33,33 +33,16 @@ contract GetterUtils is DelegationUtils {
         return delegatedToAt(block.number, userAddress);
     }
 
-     function governanceSharesAt(uint256 fromBlock, address userAddress)
+    function balanceOfAt(uint256 fromBlock, address userAddress)
         public view returns (uint256)
     {
         if (userDelegatingAt(userAddress, fromBlock)) {
             return 0;
         }
+
         uint256 userSharesThen = sharesAt(fromBlock, userAddress);
         uint256 delegatedToUserThen = delegatedToAt(fromBlock, userAddress);
         return userSharesThen.add(delegatedToUserThen);
-    }
-
-    function governanceShares(address userAddress)
-        public view returns (uint256)
-    {
-        return governanceSharesAt(block.number, userAddress);
-    }
-
-    function balanceOfAt(uint256 fromBlock, address userAddress)
-        public view returns (uint256)
-    {
-        uint256 governanceSharesThen = governanceSharesAt(fromBlock, userAddress);
-        uint256 totalSharesThen = totalSupplyAt(fromBlock);
-        if (governanceSharesThen.mul(hundredPercent).div(totalSharesThen) < directGovernanceThreshold)
-        {
-            return 0;
-        }
-        return governanceSharesThen;
     }
 
     function balanceOf(address userAddress)
