@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
-import './Api3Pool.sol';
+import '../Api3Pool.sol';
 
 contract TestPool is Api3Pool {
     constructor(address api3TokenAddress)
