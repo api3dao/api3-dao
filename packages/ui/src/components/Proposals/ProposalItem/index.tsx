@@ -17,7 +17,6 @@ import {
   CloseIcon,
   DoneIcon,
   KeyboardArrowRightIcon,
-  ArrowDropUpIcon,
 } from "components/@material-icons";
 import { proposalStatusTime } from "utils/time";
 
@@ -45,12 +44,13 @@ function ProposalItem(props: any) {
     aragonContext.setVote(vote);
   }
   const { vote } = props;
+  console.log(vote.metadata);
   return (
     <Link to={{ pathname: `/proposals/${props.voteIndex}`, state: props }} style={{ textDecoration: "none"}} onClick={setVote}>
     <Box className={classes.proposalitem} padding="16px" display="flex" justifyContent="space-between">
         <Box width="50%">
           <Typography variant="body1" color="secondary">
-            Vote #: { props.voteIndex }
+            Vote #: { props.voteIndex }  { vote.metadata }
           </Typography>
           <Box display="flex" justifyContent="space-between">
             {
@@ -83,10 +83,7 @@ function ProposalItem(props: any) {
                   <Typography variant="subtitle2" color="secondary" className={classes.reject}>Rejected</Typography>
                 </Box>
             }
-            <Box display="flex" alignItems="center">
-              <Typography variant="subtitle2" className={classes.active} color="textSecondary">00</Typography>
-              <ArrowDropUpIcon style={{ color: "#4A4A4A" }}  fontSize="large" />
-            </Box>
+
             <Box>
               <Typography variant="subtitle2" className={classes.active} color="textSecondary">
                 { 
