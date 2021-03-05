@@ -4,6 +4,7 @@ pragma solidity 0.6.12;
 import "./StakeUtils.sol";
 
 contract ClaimUtils is StakeUtils {
+    /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
         StakeUtils(api3TokenAddress)
         public

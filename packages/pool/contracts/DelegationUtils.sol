@@ -5,6 +5,7 @@ import "./StateUtils.sol";
 
 /// @title Contract that implements voting power delegation
 contract DelegationUtils is StateUtils {
+    /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
         StateUtils(api3TokenAddress)
         public

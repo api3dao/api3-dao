@@ -4,6 +4,7 @@ pragma solidity 0.6.12;
 import "./TransferUtils.sol";
 
 contract StakeUtils is TransferUtils {
+    /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
         TransferUtils(api3TokenAddress)
         public

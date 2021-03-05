@@ -5,6 +5,7 @@ import "./DelegationUtils.sol";
 
 /// @title Contract that implement the getters
 contract GetterUtils is DelegationUtils {
+    /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
         DelegationUtils(api3TokenAddress)
         public

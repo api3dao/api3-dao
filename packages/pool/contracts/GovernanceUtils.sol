@@ -4,6 +4,7 @@ pragma solidity 0.6.12;
 import "./TimelockUtils.sol";
 
 contract GovernanceUtils is TimelockUtils {
+    /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
         TimelockUtils(api3TokenAddress)
         public
