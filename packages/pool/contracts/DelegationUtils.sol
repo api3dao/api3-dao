@@ -3,8 +3,7 @@ pragma solidity 0.6.12;
 
 import "./StateUtils.sol";
 
-/// @title Contract that keeps the functionality related to delegating voting
-/// power
+/// @title Contract that implements voting power delegation
 contract DelegationUtils is StateUtils {
     constructor(address api3TokenAddress)
         StateUtils(api3TokenAddress)
