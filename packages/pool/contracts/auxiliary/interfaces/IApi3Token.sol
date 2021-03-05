@@ -3,7 +3,6 @@ pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-
 interface IApi3Token is IERC20 {
     event MinterStatusUpdated(
         address indexed minterAddress,
