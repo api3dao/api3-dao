@@ -3,7 +3,6 @@ pragma solidity 0.6.12;
 
 import "./auxiliary/interfaces/IApi3Token.sol";
 import "./auxiliary/SafeMath.sol";
-import "hardhat/console.sol";
 
 contract StateUtils {
     using SafeMath for uint256;

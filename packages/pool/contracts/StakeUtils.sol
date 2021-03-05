@@ -2,7 +2,6 @@
 pragma solidity 0.6.12;
 
 import "./TransferUtils.sol";
-import "hardhat/console.sol";
 
 contract StakeUtils is TransferUtils {
     constructor(address api3TokenAddress)
