@@ -299,7 +299,7 @@ contract StateUtils {
         uint256 targetEpoch
         )
         public
-        payEpochRewardBefore
+        payEpochRewardBefore()
         returns(uint256)
     {
         uint256 currentEpoch = now.div(epochLength);

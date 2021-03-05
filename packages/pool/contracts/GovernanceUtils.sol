@@ -18,7 +18,7 @@ contract GovernanceUtils is TimelockUtils {
     event ClaimsManagerStatusSet(address claimsManager, bool status);
 
     function setStakeTarget(uint256 _stakeTarget)
-        external payEpochRewardAfter
+        external payEpochRewardAfter()
         //onlyDao
     {
         uint256 oldTarget = stakeTarget;
@@ -27,7 +27,7 @@ contract GovernanceUtils is TimelockUtils {
     }
 
     function setMaxApr(uint256 _maxApr)
-        external payEpochRewardAfter
+        external payEpochRewardAfter()
         //onlyDao
     {
         require(_maxApr >= minApr, "Invalid value");
@@ -37,7 +37,7 @@ contract GovernanceUtils is TimelockUtils {
     }
 
     function setMinApr(uint256 _minApr)
-        external payEpochRewardAfter
+        external payEpochRewardAfter()
         //onlyDao
     {
         require(_minApr <= maxApr, "Invalid value");
@@ -57,7 +57,7 @@ contract GovernanceUtils is TimelockUtils {
     }
 
     function setUpdateCoefficient(uint256 _updateCoeff)
-        external payEpochRewardAfter
+        external payEpochRewardAfter()
         //onlyDao
     {
         require(_updateCoeff < 1000000000 && _updateCoeff > 0, "Invalid value");

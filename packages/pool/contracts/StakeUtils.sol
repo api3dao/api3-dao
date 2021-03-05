@@ -31,7 +31,7 @@ contract StakeUtils is TransferUtils {
     /// @param amount Amount of tokens to stake
     function stake(uint256 amount)
         public
-        payEpochRewardBefore
+        payEpochRewardBefore()
     {
         User storage user = users[msg.sender];
         require(user.unstaked >= amount, "Amount exceeds user deposit");
@@ -74,7 +74,7 @@ contract StakeUtils is TransferUtils {
     /// for 
     function scheduleUnstake(uint256 amount)
         external
-        payEpochRewardBefore
+        payEpochRewardBefore()
     {
         uint256 totalStakedNow = getValue(totalStaked);
         uint256 totalSharesNow = getValue(totalShares);
@@ -116,7 +116,7 @@ contract StakeUtils is TransferUtils {
     /// @return Amount of tokens that are unstaked
     function unstake()
         public
-        payEpochRewardBefore
+        payEpochRewardBefore()
         returns(uint256)
     {
         User storage user = users[msg.sender];
