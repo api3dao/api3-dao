@@ -4,9 +4,9 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./auxiliary/interfaces/IApi3Token.sol";
 
-
 contract StateUtils {
     using SafeMath for uint256;
+
     struct Checkpoint {
         uint256 fromBlock;
         uint256 value;
@@ -298,6 +298,4 @@ contract StateUtils {
     {
         return getValueAt(checkpoints, block.number);
     }
-
-
 }
