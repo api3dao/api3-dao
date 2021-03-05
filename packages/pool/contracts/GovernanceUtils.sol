@@ -13,6 +13,7 @@ contract GovernanceUtils is TimelockUtils {
     event NewMinApr(uint256 oldMin, uint256 newMin);
     event NewUnstakeWaitPeriod(uint256 oldPeriod, uint256 newPeriod);
     event NewUpdateCoefficient(uint256 oldCoeff, uint256 newCoeff);
+    event NewDirectGovernanceThreshold(uint256 oldThreshold, uint256 newThreshold);
     event NewClaimsManager(address oldClaimsManager, address claimsManager);
 
     function setStakeTarget(uint256 _stakeTarget)
@@ -62,6 +63,16 @@ contract GovernanceUtils is TimelockUtils {
         uint256 oldCoeff = updateCoeff;
         updateCoeff = _updateCoeff;
         emit NewUpdateCoefficient(oldCoeff, updateCoeff);
+    }
+
+    function setDirectGovernanceThreshold(uint256 _directGovernanceThreshold)
+        external
+        //onlyDao
+    {
+        require(_directGovernanceThreshold <= 100000000 && _directGovernanceThreshold >= 0, "Invalid value");
+        uint256 oldDirectGovernanceThreshold = directGovernanceThreshold;
+        directGovernanceThreshold = _directGovernanceThreshold;
+        emit NewDirectGovernanceThreshold(oldDirectGovernanceThreshold, directGovernanceThreshold);
     }
 
     function setClaimsManager(address _claimsManager)
