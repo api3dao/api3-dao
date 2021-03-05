@@ -4,6 +4,7 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./auxiliary/interfaces/IApi3Token.sol";
 
+/// @title Contract that keeps the state variables and methods that update them
 contract StateUtils {
     using SafeMath for uint256;
 
