@@ -4,7 +4,8 @@ pragma solidity 0.6.12;
 import "./GovernanceUtils.sol";
 
 
-contract Api3Pool is GovernanceUtils {    
+contract Api3Pool is GovernanceUtils {
+    /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
         GovernanceUtils(api3TokenAddress)
         public

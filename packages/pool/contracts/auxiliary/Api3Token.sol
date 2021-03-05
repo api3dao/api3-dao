@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IApi3Token.sol";
 
-
 /// @title API3 token contract
 /// @notice The API3 token contract is owned by the API3 DAO, which can grant
 /// minting privileges to addresses. Any account is allowed to burn their 

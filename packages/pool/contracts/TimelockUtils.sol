@@ -24,6 +24,7 @@ contract TimelockUtils is ClaimUtils {
     event VestingDeposit(address indexed user, uint256 amount, uint256 start, uint256 end);
     event TimelockUpdate(address indexed user, uint256 vesting, uint256 remaining);
 
+    /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
         ClaimUtils(api3TokenAddress)
         public

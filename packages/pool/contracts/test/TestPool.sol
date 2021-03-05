@@ -1,6 +1,7 @@
+//SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
-import './Api3Pool.sol';
+import '../Api3Pool.sol';
 
 contract TestPool is Api3Pool {
     constructor(address api3TokenAddress)
@@ -27,9 +28,9 @@ contract TestPool is Api3Pool {
 //    }
 
     function getRewardTargetEpochTest() external view returns(uint256) {
-        uint256 currentEpoch = now.div(rewardEpochLength);
-        uint256 unpaidEpochs = currentEpoch.sub(lastEpochPaid);
-        return unpaidEpochs <= 5 ? currentEpoch : lastEpochPaid.add(unpaidEpochs.div(2));
+        uint256 currentEpoch = now.div(epochLength);
+        uint256 unpaidEpochs = currentEpoch.sub(epochIndexOfLastRewardPayment);
+        return unpaidEpochs <= 5 ? currentEpoch : epochIndexOfLastRewardPayment.add(unpaidEpochs.div(2));
     }
 
     function updateCurrentAprTest() public {
@@ -37,7 +38,7 @@ contract TestPool is Api3Pool {
     }
 
     function getCurrentEpoch() external view returns(uint256) {
-        return now.div(rewardEpochLength);
+        return now.div(epochLength);
     }
 
     function setApr(uint256 _currentApr) public {
@@ -49,7 +50,7 @@ contract TestPool is Api3Pool {
     }
 
     function getRevokedEpochReward(address userAddress, uint256 targetEpoch) external view returns(bool) {
-        return users[userAddress].revokedEpochReward[targetEpoch];
+        return users[userAddress].epochIndexToRewardRevocationStatus[targetEpoch];
     }
 
 }
