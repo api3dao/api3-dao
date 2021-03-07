@@ -2,49 +2,47 @@
 pragma solidity 0.6.12;
 
 import "./TransferUtils.sol";
+import "./interfaces/IStakeUtils.sol";
 
-/// @title Contract that implements the staking functionality
-contract StakeUtils is TransferUtils {
+/// @title Contract that implements staking functionality
+contract StakeUtils is TransferUtils, IStakeUtils {
     /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
-        TransferUtils(api3TokenAddress)
         public
+        TransferUtils(api3TokenAddress)
     {}
-
-    event Staked(
-        address indexed user,
-        uint256 amount
-        );
-
-    event ScheduledUnstake(
-        address indexed user,
-        uint256 amount,
-        uint256 scheduledFor
-        );
-
-    event Unstaked(
-        address indexed user,
-        uint256 amount
-        );
 
     /// @notice Called to stake tokens to receive pools in the share
     /// @param amount Amount of tokens to stake
     function stake(uint256 amount)
         public
+        override
         payEpochRewardBefore()
     {
         User storage user = users[msg.sender];
-        require(user.unstaked >= amount, "Amount exceeds user deposit");
+        require(user.unstaked >= amount, ERROR_VALUE);
         user.unstaked = user.unstaked.sub(amount);
         uint256 totalSharesNow = getValue(totalShares);
         uint256 totalStakedNow = getValue(totalStaked);
         uint256 sharesToMint = totalSharesNow.mul(amount).div(totalStakedNow);
         uint256 userSharesNow = getValue(user.shares);
-        user.shares.push(Checkpoint(block.number, userSharesNow.add(sharesToMint)));      
-        totalShares.push(Checkpoint(block.number, totalSharesNow.add(sharesToMint)));
-        totalStaked.push(Checkpoint(block.number, totalStakedNow.add(amount)));
-        updateDelegatedUserShares(sharesToMint, true);
-        emit Staked(msg.sender, amount);
+        user.shares.push(Checkpoint({
+            fromBlock: block.number,
+            value: userSharesNow.add(sharesToMint)
+            }));      
+        totalShares.push(Checkpoint({
+            fromBlock: block.number,
+            value: totalSharesNow.add(sharesToMint)
+            }));
+        totalStaked.push(Checkpoint({
+            fromBlock: block.number,
+            value: totalStakedNow.add(amount)
+            }));
+        updateDelegatedVotingPower(sharesToMint, true);
+        emit Staked(
+            msg.sender,
+            amount
+            );
     }
 
     /// @notice Convenience method to deposit and stake in a single transaction
@@ -57,8 +55,11 @@ contract StakeUtils is TransferUtils {
         address source,
         uint256 amount,
         address userAddress
-    ) external {
-        require(userAddress == msg.sender, "Cannot deposit and stake for others");
+        )
+        external
+        override
+    {
+        require(userAddress == msg.sender, ERROR_UNAUTHORIZED);
         deposit(source, amount, userAddress);
         stake(amount);
     }
@@ -68,60 +69,81 @@ contract StakeUtils is TransferUtils {
     /// to be able to unstake.
     /// Scheduling an unstake results in the reward of the current epoch to be
     /// revoked from the user. This is to prevent the user from scheduling
-    /// unstakes that they are not intending to execute (to be used to evade
-    /// insurance claims should they happen)
+    /// unstakes that they are not intending to execute (to be used as a
+    /// fail-safe to evade insurance claims should they happen).
     /// @param amount Amount of tokens for which the unstake will be scheduled
     /// for 
     function scheduleUnstake(uint256 amount)
         external
+        override
         payEpochRewardBefore()
     {
         uint256 totalStakedNow = getValue(totalStaked);
         uint256 totalSharesNow = getValue(totalShares);
         User storage user = users[msg.sender];
         uint256 userSharesNow = getValue(user.shares);
-        require(userSharesNow.mul(totalStakedNow).div(totalSharesNow) >= amount, "Invalid amount");
+        uint256 userStakedNow = userSharesNow.mul(totalStakedNow).div(totalSharesNow);
+        require(
+            userStakedNow >= amount,
+            ERROR_VALUE
+            );
 
         // Revoke the reward of the current epoch if applicable
-        uint256 currentEpoch = now.div(epochLength);
-        Reward storage currentReward = epochIndexToReward[currentEpoch];
-        if (!user.epochIndexToRewardRevocationStatus[currentEpoch] && currentReward.amount != 0) {
-            uint256 userSharesThen = getValueAt(user.shares, currentReward.atBlock);
-            uint256 totalSharesThen = getValueAt(totalShares, currentReward.atBlock);
-            uint256 tokensToRevoke = currentReward.amount.mul(userSharesThen).div(totalSharesThen);
-            uint256 sharesToBurn = totalSharesNow.mul(tokensToRevoke).div(totalStakedNow);
-            if (sharesToBurn > userSharesNow) {
-                sharesToBurn = userSharesNow;
+        uint256 currentEpoch = now.div(EPOCH_LENGTH);
+        if (!user.epochIndexToRewardRevocationStatus[currentEpoch])
+        {
+            Reward storage currentReward = epochIndexToReward[currentEpoch];
+            if (currentReward.amount != 0)
+            {
+                uint256 tokensToRevoke = currentReward.amount
+                    .mul(getValueAt(user.shares, currentReward.atBlock))
+                    .div(getValueAt(totalShares, currentReward.atBlock));
+                uint256 sharesToBurn = (tokensToRevoke.mul(totalSharesNow)
+                    .add(userSharesNow.mul(totalStakedNow))
+                    .sub(userStakedNow.mul(totalSharesNow)))
+                    .div(totalStakedNow.add(tokensToRevoke).sub(userStakedNow));
+                if (sharesToBurn != 0)
+                {
+                    // Do not allow the user to burn what they are trying to
+                    // unstake
+                    require(sharesToBurn < userSharesNow, ERROR_UNAUTHORIZED);
+                    // The reward gets redistributed to the current stakers
+                    // Note that the lock for this reward will remain
+                    userSharesNow = userSharesNow.sub(sharesToBurn);
+                    totalSharesNow = totalSharesNow.sub(sharesToBurn);
+                    user.shares.push(Checkpoint({
+                        fromBlock: block.number,
+                        value: userSharesNow
+                        }));
+                    totalShares.push(Checkpoint({
+                        fromBlock: block.number,
+                        value: totalSharesNow
+                        }));
+                    updateDelegatedVotingPower(sharesToBurn, false);
+                    user.epochIndexToRewardRevocationStatus[currentEpoch] = true;
+                }
             }
-            // The reward gets redistributed to the current stakers
-            userSharesNow = userSharesNow.sub(sharesToBurn);
-            totalSharesNow = totalSharesNow.sub(sharesToBurn);
-            user.shares.push(Checkpoint(block.number, userSharesNow));
-            totalShares.push(Checkpoint(block.number, totalSharesNow));
-            updateDelegatedUserShares(sharesToBurn, false);
-            // Also revert the token lock. Note that this is only an
-            // approximation. The user's `locked` may be 0 here due to not
-            // updating it yet, in which case this will not help (yet the
-            // locked tokens will still be unlocked `rewardVestingPeriod`
-            // epochs later).
-            user.locked = user.locked > tokensToRevoke ? user.locked.sub(tokensToRevoke) : 0;
-            user.epochIndexToRewardRevocationStatus[currentEpoch] = true;
         }
         user.unstakeScheduledFor = now.add(unstakeWaitPeriod);
         user.unstakeAmount = amount;
-        emit ScheduledUnstake(msg.sender, amount, user.unstakeScheduledFor);
+        emit ScheduledUnstake(
+            msg.sender,
+            amount,
+            user.unstakeScheduledFor
+            );
     }
 
     /// @notice Called to execute a pre-scheduled unstake
     /// @return Amount of tokens that are unstaked
     function unstake()
         public
+        override
         payEpochRewardBefore()
         returns(uint256)
     {
         User storage user = users[msg.sender];
-        require(now > user.unstakeScheduledFor, "Waiting period incomplete");
-        require(now < user.unstakeScheduledFor.add(epochLength), "Unstake window has expired");
+        require(now > user.unstakeScheduledFor, ERROR_UNAUTHORIZED);
+        require(now < user.unstakeScheduledFor.add(EPOCH_LENGTH), ERROR_UNAUTHORIZED);
         uint256 amount = user.unstakeAmount;
         uint256 totalSharesNow = getValue(totalShares);
         uint256 totalStakedNow = getValue(totalStaked);
@@ -135,25 +157,44 @@ contract StakeUtils is TransferUtils {
             amount = sharesToBurn.mul(totalStakedNow).div(totalSharesNow);
         }
         user.unstaked = user.unstaked.add(amount);
-        //The if block above prevents the following two subtractions from underflowing.
-        user.shares.push(Checkpoint(block.number, userSharesNow.sub(sharesToBurn)));
-        totalShares.push(Checkpoint(block.number, totalSharesNow.sub(sharesToBurn)));
-        updateDelegatedUserShares(sharesToBurn, false);
+        user.shares.push(Checkpoint({
+            fromBlock: block.number,
+            value: userSharesNow.sub(sharesToBurn)
+            }));
+        totalShares.push(Checkpoint({
+            fromBlock: block.number,
+            value: totalSharesNow > sharesToBurn
+                ? totalSharesNow.sub(sharesToBurn)
+                : 1
+            }));
+        updateDelegatedVotingPower(sharesToBurn, false);
 
-        uint256 newTotalStaked = totalStakedNow > amount ? totalStakedNow.sub(amount) : 0;
-        totalStaked.push(Checkpoint(block.number, newTotalStaked));
+        uint256 newTotalStaked = totalStakedNow > amount
+            ? totalStakedNow.sub(amount)
+            : 1;
+        totalStaked.push(Checkpoint({
+            fromBlock: block.number,
+            value: newTotalStaked
+            }));
         user.unstakeScheduledFor = 0;
         user.unstakeAmount = 0;
-        emit Unstaked(msg.sender, amount);
+        emit Unstaked(
+            msg.sender,
+            amount
+            );
         return amount;
     }
 
     /// @notice Convenience method to execute an unstake and withdraw in a
     /// single transaction
+    /// @dev Note that withdraw may revert because the user may have less than
+    /// `unstaked` tokens that are withdrawable
     /// @param destination Token transfer destination
     function unstakeAndWithdraw(address destination)
         external
+        override
     {
         uint256 unstaked = unstake();
         withdraw(destination, unstaked);
     }
+}

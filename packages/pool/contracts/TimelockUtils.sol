@@ -2,9 +2,12 @@
 pragma solidity 0.6.12;
 
 import "./ClaimUtils.sol";
+import "./interfaces/ITimelockUtils.sol";
 
-
-contract TimelockUtils is ClaimUtils {
+/// @title Contract that implements vesting functionality
+/// @dev TimelockManager contracts interface with this contract to transfer
+/// API3 tokens that are locked under a vesting schedule.
+contract TimelockUtils is ClaimUtils, ITimelockUtils {
     struct Timelock
     {
         uint256 totalAmount;
@@ -13,24 +16,28 @@ contract TimelockUtils is ClaimUtils {
         uint256 releaseEnd;
     }
 
-    // There are two TimelockManager.sol contracts deployed at the moment. One keeps the 6 month
-    // cliff, and the other keeps the linear vesting between 6–36 months. This means that there
-    // will be two separate deposits made from independent contracts, and we need to distinguish
-    // the two. A TimelockManager.sol only keeps a single timelock per user, so we can simply
-    // keep these in a mapping here. So if a user X has timelocked tokens at contract Y, after
-    // transferring them here, the record will be kept at userToDepositorToTimelock[X][Y]
+    /// @notice Maps user addresses to TimelockManager contract addresses to 
+    /// timelocks
+    /// @dev This implies that a user cannot have multiple timelocks
+    /// transferrerd from the same TimelockManager contract. This is
+    /// acceptable, because the TimelockManager is implemented in a way to not
+    /// allow multiple timelocks per user.
     mapping(address => mapping(address => Timelock)) public userToDepositorToTimelock;
-
-    event VestingDeposit(address indexed user, uint256 amount, uint256 start, uint256 end);
-    event TimelockUpdate(address indexed user, uint256 vesting, uint256 remaining);
 
     /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
-        ClaimUtils(api3TokenAddress)
         public
+        ClaimUtils(api3TokenAddress)
     {}
 
-    // Note that this method is used by TimelockManager.sol
+    /// @notice Called by TimelockManager contracts to deposit tokens on behalf
+    /// of a user on a linear vesting schedule
+    /// @dev Refer to `TimelockManager.sol` to see how this is used
+    /// @param source Token source
+    /// @param amount Token amount
+    /// @param userAddress Address of the user who will receive the tokens
+    /// @param releaseStart Vesting schedule starting time
+    /// @param releaseEnd Vesting schedule ending time
     function depositWithVesting(
         address source,
         uint256 amount,
@@ -39,41 +46,67 @@ contract TimelockUtils is ClaimUtils {
         uint256 releaseEnd
         )
         external
+        override
     {
-        require(userToDepositorToTimelock[userAddress][msg.sender].remainingAmount == 0);
-        require(releaseEnd > releaseStart, "Invalid date range");
-        require(amount != 0, "No zero amount");
+        require(userToDepositorToTimelock[userAddress][msg.sender].remainingAmount == 0, ERROR_UNAUTHORIZED);
+        require(
+            releaseEnd > releaseStart
+                && amount != 0,
+            ERROR_VALUE
+            );
         users[userAddress].unstaked = users[userAddress].unstaked.add(amount);
         users[userAddress].vesting = users[userAddress].vesting.add(amount);
-        userToDepositorToTimelock[userAddress][msg.sender] = Timelock(amount, amount, releaseStart, releaseEnd);
+        userToDepositorToTimelock[userAddress][msg.sender] = Timelock({
+            totalAmount: amount,
+            remainingAmount: amount,
+            releaseStart: releaseStart,
+            releaseEnd: releaseEnd
+            });
         api3Token.transferFrom(source, address(this), amount);
-        emit VestingDeposit(userAddress, amount, releaseStart, releaseEnd);
+        emit DepositedVesting(
+            userAddress,
+            amount,
+            releaseStart,
+            releaseEnd
+            );
     }
 
+    /// @notice Called to release tokens vested by the timelock
+    /// @param userAddress Address of the user whose timelock status will be
+    /// updated
+    /// @param timelockManagerAddress Address of the TimelockManager that has
+    /// created the timelock
     function updateTimelockStatus(
         address userAddress,
-        address timelockContractAddress
+        address timelockManagerAddress
         )
         external
+        override
     {
-        Timelock storage timelock = userToDepositorToTimelock[userAddress][timelockContractAddress];
-        uint256 totalUnlocked = 0;
+        Timelock storage timelock = userToDepositorToTimelock[userAddress][timelockManagerAddress];
+        require(now > timelock.releaseStart, ERROR_UNAUTHORIZED);
+        require(timelock.remainingAmount > 0, ERROR_UNAUTHORIZED);
+        uint256 totalUnlocked;
         if (now >= timelock.releaseEnd)
         {
             totalUnlocked = timelock.totalAmount;
         }
-        else if (now > timelock.releaseStart)
+        else
         {
             uint256 passedTime = now.sub(timelock.releaseStart);
             uint256 totalTime = timelock.releaseEnd.sub(timelock.releaseStart);
-            totalUnlocked = totalTime > 0 ? timelock.totalAmount.mul(passedTime).div(totalTime) : timelock.totalAmount;
+            totalUnlocked = timelock.totalAmount.mul(passedTime).div(totalTime);
         }
         uint256 previouslyUnlocked = timelock.totalAmount.sub(timelock.remainingAmount);
         uint256 newlyUnlocked = totalUnlocked.sub(previouslyUnlocked);
         User storage user = users[userAddress];
-        uint256 newUserVesting = user.vesting > newlyUnlocked ? user.vesting.sub(newlyUnlocked) : 0;
-        user.vesting = newUserVesting;
-        userToDepositorToTimelock[userAddress][timelockContractAddress].remainingAmount = timelock.remainingAmount.sub(newlyUnlocked);
-        emit TimelockUpdate(userAddress, user.vesting, timelock.remainingAmount.sub(newlyUnlocked));
+        user.vesting = user.vesting.sub(newlyUnlocked);
+        uint256 newRemainingAmount = timelock.remainingAmount.sub(newlyUnlocked);
+        userToDepositorToTimelock[userAddress][timelockManagerAddress].remainingAmount = newRemainingAmount;
+        emit UpdatedTimelock(
+            userAddress,
+            timelockManagerAddress,
+            newRemainingAmount
+            );
     }
 }

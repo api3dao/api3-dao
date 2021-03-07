@@ -1,95 +1,114 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
-import "./StateUtils.sol";
+import "./RewardUtils.sol";
+import "./interfaces/IDelegationUtils.sol";
 
 /// @title Contract that implements voting power delegation
-contract DelegationUtils is StateUtils {
+contract DelegationUtils is RewardUtils, IDelegationUtils {
     /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
-        StateUtils(api3TokenAddress)
         public
+        RewardUtils(api3TokenAddress)
     {}
-
-    event Delegated(
-        address indexed user,
-        address indexed delegate
-        );
-
-    event Undelegated(
-        address indexed user,
-        address indexed delegate
-        );
 
     /// @notice Called by the user to delegate voting power
     /// @param delegate User address the voting power will be delegated to
-    function delegateShares(address delegate) 
-        external 
+    function delegateVotingPower(address delegate) 
+        external
+        override
     {
-        require(delegate != address(0) && delegate != msg.sender, "Invalid target");
-        // Although we are checking for this, the delegate may delegate to
-        // someone else after being delegated to. 
-        require(!userDelegating(delegate), "Delegate is delegating");
-
+        // Delegating users have cannot use their voting power, so we are
+        // verifying that the delegate is not currently delegating. However,
+        // the delegate may delegate after they have been delegated to.
+        require(
+            delegate != address(0)
+                && delegate != msg.sender
+                && userDelegate(delegate) == address(0),
+            ERROR_ADDRESS
+            );
         User storage user = users[msg.sender];
+        // Do not allow frequent delegation updates as that can be used to spam
+        // proposals
+        require(
+            user.lastDelegationUpdateTimestamp <= now.sub(EPOCH_LENGTH),
+            ERROR_UNAUTHORIZED
+            );
+        user.lastDelegationUpdateTimestamp = now;
         uint256 userShares = getValue(user.shares);
-        address userDelegate = getDelegateAddress(user.delegates);
+        address userDelegate = getAddress(user.delegates);
+        if (userDelegate == delegate) {
+            return;
+        }
         if (userDelegate != address(0)) {
-            if (userDelegate == delegate) {
-                return;
-            } else {
-                // Need to revoke previous delegation
-                User storage prevDelegate = users[userDelegate];
-                prevDelegate.delegatedTo.push(
-                    Checkpoint(block.number, getValue(prevDelegate.delegatedTo).sub(userShares))
-                );
-            }
+            // Need to revoke previous delegation
+            User storage prevDelegate = users[userDelegate];
+            prevDelegate.delegatedTo.push(Checkpoint({
+                fromBlock: block.number,
+                value: getValue(prevDelegate.delegatedTo).sub(userShares)
+                }));
         }
         // Assign the new delegation
         User storage _delegate = users[delegate];
-        _delegate.delegatedTo.push(
-            Checkpoint(block.number, getValue(_delegate.delegatedTo).add(userShares))
-        );
+        _delegate.delegatedTo.push(Checkpoint({
+            fromBlock: block.number,
+            value: getValue(_delegate.delegatedTo).add(userShares)
+            }));
         // Record the new delegate for the user
-        user.delegates.push(Delegation(block.number, delegate));
-        emit Delegated(msg.sender, delegate);
+        user.delegates.push(AddressCheckpoint({
+            fromBlock: block.number,
+            _address: delegate
+            }));
+        emit Delegated(
+            msg.sender,
+            delegate
+            );
     }
 
     /// @notice Called by the user to undelegate voting power
-    function undelegateShares()
+    function undelegateVotingPower()
         external
+        override
     {
         User storage user = users[msg.sender];
-        address userDelegate = getDelegateAddress(user.delegates);
-        require(userDelegate != address(0), "Not delegated");
+        address userDelegate = getAddress(user.delegates);
+        require(
+            userDelegate != address(0)
+                && user.lastDelegationUpdateTimestamp <= now.sub(EPOCH_LENGTH),
+            ERROR_UNAUTHORIZED
+            );
 
         uint256 userShares = getValue(user.shares);
         User storage delegate = users[userDelegate];
-        delegate.delegatedTo.push(
-            Checkpoint(block.number, getValue(delegate.delegatedTo).sub(userShares))
-        );
-        user.delegates.push(Delegation(block.number, address(0)));
-        emit Undelegated(msg.sender, userDelegate);
+        delegate.delegatedTo.push(Checkpoint({
+            fromBlock: block.number,
+            value: getValue(delegate.delegatedTo).sub(userShares)
+            }));
+        user.delegates.push(AddressCheckpoint({
+            fromBlock: block.number,
+            _address: address(0)
+            }));
+        user.lastDelegationUpdateTimestamp = now;
+        emit Undelegated(
+            msg.sender,
+            userDelegate
+            );
     }
 
     /// @notice Called internally when the user shares are updated to update
     /// the delegated voting power
-    /// @dev User shares only get updated while staking, scheduling unstaking
+    /// @dev User shares only get updated while staking, scheduling unstake
     /// or unstaking
     /// @param shares Amount of shares that will be added/removed
-    /// @param delta Whether the shares will be added/removed (add for `true`
+    /// @param delta Whether the shares will be added/removed (add for `true`,
     /// and vice versa)
-    function updateDelegatedUserShares(
+    function updateDelegatedVotingPower(
         uint256 shares,
         bool delta
         )
         internal
     {
-        if (shares == 0)
-        {
-            return;
-        }
-        address userDelegate = getDelegateAddress(users[msg.sender].delegates);
+        address userDelegate = getAddress(users[msg.sender].delegates);
         if (userDelegate == address(0)) {
             return;
         }
@@ -100,86 +119,13 @@ contract DelegationUtils is StateUtils {
         if (delta) {
             newDelegatedTo = currentlyDelegatedTo.add(shares);
         } else {
-            newDelegatedTo = currentlyDelegatedTo > shares ? currentlyDelegatedTo.sub(shares) : 0;
+            newDelegatedTo = currentlyDelegatedTo > shares 
+                ? currentlyDelegatedTo.sub(shares)
+                : 0;
         }
-        delegate.delegatedTo.push(
-            Checkpoint(block.number, newDelegatedTo)
-        );
-    }
-
-    /// @notice Called to check if the user is delegating at a specific block
-    /// @param userAddress User address
-    /// @param _block Block number
-    /// @return Whether the user is delegating at the specific block
-    function userDelegatingAt(
-        address userAddress,
-        uint256 _block
-        )
-        public
-        view
-        returns(bool)
-    {
-        address userDelegateAt = getDelegateAddressAt(users[userAddress].delegates, _block);
-        return userDelegateAt != address(0);
-    }
-
-    /// @notice Called to check if the user is currently delegating
-    /// @param userAddress User address
-    /// @return Whether the user is currently delegating
-    function userDelegating(address userAddress)
-        public
-        view
-        returns(bool)
-    {
-        return userDelegatingAt(userAddress, block.number);
-    }
-
-    /// @notice Called to get which address the user is delegating to at a
-    /// specific block
-    /// @dev This is same as `getValueAt()` in `StateUtils`, except the value
-    /// being kept in the checkpoints is an address
-    /// @param checkpoints Delegation checkpoints array
-    /// @param _block Block number for which the query is being made
-    /// @return Delegate of the user at the block
-    function getDelegateAddressAt(
-        Delegation[] storage checkpoints,
-        uint _block
-        )
-        internal
-        view
-        returns(address)
-    {
-        if (checkpoints.length == 0)
-            return address(0);
-
-        // Shortcut for the actual value
-        if (_block >= checkpoints[checkpoints.length.sub(1)].fromBlock)
-            return checkpoints[checkpoints.length.sub(1)].delegate;
-        if (_block < checkpoints[0].fromBlock)
-            return address(0);
-
-        // Binary search of the value in the array
-        uint min = 0;
-        uint max = checkpoints.length.sub(1);
-        while (max > min) {
-            uint mid = (max.add(min).add(1)).div(2);
-            if (checkpoints[mid].fromBlock<=_block) {
-                min = mid;
-            } else {
-                max = mid.sub(1);
-            }
-        }
-        return checkpoints[min].delegate;
-    }
-
-    /// @notice Called to get current delegate of the user
-    /// @param checkpoints Delegation checkpoints array
-    /// @return Current delegate of the user
-    function getDelegateAddress(Delegation[] storage checkpoints)
-        internal
-        view
-        returns(address)
-    {
-        return getDelegateAddressAt(checkpoints, block.number);
+        delegate.delegatedTo.push(Checkpoint({
+            fromBlock: block.number,
+            value: newDelegatedTo
+            }));
     }
 }

@@ -1,33 +1,26 @@
 {
-  "name": "api3-dao-pool-poc-v2",
+  "name": "@api3-dao/pool",
+  "version": "0.1.0",
+  "license": "MIT",
   "scripts": {
     "build": "hardhat compile",
+    "deploy:mainnet": "hardhat deploy --network mainnet",
+    "deploy:rinkeby": "hardhat deploy --network rinkeby",
+    "flatten": "hardhat flatten contracts/Api3Pool.sol > Api3Pool.flat.sol && yarn run flatten:delete-license-lines",
+    "flatten:delete-license-lines": "sed --in-place '/SPDX-License-Identifier/d' *.flat.sol",
     "test": "hardhat test",
-    "deploy": "yarn deploy:token",
-    "deploy:token": "hardhat run scripts/deploy-api3-token.ts --network rinkeby",
-    "deploy:pool": "hardhat run scripts/deploy-api3-pool.ts --network rinkeby",
-    "clear": "hardhat clean"
+    "test:coverage": "hardhat coverage",
+    "test:gas": "REPORT_GAS=TRUE hardhat test"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
-    "@openzeppelin/contracts": "^3.3.0",
-    "@typechain/ethers-v5": "^5.0.0",
-    "@types/chai": "^4.2.14",
-    "@types/mocha": "^8.2.0",
-    "@types/node": "^14.14.22",
-    "chai": "^4.2.0",
-    "ethereum-waffle": "^3.2.2",
-    "ethers": "^5.0.26",
-    "hardhat": "^2.0.8",
+    "@openzeppelin/contracts": "^3.4.1",
+    "chai": "^4.3.3",
+    "ethereum-waffle": "^3.3.0",
+    "hardhat": "^2.1.1",
+    "hardhat-deploy": "^0.7.0-beta.46",
     "hardhat-gas-reporter": "^1.0.4",
-    "hardhat-typechain": "^0.3.4",
-    "ts-generator": "^0.1.1",
-    "typechain": "^4.0.1"
-  },
-  "dependencies": {
-    "dotenv": "^8.2.0",
-    "ts-node": "^9.1.1",
-    "typescript": "^4.1.3"
+    "solidity-coverage": "^0.7.16"
   }
 }
