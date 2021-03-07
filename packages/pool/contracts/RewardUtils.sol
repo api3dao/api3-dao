@@ -81,7 +81,8 @@ contract RewardUtils is GetterUtils, IRewardUtils {
                 uint256 rewardAmount = totalStakedNow.mul(currentApr).div(REWARD_VESTING_PERIOD).div(HUNDRED_PERCENT);
                 epochIndexToReward[currentEpoch] = Reward({
                     atBlock: block.number,
-                    amount: rewardAmount
+                    amount: rewardAmount,
+                    totalSharesThen: getValue(totalShares)
                     });
                 if (rewardAmount > 0) {
                     api3Token.mint(address(this), rewardAmount);
@@ -128,9 +129,8 @@ contract RewardUtils is GetterUtils, IRewardUtils {
             Reward storage lockedReward = epochIndexToReward[ind];
             if (lockedReward.atBlock != 0)
             {
-                uint256 totalSharesThen = getValueAt(totalShares, lockedReward.atBlock);
                 uint256 userSharesThen = getValueAt(user.shares, lockedReward.atBlock);
-                locked = locked.add(lockedReward.amount.mul(userSharesThen).div(totalSharesThen));
+                locked = locked.add(lockedReward.amount.mul(userSharesThen).div(lockedReward.totalSharesThen));
             }
         }
         return locked;
