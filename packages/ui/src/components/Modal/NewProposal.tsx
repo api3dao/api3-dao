@@ -248,7 +248,7 @@ function NewProposalModal(props: any) {
                       <TextField 
                         required
                         onChange={handleChange}  
-                        placeholder={"2.5"}
+                        placeholder={"2.5%"}
                         value={data.minAmountAPR}
                         name="minAmountAPR"
                         className={classes.input}
@@ -270,7 +270,7 @@ function NewProposalModal(props: any) {
                       <TextField 
                         required
                         onChange={handleChange}  
-                        placeholder={"75"}
+                        placeholder={"75%"}
                         value={data.maxAmountAPR}
                         name="maxAmountAPR"
                         className={classes.input}
@@ -291,12 +291,12 @@ function NewProposalModal(props: any) {
                       <TextField 
                         required
                         onChange={handleChange}  
-                        placeholder="1,000,000" 
+                        placeholder="6%" 
                         value={data.updateRateAPR}
                         name="updateRateAPR"
                         className={classes.input}
-                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatSimple, autoFocus: true }}
-                      /> : <Typography variant="body2" color="primary"><NumberFormat value={data.updateRateAPR} displayType={'text'} thousandSeparator={true} /></Typography>
+                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage, autoFocus: true }}
+                      /> : <Typography variant="body2" color="primary">{data.updateRateAPR}%</Typography>
                       }
                   </Grid>
                 </Grid>
