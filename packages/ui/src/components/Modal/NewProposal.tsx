@@ -12,7 +12,12 @@ import {
   Grid,
 } from "@material-ui/core";
 import NumberFormat from 'react-number-format';
-import { NumberFormatSimple, NumberFormatPercentage, NumberFormatCustom } from 'components/Input/Number';
+import {
+  NumberFormatSimple,
+  NumberFormatPercentage,
+  NumberFormatCustom,
+  NumberFormatCustomDays
+} from 'components/Input/Number';
 
 import { BasicButton } from "components";
 import { CloseIcon } from "components/@material-icons";
@@ -27,14 +32,14 @@ function NewProposalModal(props: any) {
     typeOfToken: 'usdc',
     linkInfo: '',
     otherAddress: '',
-    stakeTarget: 'staketarget',
+    parameter: 'staketarget',
     stakeAmount: '',
     minAmountAPR: 0,
     maxAmountAPR: 0,
     updateRateAPR: 0,
     voteWeightAmount: 0,
+    unstakeWaitPeriod: 0,
   });
-
   const { setProposalModal, setDelegateAddress, newProposalModal } = props;
 
   const onClose = () => {
@@ -52,17 +57,18 @@ function NewProposalModal(props: any) {
     onClose();
     setDelegateAddress && setDelegateAddress(data.address);
   }
-  
-  const maxButtonStyles = { textDecoration: "underline", cursor: "pointer", marginLeft: "-50px" }
-  const MaxButton = (
-    <Typography 
-      variant="body2" 
-      color="primary" 
-      style={maxButtonStyles}
-    >
-      MAX
-    </Typography>
-  );
+
+  // MAX Button not needed atm.
+  // const maxButtonStyles = { textDecoration: "underline", cursor: "pointer", marginLeft: "-50px" }
+  // const MaxButton = (
+  //   <Typography 
+  //     variant="body2" 
+  //     color="primary" 
+  //     style={maxButtonStyles}
+  //   >
+  //     MAX
+  //   </Typography>
+  // );
 
   const proposalTypeStyles = (
     data.typeOfProposal === "updateParameters" ? classes.newProposalUpdateParameters 
@@ -194,8 +200,8 @@ function NewProposalModal(props: any) {
                         style={{width: '175px'}}
                         labelId="stake-target-select-label"
                         id="stake-target-select"
-                        value={data.stakeTarget}
-                        name="stakeTarget"
+                        value={data.parameter}
+                        name="parameter"
                         onChange={handleChange}
                         input={<CustomSelect  />}>
                         <MenuItem value={"staketarget"}>Stake Target</MenuItem>
@@ -203,6 +209,7 @@ function NewProposalModal(props: any) {
                         <MenuItem value={"maxapr"}>Maximum APR</MenuItem>
                         <MenuItem value={"updateapr"}>APR Update Rate</MenuItem>
                         <MenuItem value={"voteweight"}>Voting Weight</MenuItem>
+                        <MenuItem value={"unstakewaitperiod"}>Unstake Waiting Period</MenuItem>
                     </Select>
                   </Grid>
                 </Grid>
@@ -213,7 +220,7 @@ function NewProposalModal(props: any) {
                   </Grid>
                   <Grid item xs={6}>
                     {
-                      data.stakeTarget === "staketarget" ? 
+                      data.parameter === "staketarget" ? 
                       <TextField 
                         required
                         onChange={handleChange}  
@@ -221,7 +228,7 @@ function NewProposalModal(props: any) {
                         value={data.stakeAmount}
                         name="stakeAmount"
                         className={classes.input}
-                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatCustom, endAdornment: MaxButton}}
+                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatCustom, autoFocus: true}}
                       /> : (
                         <Typography variant="body2" color="primary">
                           <NumberFormat value={data.stakeAmount} displayType={'text'} thousandSeparator={true} suffix={' API3'} />
@@ -236,7 +243,7 @@ function NewProposalModal(props: any) {
                     <Typography variant="body2" color="primary">Minimum APR</Typography>
                   </Grid>
                   <Grid item xs={6}>
-                    {data.stakeTarget === "minapr" ? 
+                    {data.parameter === "minapr" ? 
                     <Box width="12vh">
                       <TextField 
                         required
@@ -245,7 +252,7 @@ function NewProposalModal(props: any) {
                         value={data.minAmountAPR}
                         name="minAmountAPR"
                         className={classes.input}
-                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage }}
+                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage, autoFocus: true }}
                       />
                       </Box>
                       :
@@ -258,7 +265,7 @@ function NewProposalModal(props: any) {
                     <Typography variant="body2" color="primary">Maximum APR</Typography>
                   </Grid>
                   <Grid item xs={6}>
-                    {data.stakeTarget === "maxapr" ? 
+                    {data.parameter === "maxapr" ? 
                     <Box width="12vh">
                       <TextField 
                         required
@@ -267,7 +274,7 @@ function NewProposalModal(props: any) {
                         value={data.maxAmountAPR}
                         name="maxAmountAPR"
                         className={classes.input}
-                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage }}
+                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage, autoFocus: true }}
                       />
                       </Box>
                       :
@@ -280,7 +287,7 @@ function NewProposalModal(props: any) {
                     <Typography variant="body2" color="primary">APR Update Rate</Typography>
                   </Grid>
                   <Grid item xs={6}>
-                    {data.stakeTarget === "updateapr" ? 
+                    {data.parameter === "updateapr" ? 
                       <TextField 
                         required
                         onChange={handleChange}  
@@ -288,7 +295,7 @@ function NewProposalModal(props: any) {
                         value={data.updateRateAPR}
                         name="updateRateAPR"
                         className={classes.input}
-                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatSimple, endAdornment: MaxButton }}
+                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatSimple, autoFocus: true }}
                       /> : <Typography variant="body2" color="primary"><NumberFormat value={data.updateRateAPR} displayType={'text'} thousandSeparator={true} /></Typography>
                       }
                   </Grid>
@@ -299,7 +306,7 @@ function NewProposalModal(props: any) {
                     <Typography style={{width: '185px'}} variant="body2" color="primary">Minimum Voting Weight to Create a Proposal</Typography>
                   </Grid>
                   <Grid item xs={6}>
-                    {data.stakeTarget === "voteweight" ? 
+                    {data.parameter === "voteweight" ? 
                     <Box width="12vh">
                       <TextField 
                         required
@@ -308,11 +315,33 @@ function NewProposalModal(props: any) {
                         value={data.voteWeightAmount}
                         name="voteWeightAmount"
                         className={classes.input}
-                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage}}
+                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage, autoFocus: true}}
                       />
                       </Box>
                       :
                       <Typography variant="body2" color="primary">{data.voteWeightAmount}%</Typography>}
+                  </Grid>
+                </Grid>
+
+                <Grid container className={classes.grid}>
+                  <Grid item xs={6}>
+                    <Typography style={{width: '185px'}} variant="body2" color="primary">Unstake Waiting Period</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                      { data.parameter === "unstakewaitperiod" ?
+                      <Box width="12vh">
+                        <TextField 
+                          required
+                          onChange={handleChange}  
+                          placeholder="7"
+                          value={data.unstakeWaitPeriod}
+                          name="unstakeWaitPeriod"
+                          className={classes.input}
+                          InputProps={{ disableUnderline: true, inputComponent: NumberFormatCustomDays, autoFocus: true }}
+                        />
+                      </Box>
+                      :
+                      <Typography variant="body2" color="primary"> <NumberFormat value={data.unstakeWaitPeriod} displayType={'text'}  suffix={' days'} /></Typography>}
                   </Grid>
                 </Grid>
               </Box>
