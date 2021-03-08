@@ -1,0 +1,26 @@
+{
+  "name": "@api3-dao/pool",
+  "version": "0.1.0",
+  "license": "MIT",
+  "scripts": {
+    "build": "hardhat compile",
+    "deploy:mainnet": "hardhat deploy --network mainnet",
+    "deploy:rinkeby": "hardhat deploy --network rinkeby",
+    "flatten": "hardhat flatten contracts/Api3Pool.sol > Api3Pool.flat.sol && yarn run flatten:delete-license-lines",
+    "flatten:delete-license-lines": "sed --in-place '/SPDX-License-Identifier/d' *.flat.sol",
+    "test": "hardhat test",
+    "test:coverage": "hardhat coverage",
+    "test:gas": "REPORT_GAS=TRUE hardhat test"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.1",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/contracts": "^3.4.1",
+    "chai": "^4.3.3",
+    "ethereum-waffle": "^3.3.0",
+    "hardhat": "^2.1.1",
+    "hardhat-deploy": "^0.7.0-beta.46",
+    "hardhat-gas-reporter": "^1.0.4",
+    "solidity-coverage": "^0.7.16"
+  }
+}
