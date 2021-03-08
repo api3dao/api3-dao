@@ -13,7 +13,6 @@ import {
 } from "@material-ui/core";
 import NumberFormat from 'react-number-format';
 import {
-  NumberFormatSimple,
   NumberFormatPercentage,
   NumberFormatCustom,
   NumberFormatCustomDays
