@@ -8,7 +8,9 @@
     "lint:solhint": "solhint ./packages/pool/contracts/*.sol && solhint ./packages/dao/contracts/*.sol",
     "lint:eslint": "eslint . --ext .js",
     "prettify": "prettier --write \"./**/*.js\"",
-    "pretty-quick": "pretty-quick --staged --pattern \"**/*.js\""
+    "pretty-quick": "pretty-quick --staged --pattern \"**/*.js\"",
+    "start:ui": "cd packages/ui && yarn start",
+    "ui": "yarn start:ui"
   },
   "devDependencies": {
     "eslint": "^7.21.0",
