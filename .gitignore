@@ -9,3 +9,6 @@
 **/*.flat.sol
 **/coverage.json
 **/gas_report
+.env
+.DS_Store
+yarn-error.log

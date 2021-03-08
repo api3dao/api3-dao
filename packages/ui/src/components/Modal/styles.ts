@@ -19,22 +19,29 @@ const modals = {
     }
   },
   newProposal: {
-    height: "573px",
+    height: "490px",
     width: "529px",
     borderRadius: 2,
     padding: "16px"
   },
   newProposalWithOther: {
-    height: "716px",
+    height: "610px",
     width: "529px",
     borderRadius: 2,
     padding: "16px"
   },
-  newProposalType2: {
+  newProposalUpdateParameters: {
     width: "529px",
     borderRadius: 2,
     padding: "16px"
   },
+  grid: {
+    margin: '0px 0px 25px 0px',
+    alignItems: "center",
+  },
+  gridItems: {
+    margin: '0px 0px 25px 0px',
+  }
 }
 
 export const CustomSelect = withStyles((theme: Theme) =>

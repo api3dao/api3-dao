@@ -9,132 +9,64 @@ import {
   TextField,
   Select,
   MenuItem,
+  Grid,
 } from "@material-ui/core";
 import NumberFormat from 'react-number-format';
+import { NumberFormatSimple, NumberFormatPercentage, NumberFormatCustom } from 'components/Input/Number';
 
 import { BasicButton } from "components";
 import { CloseIcon } from "components/@material-icons";
 import { useStyles, CustomSelect }from "components/Modal/styles";
 
-const styles = {
-  font16: {
-    fontSize: 16 
-  }
-}
-
 function NewProposalModal(props: any) {
   const classes = useStyles();
-  const [address, setAddress] = useState("");
-  const [typeOfProposal, setTypeOfProposal ] = useState("type1");
-  const [amount, setAmount] = useState(0);
-  const [typeOfToken, setTypeOfToken ] = useState("usdc");
-  const [linkInfo, setLinkInfo] = useState("");
-  const [otherAddress, setOtherAddress] = useState("");
-  const [parameter, setParameter] = useState("staketarget");
-  const [stakeAmount, setStakeAmount] = useState("10000000");
-  const [minAmountAPR, setMinAmountAPR] = useState(2.5);
-  const [maxAmountAPR, setMaxAmountAPR] = useState(75);
-  const [updateRateAPR, setUpdateRateAPR] = useState(1);
-  const [voteWeightAmount, setVoteWeightAmount] = useState(0.1);
-  const [unstakeWaitPeriod, setUnstakeWaitPeriod] = useState("7");
+  const [data, setData] = useState({
+    address: '',
+    typeOfProposal: 'transfer',
+    amount: 0,
+    typeOfToken: 'usdc',
+    linkInfo: '',
+    otherAddress: '',
+    stakeTarget: 'staketarget',
+    stakeAmount: '',
+    minAmountAPR: 0,
+    maxAmountAPR: 0,
+    updateRateAPR: 0,
+    voteWeightAmount: 0,
+  });
+
   const { setProposalModal, setDelegateAddress, newProposalModal } = props;
 
   const onClose = () => {
     setProposalModal(false);
   }
 
-  const onChange = (event: any, setState: Function ) => {
-    setState(event.target.value);
+  const handleChange = (event: any ) => {
+    setData({
+      ...data,
+      [event.target.name]: event.target.value
+    });
   }
 
   const onSubmit = () => {
     onClose();
-    setDelegateAddress(address);
-  }
-
-  function NumberFormatCustom(props: any) {
-    const { inputRef, onChange, ...other } = props;
-    return (
-      <NumberFormat
-        {...other}
-        style={styles.font16}
-        getInputRef={inputRef}
-        allowNegative={false}
-        onValueChange={values => {
-          onChange({
-            target: {
-              name: props.name,
-              value: values.value
-            }
-          });
-        }}
-        thousandSeparator
-        suffix={" API3"}
-        // isNumericString
-      />
-    );
+    setDelegateAddress && setDelegateAddress(data.address);
   }
   
-  function NumberFormatCustomDays(props: any) {
-    const { inputRef, onChange, ...other } = props;
-    return (
-      <NumberFormat
-        {...other}
-        style={styles.font16}
-        getInputRef={inputRef}
-        allowNegative={false}
-        onValueChange={values => {
-          onChange({
-            target: {
-              name: props.name,
-              value: values.value
-            }
-          });
-        }}
-        suffix={" days"}
-        // isNumericString
-      />
-    );
-  }
-  // MAX Button not needed atm.
-  // const maxButtonStyles = { textDecoration: "underline", cursor: "pointer", marginLeft: "-50px" }
-  // const MaxButton = (
-  //   <Typography 
-  //     variant="body2" 
-  //     color="primary" 
-  //     style={maxButtonStyles}
-  //   >
-  //     MAX
-  //   </Typography>
-  // );
-  
-  function NumberFormatPercentage(props: any) {
-    const { inputRef, onChange, ...other } = props;
+  const maxButtonStyles = { textDecoration: "underline", cursor: "pointer", marginLeft: "-50px" }
+  const MaxButton = (
+    <Typography 
+      variant="body2" 
+      color="primary" 
+      style={maxButtonStyles}
+    >
+      MAX
+    </Typography>
+  );
 
-    return (
-      <NumberFormat
-        {...other}
-        style={styles.font16}
-        getInputRef={inputRef}
-        allowNegative={false}
-        allowLeadingZeros={false}
-        onValueChange={values => {
-          onChange({
-            target: {
-              name: props.name,
-              value: values.value
-            }
-          });
-        }}
-        isAllowed={(values) => parseInt(values.value) <= 100}
-        suffix={" %"}
-        isNumericString
-      />
-    );
-  }
   const proposalTypeStyles = (
-    typeOfProposal === "type2" ? classes.newProposalType2 
-    : typeOfToken === "other" ? classes.newProposalWithOther 
+    data.typeOfProposal === "updateParameters" ? classes.newProposalUpdateParameters 
+    : data.typeOfToken === "other" ? classes.newProposalWithOther 
     : classes.newProposal
   )
   
@@ -146,284 +78,264 @@ function NewProposalModal(props: any) {
       aria-describedby="simple-modal-description"
     >
       <Box display="flex" alignItems="center" justifyContent="center" flexDirection="column" height="100%">
-        <Box onClick={onClose} marginLeft="23%">
-          <CloseIcon color="secondary" fontSize="large" />
-        </Box>
+        <Paper className={proposalTypeStyles} style={{padding: '5px 0px', background: 'transparent', height: 40}}>
+            <CloseIcon onClick={onClose} color="secondary" fontSize="large" style={{cursor: 'pointer', float: 'right'}} />
+        </Paper>
         <Paper className={proposalTypeStyles}>
-          <Box display="flex" alignContent="center" marginBottom="3vh">
-            <Box display="flex" alignItems="center" justifyContent="center">
+          <Grid container className={classes.grid}>
+            <Grid style={{alignItems: 'center', display: 'flex'}} item xs={12}>
               <Typography variant="body2" color="primary">Proposal Type</Typography>
-            </Box>
-            <Box marginLeft="36px" width="174px">
               <Select
-                  fullWidth
+                  style={{ marginLeft: '20px', width: '175px'}}
                   labelId="typeof-select-label"
                   id="typeof-select"
-                  value={typeOfProposal}
-                  onChange={(event) => onChange(event, setTypeOfProposal)}
+                  value={data.typeOfProposal}
+                  name="typeOfProposal"
+                  onChange={handleChange}
                   input={<CustomSelect  />}
-                  >
-                  <MenuItem value={"type1"}>Transfer</MenuItem>
-                  <MenuItem value={"type2"}>Update Parameters</MenuItem>
+              >
+                  <MenuItem value={"transfer"}>Transfer</MenuItem>
+                  <MenuItem value={"updateParameters"}>Update Parameters</MenuItem>
               </Select>
-            </Box>
-          </Box>
+            </Grid>
+          </Grid>
           {
-            typeOfProposal === "type1" && (
+            data.typeOfProposal === "transfer" ? (
               <Box>
-                <Box display="flex" marginBottom="24px">
-                  <Box paddingRight="6px">
+                <Grid container className={classes.grid}>
+                  <Grid item xs={12} style={{display: 'flex'}} className={classes.gridItems}>
                     <Typography variant="body2" color="primary">Recipient</Typography>
-                  </Box>
-                  { 
-                    typeOfToken !== "other" && (
-                      <Typography variant="body2" color="textSecondary">Must be a valid Ethereum address</Typography>
-                    )
-                  }
-                </Box>
-                <TextField 
-                  required
-                  onChange={(event) => onChange(event, setAddress)}  
-                  placeholder="Enter recipient's address here" 
-                  value={address}
-                  className={classes.input}
-                  InputProps={{ disableUnderline: true }}
-                />
-              <Box display="flex"  marginTop="36px" >
-                  <Box width="65%" marginRight="24px">
-                  <Typography variant="body2" color="primary">Amount</Typography>
-                  <Box marginTop="24px">
+                    { data.typeOfToken !== "other" && ( <Typography variant="body2" color="textSecondary">Must be a valid Ethereum address</Typography> ) }
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField 
+                      required
+                      onChange={handleChange}  
+                      placeholder="Enter recipient's address here" 
+                      value={data.address}
+                      name='address'
+                      className={classes.input}
+                      InputProps={{ disableUnderline: true }}
+                    />
+                  </Grid>
+                </Grid>
+                
+                {/* Labels */}
+                <Grid container className={classes.grid}>
+                  <Grid item xs={8}>
+                    <Typography variant="body2" color="primary">Amount</Typography>
+                  </Grid>
+                  <Grid item xs={1}></Grid>
+                  <Grid item xs={3}>
+                    <Typography variant="body2" color="primary">Token</Typography>
+                  </Grid>
+                </Grid>
+
+                {/* Inputs */}
+                <Grid container className={classes.grid}>
+                  <Grid item xs={8}>
+                    <TextField 
+                        required
+                        onChange={handleChange}  
+                        placeholder="1234" 
+                        value={data.amount}
+                        name="amount"
+                        className={classes.input}
+                        InputProps={{ disableUnderline: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={1}></Grid>
+                  <Grid item xs={3}>
+                    <Select
+                        fullWidth
+                        labelId="token-select-label"
+                        id="token-select"
+                        value={data.typeOfToken}
+                        name="typeOfToken"
+                        onChange={handleChange}
+                        input={<CustomSelect  />}
+                        >
+                        <MenuItem value={"usdc"}>USDC</MenuItem>
+                        <MenuItem value={"eth"}>ETH</MenuItem>
+                        <MenuItem value={"api3"}>API3</MenuItem>
+                        <MenuItem value={"other"}>Other</MenuItem>
+                    </Select>
+                  </Grid>
+                </Grid>
+
+                {
+                  data.typeOfToken === "other" && 
+                  <Grid container className={classes.grid}>
+                    <Grid item xs={12} className={classes.gridItems}>
+                      <Typography variant="body2" color="primary">Other Token Address</Typography>
+                    </Grid>
+                    <Grid item xs={12}>
                       <TextField 
                           required
-                          onChange={(event) => onChange(event, setAmount)}  
-                          placeholder="1234" 
-                          value={amount}
+                          onChange={handleChange}  
+                          placeholder="Enter token’s address" 
+                          value={data.otherAddress}
+                          name="otherAddress"
                           className={classes.input}
                           InputProps={{ disableUnderline: true }}
                       />
-                  </Box>
-                </Box>
-                <Box width="30vh">
-                  <Typography variant="body2" color="primary">Token</Typography>
-                  <Box marginTop="24px">
-                  <Select
-                      fullWidth
-                      labelId="token-select-label"
-                      id="token-select"
-                      value={typeOfToken}
-                      onChange={(e) => onChange(e, setTypeOfToken)}
-                      input={<CustomSelect  />}
-                      >
-                      <MenuItem value={"usdc"}>USDC</MenuItem>
-                      <MenuItem value={"eth"}>ETH</MenuItem>
-                      <MenuItem value={"api3"}>API3</MenuItem>
-                      <MenuItem value={"other"}>Other</MenuItem>
-                  </Select>
-                  </Box>
-                </Box>
+                    </Grid>
+                  </Grid>
+                }
               </Box>
-              {typeOfToken === "other" &&
-              <Box marginBottom="24px" marginTop="28px">
-                  <Box marginBottom="24px">
-                      <Typography variant="body2" color="primary">Other Token Address</Typography>
-                  </Box>
-                  <TextField 
-                      required
-                      onChange={(event) => onChange(event, setOtherAddress)}  
-                      placeholder="Enter token’s address" 
-                      value={otherAddress}
-                      className={classes.input}
-                      InputProps={{ disableUnderline: true }}
-                  />
-              </Box>
-              }
-              <Box marginBottom="24px" marginTop="28px">
-                  <Box marginBottom="24px">
-                      <Typography variant="body2" color="primary">Reference</Typography>
-                  </Box>
-                  <TextField 
-                      required
-                      onChange={(event) => onChange(event, setLinkInfo)}  
-                      placeholder="Link to more information" 
-                      value={linkInfo}
-                      className={classes.input}
-                      InputProps={{ disableUnderline: true }}
-                  />
-              </Box>
+            ) : (
+              <Box>
+                <Grid container className={classes.grid}>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="primary">DAO Parameter to Update</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Select
+                        style={{width: '175px'}}
+                        labelId="stake-target-select-label"
+                        id="stake-target-select"
+                        value={data.stakeTarget}
+                        name="stakeTarget"
+                        onChange={handleChange}
+                        input={<CustomSelect  />}>
+                        <MenuItem value={"staketarget"}>Stake Target</MenuItem>
+                        <MenuItem value={"minapr"}>Minimum APR</MenuItem>
+                        <MenuItem value={"maxapr"}>Maximum APR</MenuItem>
+                        <MenuItem value={"updateapr"}>APR Update Rate</MenuItem>
+                        <MenuItem value={"voteweight"}>Voting Weight</MenuItem>
+                    </Select>
+                  </Grid>
+                </Grid>
+
+                <Grid container className={classes.grid}>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="primary">Stake Target</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    {
+                      data.stakeTarget === "staketarget" ? 
+                      <TextField 
+                        required
+                        onChange={handleChange}  
+                        placeholder="10,000,000" 
+                        value={data.stakeAmount}
+                        name="stakeAmount"
+                        className={classes.input}
+                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatCustom, endAdornment: MaxButton}}
+                      /> : (
+                        <Typography variant="body2" color="primary">
+                          <NumberFormat value={data.stakeAmount} displayType={'text'} thousandSeparator={true} suffix={' API3'} />
+                          </Typography>
+                        )
+                      }
+                  </Grid>
+                </Grid>
+
+                <Grid container className={classes.grid}>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="primary">Minimum APR</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    {data.stakeTarget === "minapr" ? 
+                    <Box width="12vh">
+                      <TextField 
+                        required
+                        onChange={handleChange}  
+                        placeholder={"2.5"}
+                        value={data.minAmountAPR}
+                        name="minAmountAPR"
+                        className={classes.input}
+                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage }}
+                      />
+                      </Box>
+                      :
+                      <Typography variant="body2" color="primary">{data.minAmountAPR}%</Typography>}
+                  </Grid>
+                </Grid>
+
+                <Grid container className={classes.grid}>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="primary">Maximum APR</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    {data.stakeTarget === "maxapr" ? 
+                    <Box width="12vh">
+                      <TextField 
+                        required
+                        onChange={handleChange}  
+                        placeholder={"75"}
+                        value={data.maxAmountAPR}
+                        name="maxAmountAPR"
+                        className={classes.input}
+                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage }}
+                      />
+                      </Box>
+                      :
+                      <Typography variant="body2" color="primary">{data.maxAmountAPR}%</Typography>}
+                  </Grid>
+                </Grid>
+
+                <Grid container className={classes.grid}>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="primary">APR Update Rate</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    {data.stakeTarget === "updateapr" ? 
+                      <TextField 
+                        required
+                        onChange={handleChange}  
+                        placeholder="1,000,000" 
+                        value={data.updateRateAPR}
+                        name="updateRateAPR"
+                        className={classes.input}
+                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatSimple, endAdornment: MaxButton }}
+                      /> : <Typography variant="body2" color="primary"><NumberFormat value={data.updateRateAPR} displayType={'text'} thousandSeparator={true} /></Typography>
+                      }
+                  </Grid>
+                </Grid>
+
+                <Grid container className={classes.grid}>
+                  <Grid item xs={6}>
+                    <Typography style={{width: '185px'}} variant="body2" color="primary">Minimum Voting Weight to Create a Proposal</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    {data.stakeTarget === "voteweight" ? 
+                    <Box width="12vh">
+                      <TextField 
+                        required
+                        onChange={handleChange}  
+                        placeholder={"0.1"}
+                        value={data.voteWeightAmount}
+                        name="voteWeightAmount"
+                        className={classes.input}
+                        InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage}}
+                      />
+                      </Box>
+                      :
+                      <Typography variant="body2" color="primary">{data.voteWeightAmount}%</Typography>}
+                  </Grid>
+                </Grid>
               </Box>
             )
           }
-          {
-           typeOfProposal === "type2" && (
-           <Box>
-             <Box display="flex" marginBottom="2vh" alignContent="center">
-               <Box paddingRight="3vh" display="flex">
-                  <Typography variant="body2" color="primary">DAO Parameter to Update</Typography>
-               </Box>
-               <Box width="178px">
-               <Select
-                   fullWidth
-                   labelId="stake-target-select-label"
-                   id="stake-target-select"
-                   value={parameter}
-                   onChange={(event) => onChange(event, setParameter)}
-                   input={<CustomSelect  />}>
-                   <MenuItem value={"staketarget"}>Stake Target</MenuItem>
-                   <MenuItem value={"minapr"}>Minimum APR</MenuItem>
-                   <MenuItem value={"maxapr"}>Maximum APR</MenuItem>
-                   <MenuItem value={"updateapr"}>APR Update Rate</MenuItem>
-                   <MenuItem value={"voteweight"}>Voting Weight</MenuItem>
-                   <MenuItem value={"unstakewaitperiod"}>Unstake Waiting Period</MenuItem>
-               </Select>
-               </Box>
-             </Box>
-           
-             <Box marginTop="4vh" marginBottom="8vh" display="flex">
-               <Box width="50%" display="flex" justifyContent="space-between" flexDirection="column">
-                   <Box marginBottom="4vh">
-                     <Typography variant="body2" color="primary">Stake Target</Typography>
-                   </Box>
-                   <Box marginBottom="4vh">
-                     <Typography variant="body2" color="primary">Minimum APR</Typography>
-                   </Box>
-                   <Box marginBottom="4vh">
-                     <Typography variant="body2" color="primary">Maximum APR</Typography>
-                   </Box>
-                   <Box marginBottom="4vh">
-                     <Typography variant="body2" color="primary">APR Update Rate</Typography>
-                   </Box>
-                   <Box marginBottom="4vh">
-                     <Typography variant="body2" color="primary">Minimum Voting Weight to Create a Proposal</Typography>
-                   </Box>
-                   <Box marginBottom="4vh">
-                     <Typography variant="body2" color="primary">Unstake Waiting Period</Typography>
-                   </Box>
-               </Box>
-               <Box width="50%">
-                 <Box marginBottom="4vh">
-                     {
-                     parameter === "staketarget" ? 
-                      <TextField 
-                       required
-                       onChange={(event) => onChange(event, setStakeAmount)}  
-                       placeholder="10,000,000" 
-                       value={stakeAmount}
-                       className={classes.input}
-                       InputProps={{ disableUnderline: true, inputComponent: NumberFormatCustom, autoFocus: true }}
-                     /> : (
-                       <Typography variant="body2" color="primary">
-                         <NumberFormat value={stakeAmount} displayType={'text'} thousandSeparator={true} suffix={' API3'} />
-                         </Typography>
-                       )
-                     }
-                 </Box>
-                   
-                 <Box marginBottom="4vh">
-                 {parameter === "minapr" ? 
-                 <Box width="12vh">
-                    <TextField 
-                     required
-                     onChange={(event) => onChange(event, setMinAmountAPR)}  
-                     placeholder={"2.5"}
-                     value={minAmountAPR}
-                     className={classes.input}
-                     InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage,  autoFocus: true, }}
-                   />
-                   </Box>
-                    :
-                   <Typography variant="body2" color="primary">{minAmountAPR}%</Typography>}
-                 </Box>
-                   
-                 <Box marginBottom="4vh">
-                 {parameter === "maxapr" ? 
-                 <Box width="12vh">
-                    <TextField 
-                     required
-                     onChange={(event) => onChange(event, setMaxAmountAPR)}  
-                     placeholder={"75"}
-                     value={maxAmountAPR}
-                     className={classes.input}
-                     InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage, autoFocus: true }}
-                   />
-                   </Box>
-                    :
-                   <Typography variant="body2" color="primary">{maxAmountAPR}%</Typography>}
-                 </Box>
-                 
-                 <Box marginBottom="4vh">
-                 {parameter === "updateapr" ? 
-                    <TextField 
-                     required
-                     onChange={(event) => onChange(event, setUpdateRateAPR)}  
-                     placeholder="1" 
-                     value={updateRateAPR}
-                     className={classes.input}
-                     InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage, autoFocus: true }}
-                   /> : (
-                      <Typography variant="body2" color="primary">
-                        {updateRateAPR}%
-                      </Typography>
-                    )
-                  }
-                 </Box>
-                   
-                 <Box marginBottom="4vh">
-                   {
-                    parameter === "voteweight" ? (
-                      <Box width="12vh">
-                         <TextField 
-                          required
-                          onChange={(event) => onChange(event, setVoteWeightAmount)}  
-                          placeholder={"0.1"}
-                          value={voteWeightAmount}
-                          className={classes.input}
-                          InputProps={{ disableUnderline: true, inputComponent: NumberFormatPercentage, autoFocus: true }}
-                        />
-                      </Box>
-                    ) : (
-                      <Typography variant="body2" color="primary">
-                       { voteWeightAmount }%
-                      </Typography>
-                    )
-                   }
-                 </Box>
 
-                 <Box marginBottom="4vh">
-                   {
-                   parameter === "unstakewaitperiod" ? 
-                    <TextField 
-                     required
-                     onChange={(event) => onChange(event, setUnstakeWaitPeriod)}  
-                     placeholder="7" 
-                     value={unstakeWaitPeriod}
-                     className={classes.input}
-                     InputProps={{ disableUnderline: true, inputComponent: NumberFormatCustomDays, autoFocus: true }}
-                   /> : (
-                     <Typography variant="body2" color="primary">
-                       <NumberFormat value={unstakeWaitPeriod} displayType={'text'}  suffix={' days'} />
-                      </Typography>
-                     )
-                   }
-                 </Box> 
-               </Box>
-             </Box>
-           
-             <Box marginBottom="2vh">
-               <Box marginBottom="2vh">
-                  <Typography variant="body2" color="primary">Reference</Typography>
-               </Box>
-               <TextField 
-                 required
-                 onChange={(event) => onChange(event, setLinkInfo)}  
-                 placeholder="Link to more information" 
-                 value={linkInfo}
-                 className={classes.input}
-                 InputProps={{ disableUnderline: true }}
-               />
-             </Box>
-           </Box>
-           )
-          }
+          <Grid container className={classes.grid}>
+            <Grid item xs={12} style={{marginBottom: '15px'}}>
+              <Typography variant="body2" color="primary">Reference</Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                onChange={handleChange}  
+                placeholder="Link to more information" 
+                value={data.linkInfo}
+                name="linkInfo"
+                className={classes.input}
+                InputProps={{ disableUnderline: true }}
+              />
+            </Grid>
+          </Grid>
+
           <Box display="flex" justifyContent="flex-end">
             <BasicButton title="Submit Proposal" color="white" onClick={() => onSubmit()} />
           </Box> 
