@@ -21,4 +21,4 @@ npm run diff
 
 1. Set the DAO Agent at `Api3Pool.sol` as the address of the Agent app of the DAO
 
-1. Set the API3 pool at `Api3Voting.sol` as the address of the API3 pool
+1. Have the API3 token owner (API3DAOv1) give minting authorization to `Api3Pool.sol`

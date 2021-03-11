@@ -10,7 +10,7 @@ import "@aragon/os/contracts/common/IForwarder.sol";
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
 import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
-import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
+import "@aragon/minime/contracts/MiniMeToken.sol";
 
 import "./interfaces/IApi3Pool.sol";
 
@@ -99,14 +99,8 @@ contract Api3Voting is IForwarder, AragonApp {
         supportRequiredPct = _supportRequiredPct;
         minAcceptQuorumPct = _minAcceptQuorumPct;
         voteTime = _voteTime;
-    }
-
-    function setApi3Pool(address _api3Pool)
-        external
-    {
-        require(_api3Pool != address(0), "VOTING_INVALID_POOL");
-        require(address(api3Pool) == address(0), "VOTING_POOL_ALREADY_SET");
-        api3Pool = IApi3Pool(_api3Pool);
+        // The pool acts as the MiniMe token
+        api3Pool = IApi3Pool(_token);
     }
 
     /**
@@ -267,18 +261,17 @@ contract Api3Voting is IForwarder, AragonApp {
         internal
         returns (uint256 voteId)
     {
-        require(address(api3Pool) != address(0), "VOTING_API3_POOL_NOT_SET");
-        require(userAddressToLastNewProposalTimestamp[msg.sender] + api3Pool.EPOCH_LENGTH() < now, "VOTING_HIT_PROPOSAL_COOLDOWN");
+        require(userAddressToLastNewProposalTimestamp[msg.sender].add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_PROPOSAL_COOLDOWN");
         userAddressToLastNewProposalTimestamp[msg.sender] = now;
 
         uint64 snapshotBlock = getBlockNumber64() - 1; // avoid double voting in this very block
         uint256 votingPower = token.totalSupplyAt(snapshotBlock);
         require(votingPower > 0, ERROR_NO_VOTING_POWER);
 
-        uint256 proposalMakerVotingPower = api3Pool.balanceOfAt(snapshotBlock, msg.sender);
+        uint256 proposalMakerVotingPower = api3Pool.balanceOfAt(msg.sender, snapshotBlock);
         require(
-            proposalMakerVotingPower > votingPower * api3Pool.proposalVotingPowerThreshold() / 1e8,
-            "VOTING_HIT_PROPOSAL_THRESHOLD"
+            proposalMakerVotingPower >= votingPower.mul(api3Pool.proposalVotingPowerThreshold()).div(1e8),
+            "API3_HIT_PROPOSAL_THRESHOLD"
             );
 
         voteId = votesLength++;
