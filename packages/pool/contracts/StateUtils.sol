@@ -1,14 +1,11 @@
 //SPDX-License-Identifier: MIT
-pragma solidity 0.6.12;
+pragma solidity 0.8.2;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./auxiliary/interfaces/IApi3Token.sol";
+import "./auxiliary/interfaces/v0.8.2/IApi3Token.sol";
 import "./interfaces/IStateUtils.sol";
 
 /// @title Contract that keeps state variables
 contract StateUtils is IStateUtils {
-    using SafeMath for uint256;
-
     struct Checkpoint {
         uint256 fromBlock;
         uint256 value;
@@ -72,8 +69,8 @@ contract StateUtils is IStateUtils {
     /// Hardcoded as 52 epochs, which corresponds to a year.
     uint256 public constant REWARD_VESTING_PERIOD = 52;
 
-    /// @notice Epochs are indexed as `now / EPOCH_LENGTH`. `genesisEpoch` is
-    /// the index of the epoch in which the pool is deployed.
+    /// @notice Epochs are indexed as `block.timestamp / EPOCH_LENGTH`.
+    /// `genesisEpoch` is the index of the epoch in which the pool is deployed.
     uint256 public immutable genesisEpoch;
 
     /// @notice Records of rewards paid in each epoch
@@ -155,7 +152,6 @@ contract StateUtils is IStateUtils {
 
     /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
-        public
     {
         api3Token = IApi3Token(api3TokenAddress);
         // Initialize the share price at 1
@@ -169,7 +165,7 @@ contract StateUtils is IStateUtils {
             }));
         // Set the current epoch as the genesis epoch and skip its reward
         // payment
-        uint256 currentEpoch = now.div(EPOCH_LENGTH);
+        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
         genesisEpoch = currentEpoch;
         epochIndexOfLastRewardPayment = currentEpoch;
     }

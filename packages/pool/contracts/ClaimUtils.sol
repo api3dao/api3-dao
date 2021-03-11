@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity 0.6.12;
+pragma solidity 0.8.2;
 
 import "./StakeUtils.sol";
 import "./interfaces/IClaimUtils.sol";
@@ -14,7 +14,6 @@ contract ClaimUtils is StakeUtils, IClaimUtils {
 
     /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
-        public
         StakeUtils(api3TokenAddress)
     {}
 
@@ -40,7 +39,7 @@ contract ClaimUtils is StakeUtils, IClaimUtils {
         // We need `totalStakedNow` to be greater than `amount` because we 
         // always need at least 1 Wei staked to avoid division by zero errors
         require(totalStakedNow > amount, ERROR_VALUE);
-        uint256 totalStakedAfter = totalStakedNow.sub(amount);
+        uint256 totalStakedAfter = totalStakedNow - amount;
         totalStaked.push(Checkpoint({
             fromBlock: block.number,
             value: totalStakedAfter
