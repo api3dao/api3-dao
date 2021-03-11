@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity 0.6.12;
+pragma solidity 0.8.2;
 
 import "./TimelockUtils.sol";
 import "./interfaces/IApi3Pool.sol";
@@ -25,7 +25,6 @@ import "./interfaces/IApi3Pool.sol";
 contract Api3Pool is TimelockUtils, IApi3Pool {
     /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
-        public
         TimelockUtils(api3TokenAddress)
     {}
 }

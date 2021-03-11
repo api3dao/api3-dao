@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity 0.6.12;
+pragma solidity 0.8.2;
 
 import "./ClaimUtils.sol";
 import "./interfaces/ITimelockUtils.sol";
@@ -26,7 +26,6 @@ contract TimelockUtils is ClaimUtils, ITimelockUtils {
 
     /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
-        public
         ClaimUtils(api3TokenAddress)
     {}
 
@@ -54,8 +53,8 @@ contract TimelockUtils is ClaimUtils, ITimelockUtils {
                 && amount != 0,
             ERROR_VALUE
             );
-        users[userAddress].unstaked = users[userAddress].unstaked.add(amount);
-        users[userAddress].vesting = users[userAddress].vesting.add(amount);
+        users[userAddress].unstaked = users[userAddress].unstaked + amount;
+        users[userAddress].vesting = users[userAddress].vesting + amount;
         userToDepositorToTimelock[userAddress][msg.sender] = Timelock({
             totalAmount: amount,
             remainingAmount: amount,
@@ -84,24 +83,24 @@ contract TimelockUtils is ClaimUtils, ITimelockUtils {
         override
     {
         Timelock storage timelock = userToDepositorToTimelock[userAddress][timelockManagerAddress];
-        require(now > timelock.releaseStart, ERROR_UNAUTHORIZED);
+        require(block.timestamp > timelock.releaseStart, ERROR_UNAUTHORIZED);
         require(timelock.remainingAmount > 0, ERROR_UNAUTHORIZED);
         uint256 totalUnlocked;
-        if (now >= timelock.releaseEnd)
+        if (block.timestamp >= timelock.releaseEnd)
         {
             totalUnlocked = timelock.totalAmount;
         }
         else
         {
-            uint256 passedTime = now.sub(timelock.releaseStart);
-            uint256 totalTime = timelock.releaseEnd.sub(timelock.releaseStart);
-            totalUnlocked = timelock.totalAmount.mul(passedTime).div(totalTime);
+            uint256 passedTime = block.timestamp - timelock.releaseStart;
+            uint256 totalTime = timelock.releaseEnd - timelock.releaseStart;
+            totalUnlocked = timelock.totalAmount * passedTime / totalTime;
         }
-        uint256 previouslyUnlocked = timelock.totalAmount.sub(timelock.remainingAmount);
-        uint256 newlyUnlocked = totalUnlocked.sub(previouslyUnlocked);
+        uint256 previouslyUnlocked = timelock.totalAmount - timelock.remainingAmount;
+        uint256 newlyUnlocked = totalUnlocked - previouslyUnlocked;
         User storage user = users[userAddress];
-        user.vesting = user.vesting.sub(newlyUnlocked);
-        uint256 newRemainingAmount = timelock.remainingAmount.sub(newlyUnlocked);
+        user.vesting = user.vesting - newlyUnlocked;
+        uint256 newRemainingAmount = timelock.remainingAmount - newlyUnlocked;
         userToDepositorToTimelock[userAddress][timelockManagerAddress].remainingAmount = newRemainingAmount;
         emit UpdatedTimelock(
             userAddress,

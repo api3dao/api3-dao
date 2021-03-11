@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity 0.6.12;
+pragma solidity 0.8.2;
 
 import "./GetterUtils.sol";
 import "./interfaces/IRewardUtils.sol";
@@ -14,7 +14,6 @@ contract RewardUtils is GetterUtils, IRewardUtils {
 
     /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
-        public
         GetterUtils(api3TokenAddress)
     {}
 
@@ -29,24 +28,24 @@ contract RewardUtils is GetterUtils, IRewardUtils {
             return;
         }
         uint256 totalStakedNowPercentage = totalStakedNow
-            .mul(HUNDRED_PERCENT)
-            .div(api3Token.totalSupply());
+             * HUNDRED_PERCENT
+            / api3Token.totalSupply();
         // Calculate what % we are off from the target
         uint256 deltaAbsolute = totalStakedNowPercentage < stakeTarget 
-            ? stakeTarget.sub(totalStakedNowPercentage)
-            : totalStakedNowPercentage.sub(stakeTarget);
-        uint256 deltaPercentage = deltaAbsolute.mul(HUNDRED_PERCENT).div(stakeTarget);
+            ? stakeTarget - totalStakedNowPercentage
+            : totalStakedNowPercentage - stakeTarget;
+        uint256 deltaPercentage = deltaAbsolute * HUNDRED_PERCENT / stakeTarget;
         // Use the update coefficient to calculate what % we need to update
         // the APR with
-        uint256 aprUpdate = deltaPercentage.mul(aprUpdateCoefficient).div(ONE_PERCENT);
+        uint256 aprUpdate = deltaPercentage * aprUpdateCoefficient / ONE_PERCENT;
 
         uint256 newApr;
         if (totalStakedNowPercentage < stakeTarget) {
-            newApr = currentApr.mul(HUNDRED_PERCENT.add(aprUpdate)).div(HUNDRED_PERCENT);
+            newApr = currentApr * (HUNDRED_PERCENT + aprUpdate) / HUNDRED_PERCENT;
         }
         else {
             newApr = HUNDRED_PERCENT > aprUpdate
-                ? currentApr.mul(HUNDRED_PERCENT.sub(aprUpdate)).div(HUNDRED_PERCENT)
+                ? currentApr * (HUNDRED_PERCENT - aprUpdate) / HUNDRED_PERCENT
                 : 0;
         }
 
@@ -69,7 +68,7 @@ contract RewardUtils is GetterUtils, IRewardUtils {
         public
         override
     {
-        uint256 currentEpoch = now.div(EPOCH_LENGTH);
+        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
         // This will be skipped in most cases because someone else will have
         // triggered the payment for this epoch
         if (epochIndexOfLastRewardPayment < currentEpoch)
@@ -78,7 +77,7 @@ contract RewardUtils is GetterUtils, IRewardUtils {
             {
                 uint256 totalStakedNow = getValue(totalStaked);
                 updateCurrentApr(totalStakedNow);
-                uint256 rewardAmount = totalStakedNow.mul(currentApr).div(REWARD_VESTING_PERIOD).div(HUNDRED_PERCENT);
+                uint256 rewardAmount = totalStakedNow * currentApr / REWARD_VESTING_PERIOD / HUNDRED_PERCENT;
                 epochIndexToReward[currentEpoch] = Reward({
                     atBlock: block.number,
                     amount: rewardAmount,
@@ -88,7 +87,7 @@ contract RewardUtils is GetterUtils, IRewardUtils {
                     api3Token.mint(address(this), rewardAmount);
                     totalStaked.push(Checkpoint({
                         fromBlock: block.number,
-                        value: totalStakedNow.add(rewardAmount)
+                        value: totalStakedNow + rewardAmount
                         }));
                 }
                 emit PaidReward(
@@ -116,21 +115,21 @@ contract RewardUtils is GetterUtils, IRewardUtils {
         returns(uint256)
     {
         User storage user = users[userAddress];
-        uint256 oldestLockedEpoch = targetEpoch.sub(REWARD_VESTING_PERIOD) > genesisEpoch
-            ? targetEpoch.sub(REWARD_VESTING_PERIOD).add(1)
-            : genesisEpoch.add(1);
+        uint256 oldestLockedEpoch = targetEpoch - REWARD_VESTING_PERIOD > genesisEpoch
+            ? targetEpoch - REWARD_VESTING_PERIOD + 1
+            : genesisEpoch + 1;
         uint256 locked = 0;
         for (
                 uint256 ind = oldestLockedEpoch;
                 ind <= targetEpoch;
-                ind = ind.add(1)
+                ind = ind + 1
             )
         {
             Reward storage lockedReward = epochIndexToReward[ind];
             if (lockedReward.atBlock != 0)
             {
                 uint256 userSharesThen = getValueAt(user.shares, lockedReward.atBlock);
-                locked = locked.add(lockedReward.amount.mul(userSharesThen).div(lockedReward.totalSharesThen));
+                locked = locked + (lockedReward.amount * userSharesThen / lockedReward.totalSharesThen);
             }
         }
         return locked;
@@ -146,6 +145,6 @@ contract RewardUtils is GetterUtils, IRewardUtils {
         override
         returns(uint256)
     {
-        return getUserLockedAt(userAddress, now.div(EPOCH_LENGTH));
+        return getUserLockedAt(userAddress, block.timestamp / EPOCH_LENGTH);
     }
 }

@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity 0.6.12;
+pragma solidity 0.8.2;
 
 import "./StateUtils.sol";
 import "./interfaces/IGetterUtils.sol";
@@ -8,7 +8,6 @@ import "./interfaces/IGetterUtils.sol";
 contract GetterUtils is StateUtils, IGetterUtils {
     /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
-        public
         StateUtils(api3TokenAddress)
     {}
 
@@ -34,7 +33,7 @@ contract GetterUtils is StateUtils, IGetterUtils {
         }
         uint256 userSharesThen = userSharesAt(fromBlock, userAddress);
         uint256 delegatedToUserThen = userReceivedDelegationAt(fromBlock, userAddress);
-        return userSharesThen.add(delegatedToUserThen);
+        return userSharesThen + delegatedToUserThen;
     }
 
     /// @notice Called to get the current voting power of a user
@@ -142,7 +141,7 @@ contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        return userSharesAt(fromBlock, userAddress).mul(totalStakeAt(fromBlock)).div(totalSupplyAt(fromBlock));
+        return userSharesAt(fromBlock, userAddress) * totalStakeAt(fromBlock) / totalSupplyAt(fromBlock);
     }
 
     /// @notice Called to get the current staked tokens of the user
@@ -233,20 +232,20 @@ contract GetterUtils is StateUtils, IGetterUtils {
             return 0;
 
         // Shortcut for the actual value
-        if (_block >= checkpoints[checkpoints.length.sub(1)].fromBlock)
-            return checkpoints[checkpoints.length.sub(1)].value;
+        if (_block >= checkpoints[checkpoints.length -1].fromBlock)
+            return checkpoints[checkpoints.length - 1].value;
         if (_block < checkpoints[0].fromBlock)
             return 0;
 
         // Binary search of the value in the array
         uint min = 0;
-        uint max = checkpoints.length.sub(1);
+        uint max = checkpoints.length - 1;
         while (max > min) {
-            uint mid = (max.add(min).add(1)).div(2);
+            uint mid = (max + min + 1) / 2;
             if (checkpoints[mid].fromBlock<=_block) {
                 min = mid;
             } else {
-                max = mid.sub(1);
+                max = mid - 1;
             }
         }
         return checkpoints[min].value;
@@ -282,20 +281,20 @@ contract GetterUtils is StateUtils, IGetterUtils {
             return address(0);
 
         // Shortcut for the actual value
-        if (_block >= checkpoints[checkpoints.length.sub(1)].fromBlock)
-            return checkpoints[checkpoints.length.sub(1)]._address;
+        if (_block >= checkpoints[checkpoints.length - 1].fromBlock)
+            return checkpoints[checkpoints.length - 1]._address;
         if (_block < checkpoints[0].fromBlock)
             return address(0);
 
         // Binary search of the value in the array
         uint min = 0;
-        uint max = checkpoints.length.sub(1);
+        uint max = checkpoints.length - 1;
         while (max > min) {
-            uint mid = (max.add(min).add(1)).div(2);
+            uint mid = (max + min + 1) / 2;
             if (checkpoints[mid].fromBlock<=_block) {
                 min = mid;
             } else {
-                max = mid.sub(1);
+                max = mid - 1;
             }
         }
         return checkpoints[min]._address;
