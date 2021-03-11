@@ -4,9 +4,7 @@
   "license": "MIT",
   "scripts": {
     "build": "hardhat compile",
-    "diff": "mkdir -p diff && npm run diff:api3voting 2> /dev/null | npm run diff:api3basetemplate 2> /dev/null | true",
-    "diff:api3voting": "git diff --no-index ./node_modules/@aragon/apps-voting/contracts/Voting.sol ./contracts/Api3Voting.sol > ./diff/Api3Voting.sol 2>&1",
-    "diff:api3basetemplate": "git diff --no-index ./node_modules/@aragon/templates-shared/contracts/BaseTemplate.sol ./contracts/Api3BaseTemplate.sol > ./diff/Api3BaseTemplate.sol 2>&1"
+    "diff": "mkdir -p diff && git diff --no-index ./node_modules/@aragon/templates-shared/contracts/BaseTemplate.sol ./contracts/Api3BaseTemplate.sol > ./diff/Api3BaseTemplate.sol 2>&1 | true"
   },
   "devDependencies": {
     "@aragon/templates-shared": "^1.0.1",
