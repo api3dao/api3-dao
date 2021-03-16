@@ -18,8 +18,8 @@ contract GetterUtils is StateUtils, IGetterUtils {
     /// @param userAddress User address
     /// @return Voting power of the user at the block
     function balanceOfAt(
-        uint256 fromBlock,
-        address userAddress
+        address userAddress,
+        uint256 fromBlock
         )
         public
         view
@@ -47,7 +47,7 @@ contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        return balanceOfAt(block.number, userAddress);
+        return balanceOfAt(userAddress, block.number);
     }
 
     /// @notice Called to get the total voting power at a specific block
