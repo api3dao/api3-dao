@@ -1,5 +1,5 @@
 node_modules
-
+!/artifacts/Api3Pool.json
 abi
 cache
 coverage
