@@ -5,7 +5,7 @@ const { newDao, installNewApp, encodeCallScript, ANY_ENTITY, EMPTY_CALLS_SCRIPT 
 
 const Voting = artifacts.require('Api3VotingMock')
 
-const MiniMeToken = artifacts.require('Api3PoolMock')
+const Api3Pool = artifacts.require('Api3PoolMock')
 const ExecutionTarget = artifacts.require('ExecutionTarget')
 
 const createdVoteId = receipt => getEventArgument(receipt, 'StartVote', 'voteId')
@@ -16,7 +16,7 @@ const VOTER_STATE = ['ABSENT', 'YEA', 'NAY'].reduce((state, key, index) => {
 }, {})
 
 
-contract('Voting App', ([root, holder1, holder2, holder20, holder29, holder51, nonHolder]) => {
+contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder51, nonHolder]) => {
   let votingBase, voting, token, executionTarget
   let CREATE_VOTES_ROLE, MODIFY_SUPPORT_ROLE, MODIFY_QUORUM_ROLE
 
@@ -45,7 +45,7 @@ contract('Voting App', ([root, holder1, holder2, holder20, holder29, holder51, n
     const minimumAcceptanceQuorum = pct16(20)
 
     beforeEach(async () => {
-      token = await MiniMeToken.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
+      token = await Api3Pool.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
       await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration)
       executionTarget = await ExecutionTarget.new()
     })
@@ -99,7 +99,7 @@ contract('Voting App', ([root, holder1, holder2, holder20, holder29, holder51, n
       const minimumAcceptanceQuorum = pct16(20)
 
       beforeEach(async () => {
-        token = await MiniMeToken.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', decimals, 'n', true) // empty parameters minime
+        token = await Api3Pool.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', decimals, 'n', true) // empty parameters minime
 
         await token.generateTokens(holder20, bigExp(20, decimals))
         await token.generateTokens(holder29, bigExp(29, decimals))
@@ -299,7 +299,7 @@ contract('Voting App', ([root, holder1, holder2, holder20, holder29, holder51, n
 
   context('wrong initializations', () => {
     beforeEach(async() => {
-      token = await MiniMeToken.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
+      token = await Api3Pool.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
     })
 
     it('fails if min acceptance quorum is greater than min support', async () => {
@@ -320,7 +320,7 @@ contract('Voting App', ([root, holder1, holder2, holder20, holder29, holder51, n
     const minimumAcceptanceQuorum = pct16(20)
 
     beforeEach(async() => {
-      token = await MiniMeToken.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
+      token = await Api3Pool.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
 
       await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration)
     })
@@ -335,7 +335,7 @@ contract('Voting App', ([root, holder1, holder2, holder20, holder29, holder51, n
     const minimumAcceptanceQuorum = pct16(20)
 
     beforeEach(async () => {
-      token = await MiniMeToken.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
+      token = await Api3Pool.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
 
       await token.generateTokens(holder1, 1)
 
@@ -380,7 +380,7 @@ contract('Voting App', ([root, holder1, holder2, holder20, holder29, holder51, n
     const minimumAcceptanceQuorum = pct16(20)
 
     beforeEach(async () => {
-      token = await MiniMeToken.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
+      token = await Api3Pool.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
 
       await token.generateTokens(holder1, 1)
       await token.generateTokens(holder2, 2)
@@ -415,7 +415,7 @@ contract('Voting App', ([root, holder1, holder2, holder20, holder29, holder51, n
     const minimumAcceptanceQuorum = pct16(20)
 
     beforeEach(async () => {
-      token = await MiniMeToken.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
+      token = await Api3Pool.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
 
       await token.generateTokens(holder1, 1)
       await token.generateTokens(holder2, 1)
