@@ -1,6 +1,7 @@
 pragma solidity 0.4.24;
 
 import "../../Api3Voting.sol";
+import "@aragon/minime/contracts/MiniMeToken.sol";
 import "@aragon/contract-helpers-test/contracts/0.4/aragonOS/TimeHelpersMock.sol";
 
 
@@ -23,14 +24,15 @@ contract Api3VotingMock is Api3Voting, TimeHelpersMock {
     }
 
     // Mint a token and create a vote in the same transaction to test snapshot block values are correct
-    function newTokenAndVote(address _holder, uint256 _tokenAmount, string _metadata)
-        external
-        returns (uint256 voteId)
-    {
-        token.generateTokens(_holder, _tokenAmount);
+    // function newTokenAndVote(address _holder, uint256 _tokenAmount, string _metadata)
+    //     external
+    //     returns (uint256 voteId)
+    // {
+    //     // hack for tests to work
+    //     MiniMeToken(address(api3Pool)).generateTokens(_holder, _tokenAmount);
 
-        bytes memory noScript = new bytes(0);
-        voteId = _newVote(noScript, _metadata, false, false);
-        emit StartVote(voteId, msg.sender, _metadata);
-    }
+    //     bytes memory noScript = new bytes(0);
+    //     voteId = _newVote(noScript, _metadata, false, false);
+    //     emit StartVote(voteId, msg.sender, _metadata);
+    // }
 }
