@@ -5,8 +5,8 @@ import "./IStateUtils.sol";
 
 interface IGetterUtils is IStateUtils {
     function balanceOfAt(
-        uint256 fromBlock,
-        address userAddress
+        address userAddress,
+        uint256 fromBlock
         )
         external
         view
