@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - attach_workspace:
-        at: .
+          at: .
 
       - run: npm run lint # triggers lint
 
