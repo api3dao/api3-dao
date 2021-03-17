@@ -48,7 +48,7 @@ jobs:
       # specify the version you desire here
       - image: circleci/node:12.16.2
 
-    build_dir: packages/api3-voting
+    working_directory: packages/api3-voting
 
     steps:
 
@@ -63,7 +63,7 @@ jobs:
       # specify the version you desire here
       - image: circleci/node:12.16.2
 
-    build_dir: packages/dao
+    working_directory: packages/dao
 
     steps:
 
@@ -78,7 +78,7 @@ jobs:
       # specify the version you desire here
       - image: circleci/node:12.16.2
 
-    build_dir: packages/pool
+    working_directory: packages/pool
 
     steps:
 
