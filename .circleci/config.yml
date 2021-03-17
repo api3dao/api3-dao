@@ -17,7 +17,7 @@ jobs:
           - v1-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
-      - run: npm i
+      - run: npm run bootstrap
 
       - save_cache:
           paths:
@@ -55,6 +55,8 @@ jobs:
           root: .
           paths:
             - .
+
+
 
   build_dao:
     docker:
@@ -110,6 +112,19 @@ jobs:
           paths:
             - .
 
+  lint_voting:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:12.16.2
+
+    working_directory: ~/repo
+
+    steps:
+      - attach_workspace:
+        at: .
+
+      - run: npm run lint # triggers lint
+
 workflows:
   build_and_test:
     jobs:
@@ -123,3 +138,8 @@ workflows:
       - build_pool:
           requires:
             - build
+      - lint:
+          requires:
+            - build_voting
+            - build_dao
+            - build_pool
