@@ -56,4 +56,12 @@ contract Api3PoolMock is MiniMeToken {
     {
         return mockProposalVotingPowerThreshold;
     }
+
+    function totalStakeAt(uint256 snapshotBlock)
+        external
+        view
+        returns(uint256)
+    {
+        return super.totalSupplyAt(snapshotBlock);
+    }
 }
