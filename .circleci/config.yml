@@ -52,7 +52,7 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: .
+          at: ~/repo/packages/api3-voting
 #      - checkout:
 #          path: ~/repo
       - run: ls
@@ -68,7 +68,7 @@ jobs:
     steps:
 
       - attach_workspace:
-          at: .
+          at: ~/repo/packages/dao
 #      - checkout:
 #          path: ~/repo
       - run: ls
@@ -82,9 +82,8 @@ jobs:
     working_directory: ~/repo/packages/pool
 
     steps:
-
       - attach_workspace:
-          at: .
+          at: ~/repo/packages/pool
 #      - checkout:
 #          path: ~/repo
       - run: ls
