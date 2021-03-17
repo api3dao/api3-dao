@@ -331,139 +331,139 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
     })
   })
 
-  // context('empty token', () => {
-  //   const neededSupport = pct16(50)
-  //   const minimumAcceptanceQuorum = pct16(20)
+  context('empty token', () => {
+    const neededSupport = pct16(50)
+    const minimumAcceptanceQuorum = pct16(20)
 
-  //   beforeEach(async() => {
-  //     token = await Api3TokenMock.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
+    beforeEach(async() => {
+      token = await Api3TokenMock.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
 
-  //     await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration)
-  //   })
+      await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration)
+    })
 
-  //   it('fails creating a vote if token has no holder', async () => {
-  //     await assertRevert(voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata'), ERRORS.VOTING_NO_VOTING_POWER)
-  //   })
-  // })
+    it('fails creating a vote if token has no holder', async () => {
+      await assertRevert(voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata'), ERRORS.VOTING_NO_VOTING_POWER)
+    })
+  })
 
-  // context('token supply = 1', () => {
-  //   const neededSupport = pct16(50)
-  //   const minimumAcceptanceQuorum = pct16(20)
+  context('token supply = 1', () => {
+    const neededSupport = pct16(50)
+    const minimumAcceptanceQuorum = pct16(20)
 
-  //   beforeEach(async () => {
-  //     token = await Api3TokenMock.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
+    beforeEach(async () => {
+      token = await Api3TokenMock.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
 
-  //     await token.generateTokens(holder1, 1)
+      await token.generateTokens(holder1, 1)
 
-  //     await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration)
-  //   })
+      await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration)
+    })
 
-  //   it('new vote cannot be executed before voting', async () => {
-  //     // Account creating vote does not have any tokens and therefore doesn't vote
-  //     const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata'))
+    it('new vote cannot be executed before voting', async () => {
+      // Account creating vote does not have any tokens and therefore doesn't vote
+      const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata'))
 
-  //     assert.isFalse(await voting.canExecute(voteId), 'vote cannot be executed')
+      assert.isFalse(await voting.canExecute(voteId), 'vote cannot be executed')
 
-  //     await voting.vote(voteId, true, true, { from: holder1 })
+      await voting.vote(voteId, true, true, { from: holder1 })
 
-  //     const { open, executed } = await voting.getVote(voteId)
-  //     assert.isFalse(open, 'vote should be closed')
-  //     assert.isTrue(executed, 'vote should have been executed')
+      const { open, executed } = await voting.getVote(voteId)
+      assert.isFalse(open, 'vote should be closed')
+      assert.isTrue(executed, 'vote should have been executed')
 
-  //   })
+    })
 
-  //   context('new vote parameters', () => {
-  //     it('creating vote as holder executes vote (if _canExecute param says so)', async () => {
-  //       const voteId = createdVoteId(await voting.newVoteExt(EMPTY_CALLS_SCRIPT, 'metadata', true, true, { from: holder1 }))
+    context('new vote parameters', () => {
+      it('creating vote as holder executes vote (if _canExecute param says so)', async () => {
+        const voteId = createdVoteId(await voting.newVoteExt(EMPTY_CALLS_SCRIPT, 'metadata', true, true, { from: holder1 }))
 
-  //       const { open, executed } = await voting.getVote(voteId)
-  //       assert.isFalse(open, 'vote should be closed')
-  //       assert.isTrue(executed, 'vote should have been executed')
-  //     })
+        const { open, executed } = await voting.getVote(voteId)
+        assert.isFalse(open, 'vote should be closed')
+        assert.isTrue(executed, 'vote should have been executed')
+      })
 
-  //     it("creating vote as holder doesn't execute vote if _canExecute param doesn't says so", async () => {
-  //       const voteId = createdVoteId(await voting.newVoteExt(EMPTY_CALLS_SCRIPT, 'metadata', true, false, { from: holder1 }))
+      it("creating vote as holder doesn't execute vote if _canExecute param doesn't says so", async () => {
+        const voteId = createdVoteId(await voting.newVoteExt(EMPTY_CALLS_SCRIPT, 'metadata', true, false, { from: holder1 }))
 
-  //       const { open, executed } = await voting.getVote(voteId)
-  //       assert.isTrue(open, 'vote should be open')
-  //       assert.isFalse(executed, 'vote should not have been executed')
-  //     })
-  //   })
-  // })
+        const { open, executed } = await voting.getVote(voteId)
+        assert.isTrue(open, 'vote should be open')
+        assert.isFalse(executed, 'vote should not have been executed')
+      })
+    })
+  })
 
-  // context('token supply = 3', () => {
-  //   const neededSupport = pct16(34)
-  //   const minimumAcceptanceQuorum = pct16(20)
+  context('token supply = 3', () => {
+    const neededSupport = pct16(34)
+    const minimumAcceptanceQuorum = pct16(20)
 
-  //   beforeEach(async () => {
-  //     token = await Api3TokenMock.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
+    beforeEach(async () => {
+      token = await Api3TokenMock.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
 
-  //     await token.generateTokens(holder1, 1)
-  //     await token.generateTokens(holder2, 2)
+      await token.generateTokens(holder1, 1)
+      await token.generateTokens(holder2, 2)
 
-  //     await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration)
-  //   })
+      await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration)
+    })
 
-  //   it('new vote cannot be executed before holder2 voting', async () => {
-  //     const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata'))
+    it('new vote cannot be executed before holder2 voting', async () => {
+      const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata'))
 
-  //     assert.isFalse(await voting.canExecute(voteId), 'vote cannot be executed')
+      assert.isFalse(await voting.canExecute(voteId), 'vote cannot be executed')
 
-  //     await voting.vote(voteId, true, true, { from: holder1 })
-  //     await voting.vote(voteId, true, true, { from: holder2 })
+      await voting.vote(voteId, true, true, { from: holder1 })
+      await voting.vote(voteId, true, true, { from: holder2 })
 
-  //     const { open, executed } = await voting.getVote(voteId)
-  //     assert.isFalse(open, 'vote should be closed')
-  //     assert.isTrue(executed, 'vote should have been executed')
-  //   })
+      const { open, executed } = await voting.getVote(voteId)
+      assert.isFalse(open, 'vote should be closed')
+      assert.isTrue(executed, 'vote should have been executed')
+    })
 
-  //   it('creating vote as holder2 executes vote', async () => {
-  //     const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', { from: holder2 }))
+    it('creating vote as holder2 executes vote', async () => {
+      const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', { from: holder2 }))
 
-  //     const { open, executed } = await voting.getVote(voteId)
-  //     assert.isFalse(open, 'vote should be closed')
-  //     assert.isTrue(executed, 'vote should have been executed')
-  //   })
-  // })
+      const { open, executed } = await voting.getVote(voteId)
+      assert.isFalse(open, 'vote should be closed')
+      assert.isTrue(executed, 'vote should have been executed')
+    })
+  })
 
-  // context('changing token supply', () => {
-  //   const neededSupport = pct16(50)
-  //   const minimumAcceptanceQuorum = pct16(20)
+  context('changing token supply', () => {
+    const neededSupport = pct16(50)
+    const minimumAcceptanceQuorum = pct16(20)
 
-  //   beforeEach(async () => {
-  //     token = await Api3TokenMock.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
+    beforeEach(async () => {
+      token = await Api3TokenMock.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
 
-  //     await token.generateTokens(holder1, 1)
-  //     await token.generateTokens(holder2, 1)
+      await token.generateTokens(holder1, 1)
+      await token.generateTokens(holder2, 1)
 
-  //     await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration)
-  //   })
+      await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration)
+    })
 
-  //   it('uses the correct snapshot value if tokens are minted afterwards', async () => {
-  //     // Create vote and afterwards generate some tokens
-  //     const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata'))
-  //     await token.generateTokens(holder2, 1)
+    it('uses the correct snapshot value if tokens are minted afterwards', async () => {
+      // Create vote and afterwards generate some tokens
+      const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata'))
+      await token.generateTokens(holder2, 1)
 
-  //     const { snapshotBlock, votingPower } = await voting.getVote(voteId)
+      const { snapshotBlock, votingPower } = await voting.getVote(voteId)
 
-  //     // Generating tokens advanced the block by one
-  //     assertBn(snapshotBlock, await web3.eth.getBlockNumber() - 2, 'snapshot block should be correct')
-  //     assertBn(votingPower, await token.totalSupplyAt(snapshotBlock), 'voting power should match snapshot supply')
-  //     assertBn(votingPower, 2, 'voting power should be correct')
-  //   })
+      // Generating tokens advanced the block by one
+      assertBn(snapshotBlock, await web3.eth.getBlockNumber() - 2, 'snapshot block should be correct')
+      assertBn(votingPower, await token.totalSupplyAt(snapshotBlock), 'voting power should match snapshot supply')
+      assertBn(votingPower, 2, 'voting power should be correct')
+    })
 
-  //   it('uses the correct snapshot value if tokens are minted in the same block', async () => {
-  //     // Create vote and generate some tokens in the same transaction
-  //     // Requires the voting mock to be the token's owner
-  //     await token.changeController(voting.address)
-  //     const voteId = createdVoteId(await voting.newTokenAndVote(holder2, 1, 'metadata'))
+    it('uses the correct snapshot value if tokens are minted in the same block', async () => {
+      // Create vote and generate some tokens in the same transaction
+      // Requires the voting mock to be the token's owner
+      await token.changeController(voting.address)
+      const voteId = createdVoteId(await voting.newTokenAndVote(holder2, 1, 'metadata'))
 
-  //     const { snapshotBlock, votingPower } = await voting.getVote(voteId)
-  //     assertBn(snapshotBlock, await web3.eth.getBlockNumber() - 1, 'snapshot block should be correct')
-  //     assertBn(votingPower, await token.totalSupplyAt(snapshotBlock), 'voting power should match snapshot supply')
-  //     assertBn(votingPower, 2, 'voting power should be correct')
-  //   })
-  // })
+      const { snapshotBlock, votingPower } = await voting.getVote(voteId)
+      assertBn(snapshotBlock, await web3.eth.getBlockNumber() - 1, 'snapshot block should be correct')
+      assertBn(votingPower, await token.totalSupplyAt(snapshotBlock), 'voting power should match snapshot supply')
+      assertBn(votingPower, 2, 'voting power should be correct')
+    })
+  })
 
   context('before init', () => {
     it('fails creating a vote before initialization', async () => {

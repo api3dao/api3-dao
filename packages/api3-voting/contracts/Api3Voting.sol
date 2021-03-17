@@ -49,7 +49,6 @@ contract Api3Voting is IForwarder, AragonApp {
         mapping (address => VoterState) voters;
     }
 
-    // MiniMeToken public token;
     uint64 public supportRequiredPct;
     uint64 public minAcceptQuorumPct;
     uint64 public voteTime;
