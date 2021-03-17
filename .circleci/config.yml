@@ -42,6 +42,53 @@ jobs:
 
       - run: npm run lint # triggers lint
 
+
+  test_voting:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:12.16.2
+
+    working_directory: ~/repo
+
+    steps:
+
+      - attach_workspace:
+          at: .
+
+      - run: cd ./packages/api3-voting
+      - run: npm run test
+
+  build_dao:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:12.16.2
+
+    working_directory: ~/repo
+
+    steps:
+
+      - attach_workspace:
+          at: .
+
+      - run: cd ./packages/dao
+      - run: npm run build
+
+  test_pool:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:12.16.2
+
+    working_directory: ~/repo
+
+    steps:
+
+      - attach_workspace:
+          at: .
+
+      - run: cd ./packages/pool
+      - run: npm run build
+      - run: npm run test
+
 workflows:
   build_and_test:
     jobs:
@@ -49,3 +96,15 @@ workflows:
       - lint:
           requires:
             - build
+      - build_dao:
+          requires:
+            - lint
+
+      - test_pool:
+        requires:
+          - lint
+
+
+      - test_voting:
+        requires:
+          - lint
