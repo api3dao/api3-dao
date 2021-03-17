@@ -112,7 +112,7 @@ jobs:
           paths:
             - .
 
-  lint_voting:
+  lint:
     docker:
       # specify the version you desire here
       - image: circleci/node:12.16.2
