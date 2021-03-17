@@ -53,8 +53,8 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - checkout:
-          path: ~/repo
+#      - checkout:
+#          path: ~/repo
       - run: ls
       - run: npm run test
 
@@ -69,8 +69,8 @@ jobs:
 
       - attach_workspace:
           at: .
-      - checkout:
-          path: ~/repo
+#      - checkout:
+#          path: ~/repo
       - run: ls
       - run: npm run build
 
@@ -85,8 +85,8 @@ jobs:
 
       - attach_workspace:
           at: .
-      - checkout:
-          path: ~/repo
+#      - checkout:
+#          path: ~/repo
       - run: ls
       - run: npm run build
       - run: npm run test
