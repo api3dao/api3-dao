@@ -20,7 +20,7 @@ interface IApi3Pool {
         view
         returns(uint256);
 
-    function totalStakeAt(uint256 fromBlock)
+    function totalSupplyAt(uint256 fromBlock)
         external
         view
         returns(uint256);
