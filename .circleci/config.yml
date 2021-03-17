@@ -71,6 +71,7 @@ jobs:
           at: .
 
       - run: cd ./packages/dao
+      - run: ls
       - run: npm run build
 
   test_pool:
@@ -86,6 +87,7 @@ jobs:
           at: .
 
       - run: cd ./packages/pool
+      - run: ls
       - run: npm run build
       - run: npm run test
 
