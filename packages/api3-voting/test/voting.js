@@ -188,6 +188,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
           assertBn(minAcceptQuorum, minimumAcceptanceQuorum, 'min quorum should be app min quorum')
           assertBn(yea, 0, 'initial yea should be 0')
           assertBn(nay, 0, 'initial nay should be 0')
+          // NOTE: commented out because of an extra unit in votingPower
           // assertBn(votingPower, bigExp(100, decimals), 'voting power should be 100')
           assert.equal(execScript, script, 'script should be correct')
           assert.equal(metadata, 'metadata', 'should have returned correct metadata')
