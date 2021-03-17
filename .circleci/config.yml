@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   node: circleci/node@3.0.0
+
 jobs:
   build:
     docker:
@@ -29,32 +30,32 @@ jobs:
             - .
 
   build_voting:
-      docker:
+    docker:
         # specify the version you desire here
         - image: circleci/node:12.16.2
 
-      working_directory: ~/repo
+    working_directory: ~/repo
 
-      steps:
-        - checkout
-        - restore_cache:
-            keys:
-              - v1-dependencies-{{ checksum "package.json" }}
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
               # fallback to using the latest cache if no exact match is found
-              - v1-dependencies-
-        - run:
-            - cd packages/api3-voting
-            - npm i
+            - v1-dependencies-
+      - run:
+          - cd packages/api3-voting
+          - npm i
 
-        - save_cache:
-            paths:
-              - node_modules
-            key: v1-dependencies-{{ checksum "package.json" }}
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
 
-        - persist_to_workspace:
-            root: .
-            paths:
-              - .
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
 
   build_dao:
     docker:
