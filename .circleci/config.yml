@@ -99,12 +99,9 @@ workflows:
       - build_dao:
           requires:
             - lint
-
       - test_pool:
-        requires:
-          - lint
-
-
+          requires:
+            - lint
       - test_voting:
-        requires:
-          - lint
+          requires:
+            - lint
