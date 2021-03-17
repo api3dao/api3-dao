@@ -48,13 +48,13 @@ jobs:
       # specify the version you desire here
       - image: circleci/node:12.16.2
 
-    working_directory: packages/api3-voting
+    working_directory: ~/repo/packages/api3-voting
 
     steps:
-
       - attach_workspace:
           at: .
-
+      - checkout:
+          path: ~/repo
       - run: ls
       - run: npm run test
 
@@ -63,13 +63,14 @@ jobs:
       # specify the version you desire here
       - image: circleci/node:12.16.2
 
-    working_directory: packages/dao
+    working_directory: ~/repo/packages/dao
 
     steps:
 
       - attach_workspace:
           at: .
-
+      - checkout:
+          path: ~/repo
       - run: ls
       - run: npm run build
 
@@ -78,13 +79,14 @@ jobs:
       # specify the version you desire here
       - image: circleci/node:12.16.2
 
-    working_directory: packages/pool
+    working_directory: ~/repo/packages/pool
 
     steps:
 
       - attach_workspace:
           at: .
-
+      - checkout:
+          path: ~/repo
       - run: ls
       - run: npm run build
       - run: npm run test
