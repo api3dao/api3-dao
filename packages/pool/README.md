@@ -40,15 +40,15 @@ Delegation works only one-hop, i.e., if a user has delegated their voting power 
 There are four mechanics that are implemented to protect against proposal spam:
 
 1. A minimum governable threshold of voting power is required to make a proposal (initial value: 0.1%)
-1. A user cannot make proposals less than 7 days apart
-1. A user cannot update their delegation less than 7 days apart
-1. A user will have to "schedule an unstake" a governable period of time (minimum and initial value: 7 days) before being able to unstake
+2. A user cannot make proposals less than 7 days apart
+3. A user cannot update their delegation less than 7 days apart
+4. A user will have to "schedule an unstake" a governable period of time (minimum and initial value: 7 days) before being able to unstake
 
 ## Rewards
 
 The aim of the staking rewards is to ensure that the pool is staked at enough to:
 1. Prevent governance attacks (e.g., aiming to pass malicious proposals)
-1. Ensure that the pool remains solvent in the case of an insurance claim payout
+2. Ensure that the pool remains solvent in the case of an insurance claim payout
 
 For this reason, the pool pays staking rewards every 7 days.
 

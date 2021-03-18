@@ -10,5 +10,6 @@
 **/coverage.json
 **/gas_report
 .env
+.idea
 .DS_Store
 yarn-error.log

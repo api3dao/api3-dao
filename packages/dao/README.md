@@ -13,12 +13,12 @@ npm run diff
 
 1. Publish `Api3Voting.sol` as an Aragon app
 
-1. Replace the `VOTING_APP_ID` in `Api3BaseTemplate.sol` with the `Api3Voting.sol` app ID
+2. Replace the `VOTING_APP_ID` in `Api3BaseTemplate.sol` with the `Api3Voting.sol` app ID
 
-1. Deploy `Api3Pool.sol` from the `@api3-dao/pool` package
+3. Deploy `Api3Pool.sol` from the `@api3-dao/pool` package
 
-1. Deploy the DAO using `Api3Template.sol` and the `Api3Pool.sol` address
+4. Deploy the DAO using `Api3Template.sol` and the `Api3Pool.sol` address
 
-1. Set the DAO Agent at `Api3Pool.sol` as the address of the Agent app of the DAO
+5. Set the DAO Agent at `Api3Pool.sol` as the address of the Agent app of the DAO
 
-1. Have the API3 token owner (API3DAOv1) give minting authorization to `Api3Pool.sol`
+6. Have the API3 token owner (API3DAOv1) give minting authorization to `Api3Pool.sol`
