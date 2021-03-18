@@ -51,20 +51,7 @@ jobs:
     working_directory: ~/repo/packages/api3-voting
 
     steps:
-      - checkout:
-          path: ~/repo
-
-            # Download and cache dependencies
-      - restore_cache:
-          keys:
-              - v1-dependencies-{{ checksum "package.json" }}
-              # fallback to using the latest cache if no exact match is found
-              - v1-dependencies-
-
-#      - checkout:
-#          path: ~/repo
-      - run: ls
-      - run: npm run test
+      - run: npm run test:api3-voting
 
   build_dao:
     docker:
@@ -80,7 +67,7 @@ jobs:
 #      - checkout:
 #          path: ~/repo
       - run: ls
-      - run: npm run build
+      - run: npm run build:dao
 
   test_pool:
     docker:
@@ -94,9 +81,7 @@ jobs:
           at: ~/repo/packages/pool
 #      - checkout:
 #          path: ~/repo
-      - run: ls
-      - run: npm run build
-      - run: npm run test
+      - run: npm run test:pool
 
 workflows:
   build_and_test:
