@@ -1,5 +1,6 @@
-# API3 DAO
+[![api3-dao](https://circleci.com/gh/api3dao/api3-dao.svg?style=svg)](https://app.circleci.com/pipelines/github/api3dao)
 
+# API3 DAO
 - Install the dependencies
 ```sh
 npm run bootstrap
