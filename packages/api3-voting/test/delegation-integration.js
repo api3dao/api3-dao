@@ -39,6 +39,10 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
 
     context('delegation for the voting working properly', () => {
 
+        const balance1 = 20;
+        const balance2 = 40;
+        const balance3 = 10;
+
         before('', async () => {
             const { dao, acl } = await newDao(root);
             voting = await Voting.at(await installNewApp(dao, APP_ID, votingBase.address, root));
@@ -48,18 +52,20 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             await acl.createPermission(ANY_ENTITY, voting.address, MODIFY_QUORUM_ROLE, root, { from: root })
 
             // Generating balance for the voters
-            await token.generateTokens(voter1, 20);
-            await token.generateTokens(voter2, 40);
-            await token.generateTokens(voter3, 80);
 
-            await token.approve(pool.address, 20, {from:voter1});
-            await pool.depositAndStake(voter1, 20, voter1, {from:voter1});
 
-            await token.approve(pool.address, 40, {from:voter2});
-            await pool.depositAndStake(voter2, 40, voter2, {from:voter2});
+            await token.generateTokens(voter1, balance1);
+            await token.generateTokens(voter2, balance2);
+            await token.generateTokens(voter3, balance3);
 
-            await token.approve(pool.address, 10, {from:voter3});
-            await pool.depositAndStake(voter3, 10, voter3, {from:voter3});
+            await token.approve(pool.address, balance1, {from:voter1});
+            await pool.depositAndStake(voter1, balance1, voter1, {from:voter1});
+
+            await token.approve(pool.address, balance2, {from:voter2});
+            await pool.depositAndStake(voter2, balance2, voter2, {from:voter2});
+
+            await token.approve(pool.address, balance3, {from:voter3});
+            await pool.depositAndStake(voter3, balance3, voter3, {from:voter3});
         });
 
         it('delegate to myself or to 0 address', async () => {
@@ -81,7 +87,7 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
             await voting.vote(voteId, true, false, { from: voter2 });
             const result = await voting.getVote(voteId);
-            expect(Number(result.yea)).to.equal(70);
+            expect(Number(result.yea)).to.equal(balance1 + balance2 + balance3);
         });
 
         it('delegate after already delegated', async () => {
@@ -105,7 +111,7 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
             await voting.vote(voteId, true, false, { from: voter2 });
             const result = await voting.getVote(voteId);
-            expect(Number(result.yea)).to.equal(50);
+            expect(Number(result.yea)).to.equal(balance2 + balance3);
         });
 
         it('delegate delegated', async () => {
@@ -115,7 +121,7 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             await pool.delegateVotingPower(voter3, {from: voter2});
             const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
             const result = await voting.getVote(voteId);
-            expect(Number(result.yea)).to.equal(50);
+            expect(Number(result.yea)).to.equal(balance2 + balance3);
         });
 
         it('delegate delegated in a cycle', async () => {
