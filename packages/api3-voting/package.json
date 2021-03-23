@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@aragon/minime": "1.0.0",
-    "@aragon/os": "4.4.0"
+    "@aragon/os": "4.4.0",
+    "@openzeppelin/test-helpers": "^0.5.10"
   },
   "devDependencies": {
     "@aragon/apps-voting": "^2.1.0",

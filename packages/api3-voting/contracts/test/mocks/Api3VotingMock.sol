@@ -1,7 +1,7 @@
 pragma solidity 0.4.24;
 
 import "../../Api3Voting.sol";
-import "./Api3PoolMock.sol";
+import "./Api3TokenMock.sol";
 import "@aragon/contract-helpers-test/contracts/0.4/aragonOS/TimeHelpersMock.sol";
 
 
@@ -28,7 +28,7 @@ contract Api3VotingMock is Api3Voting, TimeHelpersMock {
         external
         returns (uint256 voteId)
     {
-        Api3PoolMock token = Api3PoolMock(address(api3Pool));
+        Api3TokenMock token = Api3TokenMock(address(api3Pool));
         token.generateTokens(_holder, _tokenAmount);
 
         bytes memory noScript = new bytes(0);
