@@ -29,7 +29,6 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
         token = await Api3TokenMock.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true);
 
         votingBase = await Voting.new();
-        console.log(token.address);
         pool = await Api3Pool.new(token.address);
 
         // ROLES are below
