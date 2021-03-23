@@ -3,7 +3,7 @@ pragma solidity 0.4.24;
 import "@aragon/minime/contracts/MiniMeToken.sol";
 
 
-contract Api3PoolMock is MiniMeToken {
+contract Api3TokenMock is MiniMeToken {
     constructor(
         MiniMeTokenFactory _tokenFactory,
         MiniMeToken _parentToken,
