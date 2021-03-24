@@ -82,8 +82,8 @@ contract StateUtils is IStateUtils {
     /// @notice User records
     mapping(address => User) public users;
 
-    /// @notice Total number of tokens staked at the pool, kept in checkpoints
-    Checkpoint[] public totalStaked;
+    /// @notice Total number of tokens staked at the pool
+    uint256 public totalStake;
 
     /// @notice Total number of shares at the pool, kept in checkpoints
     Checkpoint[] public totalShares;
@@ -159,10 +159,7 @@ contract StateUtils is IStateUtils {
             fromBlock: block.number,
             value: 1
             }));
-        totalStaked.push(Checkpoint({
-            fromBlock: block.number,
-            value: 1
-            }));
+        totalStake = 1;
         // Set the current epoch as the genesis epoch and skip its reward
         // payment
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;

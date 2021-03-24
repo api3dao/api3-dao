@@ -19,28 +19,27 @@ contract RewardUtils is GetterUtils, IRewardUtils {
 
     /// @notice Updates the current APR
     /// @dev Called internally before paying out the reward
-    /// @param totalStakedNow Current total number of tokens staked at the pool
-    function updateCurrentApr(uint256 totalStakedNow)
+    function updateCurrentApr()
         internal
     {
         if (stakeTarget == 0) {
             currentApr = minApr;
             return;
         }
-        uint256 totalStakedNowPercentage = totalStakedNow
+        uint256 totalStakePercentage = totalStake
              * HUNDRED_PERCENT
             / api3Token.totalSupply();
         // Calculate what % we are off from the target
-        uint256 deltaAbsolute = totalStakedNowPercentage < stakeTarget 
-            ? stakeTarget - totalStakedNowPercentage
-            : totalStakedNowPercentage - stakeTarget;
+        uint256 deltaAbsolute = totalStakePercentage < stakeTarget 
+            ? stakeTarget - totalStakePercentage
+            : totalStakePercentage - stakeTarget;
         uint256 deltaPercentage = deltaAbsolute * HUNDRED_PERCENT / stakeTarget;
         // Use the update coefficient to calculate what % we need to update
         // the APR with
         uint256 aprUpdate = deltaPercentage * aprUpdateCoefficient / ONE_PERCENT;
 
         uint256 newApr;
-        if (totalStakedNowPercentage < stakeTarget) {
+        if (totalStakePercentage < stakeTarget) {
             newApr = currentApr * (HUNDRED_PERCENT + aprUpdate) / HUNDRED_PERCENT;
         }
         else {
@@ -75,9 +74,8 @@ contract RewardUtils is GetterUtils, IRewardUtils {
         {
             if (api3Token.getMinterStatus(address(this)))
             {
-                uint256 totalStakedNow = getValue(totalStaked);
-                updateCurrentApr(totalStakedNow);
-                uint256 rewardAmount = totalStakedNow * currentApr / REWARD_VESTING_PERIOD / HUNDRED_PERCENT;
+                updateCurrentApr();
+                uint256 rewardAmount = totalStake * currentApr / REWARD_VESTING_PERIOD / HUNDRED_PERCENT;
                 epochIndexToReward[currentEpoch] = Reward({
                     atBlock: block.number,
                     amount: rewardAmount,
@@ -85,10 +83,7 @@ contract RewardUtils is GetterUtils, IRewardUtils {
                     });
                 if (rewardAmount > 0) {
                     api3Token.mint(address(this), rewardAmount);
-                    totalStaked.push(Checkpoint({
-                        fromBlock: block.number,
-                        value: totalStakedNow + rewardAmount
-                        }));
+                    totalStake = totalStake + rewardAmount;
                 }
                 emit PaidReward(
                     currentEpoch,
