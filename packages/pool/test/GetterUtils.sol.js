@@ -32,6 +32,41 @@ beforeEach(async () => {
   epochLength = await api3Pool.EPOCH_LENGTH();
 });
 
+describe("userSharesAt", function () {
+  it("gets user shares at", async function () {
+    const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+    await api3Token
+      .connect(roles.deployer)
+      .approve(api3Pool.address, user1Stake);
+    await api3Pool
+      .connect(roles.randomPerson)
+      .deposit(roles.deployer.address, user1Stake, roles.user1.address);
+    await api3Pool
+      .connect(roles.user1)
+      .stake(ethers.BigNumber.from(1));
+    await api3Pool
+      .connect(roles.user1)
+      .stake(ethers.BigNumber.from(1));
+    await api3Pool
+      .connect(roles.user1)
+      .stake(ethers.BigNumber.from(1));
+    const currentBlockNumber = await ethers.provider.getBlockNumber();
+    expect(
+      await api3Pool.userSharesAt(currentBlockNumber, roles.user1.address)
+    ).to.equal(ethers.BigNumber.from(3));
+    expect(
+      await api3Pool.userSharesAt(currentBlockNumber - 1, roles.user1.address)
+    ).to.equal(ethers.BigNumber.from(2));
+    expect(
+      await api3Pool.userSharesAt(currentBlockNumber - 2, roles.user1.address)
+    ).to.equal(ethers.BigNumber.from(1));
+    expect(
+      await api3Pool.userSharesAt(currentBlockNumber - 3, roles.user1.address)
+    ).to.equal(ethers.BigNumber.from(0));
+  });
+});
+
+
 describe("getDelegateAt", function () {
   it("gets delegate at", async function () {
     const firstBlockNumber = await ethers.provider.getBlockNumber();
