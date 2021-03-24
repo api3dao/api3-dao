@@ -77,29 +77,6 @@ contract GetterUtils is StateUtils, IGetterUtils {
         return totalSupplyAt(block.number);
     }
 
-    /// @notice Called to get the total staked tokens at a specific block
-    /// @param fromBlock Block number for which the query is being made for
-    /// @return Total staked tokens at the block
-    function totalStakeAt(uint256 fromBlock)
-        public
-        view
-        override
-        returns(uint256)
-    {
-        return getValueAt(totalStaked, fromBlock);
-    }
-
-    /// @notice Called to get the current total staked tokens
-    /// @return Current total staked tokens
-    function totalStake()
-        public
-        view
-        override
-        returns(uint256)
-    {
-        return totalStakeAt(block.number);
-    }
-
     /// @notice Called to get the pool shares of a user at a specific block
     /// @param fromBlock Block number for which the query is being made for
     /// @param userAddress User address
@@ -128,22 +105,6 @@ contract GetterUtils is StateUtils, IGetterUtils {
         return userSharesAt(block.number, userAddress);
     }
 
-    /// @notice Called to get the staked tokens of the user at a specific block
-    /// @param fromBlock Block number for which the query is being made for
-    /// @param userAddress User address
-    /// @return Staked tokens of the user at the block
-    function userStakeAt(
-        uint256 fromBlock,
-        address userAddress
-        )
-        public
-        view
-        override
-        returns(uint256)
-    {
-        return userSharesAt(fromBlock, userAddress) * totalStakeAt(fromBlock) / totalSupplyAt(fromBlock);
-    }
-
     /// @notice Called to get the current staked tokens of the user
     /// @param userAddress User address
     /// @return Current staked tokens of the user
@@ -153,7 +114,7 @@ contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        return userStakeAt(block.number, userAddress);
+        return userShares(userAddress) * totalStake / totalSupply();
     }
 
     /// @notice Called to get the voting power delegated to a user at a

@@ -27,16 +27,6 @@ interface IGetterUtils is IStateUtils {
         view
         returns(uint256);
 
-    function totalStakeAt(uint256 fromBlock)
-        external
-        view
-        returns(uint256);
-
-    function totalStake()
-        external
-        view
-        returns(uint256);
-
     function userSharesAt(
         uint256 fromBlock,
         address userAddress
@@ -46,14 +36,6 @@ interface IGetterUtils is IStateUtils {
         returns(uint256);
 
     function userShares(address userAddress)
-        external
-        view
-        returns(uint256);
-
-    function userStakeAt(
-        uint256 fromBlock,
-        address userAddress
-        )
         external
         view
         returns(uint256);

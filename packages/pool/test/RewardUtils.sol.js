@@ -446,6 +446,7 @@ describe("getUserLockedAt", function () {
     const REWARD_VESTING_PERIOD = (
       await api3Pool.REWARD_VESTING_PERIOD()
     ).toNumber();
+    const epochIndexToTotalStake = {};
     for (let i = 1; i < REWARD_VESTING_PERIOD + 1; i++) {
       const currentEpoch = genesisEpoch.add(ethers.BigNumber.from(i));
       await ethers.provider.send("evm_setNextBlockTimestamp", [
@@ -461,6 +462,8 @@ describe("getUserLockedAt", function () {
       expect(rewards.sub(locked).lt(ethers.BigNumber.from(100))).to.be.equal(
         true
       );
+      // Store this to be used in following assertions
+      epochIndexToTotalStake[currentEpoch] = await api3Pool.totalStake();
     }
     // ...then, only the last `REWARD_VESTING_PERIOD` epochs will be locked
     for (
@@ -481,12 +484,10 @@ describe("getUserLockedAt", function () {
       const unlockEpoch = currentEpoch.sub(
         ethers.BigNumber.from(REWARD_VESTING_PERIOD)
       );
-      const reward = await api3Pool.epochIndexToReward(unlockEpoch);
-      const unlockEpochStake = await api3Pool.totalStakeAt(reward.atBlock);
       // Need some tolerance for rounding errors
       expect(
         currentStake
-          .sub(unlockEpochStake)
+          .sub(epochIndexToTotalStake[unlockEpoch])
           .sub(locked)
           .lt(ethers.BigNumber.from(100))
       ).to.be.equal(true);
