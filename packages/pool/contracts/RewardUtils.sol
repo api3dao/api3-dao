@@ -79,7 +79,7 @@ contract RewardUtils is GetterUtils, IRewardUtils {
                 epochIndexToReward[currentEpoch] = Reward({
                     atBlock: block.number,
                     amount: rewardAmount,
-                    totalSharesThen: getValue(totalShares)
+                    totalSharesThen: totalShares
                     });
                 if (rewardAmount > 0) {
                     api3Token.mint(address(this), rewardAmount);

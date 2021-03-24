@@ -185,7 +185,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
           assert.isTrue(open, 'vote should be open');
           assert.isFalse(executed, 'vote should not be executed');
           assert.equal(creator, holder51, 'creator should be correct');
-          assertBn(snapshotBlock, await web3.eth.getBlockNumber() - 1, 'snapshot block should be correct');
+          assertBn(snapshotBlock, await web3.eth.getBlockNumber(), 'snapshot block should be correct');
           assertBn(supportRequired, neededSupport, 'required support should be app required support');
           assertBn(minAcceptQuorum, minimumAcceptanceQuorum, 'min quorum should be app min quorum');
           assertBn(yea, 0, 'initial yea should be 0');
@@ -450,7 +450,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
       const { snapshotBlock, votingPower } = await voting.getVote(voteId);
 
       // Generating tokens advanced the block by one
-      assertBn(snapshotBlock, await web3.eth.getBlockNumber() - 2, 'snapshot block should be correct');
+      assertBn(snapshotBlock, await web3.eth.getBlockNumber() - 1, 'snapshot block should be correct');
       assertBn(votingPower, await token.totalSupplyAt(snapshotBlock), 'voting power should match snapshot supply');
       assertBn(votingPower, 2, 'voting power should be correct')
     });
@@ -462,9 +462,9 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
       const voteId = createdVoteId(await voting.newTokenAndVote(holder2, 1, 'metadata'));
 
       const { snapshotBlock, votingPower } = await voting.getVote(voteId);
-      assertBn(snapshotBlock, await web3.eth.getBlockNumber() - 1, 'snapshot block should be correct');
+      assertBn(snapshotBlock, await web3.eth.getBlockNumber(), 'snapshot block should be correct');
       assertBn(votingPower, await token.totalSupplyAt(snapshotBlock), 'voting power should match snapshot supply');
-      assertBn(votingPower, 2, 'voting power should be correct')
+      assertBn(votingPower, 3, 'voting power should be correct')
     })
   });
 

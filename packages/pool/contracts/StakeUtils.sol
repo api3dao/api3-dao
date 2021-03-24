@@ -21,17 +21,13 @@ contract StakeUtils is TransferUtils, IStakeUtils {
         User storage user = users[msg.sender];
         require(user.unstaked >= amount, ERROR_VALUE);
         user.unstaked = user.unstaked - amount;
-        uint256 totalSharesNow = getValue(totalShares);
-        uint256 sharesToMint = totalSharesNow * amount / totalStake;
+        uint256 sharesToMint = totalShares * amount / totalStake;
         uint256 userSharesNow = getValue(user.shares);
         user.shares.push(Checkpoint({
             fromBlock: block.number,
             value: userSharesNow + sharesToMint
-            }));      
-        totalShares.push(Checkpoint({
-            fromBlock: block.number,
-            value: totalSharesNow + sharesToMint
             }));
+        totalShares = totalShares + sharesToMint;
         totalStake = totalStake + amount;
         updateDelegatedVotingPower(sharesToMint, true);
         emit Staked(
@@ -69,10 +65,9 @@ contract StakeUtils is TransferUtils, IStakeUtils {
         override
         payEpochRewardBefore()
     {
-        uint256 totalSharesNow = getValue(totalShares);
         User storage user = users[msg.sender];
         uint256 userSharesNow = getValue(user.shares);
-        uint256 userStakedNow = userSharesNow * totalStake / totalSharesNow;
+        uint256 userStakedNow = userSharesNow * totalStake / totalShares;
         require(
             userStakedNow >= amount,
             ERROR_VALUE
@@ -98,27 +93,23 @@ contract StakeUtils is TransferUtils, IStakeUtils {
         require(block.timestamp > user.unstakeScheduledFor, ERROR_UNAUTHORIZED);
         require(block.timestamp < user.unstakeScheduledFor + EPOCH_LENGTH, ERROR_UNAUTHORIZED);
         uint256 amount = user.unstakeAmount;
-        uint256 totalSharesNow = getValue(totalShares);
         uint256 userSharesNow = getValue(user.shares);
-        uint256 sharesToBurn = totalSharesNow * amount / totalStake;
+        uint256 sharesToBurn = totalShares * amount / totalStake;
         // If the user no longer has enough shares to unstake the scheduled
         // amount of tokens, unstake as many tokens as possible instead
         if (sharesToBurn > userSharesNow)
         {
             sharesToBurn = userSharesNow;
-            amount = sharesToBurn * totalStake / totalSharesNow;
+            amount = sharesToBurn * totalStake / totalShares;
         }
         user.unstaked = user.unstaked + amount;
         user.shares.push(Checkpoint({
             fromBlock: block.number,
             value: userSharesNow - sharesToBurn
             }));
-        totalShares.push(Checkpoint({
-            fromBlock: block.number,
-            value: totalSharesNow > sharesToBurn
-                ? totalSharesNow - sharesToBurn
-                : 1
-            }));
+        totalShares = totalShares > sharesToBurn
+            ? totalShares - sharesToBurn
+            : 1;
         updateDelegatedVotingPower(sharesToBurn, false);
 
         totalStake = totalStake > amount

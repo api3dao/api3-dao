@@ -20,7 +20,12 @@ interface IApi3Pool {
         view
         returns(uint256);
 
-    function totalSupplyAt(uint256 fromBlock)
+    function balanceOf(address userAddress)
+        external
+        view
+        returns(uint256);
+
+    function totalSupply()
         external
         view
         returns(uint256);

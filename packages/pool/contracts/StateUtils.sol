@@ -84,8 +84,8 @@ contract StateUtils is IStateUtils {
     /// @notice Total number of tokens staked at the pool
     uint256 public totalStake;
 
-    /// @notice Total number of shares at the pool, kept in checkpoints
-    Checkpoint[] public totalShares;
+    /// @notice Total number of shares at the pool
+    uint256 public totalShares;
 
     // All percentage values are represented by multiplying by 1e6
     uint256 internal constant ONE_PERCENT = 1_000_000;
@@ -154,10 +154,7 @@ contract StateUtils is IStateUtils {
     {
         api3Token = IApi3Token(api3TokenAddress);
         // Initialize the share price at 1
-        totalShares.push(Checkpoint({
-            fromBlock: block.number,
-            value: 1
-            }));
+        totalShares = 1;
         totalStake = 1;
         // Set the current epoch as the genesis epoch and skip its reward
         // payment
