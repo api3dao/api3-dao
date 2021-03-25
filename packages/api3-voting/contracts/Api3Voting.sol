@@ -260,11 +260,11 @@ contract Api3Voting is IForwarder, AragonApp {
         require(userAddressToLastNewProposalTimestamp[msg.sender].add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_PROPOSAL_COOLDOWN");
         userAddressToLastNewProposalTimestamp[msg.sender] = now;
 
-        uint64 snapshotBlock = getBlockNumber64(); // avoid double voting in this very block
+        uint64 snapshotBlock = getBlockNumber64() - 1; // avoid double voting in this very block
 
         uint256 votingPower = api3Pool.totalSupply();
         require(votingPower > 0, ERROR_NO_VOTING_POWER);
-        uint256 proposalMakerVotingPower = api3Pool.balanceOf(msg.sender);
+        uint256 proposalMakerVotingPower = api3Pool.balanceOfAt(msg.sender, snapshotBlock);
         require(
             proposalMakerVotingPower >= votingPower.mul(api3Pool.proposalVotingPowerThreshold()).div(1e8),
             "API3_HIT_PROPOSAL_THRESHOLD"
