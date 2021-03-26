@@ -62,10 +62,6 @@ contract StakeUtils is TransferUtils, IStakeUtils {
     /// @notice Called to schedule an unstake by the user
     /// @dev Users need to schedule an unstake and wait for `unstakeWaitPeriod`
     /// to be able to unstake.
-    /// Scheduling an unstake results in the reward of the current epoch to be
-    /// revoked from the user. This is to prevent the user from scheduling
-    /// unstakes that they are not intending to execute (to be used as a
-    /// fail-safe to evade insurance claims should they happen).
     /// @param amount Amount of tokens for which the unstake will be scheduled
     /// for 
     function scheduleUnstake(uint256 amount)
@@ -81,43 +77,6 @@ contract StakeUtils is TransferUtils, IStakeUtils {
             userStakedNow >= amount,
             ERROR_VALUE
             );
-
-        // Revoke the reward of the current epoch if applicable
-        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
-        if (!user.epochIndexToRewardRevocationStatus[currentEpoch])
-        {
-            Reward storage currentReward = epochIndexToReward[currentEpoch];
-            if (currentReward.amount != 0)
-            {
-                uint256 tokensToRevoke = currentReward.amount
-                     * getValueAt(user.shares, currentReward.atBlock)
-                     / getValueAt(totalShares, currentReward.atBlock);
-                uint256 sharesToBurn = (tokensToRevoke * totalSharesNow
-                    + (userSharesNow * totalStake)
-                    - (userStakedNow * totalSharesNow))
-                    / (totalStake + tokensToRevoke - userStakedNow);
-                if (sharesToBurn != 0)
-                {
-                    // Do not allow the user to burn what they are trying to
-                    // unstake
-                    require(sharesToBurn < userSharesNow, ERROR_UNAUTHORIZED);
-                    // The reward gets redistributed to the current stakers
-                    // Note that the lock for this reward will remain
-                    userSharesNow = userSharesNow - sharesToBurn;
-                    totalSharesNow = totalSharesNow - sharesToBurn;
-                    user.shares.push(Checkpoint({
-                        fromBlock: block.number,
-                        value: userSharesNow
-                        }));
-                    totalShares.push(Checkpoint({
-                        fromBlock: block.number,
-                        value: totalSharesNow
-                        }));
-                    updateDelegatedVotingPower(sharesToBurn, false);
-                    user.epochIndexToRewardRevocationStatus[currentEpoch] = true;
-                }
-            }
-        }
         user.unstakeScheduledFor = block.timestamp + unstakeWaitPeriod;
         user.unstakeAmount = amount;
         emit ScheduledUnstake(

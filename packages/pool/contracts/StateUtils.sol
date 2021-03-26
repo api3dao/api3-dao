@@ -31,7 +31,6 @@ contract StateUtils is IStateUtils {
         uint256 lastDelegationUpdateTimestamp;
         uint256 unstakeScheduledFor;
         uint256 unstakeAmount;
-        mapping(uint256 => bool) epochIndexToRewardRevocationStatus;
     }
 
     string constant internal ERROR_VALUE = "Invalid value";
