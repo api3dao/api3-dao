@@ -6,7 +6,8 @@ import "./ITransferUtils.sol";
 interface IStakeUtils is ITransferUtils{
     event Staked(
         address indexed user,
-        uint256 amount
+        uint256 amount,
+        uint256 totalShares
         );
 
     event ScheduledUnstake(
@@ -17,7 +18,8 @@ interface IStakeUtils is ITransferUtils{
 
     event Unstaked(
         address indexed user,
-        uint256 amount
+        uint256 amount,
+        uint256 totalShares
         );
 
     function stake(uint256 amount)

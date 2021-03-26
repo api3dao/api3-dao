@@ -50,18 +50,17 @@ contract GetterUtils is StateUtils, IGetterUtils {
         return balanceOfAt(userAddress, block.number);
     }
 
-    /// @notice Called to get the total voting power at a specific block
+    /// @notice Called to get the total voting power one block ago
     /// @dev This method is used to implement the MiniMe interface for the
     /// Aragon Voting app
-    /// @param fromBlock Block number for which the query is being made for
-    /// @return Total voting power at the block
-    function totalSupplyAt(uint256 fromBlock)
+    /// @return Total voting power one block ago
+    function totalSupplyOneBlockAgo()
         public
         view
         override
         returns(uint256)
     {
-        return getValueAt(totalShares, fromBlock);
+        return totalSharesOneBlockAgo();
     }
 
     /// @notice Called to get the current total voting power
@@ -74,7 +73,7 @@ contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        return totalSupplyAt(block.number);
+        return totalShares();
     }
 
     /// @notice Called to get the pool shares of a user at a specific block
