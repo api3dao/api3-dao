@@ -57,11 +57,11 @@ contract Api3TokenMock is MiniMeToken {
         return mockProposalVotingPowerThreshold;
     }
 
-    function totalStakeAt(uint256 snapshotBlock)
+    function totalSupplyOneBlockAgo()
         external
         view
         returns(uint256)
     {
-        return super.totalSupplyAt(snapshotBlock);
+        return totalSupplyAt(block.number - 1);
     }
 }
