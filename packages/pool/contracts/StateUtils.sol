@@ -46,6 +46,10 @@ contract StateUtils is IStateUtils {
     /// set, it will be immutable.
     address public daoAgent;
 
+    /// @notice Address of the DAO Api3Voting apps
+    /// @dev Set in a similar way to `daoAgent`
+    address[] public votingApps;
+
     /// @notice Mapping that keeps the claims manager statuses of addresses
     /// @dev A claims manager is a contract that is authorized to pay out
     /// claims from the staking pool, effectively slashing the stakers. The
@@ -77,6 +81,10 @@ contract StateUtils is IStateUtils {
 
     /// @notice Epoch index of the most recent reward payment
     uint256 public epochIndexOfLastRewardPayment;
+
+    // Snapshot block number of the last vote created at one of the DAO
+    // Api3Voting apps
+    uint256 private lastVoteSnapshotBlock;
 
     /// @notice User records
     mapping(address => User) public users;
@@ -186,6 +194,19 @@ contract StateUtils is IStateUtils {
         require(daoAgent == address(0), ERROR_UNAUTHORIZED);
         daoAgent = _daoAgent;
         emit SetDaoAgent(daoAgent);
+    }
+
+    /// @notice Called after deployment to set the addresses of the DAO Voting
+    /// apps
+    /// @param _votingApps Addresses of the DAO Api3Voting apps
+    function setVotingApps(address[] calldata _votingApps)
+        external
+        override
+    {
+        require(_votingApps.length != 0, ERROR_VALUE);
+        require(votingApps.length == 0, ERROR_UNAUTHORIZED);
+        votingApps = _votingApps;
+        emit SetVotingApps(votingApps);
     }
 
     /// @notice Called by the DAO Agent to set the authorization status of a
@@ -344,6 +365,26 @@ contract StateUtils is IStateUtils {
             );
     }
 
+    /// @notice Called by a DAO Api3Voting app to update the last vote snapshot
+    /// block number
+    /// @param snapshotBlock Last vote snapshot block number
+    function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
+        external
+        override
+    {
+        bool notAuthorized = true;
+        for (uint256 i = 0; i < votingApps.length; i++)
+        {
+            if (votingApps[i] == msg.sender)
+            {
+                notAuthorized = false;
+                break;
+            }
+        }
+        require(!notAuthorized, ERROR_UNAUTHORIZED);
+        lastVoteSnapshotBlock = snapshotBlock;
+    }
+
     /// @notice Called internally to update the total shares history
     /// @dev `fromBlock0` and `fromBlock1` will be two different block numbers
     /// when totalShares history was last updated. If one of these
@@ -414,44 +455,9 @@ contract StateUtils is IStateUtils {
         }
     }
 
-
-
-
-
-    // These will be set similar to the Agent address
-    address[] public votingApps;
-
-    uint256 public lastVoteSnapshotBlock;
-
-    event SetVotingApps(address[] votingApps);
-
-    function setVotingApps(address[] calldata _votingApps)
-        external
-    {
-        require(_votingApps.length != 0, ERROR_VALUE);
-        require(votingApps.length == 0, ERROR_UNAUTHORIZED);
-        votingApps = _votingApps;
-        emit SetVotingApps(votingApps);
-    }
-
-    function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
-        external
-        override
-    {
-        bool notAuthorized = true;
-        for (uint256 i = 0; i < votingApps.length; i++)
-        {
-            if (votingApps[i] == msg.sender)
-            {
-                notAuthorized = false;
-                break;
-            }
-        }
-        require(!notAuthorized, ERROR_UNAUTHORIZED);
-
-        lastVoteSnapshotBlock = snapshotBlock;
-    }
-
+    /// @notice Called internally to update a checkpoint array
+    /// @param checkpointArray Checkpoint array to be updated
+    /// @param value Value to be updated with
     function updateCheckpointArray(
         Checkpoint[] storage checkpointArray,
         uint256 value
@@ -482,6 +488,9 @@ contract StateUtils is IStateUtils {
         }
     }
 
+    /// @notice Called internally to update an address checkpoint array
+    /// @param addressCheckpointArray Address checkpoint array to be updated
+    /// @param _address Address to be updated with
     function updateAddressCheckpointArray(
         AddressCheckpoint[] storage addressCheckpointArray,
         address _address
