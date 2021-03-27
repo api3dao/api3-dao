@@ -48,6 +48,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
     beforeEach(async () => {
       token = await Api3TokenMock.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true); // empty parameters minime
       api3Pool = await Api3Pool.new(token.address);
+      await api3Pool.setVotingApps([voting.address]);
 
       await voting.initialize(api3Pool.address, neededSupport, minimumAcceptanceQuorum, votingDuration);
       executionTarget = await ExecutionTarget.new()
@@ -106,6 +107,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
       beforeEach(async () => {
         token = await Api3TokenMock.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', decimals, 'n', true); // empty parameters minime
         api3Pool = await Api3Pool.new(token.address);
+        await api3Pool.setVotingApps([voting.address]);
 
         await token.generateTokens(holder20, bigExp(20, decimals));
         await token.generateTokens(holder29, bigExp(29, decimals));

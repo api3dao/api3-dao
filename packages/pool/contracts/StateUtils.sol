@@ -413,4 +413,102 @@ contract StateUtils is IStateUtils {
             return totalShares();
         }
     }
+
+
+
+
+
+    // These will be set similar to the Agent address
+    address[] public votingApps;
+
+    uint256 public lastVoteSnapshotBlock;
+
+    event SetVotingApps(address[] votingApps);
+
+    function setVotingApps(address[] calldata _votingApps)
+        external
+    {
+        require(_votingApps.length != 0, ERROR_VALUE);
+        require(votingApps.length == 0, ERROR_UNAUTHORIZED);
+        votingApps = _votingApps;
+        emit SetVotingApps(votingApps);
+    }
+
+    function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
+        external
+        override
+    {
+        bool notAuthorized = true;
+        for (uint256 i = 0; i < votingApps.length; i++)
+        {
+            if (votingApps[i] == msg.sender)
+            {
+                notAuthorized = false;
+                break;
+            }
+        }
+        require(!notAuthorized, ERROR_UNAUTHORIZED);
+
+        lastVoteSnapshotBlock = snapshotBlock;
+    }
+
+    function updateCheckpointArray(
+        Checkpoint[] storage checkpointArray,
+        uint256 value
+        )
+        internal
+    {
+        if (checkpointArray.length == 0)
+        {
+            checkpointArray.push(Checkpoint({
+                fromBlock: lastVoteSnapshotBlock,
+                value: value
+                }));
+        }
+        else
+        {
+            Checkpoint storage lastElement = checkpointArray[checkpointArray.length - 1];
+            if (lastElement.fromBlock < lastVoteSnapshotBlock)
+            {
+                checkpointArray.push(Checkpoint({
+                    fromBlock: lastVoteSnapshotBlock,
+                    value: value
+                    }));
+            }
+            else
+            {
+                lastElement.value = value;
+            }
+        }
+    }
+
+    function updateAddressCheckpointArray(
+        AddressCheckpoint[] storage addressCheckpointArray,
+        address _address
+        )
+        internal
+    {
+        if (addressCheckpointArray.length == 0)
+        {
+            addressCheckpointArray.push(AddressCheckpoint({
+                fromBlock: lastVoteSnapshotBlock,
+                _address: _address
+                }));
+        }
+        else
+        {
+            AddressCheckpoint storage lastElement = addressCheckpointArray[addressCheckpointArray.length - 1];
+            if (lastElement.fromBlock < lastVoteSnapshotBlock)
+            {
+                addressCheckpointArray.push(AddressCheckpoint({
+                    fromBlock: lastVoteSnapshotBlock,
+                    _address: _address
+                    }));
+            }
+            else
+            {
+                lastElement._address = _address;
+            }
+        }
+    }
 }

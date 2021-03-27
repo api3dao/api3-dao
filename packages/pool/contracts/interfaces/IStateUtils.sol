@@ -77,4 +77,9 @@ interface IStateUtils {
         string calldata specsUrl
         )
         external;
+
+
+
+    function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
+        external;
 }

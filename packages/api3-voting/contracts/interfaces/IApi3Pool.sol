@@ -24,4 +24,7 @@ interface IApi3Pool {
         external
         view
         returns(uint256);
+
+    function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
+        external;
 }

@@ -66,6 +66,8 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
 
             await token.approve(pool.address, balance3, {from:voter3});
             await pool.depositAndStake(voter3, balance3, voter3, {from:voter3});
+
+            await pool.setVotingApps([voting.address]);
         });
 
         it('delegate to myself or to 0 address', async () => {

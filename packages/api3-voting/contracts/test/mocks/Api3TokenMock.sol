@@ -64,4 +64,9 @@ contract Api3TokenMock is MiniMeToken {
     {
         return totalSupplyAt(block.number - 1);
     }
+
+    function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
+        external
+    {
+    }
 }
