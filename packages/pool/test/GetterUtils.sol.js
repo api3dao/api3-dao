@@ -101,13 +101,13 @@ describe("getDelegateAt", function () {
       await api3Pool.userDelegateAt(firstBlockNumber, roles.user1.address)
     ).to.equal(roles.user2.address);
     expect(
-      await api3Pool.userDelegateAt(firstBlockNumber+1, roles.user1.address)
+      await api3Pool.userDelegateAt(firstBlockNumber + 1, roles.user1.address)
     ).to.equal(roles.randomPerson.address);
     expect(
-      await api3Pool.userDelegateAt(firstBlockNumber+2, roles.user1.address)
+      await api3Pool.userDelegateAt(firstBlockNumber + 2, roles.user1.address)
     ).to.equal(roles.randomPerson.address);
     expect(
-      await api3Pool.userDelegateAt(firstBlockNumber+3, roles.user1.address)
+      await api3Pool.userDelegateAt(firstBlockNumber + 3, roles.user1.address)
     ).to.equal(roles.user2.address);
   });
 });
