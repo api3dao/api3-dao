@@ -70,7 +70,8 @@ describe("stake", function () {
           .to.emit(api3Pool, "Staked")
           .withArgs(
             roles.user1.address,
-            user1Stake.div(ethers.BigNumber.from(2))
+            user1Stake.div(ethers.BigNumber.from(2)),
+            user1Stake.add(ethers.BigNumber.from(1))
           );
         expect(await api3Pool.userStake(roles.user1.address)).to.equal(
           user1Stake
@@ -97,7 +98,7 @@ describe("stake", function () {
           .deposit(roles.deployer.address, user1Stake, roles.user1.address);
         await expect(api3Pool.connect(roles.user1).stake(user1Stake))
           .to.emit(api3Pool, "Staked")
-          .withArgs(roles.user1.address, user1Stake);
+          .withArgs(roles.user1.address, user1Stake, user1Stake.add(ethers.BigNumber.from(1)));
         expect(await api3Pool.userStake(roles.user1.address)).to.equal(
           user1Stake
         );
@@ -133,7 +134,7 @@ describe("depositAndStake", function () {
           .depositAndStake(roles.user1.address, user1Stake, roles.user1.address)
       )
         .to.emit(api3Pool, "Staked")
-        .withArgs(roles.user1.address, user1Stake);
+        .withArgs(roles.user1.address, user1Stake, user1Stake.add(ethers.BigNumber.from(1)));
     });
   });
   context("Caller is not the beneficiary", function () {
@@ -241,9 +242,13 @@ describe("unstake", function () {
               genesisEpochPlusTwo.mul(epochLength).toNumber(),
             ]);
             // Unstake
+            await api3Pool.payReward();
+            const totalStakeNow = await api3Pool.totalStake();
+            const totalStakeAfter = totalStakeNow.sub(user1Stake);
+            const expectedTotalShares = (totalStakeAfter.mul(user1Stake).div(totalStakeNow)).add(ethers.BigNumber.from(1));
             await expect(api3Pool.connect(roles.user1).unstake())
               .to.emit(api3Pool, "Unstaked")
-              .withArgs(roles.user1.address, user1Stake);
+              .withArgs(roles.user1.address, user1Stake, expectedTotalShares);
             // Delegation remains
             expect(
               await api3Pool.userReceivedDelegation(roles.user2.address)
@@ -288,9 +293,13 @@ describe("unstake", function () {
               genesisEpochPlusTwo.mul(epochLength).toNumber(),
             ]);
             // Unstake
+            await api3Pool.payReward();
+            const totalStakeNow = await api3Pool.totalStake();
+            const totalStakeAfter = totalStakeNow.sub(user1Stake);
+            const expectedTotalShares = (totalStakeAfter.mul(user1Stake).div(totalStakeNow)).add(ethers.BigNumber.from(1));
             await expect(api3Pool.connect(roles.user1).unstake())
               .to.emit(api3Pool, "Unstaked")
-              .withArgs(roles.user1.address, user1Stake);
+              .withArgs(roles.user1.address, user1Stake, expectedTotalShares);
             const user = await api3Pool.users(roles.user1.address);
             expect(user.unstaked).to.equal(user1Stake);
           });
@@ -350,7 +359,7 @@ describe("unstake", function () {
           );
           await expect(api3Pool.connect(roles.user1).unstake())
             .to.emit(api3Pool, "Unstaked")
-            .withArgs(roles.user1.address, userStakedBeforeUnstake);
+            .withArgs(roles.user1.address, userStakedBeforeUnstake, ethers.BigNumber.from(1));
           const userStakedAfterUnstake = await api3Pool.userStake(
             roles.user1.address
           );

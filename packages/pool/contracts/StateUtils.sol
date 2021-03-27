@@ -84,8 +84,11 @@ contract StateUtils is IStateUtils {
     /// @notice Total number of tokens staked at the pool
     uint256 public totalStake;
 
-    /// @notice Total number of shares at the pool, kept in checkpoints
-    Checkpoint[] public totalShares;
+    // We keep checkpoints for two most recent blocks at which totalShares has
+    // been updated. Note that the indices do not indicate chronological
+    // ordering.
+    Checkpoint private totalSharesCheckpoint1;
+    Checkpoint private totalSharesCheckpoint2;
 
     // All percentage values are represented by multiplying by 1e6
     uint256 internal constant ONE_PERCENT = 1_000_000;
@@ -154,10 +157,7 @@ contract StateUtils is IStateUtils {
     {
         api3Token = IApi3Token(api3TokenAddress);
         // Initialize the share price at 1
-        totalShares.push(Checkpoint({
-            fromBlock: block.number,
-            value: 1
-            }));
+        updateTotalShares(1);
         totalStake = 1;
         // Set the current epoch as the genesis epoch and skip its reward
         // payment
@@ -342,5 +342,75 @@ contract StateUtils is IStateUtils {
             msg.sender,
             specsUrl
             );
+    }
+
+    /// @notice Called internally to update the total shares history
+    /// @dev `fromBlock0` and `fromBlock1` will be two different block numbers
+    /// when totalShares history was last updated. If one of these
+    /// `fromBlock`s match with `block.number`, we simply update the value
+    /// (because the history keeps the most recent value from that block). If
+    /// not, we can overwrite the older one, as we no longer need it.
+    /// @param newTotalShares Total shares value to insert into history
+    function updateTotalShares(uint256 newTotalShares)
+        internal
+    {
+        if (block.number == totalSharesCheckpoint1.fromBlock)
+        {
+            totalSharesCheckpoint1.value = newTotalShares;
+        }
+        else if (block.number == totalSharesCheckpoint2.fromBlock)
+        {
+            totalSharesCheckpoint2.value = newTotalShares;
+        }
+        else {
+            if (totalSharesCheckpoint1.fromBlock < totalSharesCheckpoint2.fromBlock)
+            {
+                totalSharesCheckpoint1.fromBlock = block.number;
+                totalSharesCheckpoint1.value = newTotalShares;
+            }
+            else
+            {
+                totalSharesCheckpoint2.fromBlock = block.number;
+                totalSharesCheckpoint2.value = newTotalShares;
+            }
+        }
+    }
+
+    /// @notice Called internally to get the current total shares
+    /// @return Current total shares
+    function totalShares()
+        internal
+        view
+        returns (uint256)
+    {
+        if (totalSharesCheckpoint1.fromBlock < totalSharesCheckpoint2.fromBlock)
+        {
+            return totalSharesCheckpoint2.value;
+        }
+        else
+        {
+            return totalSharesCheckpoint1.value;
+        }
+    }
+
+    /// @notice Called internally to get the total shares one block ago
+    /// @return Total shares one block ago
+    function totalSharesOneBlockAgo()
+        internal
+        view
+        returns (uint256)
+    {
+        if (totalSharesCheckpoint2.fromBlock == block.number)
+        {
+            return totalSharesCheckpoint1.value;
+        }
+        else if (totalSharesCheckpoint1.fromBlock == block.number)
+        {
+            return totalSharesCheckpoint2.value;
+        }
+        else
+        {
+            return totalShares();
+        }
     }
 }
