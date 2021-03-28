@@ -47,31 +47,24 @@ describe("userSharesAt", function () {
     await api3Pool
       .connect(roles.randomPerson)
       .deposit(roles.deployer.address, user1Stake, roles.user1.address);
-    await api3Pool
-      .connect(roles.user1)
-      .stake(ethers.BigNumber.from(1));
-    await api3Pool
-      .connect(roles.user1)
-      .stake(ethers.BigNumber.from(1));
-    await api3Pool
-      .connect(roles.user1)
-      .stake(ethers.BigNumber.from(1));
+    await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
+    await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
+    await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
     const currentBlockNumber = await ethers.provider.getBlockNumber();
     expect(
-      await api3Pool.userSharesAt(currentBlockNumber, roles.user1.address)
+      await api3Pool.userSharesAt(roles.user1.address, currentBlockNumber)
     ).to.equal(ethers.BigNumber.from(3));
     expect(
-      await api3Pool.userSharesAt(currentBlockNumber - 1, roles.user1.address)
+      await api3Pool.userSharesAt(roles.user1.address, currentBlockNumber - 1)
     ).to.equal(ethers.BigNumber.from(2));
     expect(
-      await api3Pool.userSharesAt(currentBlockNumber - 2, roles.user1.address)
+      await api3Pool.userSharesAt(roles.user1.address, currentBlockNumber - 2)
     ).to.equal(ethers.BigNumber.from(1));
     expect(
-      await api3Pool.userSharesAt(currentBlockNumber - 3, roles.user1.address)
+      await api3Pool.userSharesAt(roles.user1.address, currentBlockNumber - 3)
     ).to.equal(ethers.BigNumber.from(0));
   });
 });
-
 
 describe("getDelegateAt", function () {
   it("gets delegate at", async function () {
@@ -94,20 +87,20 @@ describe("getDelegateAt", function () {
     // Fast forward time
     await ethers.provider.send("evm_increaseTime", [epochLength.toNumber()]);
     // Check delegates
+    expect(await api3Pool.userDelegateAt(roles.user1.address, 0)).to.equal(
+      roles.user2.address
+    );
     expect(
-      await api3Pool.userDelegateAt(0, roles.user1.address)
+      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber)
     ).to.equal(roles.user2.address);
     expect(
-      await api3Pool.userDelegateAt(firstBlockNumber, roles.user1.address)
-    ).to.equal(roles.user2.address);
-    expect(
-      await api3Pool.userDelegateAt(firstBlockNumber + 1, roles.user1.address)
+      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber + 1)
     ).to.equal(roles.randomPerson.address);
     expect(
-      await api3Pool.userDelegateAt(firstBlockNumber + 2, roles.user1.address)
+      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber + 2)
     ).to.equal(roles.randomPerson.address);
     expect(
-      await api3Pool.userDelegateAt(firstBlockNumber + 3, roles.user1.address)
+      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber + 3)
     ).to.equal(roles.user2.address);
   });
 });

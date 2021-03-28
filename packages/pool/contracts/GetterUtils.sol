@@ -13,13 +13,13 @@ contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the voting power of a user at a specific block
     /// @dev This method is used to implement the MiniMe interface for the
-    /// Aragon Voting app
-    /// @param fromBlock Block number for which the query is being made for
+    /// Api3Voting app
     /// @param userAddress User address
+    /// @param _block Block number for which the query is being made for
     /// @return Voting power of the user at the block
     function balanceOfAt(
         address userAddress,
-        uint256 fromBlock
+        uint256 _block
         )
         public
         view
@@ -27,18 +27,18 @@ contract GetterUtils is StateUtils, IGetterUtils {
         returns(uint256)
     {
         // Users that delegate have no voting power
-        if (userDelegateAt(fromBlock, userAddress) != address(0))
+        if (userDelegateAt(userAddress, _block) != address(0))
         {
             return 0;
         }
-        uint256 userSharesThen = userSharesAt(fromBlock, userAddress);
-        uint256 delegatedToUserThen = userReceivedDelegationAt(fromBlock, userAddress);
+        uint256 userSharesThen = userSharesAt(userAddress, _block);
+        uint256 delegatedToUserThen = userReceivedDelegationAt(userAddress, _block);
         return userSharesThen + delegatedToUserThen;
     }
 
     /// @notice Called to get the current voting power of a user
     /// @dev This method is used to implement the MiniMe interface for the
-    /// Aragon Voting app
+    /// Api3Voting app
     /// @param userAddress User address
     /// @return Current voting power of the user
     function balanceOf(address userAddress)
@@ -52,7 +52,7 @@ contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the total voting power one block ago
     /// @dev This method is used to implement the MiniMe interface for the
-    /// Aragon Voting app
+    /// Api3Voting app
     /// @return Total voting power one block ago
     function totalSupplyOneBlockAgo()
         public
@@ -77,19 +77,19 @@ contract GetterUtils is StateUtils, IGetterUtils {
     }
 
     /// @notice Called to get the pool shares of a user at a specific block
-    /// @param fromBlock Block number for which the query is being made for
     /// @param userAddress User address
+    /// @param _block Block number for which the query is being made for
     /// @return Pool shares of the user at the block
     function userSharesAt(
-        uint256 fromBlock,
-        address userAddress
+        address userAddress,
+        uint256 _block
         )
         public
         view
         override
         returns(uint256)
     {
-        return getValueAt(users[userAddress].shares, fromBlock, 0);
+        return getValueAt(users[userAddress].shares, _block, 0);
     }
 
     /// @notice Called to get the current pool shares of a user
@@ -101,7 +101,7 @@ contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        return userSharesAt(block.number, userAddress);
+        return userSharesAt(userAddress, block.number);
     }
 
     /// @notice Called to get the pool shares of a user at a specific block
@@ -111,12 +111,12 @@ contract GetterUtils is StateUtils, IGetterUtils {
     /// This method is not used by the current iteration of the DAO/pool and is
     /// implemented for future external contracts to use to get the user shares
     /// at an arbitrary block.
-    /// @param fromBlock Block number for which the query is being made for
     /// @param userAddress User address
+    /// @param _block Block number for which the query is being made for
     /// @return Pool shares of the user at the block
     function userSharesAtWithBinarySearch(
         address userAddress,
-        uint256 fromBlock
+        uint256 _block
         )
         external
         view
@@ -128,9 +128,9 @@ contract GetterUtils is StateUtils, IGetterUtils {
             return 0;
 
         // Shortcut for the actual value
-        if (fromBlock >= checkpoints[checkpoints.length -1].fromBlock)
+        if (_block >= checkpoints[checkpoints.length -1].fromBlock)
             return checkpoints[checkpoints.length - 1].value;
-        if (fromBlock < checkpoints[0].fromBlock)
+        if (_block < checkpoints[0].fromBlock)
             return 0;
 
         // Binary search of the value in the array
@@ -138,7 +138,7 @@ contract GetterUtils is StateUtils, IGetterUtils {
         uint max = checkpoints.length - 1;
         while (max > min) {
             uint mid = (max + min + 1) / 2;
-            if (checkpoints[mid].fromBlock <= fromBlock) {
+            if (checkpoints[mid].fromBlock <= _block) {
                 min = mid;
             } else {
                 max = mid - 1;
@@ -156,17 +156,17 @@ contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        return userShares(userAddress) * totalStake / totalSupply();
+        return userShares(userAddress) * totalStake / totalShares();
     }
 
     /// @notice Called to get the voting power delegated to a user at a
     /// specific block
-    /// @param fromBlock Block number for which the query is being made for
     /// @param userAddress User address
+    /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block
     function userReceivedDelegationAt(
-        uint256 fromBlock,
-        address userAddress
+        address userAddress,
+        uint256 _block
         )
         public
         view
@@ -177,7 +177,7 @@ contract GetterUtils is StateUtils, IGetterUtils {
         uint256 minimumCheckpointIndex = delegatedTo.length > MAX_INTERACTION_FREQUENCY
             ? delegatedTo.length - MAX_INTERACTION_FREQUENCY
             : 0;
-        return getValueAt(delegatedTo, fromBlock, minimumCheckpointIndex);
+        return getValueAt(delegatedTo, _block, minimumCheckpointIndex);
     }
 
     /// @notice Called to get the current voting power delegated to a user
@@ -189,16 +189,16 @@ contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        return userReceivedDelegationAt(block.number, userAddress);
+        return userReceivedDelegationAt(userAddress, block.number);
     }
 
     /// @notice Called to get the delegate of the user at a specific block
-    /// @param fromBlock Block number
     /// @param userAddress User address
+    /// @param _block Block number
     /// @return Delegate of the user at the specific block
     function userDelegateAt(
-        uint256 fromBlock,
-        address userAddress
+        address userAddress,
+        uint256 _block
         )
         public
         view
@@ -219,7 +219,7 @@ contract GetterUtils is StateUtils, IGetterUtils {
             i--
             )
         {
-            if (delegates[i - 1].fromBlock <= fromBlock)
+            if (delegates[i - 1].fromBlock <= _block)
             {
                 return delegates[i - 1]._address;
             }
@@ -236,7 +236,7 @@ contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(address)
     {
-        return userDelegateAt(block.number, userAddress);
+        return userDelegateAt(userAddress, block.number);
     }
 
     /// @notice Called to get the value of a checkpoint array at a specific

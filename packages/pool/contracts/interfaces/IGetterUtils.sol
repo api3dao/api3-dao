@@ -6,7 +6,7 @@ import "./IStateUtils.sol";
 interface IGetterUtils is IStateUtils {
     function balanceOfAt(
         address userAddress,
-        uint256 fromBlock
+        uint256 _block
         )
         external
         view
@@ -28,8 +28,8 @@ interface IGetterUtils is IStateUtils {
         returns(uint256);
 
     function userSharesAt(
-        uint256 fromBlock,
-        address userAddress
+        address userAddress,
+        uint256 _block
         )
         external
         view
@@ -42,7 +42,7 @@ interface IGetterUtils is IStateUtils {
 
     function userSharesAtWithBinarySearch(
         address userAddress,
-        uint256 fromBlock
+        uint256 _block
         )
         external
         view
@@ -54,8 +54,8 @@ interface IGetterUtils is IStateUtils {
         returns(uint256);
 
     function userReceivedDelegationAt(
-        uint256 fromBlock,
-        address userAddress
+        address userAddress,
+        uint256 _block
         )
         external
         view
@@ -67,8 +67,8 @@ interface IGetterUtils is IStateUtils {
         returns(uint256);
 
     function userDelegateAt(
-        uint256 fromBlock,
-        address userAddress
+        address userAddress,
+        uint256 _block
         )
         external
         view

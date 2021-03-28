@@ -98,7 +98,11 @@ describe("stake", function () {
           .deposit(roles.deployer.address, user1Stake, roles.user1.address);
         await expect(api3Pool.connect(roles.user1).stake(user1Stake))
           .to.emit(api3Pool, "Staked")
-          .withArgs(roles.user1.address, user1Stake, user1Stake.add(ethers.BigNumber.from(1)));
+          .withArgs(
+            roles.user1.address,
+            user1Stake,
+            user1Stake.add(ethers.BigNumber.from(1))
+          );
         expect(await api3Pool.userStake(roles.user1.address)).to.equal(
           user1Stake
         );
@@ -134,7 +138,11 @@ describe("depositAndStake", function () {
           .depositAndStake(roles.user1.address, user1Stake, roles.user1.address)
       )
         .to.emit(api3Pool, "Staked")
-        .withArgs(roles.user1.address, user1Stake, user1Stake.add(ethers.BigNumber.from(1)));
+        .withArgs(
+          roles.user1.address,
+          user1Stake,
+          user1Stake.add(ethers.BigNumber.from(1))
+        );
     });
   });
   context("Caller is not the beneficiary", function () {
@@ -153,9 +161,7 @@ describe("scheduleUnstake", function () {
   context("User has enough staked to schedule unstake", function () {
     it("schedules unstake", async function () {
       // Have the user stake
-      const user1Stake = ethers.utils.parseEther(
-        "10" + "000" + "000"
-      );
+      const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
       await api3Token
         .connect(roles.deployer)
         .transfer(roles.user1.address, user1Stake);
@@ -164,11 +170,7 @@ describe("scheduleUnstake", function () {
         .approve(api3Pool.address, user1Stake);
       await api3Pool
         .connect(roles.user1)
-        .depositAndStake(
-          roles.user1.address,
-          user1Stake,
-          roles.user1.address
-        );
+        .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
       const currentBlock = await ethers.provider.getBlock(
         await ethers.provider.getBlockNumber()
       );
@@ -176,15 +178,9 @@ describe("scheduleUnstake", function () {
         .add(epochLength)
         .add(ethers.BigNumber.from(1));
       // Schedule unstake
-      await expect(
-        api3Pool.connect(roles.user1).scheduleUnstake(user1Stake)
-      )
+      await expect(api3Pool.connect(roles.user1).scheduleUnstake(user1Stake))
         .to.emit(api3Pool, "ScheduledUnstake")
-        .withArgs(
-          roles.user1.address,
-          user1Stake,
-          unstakeScheduledFor
-        );
+        .withArgs(roles.user1.address, user1Stake, unstakeScheduledFor);
     });
   });
   context("User does not have enough staked to schedule unstake", function () {
@@ -245,7 +241,10 @@ describe("unstake", function () {
             await api3Pool.payReward();
             const totalStakeNow = await api3Pool.totalStake();
             const totalStakeAfter = totalStakeNow.sub(user1Stake);
-            const expectedTotalShares = (totalStakeAfter.mul(user1Stake).div(totalStakeNow)).add(ethers.BigNumber.from(1));
+            const expectedTotalShares = totalStakeAfter
+              .mul(user1Stake)
+              .div(totalStakeNow)
+              .add(ethers.BigNumber.from(1));
             await expect(api3Pool.connect(roles.user1).unstake())
               .to.emit(api3Pool, "Unstaked")
               .withArgs(roles.user1.address, user1Stake, expectedTotalShares);
@@ -296,7 +295,10 @@ describe("unstake", function () {
             await api3Pool.payReward();
             const totalStakeNow = await api3Pool.totalStake();
             const totalStakeAfter = totalStakeNow.sub(user1Stake);
-            const expectedTotalShares = (totalStakeAfter.mul(user1Stake).div(totalStakeNow)).add(ethers.BigNumber.from(1));
+            const expectedTotalShares = totalStakeAfter
+              .mul(user1Stake)
+              .div(totalStakeNow)
+              .add(ethers.BigNumber.from(1));
             await expect(api3Pool.connect(roles.user1).unstake())
               .to.emit(api3Pool, "Unstaked")
               .withArgs(roles.user1.address, user1Stake, expectedTotalShares);
@@ -359,7 +361,11 @@ describe("unstake", function () {
           );
           await expect(api3Pool.connect(roles.user1).unstake())
             .to.emit(api3Pool, "Unstaked")
-            .withArgs(roles.user1.address, userStakedBeforeUnstake, ethers.BigNumber.from(1));
+            .withArgs(
+              roles.user1.address,
+              userStakedBeforeUnstake,
+              ethers.BigNumber.from(1)
+            );
           const userStakedAfterUnstake = await api3Pool.userStake(
             roles.user1.address
           );
