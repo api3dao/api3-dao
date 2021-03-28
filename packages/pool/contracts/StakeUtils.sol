@@ -23,7 +23,7 @@ contract StakeUtils is TransferUtils, IStakeUtils {
         user.unstaked = user.unstaked - amount;
         uint256 totalSharesNow = totalShares();
         uint256 sharesToMint = totalSharesNow * amount / totalStake;
-        uint256 userSharesNow = getValue(user.shares);
+        uint256 userSharesNow = userShares(msg.sender);
         user.shares.push(Checkpoint({
             fromBlock: block.number,
             value: userSharesNow + sharesToMint
@@ -69,7 +69,7 @@ contract StakeUtils is TransferUtils, IStakeUtils {
         payEpochRewardBefore()
     {
         User storage user = users[msg.sender];
-        uint256 userSharesNow = getValue(user.shares);
+        uint256 userSharesNow = userShares(msg.sender);
         uint256 userStakedNow = userSharesNow * totalStake / totalShares();
         require(
             userStakedNow >= amount,
@@ -97,7 +97,7 @@ contract StakeUtils is TransferUtils, IStakeUtils {
         require(block.timestamp < user.unstakeScheduledFor + EPOCH_LENGTH, ERROR_UNAUTHORIZED);
         uint256 amount = user.unstakeAmount;
         uint256 totalSharesNow = totalShares();
-        uint256 userSharesNow = getValue(user.shares);
+        uint256 userSharesNow = userShares(msg.sender);
         uint256 sharesToBurn = totalSharesNow * amount / totalStake;
         // If the user no longer has enough shares to unstake the scheduled
         // amount of tokens, unstake as many tokens as possible instead

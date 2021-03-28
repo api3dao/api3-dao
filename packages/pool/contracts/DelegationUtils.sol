@@ -34,7 +34,7 @@ contract DelegationUtils is RewardUtils, IDelegationUtils {
             ERROR_UNAUTHORIZED
             );
         user.lastDelegationUpdateTimestamp = block.timestamp;
-        uint256 userShares = getValue(user.shares);
+        uint256 userShares = userShares(msg.sender);
         address userDelegate = userDelegate(msg.sender);
         if (userDelegate == delegate) {
             return;
@@ -76,7 +76,7 @@ contract DelegationUtils is RewardUtils, IDelegationUtils {
             ERROR_UNAUTHORIZED
             );
 
-        uint256 userShares = getValue(user.shares);
+        uint256 userShares = userShares(msg.sender);
         User storage delegate = users[userDelegate];
         updateCheckpointArray(
             delegate.delegatedTo,
@@ -112,7 +112,7 @@ contract DelegationUtils is RewardUtils, IDelegationUtils {
         }
 
         User storage delegate = users[userDelegate];
-        uint256 currentlyDelegatedTo = getValue(delegate.delegatedTo);
+        uint256 currentlyDelegatedTo = userReceivedDelegation(userDelegate);
         uint256 newDelegatedTo;
         if (delta) {
             newDelegatedTo = currentlyDelegatedTo + shares;

@@ -40,6 +40,14 @@ interface IGetterUtils is IStateUtils {
         view
         returns(uint256);
 
+    function userSharesAtWithBinarySearch(
+        address userAddress,
+        uint256 fromBlock
+        )
+        external
+        view
+        returns(uint256);
+
     function userStake(address userAddress)
         external
         view
