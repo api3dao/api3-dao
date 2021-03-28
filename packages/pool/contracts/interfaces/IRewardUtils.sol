@@ -11,13 +11,6 @@ interface IRewardUtils {
     function payReward()
         external;
 
-    function getUserLockedAt(
-        address userAddress,
-        uint256 targetEpoch
-        )
-        external
-        returns(uint256);
-
     function getUserLocked(address userAddress)
         external
         returns(uint256);
