@@ -35,23 +35,22 @@ contract DelegationUtils is RewardUtils, IDelegationUtils {
             );
         user.lastDelegationUpdateTimestamp = block.timestamp;
         uint256 userShares = getValue(user.shares);
-        address userDelegate = getAddress(user.delegates);
+        address userDelegate = userDelegate(msg.sender);
         if (userDelegate == delegate) {
             return;
         }
         if (userDelegate != address(0)) {
             // Need to revoke previous delegation
-            User storage prevDelegate = users[userDelegate];
             updateCheckpointArray(
-                prevDelegate.delegatedTo,
-                getValue(prevDelegate.delegatedTo) - userShares
+                users[userDelegate].delegatedTo,
+                userReceivedDelegation(userDelegate) - userShares
                 );
         }
         // Assign the new delegation
         User storage _delegate = users[delegate];
         updateCheckpointArray(
             _delegate.delegatedTo,
-            getValue(_delegate.delegatedTo) + userShares
+            userReceivedDelegation(delegate) + userShares
             );
         // Record the new delegate for the user
         updateAddressCheckpointArray(
@@ -70,7 +69,7 @@ contract DelegationUtils is RewardUtils, IDelegationUtils {
         override
     {
         User storage user = users[msg.sender];
-        address userDelegate = getAddress(user.delegates);
+        address userDelegate = userDelegate(msg.sender);
         require(
             userDelegate != address(0)
                 && user.lastDelegationUpdateTimestamp <= block.timestamp - EPOCH_LENGTH,
@@ -81,7 +80,7 @@ contract DelegationUtils is RewardUtils, IDelegationUtils {
         User storage delegate = users[userDelegate];
         updateCheckpointArray(
             delegate.delegatedTo,
-            getValue(delegate.delegatedTo) - userShares
+            userReceivedDelegation(userDelegate) - userShares
             );
         updateAddressCheckpointArray(
             user.delegates,
@@ -107,7 +106,7 @@ contract DelegationUtils is RewardUtils, IDelegationUtils {
         )
         internal
     {
-        address userDelegate = getAddress(users[msg.sender].delegates);
+        address userDelegate = userDelegate(msg.sender);
         if (userDelegate == address(0)) {
             return;
         }
