@@ -4,6 +4,8 @@ pragma solidity 0.8.2;
 interface IStateUtils {
     event SetDaoAgent(address daoAgent);
 
+    event SetVotingApps(address[] votingApps);
+
     event SetClaimsManagerStatus(
         address claimsManager,
         bool status
@@ -48,6 +50,9 @@ interface IStateUtils {
     function setDaoAgent(address _daoAgent)
         external;
 
+    function setVotingApps(address[] calldata _votingApps)
+        external;
+
     function setClaimsManagerStatus(
         address claimsManager,
         bool status
@@ -76,5 +81,8 @@ interface IStateUtils {
         uint256 proposalIndex,
         string calldata specsUrl
         )
+        external;
+
+    function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
         external;
 }
