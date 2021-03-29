@@ -79,7 +79,6 @@ beforeEach(async () => {
 
 describe("api3template tests", function () {
     context("creation of the api3", function () {
-        // TODO: No idea how to check if constructor is reverted
         it("construction revert because of contracts addresses", async () => {
 
             try {
