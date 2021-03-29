@@ -13,8 +13,8 @@ interface IApi3Pool {
         returns(uint256);
 
     function balanceOfAt(
-        uint256 fromBlock,
-        address userAddress
+        address userAddress,
+        uint256 _block
         )
         external
         view

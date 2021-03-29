@@ -95,51 +95,47 @@ contract RewardUtils is GetterUtils, IRewardUtils {
         }
     }
 
-    /// @notice Called to get the locked tokens of the user at a specific epoch
-    /// @param userAddress User address
-    /// @param targetEpoch Epoch index for which the locked tokens will be
-    /// returned
-    /// @return Locked tokens of the user at the epoch
-    function getUserLockedAt(
-        address userAddress,
-        uint256 targetEpoch
-        )
-        public
-        override
-        payEpochRewardBefore()
-        returns(uint256)
-    {
-        User storage user = users[userAddress];
-        uint256 oldestLockedEpoch = targetEpoch - REWARD_VESTING_PERIOD > genesisEpoch
-            ? targetEpoch - REWARD_VESTING_PERIOD + 1
-            : genesisEpoch + 1;
-        uint256 locked = 0;
-        for (
-                uint256 ind = oldestLockedEpoch;
-                ind <= targetEpoch;
-                ind = ind + 1
-            )
-        {
-            Reward storage lockedReward = epochIndexToReward[ind];
-            if (lockedReward.atBlock != 0)
-            {
-                uint256 userSharesThen = getValueAt(user.shares, lockedReward.atBlock);
-                locked = locked + (lockedReward.amount * userSharesThen / lockedReward.totalSharesThen);
-            }
-        }
-        return locked;
-    }
-
     /// @notice Called to get the current locked tokens of the user
     /// @dev This can be called statically by clients (e.g., the DAO dashboard)
     /// to get the locked tokens of the user without actually updating it
     /// @param userAddress User address
-    /// @return Current locked tokens of the user
+    /// @return locked Current locked tokens of the user
     function getUserLocked(address userAddress)
         public
         override
-        returns(uint256)
+        payEpochRewardBefore()
+        returns(uint256 locked)
     {
-        return getUserLockedAt(userAddress, block.timestamp / EPOCH_LENGTH);
+        Checkpoint[] storage userShares = users[userAddress].shares;
+        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
+        uint256 oldestLockedEpoch = currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
+            ? currentEpoch - REWARD_VESTING_PERIOD + 1
+            : genesisEpoch + 1;
+
+        if (userShares.length == 0)
+        {
+            return 0;
+        }
+        uint256 indUserShares = userShares.length - 1;
+        for (
+                uint256 indEpoch = currentEpoch;
+                indEpoch >= oldestLockedEpoch;
+                indEpoch--
+            )
+        {
+            Reward storage lockedReward = epochIndexToReward[indEpoch];
+            if (lockedReward.atBlock != 0)
+            {
+                for (; indUserShares >= 0; indUserShares--)
+                {
+                    Checkpoint storage userShare = userShares[indUserShares];
+                    if (userShare.fromBlock <= lockedReward.atBlock)
+                    {
+                        locked += lockedReward.amount * userShare.value / lockedReward.totalSharesThen;
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
