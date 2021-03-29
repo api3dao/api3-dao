@@ -27,5 +27,8 @@
     "hooks": {
       "pre-commit": "npm run pretty-quick && npm run lint"
     }
+  },
+  "dependencies": {
+    "@openzeppelin/test-helpers": "^0.5.10"
   }
 }

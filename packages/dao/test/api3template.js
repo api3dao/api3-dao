@@ -1,8 +1,7 @@
 const { expect } = require("chai");
-const { time, expectRevert } = require('@openzeppelin/test-helpers');
 
 let roles;
-let api3Template, daoFactory, ens, miniMeTokenFactory, fifsResolvingRegistrar, api3TemplateFactory, Api3Template;
+let daoFactory, ens, miniMeTokenFactory, fifsResolvingRegistrar, api3TemplateFactory;
 
 
 
