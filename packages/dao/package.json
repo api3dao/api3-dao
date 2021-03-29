@@ -4,7 +4,10 @@
   "license": "MIT",
   "scripts": {
     "build": "hardhat compile",
-    "diff": "mkdir -p diff && git diff --no-index ./node_modules/@aragon/templates-shared/contracts/BaseTemplate.sol ./contracts/Api3BaseTemplate.sol > ./diff/Api3BaseTemplate.sol 2>&1 | true"
+    "diff": "mkdir -p diff && git diff --no-index ./node_modules/@aragon/templates-shared/contracts/BaseTemplate.sol ./contracts/Api3BaseTemplate.sol > ./diff/Api3BaseTemplate.sol 2>&1 | true",
+    "test": "hardhat test",
+    "test:coverage": "hardhat coverage",
+    "test:gas": "REPORT_GAS=TRUE hardhat test"
   },
   "devDependencies": {
     "@aragon/templates-shared": "^1.0.1",
