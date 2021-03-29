@@ -130,7 +130,26 @@ contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        return getValueAt(users[userAddress].delegatedTo, fromBlock);
+        Checkpoint[] storage delegatedTo = users[userAddress].delegatedTo;
+        if (delegatedTo.length == 0)
+        {
+            return 0;
+        }
+        uint256 oldestCheckpointIndex = delegatedTo.length > MAX_INTERACTION_FREQUENCY
+            ? delegatedTo.length - MAX_INTERACTION_FREQUENCY
+            : 0;
+        for (
+            uint256 i = delegatedTo.length - 1;
+            i >= oldestCheckpointIndex;
+            i--
+            )
+        {
+            if (delegatedTo[i].fromBlock <= fromBlock)
+            {
+                return delegatedTo[i].value;
+            }
+        }
+        return 0;
     }
 
     /// @notice Called to get the current voting power delegated to a user
@@ -146,11 +165,11 @@ contract GetterUtils is StateUtils, IGetterUtils {
     }
 
     /// @notice Called to get the delegate of the user at a specific block
-    /// @param _block Block number
+    /// @param fromBlock Block number
     /// @param userAddress User address
     /// @return Delegate of the user at the specific block
     function userDelegateAt(
-        uint256 _block,
+        uint256 fromBlock,
         address userAddress
         )
         public
@@ -158,7 +177,26 @@ contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(address)
     {
-        return getAddressAt(users[userAddress].delegates, _block);
+        AddressCheckpoint[] storage delegates = users[userAddress].delegates;
+        if (delegates.length == 0)
+        {
+            return address(0);
+        }
+        uint256 oldestCheckpointIndex = delegates.length > MAX_INTERACTION_FREQUENCY
+            ? delegates.length - MAX_INTERACTION_FREQUENCY
+            : 0;
+        for (
+            uint256 i = delegates.length - 1;
+            i >= oldestCheckpointIndex;
+            i--
+            )
+        {
+            if (delegates[i].fromBlock <= fromBlock)
+            {
+                return delegates[i]._address;
+            }
+        }
+        return address(0);
     }
 
     /// @notice Called to get the current delegate of the user

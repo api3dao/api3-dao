@@ -59,7 +59,7 @@ interface IGetterUtils is IStateUtils {
         returns(uint256);
 
     function userDelegateAt(
-        uint256 _block,
+        uint256 fromBlock,
         address userAddress
         )
         external
