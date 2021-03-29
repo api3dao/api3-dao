@@ -17,7 +17,7 @@ interface IGetterUtils is IStateUtils {
         view
         returns(uint256);
 
-    function totalSupplyAt(uint256 fromBlock)
+    function totalSupplyOneBlockAgo()
         external
         view
         returns(uint256);
