@@ -90,7 +90,6 @@ describe("api3template tests", function () {
                 );
                 throw new Error("Test without daoFactory works");
             } catch(error) {
-                console.log(error.toString());
                 expect(error.toString()).to.equal("Error: VM Exception while processing transaction: revert TEMPLATE_DAO_FAC_NOT_CONTRACT");
             }
 
@@ -103,7 +102,6 @@ describe("api3template tests", function () {
                 );
                 throw new Error("Test without ENS works");
             } catch(error) {
-                console.log(error.toString());
                 expect(error.toString()).to.equal("Error: VM Exception while processing transaction: revert TEMPLATE_ENS_NOT_CONTRACT");
             }
 
