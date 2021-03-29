@@ -21,9 +21,6 @@ beforeEach(async () => {
         roles.deployer
     );
 
-    // TODO: Problems are here, to create DaoFactory, I need to create at least three another contracts,
-    // TODO: and I need DAOFactory to create api3Template
-    // TODO: + this way of contract creation(it is used in pool as well) is a mess
     const DaoFactoryFactory = await ethers.getContractFactory(
         "DAOFactory",
         roles.deployer
