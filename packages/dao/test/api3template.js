@@ -1,7 +1,8 @@
 const { expect } = require("chai");
+const { time, expectRevert } = require('@openzeppelin/test-helpers');
 
 let roles;
-let api3Template, api3Pool;
+let api3Template, daoFactory, ens, miniMeTokenFactory, fifsResolvingRegistrar, api3TemplateFactory, Api3Template;
 
 
 
@@ -16,7 +17,7 @@ beforeEach(async () => {
         randomPerson: accounts[9],
     };
 
-    const api3TemplateFactory = await ethers.getContractFactory(
+    api3TemplateFactory = await ethers.getContractFactory(
         "Api3Template",
         roles.deployer
     );
@@ -28,6 +29,22 @@ beforeEach(async () => {
         "DAOFactory",
         roles.deployer
     );
+    const KernelFactory = await ethers.getContractFactory(
+        "Kernel",
+        roles.deployer
+    );
+    const ACLFactory = await ethers.getContractFactory(
+        "ACL",
+        roles.deployer
+    );
+    const EVMScriptRegistryFactoryFactory = await ethers.getContractFactory(
+        "EVMScriptRegistryFactory",
+        roles.deployer
+    );
+    const PublicResolverFactory = await ethers.getContractFactory(
+        "PublicResolver",
+        roles.deployer
+    );
     const ENSFactory = await ethers.getContractFactory(
         "ENS",
         roles.deployer
@@ -36,37 +53,75 @@ beforeEach(async () => {
         "MiniMeTokenFactory",
         roles.deployer
     );
-    // const FIFSResolvingRegistrarFactory = await ethers.getContractFactory(
-    //     "FIFSResolvingRegistrar",
-    //     roles.deployer
-    // );
-
-    const daoFactory =  await DaoFactoryFactory.deploy(
-        roles.deployer.address
+    const FIFSResolvingRegistrarFactory = await ethers.getContractFactory(
+        "FIFSResolvingRegistrar",
+        roles.deployer
     );
-    //
-    // const ens =  await ENSFactory.deploy(
-    //     roles.deployer.address
-    // );
-    //
-    // const miniMeTokenFactory =  await MiniMeTokenFactoryFactory.deploy(
-    //     roles.deployer.address
-    // );
 
-    // const fifsResolvingRegistrar =  await FIFSResolvingRegistrarFactory.new(
-    //     roles.deployer.address
-    // );
+    const kernel = await KernelFactory.deploy(true);
+    const acl = await ACLFactory.deploy();
+    const evmScriptRegistryFactory = await EVMScriptRegistryFactoryFactory.deploy();
 
-    // api3Template = await api3TemplateFactory.deploy(
-    //     roles.deployer.address,
-    //     roles.deployer.address
-    // );
+    daoFactory =  await DaoFactoryFactory.deploy(
+        kernel.address,
+        acl.address,
+        evmScriptRegistryFactory.address
+    );
+
+    ens =  await ENSFactory.deploy();
+
+    const publicResolver = await PublicResolverFactory.deploy(ens.address);
+
+    miniMeTokenFactory =  await MiniMeTokenFactoryFactory.deploy();
+
+    fifsResolvingRegistrar =  await FIFSResolvingRegistrarFactory.deploy(
+        ens.address,
+        publicResolver.address,
+        '0x0000000000000000000000000000000000000000000000000000000000000000'
+    );
 });
 
 describe("api3template tests", function () {
     context("creation of the api3", function () {
-        it("Construction", async function () {
+        // TODO: No idea how to check if constructor is reverted
+        it("construction revert because of contracts addresses", async () => {
+
+            try {
+                await api3TemplateFactory.deploy(
+                    "0x0000000000000000000000000000000000000000",
+                    ens.address,
+                    miniMeTokenFactory.address,
+                    fifsResolvingRegistrar.address
+                );
+                throw new Error("Test without daoFactory works");
+            } catch(error) {
+                console.log(error.toString());
+                expect(error.toString()).to.equal("Error: VM Exception while processing transaction: revert TEMPLATE_DAO_FAC_NOT_CONTRACT");
+            }
+
+            try {
+                await api3TemplateFactory.deploy(
+                    daoFactory.address,
+                    "0x0000000000000000000000000000000000000000",
+                    miniMeTokenFactory.address,
+                    fifsResolvingRegistrar.address
+                );
+                throw new Error("Test without ENS works");
+            } catch(error) {
+                console.log(error.toString());
+                expect(error.toString()).to.equal("Error: VM Exception while processing transaction: revert TEMPLATE_ENS_NOT_CONTRACT");
+            }
 
         });
+
+        it("construction completes correctly", async () => {
+            await api3TemplateFactory.deploy(
+                daoFactory.address,
+                ens.address,
+                miniMeTokenFactory.address,
+                fifsResolvingRegistrar.address
+            );
+        });
+
     });
 });
