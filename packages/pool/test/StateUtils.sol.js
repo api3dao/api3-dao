@@ -60,7 +60,7 @@ describe("constructor", function () {
     );
     // Verify the default DAO parameters
     expect(await api3Pool.stakeTarget()).to.equal(
-      ethers.BigNumber.from("30" + "000" + "000")
+      ethers.BigNumber.from("50" + "000" + "000")
     );
     expect(await api3Pool.minApr()).to.equal(
       ethers.BigNumber.from("2" + "500" + "000")

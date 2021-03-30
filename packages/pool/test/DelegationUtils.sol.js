@@ -41,10 +41,10 @@ describe("delegateVotingPower", function () {
               it("delegates voting power", async function () {
                 // Have two users stake
                 const user1Stake = ethers.utils.parseEther(
-                  "10" + "000" + "000"
+                  "20" + "000" + "000"
                 );
                 const user2Stake = ethers.utils.parseEther(
-                  "30" + "000" + "000"
+                  "60" + "000" + "000"
                 );
                 await api3Token
                   .connect(roles.deployer)
@@ -112,10 +112,10 @@ describe("delegateVotingPower", function () {
               it("does nothing", async function () {
                 // Have two users stake
                 const user1Stake = ethers.utils.parseEther(
-                  "10" + "000" + "000"
+                  "20" + "000" + "000"
                 );
                 const user2Stake = ethers.utils.parseEther(
-                  "30" + "000" + "000"
+                  "60" + "000" + "000"
                 );
                 await api3Token
                   .connect(roles.deployer)
@@ -226,8 +226,8 @@ describe("undelegateVotingPower", function () {
       function () {
         it("undelegates voting power", async function () {
           // Have two users stake
-          const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
-          const user2Stake = ethers.utils.parseEther("30" + "000" + "000");
+          const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+          const user2Stake = ethers.utils.parseEther("60" + "000" + "000");
           await api3Token
             .connect(roles.deployer)
             .transfer(roles.user1.address, user1Stake);

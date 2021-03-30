@@ -41,7 +41,7 @@ describe("payOutClaim", function () {
           .connect(roles.daoAgent)
           .setClaimsManagerStatus(roles.claimsManager.address, true);
         // Have the user stake
-        const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+        const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
         await api3Token
           .connect(roles.deployer)
           .transfer(roles.user1.address, user1Stake);

@@ -41,8 +41,8 @@ describe("payReward", function () {
             .connect(roles.deployer)
             .updateMinterStatus(api3Pool.address, true);
           // Have two users stake
-          const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
-          const user2Stake = ethers.utils.parseEther("30" + "000" + "000");
+          const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+          const user2Stake = ethers.utils.parseEther("60" + "000" + "000");
           await api3Token
             .connect(roles.deployer)
             .transfer(roles.user1.address, user1Stake);
@@ -132,7 +132,7 @@ describe("payReward", function () {
             .connect(roles.deployer)
             .updateMinterStatus(api3Pool.address, true);
           // Have the user stake
-          const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+          const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
           await api3Token
             .connect(roles.deployer)
             .transfer(roles.user1.address, user1Stake);
@@ -184,8 +184,8 @@ describe("payReward", function () {
     context("Pool contract is not authorized to mint tokens", function () {
       it("skips the payment and APR update", async function () {
         // Have two users stake
-        const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
-        const user2Stake = ethers.utils.parseEther("30" + "000" + "000");
+        const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+        const user2Stake = ethers.utils.parseEther("60" + "000" + "000");
         await api3Token
           .connect(roles.deployer)
           .transfer(roles.user1.address, user1Stake);
@@ -243,8 +243,8 @@ describe("payReward", function () {
           .connect(roles.deployer)
           .updateMinterStatus(api3Pool.address, true);
         // Have two users stake
-        const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
-        const user2Stake = ethers.utils.parseEther("30" + "000" + "000");
+        const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+        const user2Stake = ethers.utils.parseEther("60" + "000" + "000");
         await api3Token
           .connect(roles.deployer)
           .transfer(roles.user1.address, user1Stake);
@@ -318,8 +318,8 @@ describe("payReward", function () {
       context("Pool contract is not authorized to mint tokens", function () {
         it("skips the payment and APR update", async function () {
           // Have two users stake
-          const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
-          const user2Stake = ethers.utils.parseEther("30" + "000" + "000");
+          const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+          const user2Stake = ethers.utils.parseEther("60" + "000" + "000");
           await api3Token
             .connect(roles.deployer)
             .transfer(roles.user1.address, user1Stake);
@@ -381,8 +381,8 @@ describe("payReward", function () {
         .connect(roles.deployer)
         .updateMinterStatus(api3Pool.address, true);
       // Have two users stake
-      const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
-      const user2Stake = ethers.utils.parseEther("30" + "000" + "000");
+      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+      const user2Stake = ethers.utils.parseEther("60" + "000" + "000");
       await api3Token
         .connect(roles.deployer)
         .transfer(roles.user1.address, user1Stake);

@@ -40,7 +40,7 @@ beforeEach(async () => {
 
 describe("userSharesAt", function () {
   it("gets user shares at", async function () {
-    const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+    const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
     await api3Token
       .connect(roles.deployer)
       .approve(api3Pool.address, user1Stake);

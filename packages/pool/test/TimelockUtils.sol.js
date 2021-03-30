@@ -35,7 +35,7 @@ describe("depositWithVesting", function () {
     context("Release end is later than release start", function () {
       context("Amount is not zero", function () {
         it("deposits with vesting", async function () {
-          const depositAmount = ethers.utils.parseEther("10" + "000" + "000");
+          const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
           await api3Token
             .connect(roles.deployer)
             .transfer(roles.mockTimelockManager.address, depositAmount);
@@ -91,7 +91,7 @@ describe("depositWithVesting", function () {
     });
     context("Release end is not later than release start", function () {
       it("reverts", async function () {
-        const depositAmount = ethers.utils.parseEther("10" + "000" + "000");
+        const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
         const currentBlock = await ethers.provider.getBlock(
           await ethers.provider.getBlockNumber()
         );
@@ -113,7 +113,7 @@ describe("depositWithVesting", function () {
   });
   context("User has received from this timelock manager before", function () {
     it("reverts", async function () {
-      const depositAmount = ethers.utils.parseEther("10" + "000" + "000");
+      const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
       await api3Token
         .connect(roles.deployer)
         .transfer(roles.mockTimelockManager.address, depositAmount);
@@ -154,7 +154,7 @@ describe("updateTimelockStatus", function () {
     context("Timelock has remaining tokens", function () {
       context("It is past release end", function () {
         it("updates timelock status", async function () {
-          const depositAmount = ethers.utils.parseEther("10" + "000" + "000");
+          const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
           await api3Token
             .connect(roles.deployer)
             .transfer(roles.mockTimelockManager.address, depositAmount);
@@ -193,7 +193,7 @@ describe("updateTimelockStatus", function () {
       });
       context("It is not past release end", function () {
         it("updates timelock status", async function () {
-          const depositAmount = ethers.utils.parseEther("10" + "000" + "000");
+          const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
           await api3Token
             .connect(roles.deployer)
             .transfer(roles.mockTimelockManager.address, depositAmount);
@@ -234,7 +234,7 @@ describe("updateTimelockStatus", function () {
     });
     context("Timelock does not have remaining tokens", function () {
       it("reverts", async function () {
-        const depositAmount = ethers.utils.parseEther("10" + "000" + "000");
+        const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
         await api3Token
           .connect(roles.deployer)
           .transfer(roles.mockTimelockManager.address, depositAmount);
@@ -274,7 +274,7 @@ describe("updateTimelockStatus", function () {
   });
   context("Timelock has not started releasing", function () {
     it("reverts", async function () {
-      const depositAmount = ethers.utils.parseEther("10" + "000" + "000");
+      const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
       await api3Token
         .connect(roles.deployer)
         .transfer(roles.mockTimelockManager.address, depositAmount);

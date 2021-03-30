@@ -110,7 +110,7 @@ contract StateUtils is IStateUtils {
     /// increase if the total staked amount is below this, and vice versa.
     /// @dev Default value is 30% of the total API3 token supply. This
     /// parameter is governable by the DAO.
-    uint256 public stakeTarget = 30_000_000;
+    uint256 public stakeTarget = 50_000_000;
 
     /// @notice Minimum APR (annual percentage rate) the pool will pay as
     /// staking rewards in percentages

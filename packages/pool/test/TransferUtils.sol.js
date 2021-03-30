@@ -30,7 +30,7 @@ beforeEach(async () => {
 
 describe("deposit", function () {
   it("deposits", async function () {
-    const user1Deposit = ethers.utils.parseEther("10" + "000" + "000");
+    const user1Deposit = ethers.utils.parseEther("20" + "000" + "000");
     await api3Token
       .connect(roles.deployer)
       .approve(api3Pool.address, user1Deposit);
@@ -54,7 +54,7 @@ describe("withdraw", function () {
         .connect(roles.deployer)
         .updateMinterStatus(api3Pool.address, true);
       // Have the user stake
-      const user1Stake = ethers.utils.parseEther("30" + "000" + "000");
+      const user1Stake = ethers.utils.parseEther("60" + "000" + "000");
       await api3Token
         .connect(roles.deployer)
         .transfer(roles.user1.address, user1Stake);
@@ -101,7 +101,7 @@ describe("withdraw", function () {
   });
   context("User does not have enough withdrawable funds", function () {
     it("reverts", async function () {
-      const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
       await api3Token
         .connect(roles.deployer)
         .transfer(roles.user1.address, user1Stake);

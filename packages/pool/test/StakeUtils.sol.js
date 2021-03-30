@@ -34,7 +34,7 @@ describe("stake", function () {
   context("User has enough to stake", function () {
     context("User has a delegate and has staked before", function () {
       it("stakes and updates delegated voting power", async function () {
-        const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+        const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
         await api3Token
           .connect(roles.deployer)
           .approve(api3Pool.address, user1Stake);
@@ -89,7 +89,7 @@ describe("stake", function () {
     });
     context("User does not have a delegate", function () {
       it("stakes", async function () {
-        const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+        const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
         await api3Token
           .connect(roles.deployer)
           .approve(api3Pool.address, user1Stake);
@@ -114,7 +114,7 @@ describe("stake", function () {
   });
   context("User does not have enough to stake", function () {
     it("reverts", async function () {
-      const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
       await expect(
         api3Pool.connect(roles.user1).stake(user1Stake)
       ).to.be.revertedWith("Invalid value");
@@ -125,7 +125,7 @@ describe("stake", function () {
 describe("depositAndStake", function () {
   context("Caller is the beneficiary", function () {
     it("deposits and stakes", async function () {
-      const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
       await api3Token
         .connect(roles.deployer)
         .transfer(roles.user1.address, user1Stake);
@@ -147,7 +147,7 @@ describe("depositAndStake", function () {
   });
   context("Caller is not the beneficiary", function () {
     it("reverts", async function () {
-      const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
       await expect(
         api3Pool
           .connect(roles.randomPerson)
@@ -161,7 +161,7 @@ describe("scheduleUnstake", function () {
   context("User has enough staked to schedule unstake", function () {
     it("schedules unstake", async function () {
       // Have the user stake
-      const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
       await api3Token
         .connect(roles.deployer)
         .transfer(roles.user1.address, user1Stake);
@@ -203,7 +203,7 @@ describe("unstake", function () {
               .connect(roles.deployer)
               .updateMinterStatus(api3Pool.address, true);
             // Have the user stake
-            const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+            const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
             await api3Token
               .connect(roles.deployer)
               .transfer(roles.user1.address, user1Stake);
@@ -267,7 +267,7 @@ describe("unstake", function () {
               .connect(roles.deployer)
               .updateMinterStatus(api3Pool.address, true);
             // Have the user stake
-            const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+            const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
             await api3Token
               .connect(roles.deployer)
               .transfer(roles.user1.address, user1Stake);
@@ -314,7 +314,7 @@ describe("unstake", function () {
             .connect(roles.deployer)
             .updateMinterStatus(api3Pool.address, true);
           // Have the user stake
-          const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+          const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
           await api3Token
             .connect(roles.deployer)
             .transfer(roles.user1.address, user1Stake);
@@ -382,7 +382,7 @@ describe("unstake", function () {
           .connect(roles.deployer)
           .updateMinterStatus(api3Pool.address, true);
         // Have the user stake
-        const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+        const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
         await api3Token
           .connect(roles.deployer)
           .transfer(roles.user1.address, user1Stake);
@@ -420,7 +420,7 @@ describe("unstake", function () {
           .connect(roles.deployer)
           .updateMinterStatus(api3Pool.address, true);
         // Have the user stake
-        const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+        const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
         await api3Token
           .connect(roles.deployer)
           .transfer(roles.user1.address, user1Stake);
@@ -452,7 +452,7 @@ describe("unstakeAndWithdraw", function () {
       .connect(roles.deployer)
       .updateMinterStatus(api3Pool.address, true);
     // Have the user stake
-    const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+    const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
     await api3Token
       .connect(roles.deployer)
       .transfer(roles.user1.address, user1Stake);
