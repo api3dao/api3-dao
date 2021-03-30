@@ -225,17 +225,17 @@ contract GetterUtils is StateUtils, IGetterUtils {
         uint256 oldestCheckpointIndex = delegates.length > MAX_INTERACTION_FREQUENCY
             ? delegates.length - MAX_INTERACTION_FREQUENCY
             : 0;
-        for (
-            uint256 i = delegates.length;
-            i > oldestCheckpointIndex;
-            i--
-            )
+        uint256 i = delegates.length;
+        for (; i > oldestCheckpointIndex; i--)
         {
             if (delegates[i - 1].fromBlock <= _block)
             {
                 return delegates[i - 1]._address;
             }
         }
+        // Revert if the value being searched is not among the last
+        // `MAX_INTERACTION_FREQUENCY` elements
+        require(i == 0, ERROR_VALUE);
         return address(0);
     }
 
@@ -269,17 +269,17 @@ contract GetterUtils is StateUtils, IGetterUtils {
         {
             return 0;
         }
-        for (
-            uint256 i = checkpoints.length;
-            i > minimumCheckpointIndex;
-            i--
-            )
+        uint256 i = checkpoints.length;
+        for (; i > minimumCheckpointIndex; i--)
         {
             if (checkpoints[i - 1].fromBlock <= _block)
             {
                 return checkpoints[i - 1].value;
             }
         }
+        // Revert if the value being searched for comes before
+        // `minimumCheckpointIndex`
+        require(i == 0, ERROR_VALUE);
         return 0;
     }
 }
