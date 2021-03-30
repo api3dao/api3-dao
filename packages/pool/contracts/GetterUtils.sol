@@ -77,6 +77,8 @@ contract GetterUtils is StateUtils, IGetterUtils {
     }
 
     /// @notice Called to get the pool shares of a user at a specific block
+    /// @dev Starts from the most recent value in `user.shares` and searches
+    /// backwards one element at a time
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Pool shares of the user at the block
@@ -161,6 +163,11 @@ contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the voting power delegated to a user at a
     /// specific block
+    /// @dev Starts from the most recent value in `user.delegatedTo` and
+    /// searches backwards one element at a time. If `_block` is within
+    /// `EPOCH_LENGTH`, this call is guaranteed to find the value among
+    /// the last `MAX_INTERACTION_FREQUENCY` elements, which is why it only
+    /// searches through them. 
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block
@@ -193,6 +200,11 @@ contract GetterUtils is StateUtils, IGetterUtils {
     }
 
     /// @notice Called to get the delegate of the user at a specific block
+    /// @dev Starts from the most recent value in `user.delegates` and
+    /// searches backwards one element at a time. If `_block` is within
+    /// `EPOCH_LENGTH`, this call is guaranteed to find the value among
+    /// the last `MAX_INTERACTION_FREQUENCY` elements, which is why it only
+    /// searches through them. 
     /// @param userAddress User address
     /// @param _block Block number
     /// @return Delegate of the user at the specific block
@@ -269,16 +281,5 @@ contract GetterUtils is StateUtils, IGetterUtils {
             }
         }
         return 0;
-    }
-
-    /// @notice Called to get the current value of the checkpoint array
-    /// @param checkpoints Checkpoints array
-    /// @return Current value of the checkpoint array
-    function getValue(Checkpoint[] storage checkpoints)
-        internal
-        view
-        returns (uint256)
-    {
-        return getValueAt(checkpoints, block.number, 0);
     }
 }
