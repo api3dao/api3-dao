@@ -47,6 +47,11 @@ interface IStateUtils {
         string specsUrl
         );
 
+    event UpdatedLastVoteSnapshotBlock(
+        uint256 lastVoteSnapshotBlock,
+        uint256 lastVoteSnapshotBlockUpdateTimestamp
+        );
+
     function setDaoAgent(address _daoAgent)
         external;
 

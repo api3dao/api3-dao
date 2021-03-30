@@ -402,6 +402,7 @@ contract StateUtils is IStateUtils {
         require(!notAuthorized, ERROR_UNAUTHORIZED);
         lastVoteSnapshotBlock = snapshotBlock;
         snapshotBlockToTimestamp[snapshotBlock] = block.timestamp;
+        emit UpdatedLastVoteSnapshotBlock(snapshotBlock, block.timestamp);
     }
 
     /// @notice Called internally to update the total shares history
@@ -492,9 +493,9 @@ contract StateUtils is IStateUtils {
         }
         else
         {
-            if (checkpointArray.length > MAX_INTERACTION_FREQUENCY)
+            if (checkpointArray.length + 1 >= MAX_INTERACTION_FREQUENCY)
             {
-                uint256 interactionTimestampMaxInteractionFrequencyAgo = snapshotBlockToTimestamp[checkpointArray[checkpointArray.length - MAX_INTERACTION_FREQUENCY].fromBlock];
+                uint256 interactionTimestampMaxInteractionFrequencyAgo = snapshotBlockToTimestamp[checkpointArray[checkpointArray.length + 1 - MAX_INTERACTION_FREQUENCY].fromBlock];
                 require(
                     block.timestamp - interactionTimestampMaxInteractionFrequencyAgo > EPOCH_LENGTH,
                     ERROR_FREQUENCY
@@ -533,14 +534,6 @@ contract StateUtils is IStateUtils {
         }
         else
         {
-            if (addressCheckpointArray.length > MAX_INTERACTION_FREQUENCY)
-            {
-                uint256 interactionTimestampMaxInteractionFrequencyAgo = snapshotBlockToTimestamp[addressCheckpointArray[addressCheckpointArray.length - MAX_INTERACTION_FREQUENCY].fromBlock];
-                require(
-                    block.timestamp - interactionTimestampMaxInteractionFrequencyAgo > EPOCH_LENGTH,
-                    ERROR_FREQUENCY
-                    );
-            }
             AddressCheckpoint storage lastElement = addressCheckpointArray[addressCheckpointArray.length - 1];
             if (lastElement.fromBlock < lastVoteSnapshotBlock)
             {

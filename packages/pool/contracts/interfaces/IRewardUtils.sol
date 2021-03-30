@@ -1,7 +1,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.2;
 
-interface IRewardUtils {
+import "./IGetterUtils.sol";
+
+interface IRewardUtils is IGetterUtils {
     event PaidReward(
         uint256 indexed epoch,
         uint256 rewardAmount,
@@ -10,8 +12,4 @@ interface IRewardUtils {
 
     function payReward()
         external;
-
-    function getUserLocked(address userAddress)
-        external
-        returns(uint256);
 }

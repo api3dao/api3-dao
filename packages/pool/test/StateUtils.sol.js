@@ -11,6 +11,7 @@ beforeEach(async () => {
     claimsManager: accounts[2],
     user1: accounts[3],
     user2: accounts[4],
+    api3VotingApp: accounts[5],
     randomPerson: accounts[9],
   };
   const api3TokenFactory = await ethers.getContractFactory(
@@ -30,14 +31,6 @@ beforeEach(async () => {
 
 describe("constructor", function () {
   it("initializes with the correct parameters", async function () {
-    // Token address set correctly
-    expect(await api3Pool.api3Token()).to.equal(api3Token.address);
-    // No DAO Agent set
-    expect(await api3Pool.daoAgent()).to.equal(ethers.constants.AddressZero);
-    // Claims manager statuses are false by default
-    expect(
-      await api3Pool.claimsManagerStatus(roles.randomPerson.address)
-    ).to.equal(false);
     // Epoch length is 7 days in seconds
     expect(await api3Pool.EPOCH_LENGTH()).to.equal(
       ethers.BigNumber.from(7 * 24 * 60 * 60)
@@ -46,18 +39,20 @@ describe("constructor", function () {
     expect(await api3Pool.REWARD_VESTING_PERIOD()).to.equal(
       ethers.BigNumber.from(52)
     );
-    // Genesis epoch is the current epoch
-    const currentBlock = await ethers.provider.getBlock(
-      await ethers.provider.getBlockNumber()
+    // Max interaction frequency is 20
+    expect(await api3Pool.MAX_INTERACTION_FREQUENCY()).to.equal(
+      ethers.BigNumber.from(20)
     );
-    const currentEpoch = ethers.BigNumber.from(currentBlock.timestamp).div(
-      await api3Pool.EPOCH_LENGTH()
-    );
-    expect(await api3Pool.genesisEpoch()).to.equal(currentEpoch);
-    // Skip the reward payment of the genesis epoch
-    expect(await api3Pool.epochIndexOfLastRewardPayment()).to.equal(
-      await api3Pool.genesisEpoch()
-    );
+
+    // No DAO Agent set
+    expect(await api3Pool.daoAgent()).to.equal(ethers.constants.AddressZero);
+    // No Api3Voting apps set
+    await expect(api3Pool.votingApps(0)).to.be.reverted;
+    // Claims manager statuses are false by default
+    expect(
+      await api3Pool.claimsManagerStatus(roles.randomPerson.address)
+    ).to.equal(false);
+
     // Verify the default DAO parameters
     expect(await api3Pool.stakeTarget()).to.equal(
       ethers.BigNumber.from("50" + "000" + "000")
@@ -72,16 +67,31 @@ describe("constructor", function () {
       ethers.BigNumber.from("1" + "000" + "000")
     );
     expect(await api3Pool.unstakeWaitPeriod()).to.equal(
-      ethers.BigNumber.from(7 * 24 * 60 * 60)
+      await api3Pool.EPOCH_LENGTH()
     );
     expect(await api3Pool.proposalVotingPowerThreshold()).to.equal(
       ethers.BigNumber.from("100" + "000")
     );
     // Initialize the APR at max APR
     expect(await api3Pool.currentApr()).to.equal(await api3Pool.maxApr());
+
+    // Token address set correctly
+    expect(await api3Pool.api3Token()).to.equal(api3Token.address);
     // Initialize share price at 1
     expect(await api3Pool.totalSupply()).to.equal(ethers.BigNumber.from(1));
     expect(await api3Pool.totalStake()).to.equal(ethers.BigNumber.from(1));
+    // Genesis epoch is the current epoch
+    const currentBlock = await ethers.provider.getBlock(
+      await ethers.provider.getBlockNumber()
+    );
+    const currentEpoch = ethers.BigNumber.from(currentBlock.timestamp).div(
+      await api3Pool.EPOCH_LENGTH()
+    );
+    expect(await api3Pool.genesisEpoch()).to.equal(currentEpoch);
+    // Skip the reward payment of the genesis epoch
+    expect(await api3Pool.epochIndexOfLastRewardPayment()).to.equal(
+      await api3Pool.genesisEpoch()
+    );
   });
 });
 
@@ -121,6 +131,49 @@ describe("setDaoAgent", function () {
           .connect(roles.randomPerson)
           .setDaoAgent(ethers.constants.AddressZero)
       ).to.be.revertedWith("Invalid address");
+    });
+  });
+});
+
+describe("setVotingApps", function () {
+  context("Api3Voting app address array to be set is not empty", function () {
+    context(
+      "Api3Voting app address array has not been set before",
+      function () {
+        it("sets Api3Voting app address array", async function () {
+          await expect(
+            api3Pool
+              .connect(roles.randomPerson)
+              .setVotingApps([roles.api3VotingApp.address])
+          )
+            .to.emit(api3Pool, "SetVotingApps")
+            .withArgs([roles.api3VotingApp.address]);
+          expect(await api3Pool.votingApps(0)).to.equal(
+            roles.api3VotingApp.address
+          );
+        });
+      }
+    );
+    context("Api3Voting app address array has been set before", function () {
+      it("reverts", async function () {
+        // Set the voting apps once
+        await api3Pool
+          .connect(roles.randomPerson)
+          .setVotingApps([roles.api3VotingApp.address]);
+        // Attempt to set them again
+        await expect(
+          api3Pool
+            .connect(roles.randomPerson)
+            .setVotingApps([roles.api3VotingApp.address])
+        ).to.be.revertedWith("Unauthorized");
+      });
+    });
+  });
+  context("Api3Voting app address array to be set is empty", function () {
+    it("reverts", async function () {
+      await expect(
+        api3Pool.connect(roles.randomPerson).setVotingApps([])
+      ).to.be.revertedWith("Invalid value");
     });
   });
 });
@@ -486,5 +539,40 @@ describe("publishSpecsUrl", function () {
     )
       .to.emit(api3Pool, "PublishedSpecsUrl")
       .withArgs(proposalIndex, roles.randomPerson.address, specsUrl);
+  });
+});
+
+describe("updateLastVoteSnapshotBlock", function () {
+  context("Caller is an authorized Api3Voting app", function () {
+    it("updates lastVoteSnapshotBlock", async function () {
+      await api3Pool
+        .connect(roles.randomPerson)
+        .setVotingApps([roles.api3VotingApp.address]);
+      const currentBlock = await ethers.provider.getBlock(
+        await ethers.provider.getBlockNumber()
+      );
+      const snapshotBlockNumber = currentBlock.number;
+      const nextBlockTimestamp = currentBlock.timestamp + 100;
+      await ethers.provider.send("evm_setNextBlockTimestamp", [
+        nextBlockTimestamp,
+      ]);
+      await expect(
+        api3Pool
+          .connect(roles.api3VotingApp)
+          .updateLastVoteSnapshotBlock(snapshotBlockNumber)
+      )
+        .to.emit(api3Pool, "UpdatedLastVoteSnapshotBlock")
+        .withArgs(snapshotBlockNumber, nextBlockTimestamp);
+    });
+  });
+  context("Caller is not an authorized Api3Voting app", function () {
+    it("reverts", async function () {
+      await api3Pool
+        .connect(roles.randomPerson)
+        .setVotingApps([roles.api3VotingApp.address]);
+      await expect(
+        api3Pool.connect(roles.randomPerson).updateLastVoteSnapshotBlock(123)
+      ).to.be.revertedWith("Unauthorized");
+    });
   });
 });

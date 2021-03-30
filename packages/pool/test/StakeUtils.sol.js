@@ -2,7 +2,7 @@ const { expect } = require("chai");
 
 let roles;
 let api3Token, api3Pool;
-let epochLength;
+let EPOCH_LENGTH;
 
 beforeEach(async () => {
   const accounts = await ethers.getSigners();
@@ -27,7 +27,7 @@ beforeEach(async () => {
     roles.deployer
   );
   api3Pool = await api3PoolFactory.deploy(api3Token.address);
-  epochLength = await api3Pool.EPOCH_LENGTH();
+  EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
 });
 
 describe("stake", function () {
@@ -175,7 +175,7 @@ describe("scheduleUnstake", function () {
         await ethers.provider.getBlockNumber()
       );
       const unstakeScheduledFor = ethers.BigNumber.from(currentBlock.timestamp)
-        .add(epochLength)
+        .add(EPOCH_LENGTH)
         .add(ethers.BigNumber.from(1));
       // Schedule unstake
       await expect(api3Pool.connect(roles.user1).scheduleUnstake(user1Stake))
@@ -235,7 +235,7 @@ describe("unstake", function () {
               ethers.BigNumber.from(2)
             );
             await ethers.provider.send("evm_setNextBlockTimestamp", [
-              genesisEpochPlusTwo.mul(epochLength).toNumber(),
+              genesisEpochPlusTwo.mul(EPOCH_LENGTH).toNumber(),
             ]);
             // Unstake
             await api3Pool.payReward();
@@ -289,7 +289,7 @@ describe("unstake", function () {
               ethers.BigNumber.from(2)
             );
             await ethers.provider.send("evm_setNextBlockTimestamp", [
-              genesisEpochPlusTwo.mul(epochLength).toNumber(),
+              genesisEpochPlusTwo.mul(EPOCH_LENGTH).toNumber(),
             ]);
             // Unstake
             await api3Pool.payReward();
@@ -353,7 +353,7 @@ describe("unstake", function () {
             ethers.BigNumber.from(2)
           );
           await ethers.provider.send("evm_setNextBlockTimestamp", [
-            genesisEpochPlusTwo.mul(epochLength).toNumber(),
+            genesisEpochPlusTwo.mul(EPOCH_LENGTH).toNumber(),
           ]);
           // Unstake
           const userStakedBeforeUnstake = await api3Pool.userStake(
@@ -402,7 +402,7 @@ describe("unstake", function () {
         const genesisEpoch = await api3Pool.genesisEpoch();
         const genesisEpochPlusFive = genesisEpoch.add(ethers.BigNumber.from(5));
         await ethers.provider.send("evm_setNextBlockTimestamp", [
-          genesisEpochPlusFive.mul(epochLength).toNumber(),
+          genesisEpochPlusFive.mul(EPOCH_LENGTH).toNumber(),
         ]);
         // Attempt to unstake
         await expect(
@@ -467,7 +467,7 @@ describe("unstakeAndWithdraw", function () {
     const genesisEpoch = await api3Pool.genesisEpoch();
     const genesisEpochPlusTwo = genesisEpoch.add(ethers.BigNumber.from(2));
     await ethers.provider.send("evm_setNextBlockTimestamp", [
-      genesisEpochPlusTwo.mul(epochLength).toNumber(),
+      genesisEpochPlusTwo.mul(EPOCH_LENGTH).toNumber(),
     ]);
     // Unstake and withdraw
     await api3Pool.connect(roles.user1).unstakeAndWithdraw(roles.user1.address);
