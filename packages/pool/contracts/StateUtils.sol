@@ -33,12 +33,43 @@ contract StateUtils is IStateUtils {
         uint256 unstakeAmount;
     }
 
-    string constant internal ERROR_VALUE = "Invalid value";
-    string constant internal ERROR_ADDRESS = "Invalid address";
-    string constant internal ERROR_UNAUTHORIZED = "Unauthorized";
-    string constant internal ERROR_FREQUENCY = "Try again a week later";
+    /// @notice Length of the epoch in which the staking reward is paid out
+    /// once. It is hardcoded as 7 days in seconds.
+    /// @dev In addition to regulating reward payments, this variable is used
+    /// for four additional things:
+    /// (1) Once an unstaking scheduling matures, the user has `EPOCH_LENGTH`
+    /// to execute the unstaking before it expires
+    /// (2) After a user makes a proposal, they cannot make a second one
+    /// before `EPOCH_LENGTH` has passed
+    /// (3) After a user updates their delegation status, they have to wait
+    /// `EPOCH_LENGTH` before updating it again
+    /// (4) A user's `delegatedTo` or `delegates` checkpoint arrays can be
+    /// extended up to `MAX_INTERACTION_FREQUENCY` in an `EPOCH_LENGTH`
+    uint256 public constant EPOCH_LENGTH = 7 * 24 * 60 * 60;
 
-    uint256 constant internal MAX_INTERACTION_FREQUENCY = 10;
+    /// @notice Number of epochs before the staking rewards get unlocked.
+    /// Hardcoded as 52 epochs, which corresponds to a year.
+    uint256 public constant REWARD_VESTING_PERIOD = 52;
+
+    /// @notice Maximum number of additions interactions can make to a specific
+    /// user's `delegatedTo` and `delegates` in an EPOCH_LENGTH before it
+    /// starts to revert
+    /// @dev Note that interactions overwrite checkpoints rather than adding a
+    /// new element to the arrays unless a new proposal is made between them.
+    /// This means that at least `MAX_INTERACTION_FREQUENCY` proposals need
+    /// to be made for this mechanism to prevent further interactions, which is
+    /// not likely to happen in practice due to the proposal spam protection
+    /// mechanisms.
+    uint256 public constant MAX_INTERACTION_FREQUENCY = 20;
+
+    string internal constant ERROR_VALUE = "Invalid value";
+    string internal constant ERROR_ADDRESS = "Invalid address";
+    string internal constant ERROR_UNAUTHORIZED = "Unauthorized";
+    string internal constant ERROR_FREQUENCY = "Try again a week later";
+
+    // All percentage values are represented by multiplying by 1e6
+    uint256 internal constant ONE_PERCENT = 1_000_000;
+    uint256 internal constant HUNDRED_PERCENT = 100_000_000;
     
     /// @notice API3 token contract
     IApi3Token public api3Token;
@@ -59,36 +90,17 @@ contract StateUtils is IStateUtils {
     /// statuses are kept as a mapping to support multiple claims managers.
     mapping(address => bool) public claimsManagerStatus;
 
-    /// @notice Length of the epoch in which the staking reward is paid out
-    /// once. It is hardcoded as 7 days in seconds.
-    /// @dev In addition to regulating reward payments, this variable is used
-    /// for three additional things:
-    /// (1) Once an unstaking scheduling matures, the user has `EPOCH_LENGTH`
-    /// to execute the unstaking before it expires
-    /// (2) After a user makes a proposal, they cannot make a second one
-    /// before `EPOCH_LENGTH` has passed
-    /// (3) After a user updates their delegation status, they have to wait
-    /// `EPOCH_LENGTH` before updating it again
-    uint256 public constant EPOCH_LENGTH = 7 * 24 * 60 * 60;
-
-    /// @notice Number of epochs before the staking rewards get unlocked.
-    /// Hardcoded as 52 epochs, which corresponds to a year.
-    uint256 public constant REWARD_VESTING_PERIOD = 52;
-
     /// @notice Epochs are indexed as `block.timestamp / EPOCH_LENGTH`.
     /// `genesisEpoch` is the index of the epoch in which the pool is deployed.
     uint256 public immutable genesisEpoch;
 
     /// @notice Records of rewards paid in each epoch
+    /// @dev `.atBlock` of a past epoch's reward record being `0` means no
+    /// reward was paid for that block
     mapping(uint256 => Reward) public epochIndexToReward;
 
     /// @notice Epoch index of the most recent reward payment
     uint256 public epochIndexOfLastRewardPayment;
-
-    // Snapshot block number of the last vote created at one of the DAO
-    // Api3Voting apps
-    uint256 private lastVoteSnapshotBlock;
-    mapping(uint256 => uint256) private snapshotBlockToTimestamp;
 
     /// @notice User records
     mapping(address => User) public users;
@@ -96,21 +108,12 @@ contract StateUtils is IStateUtils {
     /// @notice Total number of tokens staked at the pool
     uint256 public totalStake;
 
-    // We keep checkpoints for two most recent blocks at which totalShares has
-    // been updated. Note that the indices do not indicate chronological
-    // ordering.
-    Checkpoint private totalSharesCheckpoint1;
-    Checkpoint private totalSharesCheckpoint2;
-
-    // All percentage values are represented by multiplying by 1e6
-    uint256 internal constant ONE_PERCENT = 1_000_000;
-    uint256 internal constant HUNDRED_PERCENT = 100_000_000;
-
-    /// @notice Stake target the pool will aim to meet. The staking rewards
-    /// increase if the total staked amount is below this, and vice versa.
-    /// @dev Default value is 30% of the total API3 token supply. This
+    /// @notice Stake target the pool will aim to meet in percentages of the
+    /// total token supply. The staking rewards increase if the total staked
+    ///  amount is below this, and vice versa.
+    /// @dev Default value is 50% of the total API3 token supply. This
     /// parameter is governable by the DAO.
-    uint256 public stakeTarget = 30_000_000;
+    uint256 public stakeTarget = 50_000_000;
 
     /// @notice Minimum APR (annual percentage rate) the pool will pay as
     /// staking rewards in percentages
@@ -146,7 +149,7 @@ contract StateUtils is IStateUtils {
     uint256 public proposalVotingPowerThreshold = 100_000;
 
     /// @notice APR that will be paid next epoch
-    /// @dev This is initialized at maximum APR, but will come to an
+    /// @dev This is initialized at maximum APR, but will reach an
     /// equilibrium based on the stake target.
     /// Every epoch (week), APR/52 of the total staked tokens will be added to
     /// the pool, effectively distributing them to the stakers.
@@ -157,6 +160,17 @@ contract StateUtils is IStateUtils {
     /// the specs of the proposal (target contract address, function,
     /// parameters) at a URL
     mapping(address => mapping(uint256 => string)) public userAddressToProposalIndexToSpecsUrl;
+
+    // Snapshot block number of the last vote created at one of the DAO
+    // Api3Voting apps
+    uint256 private lastVoteSnapshotBlock;
+    mapping(uint256 => uint256) private snapshotBlockToTimestamp;
+
+    // We keep checkpoints for two most recent blocks at which totalShares has
+    // been updated. Note that the indices do not indicate chronological
+    // ordering.
+    Checkpoint private totalSharesCheckpoint1;
+    Checkpoint private totalSharesCheckpoint2;
 
     /// @dev Reverts if the caller is not the DAO Agent App
     modifier onlyDaoAgent() {
@@ -388,6 +402,7 @@ contract StateUtils is IStateUtils {
         require(!notAuthorized, ERROR_UNAUTHORIZED);
         lastVoteSnapshotBlock = snapshotBlock;
         snapshotBlockToTimestamp[snapshotBlock] = block.timestamp;
+        emit UpdatedLastVoteSnapshotBlock(snapshotBlock, block.timestamp);
     }
 
     /// @notice Called internally to update the total shares history
@@ -478,9 +493,9 @@ contract StateUtils is IStateUtils {
         }
         else
         {
-            if (checkpointArray.length > MAX_INTERACTION_FREQUENCY)
+            if (checkpointArray.length + 1 >= MAX_INTERACTION_FREQUENCY)
             {
-                uint256 interactionTimestampMaxInteractionFrequencyAgo = snapshotBlockToTimestamp[checkpointArray[checkpointArray.length - MAX_INTERACTION_FREQUENCY].fromBlock];
+                uint256 interactionTimestampMaxInteractionFrequencyAgo = snapshotBlockToTimestamp[checkpointArray[checkpointArray.length + 1 - MAX_INTERACTION_FREQUENCY].fromBlock];
                 require(
                     block.timestamp - interactionTimestampMaxInteractionFrequencyAgo > EPOCH_LENGTH,
                     ERROR_FREQUENCY
@@ -519,14 +534,6 @@ contract StateUtils is IStateUtils {
         }
         else
         {
-            if (addressCheckpointArray.length > MAX_INTERACTION_FREQUENCY)
-            {
-                uint256 interactionTimestampMaxInteractionFrequencyAgo = snapshotBlockToTimestamp[addressCheckpointArray[addressCheckpointArray.length - MAX_INTERACTION_FREQUENCY].fromBlock];
-                require(
-                    block.timestamp - interactionTimestampMaxInteractionFrequencyAgo > EPOCH_LENGTH,
-                    ERROR_FREQUENCY
-                    );
-            }
             AddressCheckpoint storage lastElement = addressCheckpointArray[addressCheckpointArray.length - 1];
             if (lastElement.fromBlock < lastVoteSnapshotBlock)
             {

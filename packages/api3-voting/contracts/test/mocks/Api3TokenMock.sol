@@ -69,4 +69,11 @@ contract Api3TokenMock is MiniMeToken {
         external
     {
     }
+
+    function getMinterStatus(address account)
+        external
+        returns (bool)
+    {
+        return false;
+    }
 }

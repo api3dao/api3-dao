@@ -78,4 +78,9 @@ interface IGetterUtils is IStateUtils {
         external
         view
         returns(address);
+
+    function getUserLocked(address userAddress)
+        external
+        view
+        returns(uint256);
 }

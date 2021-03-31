@@ -2,6 +2,7 @@ const { expect } = require("chai");
 
 let roles;
 let api3Token, api3Pool;
+let EPOCH_LENGTH;
 
 beforeEach(async () => {
   const accounts = await ethers.getSigners();
@@ -26,11 +27,12 @@ beforeEach(async () => {
     roles.deployer
   );
   api3Pool = await api3PoolFactory.deploy(api3Token.address);
+  EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
 });
 
 describe("deposit", function () {
   it("deposits", async function () {
-    const user1Deposit = ethers.utils.parseEther("10" + "000" + "000");
+    const user1Deposit = ethers.utils.parseEther("20" + "000" + "000");
     await api3Token
       .connect(roles.deployer)
       .approve(api3Pool.address, user1Deposit);
@@ -54,7 +56,7 @@ describe("withdraw", function () {
         .connect(roles.deployer)
         .updateMinterStatus(api3Pool.address, true);
       // Have the user stake
-      const user1Stake = ethers.utils.parseEther("30" + "000" + "000");
+      const user1Stake = ethers.utils.parseEther("60" + "000" + "000");
       await api3Token
         .connect(roles.deployer)
         .transfer(roles.user1.address, user1Stake);
@@ -69,7 +71,7 @@ describe("withdraw", function () {
       for (let i = 0; i < 100; i++) {
         const currentEpoch = genesisEpoch.add(ethers.BigNumber.from(i + 1));
         await ethers.provider.send("evm_setNextBlockTimestamp", [
-          currentEpoch.mul(ethers.BigNumber.from(7 * 24 * 60 * 60)).toNumber(),
+          currentEpoch.mul(EPOCH_LENGTH).toNumber(),
         ]);
         await api3Pool.payReward();
       }
@@ -78,10 +80,7 @@ describe("withdraw", function () {
         .connect(roles.user1)
         .scheduleUnstake(await api3Pool.userStake(roles.user1.address));
       await ethers.provider.send("evm_setNextBlockTimestamp", [
-        genesisEpoch
-          .add(102)
-          .mul(ethers.BigNumber.from(7 * 24 * 60 * 60))
-          .toNumber(),
+        genesisEpoch.add(102).mul(EPOCH_LENGTH).toNumber(),
       ]);
       await api3Pool.connect(roles.user1).unstake();
       const userBefore = await api3Pool.users(roles.user1.address);
@@ -101,7 +100,7 @@ describe("withdraw", function () {
   });
   context("User does not have enough withdrawable funds", function () {
     it("reverts", async function () {
-      const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
       await api3Token
         .connect(roles.deployer)
         .transfer(roles.user1.address, user1Stake);

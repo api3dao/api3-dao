@@ -77,6 +77,8 @@ contract GetterUtils is StateUtils, IGetterUtils {
     }
 
     /// @notice Called to get the pool shares of a user at a specific block
+    /// @dev Starts from the most recent value in `user.shares` and searches
+    /// backwards one element at a time
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Pool shares of the user at the block
@@ -161,6 +163,11 @@ contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the voting power delegated to a user at a
     /// specific block
+    /// @dev Starts from the most recent value in `user.delegatedTo` and
+    /// searches backwards one element at a time. If `_block` is within
+    /// `EPOCH_LENGTH`, this call is guaranteed to find the value among
+    /// the last `MAX_INTERACTION_FREQUENCY` elements, which is why it only
+    /// searches through them. 
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block
@@ -193,6 +200,11 @@ contract GetterUtils is StateUtils, IGetterUtils {
     }
 
     /// @notice Called to get the delegate of the user at a specific block
+    /// @dev Starts from the most recent value in `user.delegates` and
+    /// searches backwards one element at a time. If `_block` is within
+    /// `EPOCH_LENGTH`, this call is guaranteed to find the value among
+    /// the last 2 elements because a user cannot update delegate more
+    /// frequently than once an `EPOCH_LENGTH`.
     /// @param userAddress User address
     /// @param _block Block number
     /// @return Delegate of the user at the specific block
@@ -206,18 +218,7 @@ contract GetterUtils is StateUtils, IGetterUtils {
         returns(address)
     {
         AddressCheckpoint[] storage delegates = users[userAddress].delegates;
-        if (delegates.length == 0)
-        {
-            return address(0);
-        }
-        uint256 oldestCheckpointIndex = delegates.length > MAX_INTERACTION_FREQUENCY
-            ? delegates.length - MAX_INTERACTION_FREQUENCY
-            : 0;
-        for (
-            uint256 i = delegates.length;
-            i > oldestCheckpointIndex;
-            i--
-            )
+        for (uint256 i = delegates.length; i > 0; i--)
         {
             if (delegates[i - 1].fromBlock <= _block)
             {
@@ -239,6 +240,48 @@ contract GetterUtils is StateUtils, IGetterUtils {
         return userDelegateAt(userAddress, block.number);
     }
 
+    /// @notice Called to get the current locked tokens of the user
+    /// @param userAddress User address
+    /// @return locked Current locked tokens of the user
+    function getUserLocked(address userAddress)
+        public
+        view
+        override
+        returns(uint256 locked)
+    {
+        Checkpoint[] storage _userShares = users[userAddress].shares;
+        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
+        uint256 oldestLockedEpoch = currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
+            ? currentEpoch - REWARD_VESTING_PERIOD + 1
+            : genesisEpoch + 1;
+
+        if (_userShares.length == 0)
+        {
+            return 0;
+        }
+        uint256 indUserShares = _userShares.length - 1;
+        for (
+                uint256 indEpoch = currentEpoch;
+                indEpoch >= oldestLockedEpoch;
+                indEpoch--
+            )
+        {
+            Reward storage lockedReward = epochIndexToReward[indEpoch];
+            if (lockedReward.atBlock != 0)
+            {
+                for (; indUserShares >= 0; indUserShares--)
+                {
+                    Checkpoint storage userShare = _userShares[indUserShares];
+                    if (userShare.fromBlock <= lockedReward.atBlock)
+                    {
+                        locked += lockedReward.amount * userShare.value / lockedReward.totalSharesThen;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     /// @notice Called to get the value of a checkpoint array at a specific
     /// block
     /// @param checkpoints Checkpoints array
@@ -253,32 +296,17 @@ contract GetterUtils is StateUtils, IGetterUtils {
         view
         returns(uint256)
     {
-        if (checkpoints.length == 0)
-        {
-            return 0;
-        }
-        for (
-            uint256 i = checkpoints.length;
-            i > minimumCheckpointIndex;
-            i--
-            )
+        uint256 i = checkpoints.length;
+        for (; i > minimumCheckpointIndex; i--)
         {
             if (checkpoints[i - 1].fromBlock <= _block)
             {
                 return checkpoints[i - 1].value;
             }
         }
+        // Revert if the value being searched for comes before
+        // `minimumCheckpointIndex`
+        require(i == 0, ERROR_VALUE);
         return 0;
-    }
-
-    /// @notice Called to get the current value of the checkpoint array
-    /// @param checkpoints Checkpoints array
-    /// @return Current value of the checkpoint array
-    function getValue(Checkpoint[] storage checkpoints)
-        internal
-        view
-        returns (uint256)
-    {
-        return getValueAt(checkpoints, block.number, 0);
     }
 }
