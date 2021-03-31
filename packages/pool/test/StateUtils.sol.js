@@ -7,11 +7,13 @@ beforeEach(async () => {
   const accounts = await ethers.getSigners();
   roles = {
     deployer: accounts[0],
-    daoAgent: accounts[1],
-    claimsManager: accounts[2],
-    user1: accounts[3],
-    user2: accounts[4],
-    api3VotingApp: accounts[5],
+    agentAppPrimary: accounts[1],
+    agentAppSecondary: accounts[2],
+    votingAppPrimary: accounts[3],
+    votingAppSecondary: accounts[4],
+    claimsManager: accounts[5],
+    user1: accounts[6],
+    user2: accounts[7],
     randomPerson: accounts[9],
   };
   const api3TokenFactory = await ethers.getContractFactory(
@@ -44,10 +46,19 @@ describe("constructor", function () {
       ethers.BigNumber.from(20)
     );
 
-    // No DAO Agent set
-    expect(await api3Pool.daoAgent()).to.equal(ethers.constants.AddressZero);
-    // No Api3Voting apps set
-    await expect(api3Pool.votingApps(0)).to.be.reverted;
+    // App addresses are not set
+    expect(await api3Pool.agentAppPrimary()).to.equal(
+      ethers.constants.AddressZero
+    );
+    expect(await api3Pool.agentAppSecondary()).to.equal(
+      ethers.constants.AddressZero
+    );
+    expect(await api3Pool.votingAppPrimary()).to.equal(
+      ethers.constants.AddressZero
+    );
+    expect(await api3Pool.votingAppSecondary()).to.equal(
+      ethers.constants.AddressZero
+    );
     // Claims manager statuses are false by default
     expect(
       await api3Pool.claimsManagerStatus(roles.randomPerson.address)
@@ -95,100 +106,172 @@ describe("constructor", function () {
   });
 });
 
-describe("setDaoAgent", function () {
-  context("DAO Agent address to be set is not zero", function () {
-    context("DAO Agent adress has not been set before", function () {
-      it("sets DAO Agent", async function () {
+describe("setDaoApps", function () {
+  context("DAO apps are not set before", function () {
+    context("DAO app addresses to be set are not zero", function () {
+      it("sets DAO apps", async function () {
         await expect(
           api3Pool
             .connect(roles.randomPerson)
-            .setDaoAgent(roles.daoAgent.address)
+            .setDaoApps(
+              roles.agentAppPrimary.address,
+              roles.agentAppSecondary.address,
+              roles.votingAppPrimary.address,
+              roles.votingAppSecondary.address
+            )
         )
-          .to.emit(api3Pool, "SetDaoAgent")
-          .withArgs(roles.daoAgent.address);
-        expect(await api3Pool.daoAgent()).to.equal(roles.daoAgent.address);
+          .to.emit(api3Pool, "SetDaoApps")
+          .withArgs(
+            roles.agentAppPrimary.address,
+            roles.agentAppSecondary.address,
+            roles.votingAppPrimary.address,
+            roles.votingAppSecondary.address
+          );
+        expect(await api3Pool.agentAppPrimary()).to.equal(
+          roles.agentAppPrimary.address
+        );
+        expect(await api3Pool.agentAppSecondary()).to.equal(
+          roles.agentAppSecondary.address
+        );
+        expect(await api3Pool.votingAppPrimary()).to.equal(
+          roles.votingAppPrimary.address
+        );
+        expect(await api3Pool.votingAppSecondary()).to.equal(
+          roles.votingAppSecondary.address
+        );
       });
     });
-    context("DAO Agent adress has been set before", function () {
+    context("DAO app addresses to be set are zero", function () {
       it("reverts", async function () {
-        // Set the DAO Agent once
-        await api3Pool
-          .connect(roles.randomPerson)
-          .setDaoAgent(roles.daoAgent.address);
-        // Attempt to set it again
         await expect(
           api3Pool
             .connect(roles.randomPerson)
-            .setDaoAgent(roles.randomPerson.address)
-        ).to.be.revertedWith("Unauthorized");
+            .setDaoApps(
+              ethers.constants.AddressZero,
+              roles.agentAppSecondary.address,
+              roles.votingAppPrimary.address,
+              roles.votingAppSecondary.address
+            )
+        ).to.be.revertedWith("Invalid address");
+        await expect(
+          api3Pool
+            .connect(roles.randomPerson)
+            .setDaoApps(
+              roles.agentAppPrimary.address,
+              ethers.constants.AddressZero,
+              roles.votingAppPrimary.address,
+              roles.votingAppSecondary.address
+            )
+        ).to.be.revertedWith("Invalid address");
+        await expect(
+          api3Pool
+            .connect(roles.randomPerson)
+            .setDaoApps(
+              roles.agentAppPrimary.address,
+              roles.agentAppSecondary.address,
+              ethers.constants.AddressZero,
+              roles.votingAppSecondary.address
+            )
+        ).to.be.revertedWith("Invalid address");
+        await expect(
+          api3Pool
+            .connect(roles.randomPerson)
+            .setDaoApps(
+              roles.agentAppPrimary.address,
+              roles.agentAppSecondary.address,
+              roles.votingAppPrimary.address,
+              ethers.constants.AddressZero
+            )
+        ).to.be.revertedWith("Invalid address");
       });
-    });
-  });
-  context("DAO Agent address to be set is zero", function () {
-    it("reverts", async function () {
-      await expect(
-        api3Pool
-          .connect(roles.randomPerson)
-          .setDaoAgent(ethers.constants.AddressZero)
-      ).to.be.revertedWith("Invalid address");
     });
   });
 });
-
-describe("setVotingApps", function () {
-  context("Api3Voting app address array to be set is not empty", function () {
-    context(
-      "Api3Voting app address array has not been set before",
-      function () {
-        it("sets Api3Voting app address array", async function () {
-          await expect(
-            api3Pool
-              .connect(roles.randomPerson)
-              .setVotingApps([roles.api3VotingApp.address])
+context("DAO apps are set before", function () {
+  context("Caller is primary Agent", function () {
+    it("sets DAO apps", async function () {
+      // Set the apps beforehand
+      await api3Pool
+        .connect(roles.randomPerson)
+        .setDaoApps(
+          roles.agentAppPrimary.address,
+          roles.randomPerson.address,
+          roles.randomPerson.address,
+          roles.randomPerson.address
+        );
+      // Set the apps again as the primary Agent
+      await expect(
+        api3Pool
+          .connect(roles.agentAppPrimary)
+          .setDaoApps(
+            roles.agentAppPrimary.address,
+            roles.agentAppSecondary.address,
+            roles.votingAppPrimary.address,
+            roles.votingAppSecondary.address
           )
-            .to.emit(api3Pool, "SetVotingApps")
-            .withArgs([roles.api3VotingApp.address]);
-          expect(await api3Pool.votingApps(0)).to.equal(
-            roles.api3VotingApp.address
-          );
-        });
-      }
-    );
-    context("Api3Voting app address array has been set before", function () {
-      it("reverts", async function () {
-        // Set the voting apps once
-        await api3Pool
-          .connect(roles.randomPerson)
-          .setVotingApps([roles.api3VotingApp.address]);
-        // Attempt to set them again
-        await expect(
-          api3Pool
-            .connect(roles.randomPerson)
-            .setVotingApps([roles.api3VotingApp.address])
-        ).to.be.revertedWith("Unauthorized");
-      });
+      )
+        .to.emit(api3Pool, "SetDaoApps")
+        .withArgs(
+          roles.agentAppPrimary.address,
+          roles.agentAppSecondary.address,
+          roles.votingAppPrimary.address,
+          roles.votingAppSecondary.address
+        );
+      expect(await api3Pool.agentAppPrimary()).to.equal(
+        roles.agentAppPrimary.address
+      );
+      expect(await api3Pool.agentAppSecondary()).to.equal(
+        roles.agentAppSecondary.address
+      );
+      expect(await api3Pool.votingAppPrimary()).to.equal(
+        roles.votingAppPrimary.address
+      );
+      expect(await api3Pool.votingAppSecondary()).to.equal(
+        roles.votingAppSecondary.address
+      );
     });
   });
-  context("Api3Voting app address array to be set is empty", function () {
+  context("Caller is a random person", function () {
     it("reverts", async function () {
+      // Set the apps beforehand
+      await api3Pool
+        .connect(roles.randomPerson)
+        .setDaoApps(
+          roles.agentAppPrimary.address,
+          roles.randomPerson.address,
+          roles.randomPerson.address,
+          roles.randomPerson.address
+        );
+      // Attempt to set the apps again as a random person
       await expect(
-        api3Pool.connect(roles.randomPerson).setVotingApps([])
-      ).to.be.revertedWith("Invalid value");
+        api3Pool
+          .connect(roles.randomPerson)
+          .setDaoApps(
+            roles.agentAppPrimary.address,
+            roles.agentAppSecondary.address,
+            roles.votingAppPrimary.address,
+            roles.votingAppSecondary.address
+          )
+      ).to.be.revertedWith("Unauthorized");
     });
   });
 });
 
 describe("setClaimsManagerStatus", function () {
-  context("Caller is DAO Agent", function () {
+  context("Caller is primary Agent", function () {
     it("sets claims manager status", async function () {
-      // Set the DAO Agent
       await api3Pool
         .connect(roles.randomPerson)
-        .setDaoAgent(roles.daoAgent.address);
+        .setDaoApps(
+          roles.agentAppPrimary.address,
+          roles.agentAppSecondary.address,
+          roles.votingAppPrimary.address,
+          roles.votingAppSecondary.address
+        );
       // Set claims manager status as true with the DAO Agent
       await expect(
         api3Pool
-          .connect(roles.daoAgent)
+          .connect(roles.agentAppPrimary)
           .setClaimsManagerStatus(roles.claimsManager.address, true)
       )
         .to.emit(api3Pool, "SetClaimsManagerStatus")
@@ -199,7 +282,7 @@ describe("setClaimsManagerStatus", function () {
       // Reset claims manager status as false with the DAO Agent
       await expect(
         api3Pool
-          .connect(roles.daoAgent)
+          .connect(roles.agentAppPrimary)
           .setClaimsManagerStatus(roles.claimsManager.address, false)
       )
         .to.emit(api3Pool, "SetClaimsManagerStatus")
@@ -209,8 +292,13 @@ describe("setClaimsManagerStatus", function () {
       ).to.equal(false);
     });
   });
-  context("Caller is not DAO Agent", function () {
+  context("Caller is not primary Agent", function () {
     it("reverts", async function () {
+      await expect(
+        api3Pool
+          .connect(roles.agentAppSecondary)
+          .setClaimsManagerStatus(roles.claimsManager.address, false)
+      ).to.be.revertedWith("Unauthorized");
       await expect(
         api3Pool
           .connect(roles.randomPerson)
@@ -221,21 +309,36 @@ describe("setClaimsManagerStatus", function () {
 });
 
 describe("setStakeTarget", function () {
-  context("Caller is DAO Agent", function () {
+  context("Caller is Agent", function () {
     context(
       "Stake target to be set is smaller than or equal to 100,000,000",
       function () {
         it("sets stake target", async function () {
           await api3Pool
             .connect(roles.randomPerson)
-            .setDaoAgent(roles.daoAgent.address);
+            .setDaoApps(
+              roles.agentAppPrimary.address,
+              roles.agentAppSecondary.address,
+              roles.votingAppPrimary.address,
+              roles.votingAppSecondary.address
+            );
           const oldStakeTarget = await api3Pool.stakeTarget();
           const newStakeTarget = ethers.BigNumber.from(123);
           await expect(
-            api3Pool.connect(roles.daoAgent).setStakeTarget(newStakeTarget)
+            api3Pool
+              .connect(roles.agentAppPrimary)
+              .setStakeTarget(newStakeTarget)
           )
             .to.emit(api3Pool, "SetStakeTarget")
             .withArgs(oldStakeTarget, newStakeTarget);
+          expect(await api3Pool.stakeTarget()).to.equal(newStakeTarget);
+          await expect(
+            api3Pool
+              .connect(roles.agentAppSecondary)
+              .setStakeTarget(newStakeTarget)
+          )
+            .to.emit(api3Pool, "SetStakeTarget")
+            .withArgs(newStakeTarget, newStakeTarget);
           expect(await api3Pool.stakeTarget()).to.equal(newStakeTarget);
         });
       }
@@ -244,10 +347,17 @@ describe("setStakeTarget", function () {
       it("reverts", async function () {
         await api3Pool
           .connect(roles.randomPerson)
-          .setDaoAgent(roles.daoAgent.address);
+          .setDaoApps(
+            roles.agentAppPrimary.address,
+            roles.agentAppSecondary.address,
+            roles.votingAppPrimary.address,
+            roles.votingAppSecondary.address
+          );
         const newStakeTarget = ethers.BigNumber.from("200" + "000" + "000");
         await expect(
-          api3Pool.connect(roles.daoAgent).setStakeTarget(newStakeTarget)
+          api3Pool
+            .connect(roles.agentAppSecondary)
+            .setStakeTarget(newStakeTarget)
         ).to.be.revertedWith("Invalid value");
       });
     });
@@ -270,13 +380,26 @@ describe("setMaxApr", function () {
         it("sets max APR", async function () {
           await api3Pool
             .connect(roles.randomPerson)
-            .setDaoAgent(roles.daoAgent.address);
+            .setDaoApps(
+              roles.agentAppPrimary.address,
+              roles.agentAppSecondary.address,
+              roles.votingAppPrimary.address,
+              roles.votingAppSecondary.address
+            );
           const oldMaxApr = await api3Pool.maxApr();
           const minApr = await api3Pool.minApr();
           const newMaxApr = minApr.add(ethers.BigNumber.from(123));
-          await expect(api3Pool.connect(roles.daoAgent).setMaxApr(newMaxApr))
+          await expect(
+            api3Pool.connect(roles.agentAppPrimary).setMaxApr(newMaxApr)
+          )
             .to.emit(api3Pool, "SetMaxApr")
             .withArgs(oldMaxApr, newMaxApr);
+          expect(await api3Pool.maxApr()).to.equal(newMaxApr);
+          await expect(
+            api3Pool.connect(roles.agentAppSecondary).setMaxApr(newMaxApr)
+          )
+            .to.emit(api3Pool, "SetMaxApr")
+            .withArgs(newMaxApr, newMaxApr);
           expect(await api3Pool.maxApr()).to.equal(newMaxApr);
         });
       }
@@ -285,11 +408,16 @@ describe("setMaxApr", function () {
       it("reverts", async function () {
         await api3Pool
           .connect(roles.randomPerson)
-          .setDaoAgent(roles.daoAgent.address);
+          .setDaoApps(
+            roles.agentAppPrimary.address,
+            roles.agentAppSecondary.address,
+            roles.votingAppPrimary.address,
+            roles.votingAppSecondary.address
+          );
         const minApr = await api3Pool.minApr();
         const newMaxApr = minApr.sub(ethers.BigNumber.from(123));
         await expect(
-          api3Pool.connect(roles.daoAgent).setMaxApr(newMaxApr)
+          api3Pool.connect(roles.agentAppSecondary).setMaxApr(newMaxApr)
         ).to.be.revertedWith("Invalid value");
       });
     });
@@ -312,13 +440,26 @@ describe("setMinApr", function () {
         it("sets min APR", async function () {
           await api3Pool
             .connect(roles.randomPerson)
-            .setDaoAgent(roles.daoAgent.address);
+            .setDaoApps(
+              roles.agentAppPrimary.address,
+              roles.agentAppSecondary.address,
+              roles.votingAppPrimary.address,
+              roles.votingAppSecondary.address
+            );
           const oldMinApr = await api3Pool.minApr();
           const maxApr = await api3Pool.maxApr();
           const newMinApr = maxApr.sub(ethers.BigNumber.from(123));
-          await expect(api3Pool.connect(roles.daoAgent).setMinApr(newMinApr))
+          await expect(
+            api3Pool.connect(roles.agentAppPrimary).setMinApr(newMinApr)
+          )
             .to.emit(api3Pool, "SetMinApr")
             .withArgs(oldMinApr, newMinApr);
+          expect(await api3Pool.minApr()).to.equal(newMinApr);
+          await expect(
+            api3Pool.connect(roles.agentAppSecondary).setMinApr(newMinApr)
+          )
+            .to.emit(api3Pool, "SetMinApr")
+            .withArgs(newMinApr, newMinApr);
           expect(await api3Pool.minApr()).to.equal(newMinApr);
         });
       }
@@ -327,11 +468,16 @@ describe("setMinApr", function () {
       it("reverts", async function () {
         await api3Pool
           .connect(roles.randomPerson)
-          .setDaoAgent(roles.daoAgent.address);
+          .setDaoApps(
+            roles.agentAppPrimary.address,
+            roles.agentAppSecondary.address,
+            roles.votingAppPrimary.address,
+            roles.votingAppSecondary.address
+          );
         const maxApr = await api3Pool.maxApr();
         const newMinApr = maxApr.add(ethers.BigNumber.from(123));
         await expect(
-          api3Pool.connect(roles.daoAgent).setMinApr(newMinApr)
+          api3Pool.connect(roles.agentAppSecondary).setMinApr(newMinApr)
         ).to.be.revertedWith("Invalid value");
       });
     });
@@ -347,14 +493,19 @@ describe("setMinApr", function () {
 });
 
 describe("setUnstakeWaitPeriod", function () {
-  context("Caller is DAO Agent", function () {
+  context("Caller is primary DAO Agent", function () {
     context(
       "Unstake wait period to be set is larger than or equal to epoch length",
       function () {
         it("sets unstake wait period", async function () {
           await api3Pool
             .connect(roles.randomPerson)
-            .setDaoAgent(roles.daoAgent.address);
+            .setDaoApps(
+              roles.agentAppPrimary.address,
+              roles.agentAppSecondary.address,
+              roles.votingAppPrimary.address,
+              roles.votingAppSecondary.address
+            );
           const oldUnstakeWaitPeriod = await api3Pool.unstakeWaitPeriod();
           const epochLength = await api3Pool.EPOCH_LENGTH();
           const newUnstakeWaitPeriod = epochLength.add(
@@ -362,7 +513,7 @@ describe("setUnstakeWaitPeriod", function () {
           );
           await expect(
             api3Pool
-              .connect(roles.daoAgent)
+              .connect(roles.agentAppPrimary)
               .setUnstakeWaitPeriod(newUnstakeWaitPeriod)
           )
             .to.emit(api3Pool, "SetUnstakeWaitPeriod")
@@ -379,23 +530,33 @@ describe("setUnstakeWaitPeriod", function () {
         it("reverts", async function () {
           await api3Pool
             .connect(roles.randomPerson)
-            .setDaoAgent(roles.daoAgent.address);
+            .setDaoApps(
+              roles.agentAppPrimary.address,
+              roles.agentAppSecondary.address,
+              roles.votingAppPrimary.address,
+              roles.votingAppSecondary.address
+            );
           const epochLength = await api3Pool.EPOCH_LENGTH();
           const newUnstakeWaitPeriod = epochLength.sub(
             ethers.BigNumber.from(123)
           );
           await expect(
             api3Pool
-              .connect(roles.daoAgent)
+              .connect(roles.agentAppPrimary)
               .setUnstakeWaitPeriod(newUnstakeWaitPeriod)
           ).to.be.revertedWith("Invalid value");
         });
       }
     );
   });
-  context("Caller is not DAO Agent", function () {
+  context("Caller is not primary DAO Agent", function () {
     it("reverts", async function () {
       const newUnstakeWaitPeriod = ethers.BigNumber.from(123);
+      await expect(
+        api3Pool
+          .connect(roles.agentAppSecondary)
+          .setUnstakeWaitPeriod(newUnstakeWaitPeriod)
+      ).to.be.revertedWith("Unauthorized");
       await expect(
         api3Pool
           .connect(roles.randomPerson)
@@ -413,18 +574,33 @@ describe("setAprUpdateCoefficient", function () {
         it("sets APR update coefficient", async function () {
           await api3Pool
             .connect(roles.randomPerson)
-            .setDaoAgent(roles.daoAgent.address);
+            .setDaoApps(
+              roles.agentAppPrimary.address,
+              roles.agentAppSecondary.address,
+              roles.votingAppPrimary.address,
+              roles.votingAppSecondary.address
+            );
           const oldAprUpdateCoefficient = await api3Pool.aprUpdateCoefficient();
           const newAprUpdateCoefficient = ethers.BigNumber.from(
             "50" + "000" + "000"
           );
           await expect(
             api3Pool
-              .connect(roles.daoAgent)
+              .connect(roles.agentAppPrimary)
               .setAprUpdateCoefficient(newAprUpdateCoefficient)
           )
             .to.emit(api3Pool, "SetAprUpdateCoefficient")
             .withArgs(oldAprUpdateCoefficient, newAprUpdateCoefficient);
+          expect(await api3Pool.aprUpdateCoefficient()).to.equal(
+            newAprUpdateCoefficient
+          );
+          await expect(
+            api3Pool
+              .connect(roles.agentAppSecondary)
+              .setAprUpdateCoefficient(newAprUpdateCoefficient)
+          )
+            .to.emit(api3Pool, "SetAprUpdateCoefficient")
+            .withArgs(newAprUpdateCoefficient, newAprUpdateCoefficient);
           expect(await api3Pool.aprUpdateCoefficient()).to.equal(
             newAprUpdateCoefficient
           );
@@ -437,11 +613,16 @@ describe("setAprUpdateCoefficient", function () {
         it("reverts", async function () {
           await api3Pool
             .connect(roles.randomPerson)
-            .setDaoAgent(roles.daoAgent.address);
+            .setDaoApps(
+              roles.agentAppPrimary.address,
+              roles.agentAppSecondary.address,
+              roles.votingAppPrimary.address,
+              roles.votingAppSecondary.address
+            );
           const newAprUpdateCoefficient1 = ethers.BigNumber.from(0);
           await expect(
             api3Pool
-              .connect(roles.daoAgent)
+              .connect(roles.agentAppSecondary)
               .setAprUpdateCoefficient(newAprUpdateCoefficient1)
           ).to.be.revertedWith("Invalid value");
           const newAprUpdateCoefficient2 = ethers.BigNumber.from(
@@ -449,7 +630,7 @@ describe("setAprUpdateCoefficient", function () {
           );
           await expect(
             api3Pool
-              .connect(roles.daoAgent)
+              .connect(roles.agentAppSecondary)
               .setAprUpdateCoefficient(newAprUpdateCoefficient2)
           ).to.be.revertedWith("Invalid value");
         });
@@ -469,21 +650,26 @@ describe("setAprUpdateCoefficient", function () {
 });
 
 describe("setProposalVotingPowerThreshold", function () {
-  context("Caller is DAO Agent", function () {
+  context("Caller is primary DAO Agent", function () {
     context(
       "Proposal voting power threshold to be set is smaller than or equal to 10,000,000",
       function () {
         it("sets proposal voting power threshold", async function () {
           await api3Pool
             .connect(roles.randomPerson)
-            .setDaoAgent(roles.daoAgent.address);
+            .setDaoApps(
+              roles.agentAppPrimary.address,
+              roles.agentAppSecondary.address,
+              roles.votingAppPrimary.address,
+              roles.votingAppSecondary.address
+            );
           const oldProposalVotingPowerThreshold = await api3Pool.proposalVotingPowerThreshold();
           const newProposalVotingPowerThreshold = ethers.BigNumber.from(
             "1" + "000" + "000"
           );
           await expect(
             api3Pool
-              .connect(roles.daoAgent)
+              .connect(roles.agentAppPrimary)
               .setProposalVotingPowerThreshold(newProposalVotingPowerThreshold)
           )
             .to.emit(api3Pool, "SetProposalVotingPowerThreshold")
@@ -503,22 +689,32 @@ describe("setProposalVotingPowerThreshold", function () {
         it("reverts", async function () {
           await api3Pool
             .connect(roles.randomPerson)
-            .setDaoAgent(roles.daoAgent.address);
+            .setDaoApps(
+              roles.agentAppPrimary.address,
+              roles.agentAppSecondary.address,
+              roles.votingAppPrimary.address,
+              roles.votingAppSecondary.address
+            );
           const newProposalVotingPowerThreshold = ethers.BigNumber.from(
             "50" + "000" + "000"
           );
           await expect(
             api3Pool
-              .connect(roles.daoAgent)
+              .connect(roles.agentAppPrimary)
               .setProposalVotingPowerThreshold(newProposalVotingPowerThreshold)
           ).to.be.revertedWith("Invalid value");
         });
       }
     );
   });
-  context("Caller is not DAO Agent", function () {
+  context("Caller is not primary DAO Agent", function () {
     it("reverts", async function () {
       const newProposalVotingPowerThreshold = ethers.BigNumber.from(123);
+      await expect(
+        api3Pool
+          .connect(roles.agentAppSecondary)
+          .setProposalVotingPowerThreshold(newProposalVotingPowerThreshold)
+      ).to.be.revertedWith("Unauthorized");
       await expect(
         api3Pool
           .connect(roles.randomPerson)
@@ -535,19 +731,40 @@ describe("publishSpecsUrl", function () {
     await expect(
       api3Pool
         .connect(roles.randomPerson)
-        .publishSpecsUrl(proposalIndex, specsUrl)
+        .publishSpecsUrl(
+          roles.votingAppPrimary.address,
+          proposalIndex,
+          specsUrl
+        )
     )
       .to.emit(api3Pool, "PublishedSpecsUrl")
-      .withArgs(proposalIndex, roles.randomPerson.address, specsUrl);
+      .withArgs(
+        roles.votingAppPrimary.address,
+        proposalIndex,
+        roles.randomPerson.address,
+        specsUrl
+      );
+    expect(
+      await api3Pool.userAddressToVotingAppToProposalIndexToSpecsUrl(
+        roles.randomPerson.address,
+        roles.votingAppPrimary.address,
+        proposalIndex
+      )
+    ).to.equal(specsUrl);
   });
 });
 
 describe("updateLastVoteSnapshotBlock", function () {
-  context("Caller is an authorized Api3Voting app", function () {
+  context("Caller is a Voting app", function () {
     it("updates lastVoteSnapshotBlock", async function () {
       await api3Pool
         .connect(roles.randomPerson)
-        .setVotingApps([roles.api3VotingApp.address]);
+        .setDaoApps(
+          roles.agentAppPrimary.address,
+          roles.agentAppSecondary.address,
+          roles.votingAppPrimary.address,
+          roles.votingAppSecondary.address
+        );
       const currentBlock = await ethers.provider.getBlock(
         await ethers.provider.getBlockNumber()
       );
@@ -558,18 +775,43 @@ describe("updateLastVoteSnapshotBlock", function () {
       ]);
       await expect(
         api3Pool
-          .connect(roles.api3VotingApp)
+          .connect(roles.votingAppPrimary)
           .updateLastVoteSnapshotBlock(snapshotBlockNumber)
       )
         .to.emit(api3Pool, "UpdatedLastVoteSnapshotBlock")
-        .withArgs(snapshotBlockNumber, nextBlockTimestamp);
+        .withArgs(
+          roles.votingAppPrimary.address,
+          snapshotBlockNumber,
+          nextBlockTimestamp
+        );
+      const snapshotBlockNumber2 = currentBlock.number + 1;
+      const nextBlockTimestamp2 = currentBlock.timestamp + 200;
+      await ethers.provider.send("evm_setNextBlockTimestamp", [
+        nextBlockTimestamp2,
+      ]);
+      await expect(
+        api3Pool
+          .connect(roles.votingAppSecondary)
+          .updateLastVoteSnapshotBlock(snapshotBlockNumber2)
+      )
+        .to.emit(api3Pool, "UpdatedLastVoteSnapshotBlock")
+        .withArgs(
+          roles.votingAppSecondary.address,
+          snapshotBlockNumber2,
+          nextBlockTimestamp2
+        );
     });
   });
   context("Caller is not an authorized Api3Voting app", function () {
     it("reverts", async function () {
       await api3Pool
         .connect(roles.randomPerson)
-        .setVotingApps([roles.api3VotingApp.address]);
+        .setDaoApps(
+          roles.agentAppPrimary.address,
+          roles.agentAppSecondary.address,
+          roles.votingAppPrimary.address,
+          roles.votingAppSecondary.address
+        );
       await expect(
         api3Pool.connect(roles.randomPerson).updateLastVoteSnapshotBlock(123)
       ).to.be.revertedWith("Unauthorized");
