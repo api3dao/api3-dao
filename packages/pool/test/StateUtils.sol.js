@@ -257,6 +257,49 @@ context("DAO apps are set before", function () {
   });
 });
 
+describe("setVotingApps", function () {
+  context("Api3Voting app address array to be set is not empty", function () {
+    context(
+      "Api3Voting app address array has not been set before",
+      function () {
+        it("sets Api3Voting app address array", async function () {
+          await expect(
+            api3Pool
+              .connect(roles.randomPerson)
+              .setVotingApps([roles.api3VotingApp.address])
+          )
+            .to.emit(api3Pool, "SetVotingApps")
+            .withArgs([roles.api3VotingApp.address]);
+          expect(await api3Pool.votingApps(0)).to.equal(
+            roles.api3VotingApp.address
+          );
+        });
+      }
+    );
+    context("Api3Voting app address array has been set before", function () {
+      it("reverts", async function () {
+        // Set the voting apps once
+        await api3Pool
+          .connect(roles.randomPerson)
+          .setVotingApps([roles.api3VotingApp.address]);
+        // Attempt to set them again
+        await expect(
+          api3Pool
+            .connect(roles.randomPerson)
+            .setVotingApps([roles.api3VotingApp.address])
+        ).to.be.revertedWith("Unauthorized");
+      });
+    });
+  });
+  context("Api3Voting app address array to be set is empty", function () {
+    it("reverts", async function () {
+      await expect(
+        api3Pool.connect(roles.randomPerson).setVotingApps([])
+      ).to.be.revertedWith("Invalid value");
+    });
+  });
+});
+
 describe("setClaimsManagerStatus", function () {
   context("Caller is primary Agent", function () {
     it("sets claims manager status", async function () {
@@ -812,6 +855,41 @@ describe("updateLastVoteSnapshotBlock", function () {
           roles.votingAppPrimary.address,
           roles.votingAppSecondary.address
         );
+      await expect(
+        api3Pool.connect(roles.randomPerson).updateLastVoteSnapshotBlock(123)
+      ).to.be.revertedWith("Unauthorized");
+    });
+  });
+});
+
+describe("updateLastVoteSnapshotBlock", function () {
+  context("Caller is an authorized Api3Voting app", function () {
+    it("updates lastVoteSnapshotBlock", async function () {
+      await api3Pool
+        .connect(roles.randomPerson)
+        .setVotingApps([roles.api3VotingApp.address]);
+      const currentBlock = await ethers.provider.getBlock(
+        await ethers.provider.getBlockNumber()
+      );
+      const snapshotBlockNumber = currentBlock.number;
+      const nextBlockTimestamp = currentBlock.timestamp + 100;
+      await ethers.provider.send("evm_setNextBlockTimestamp", [
+        nextBlockTimestamp,
+      ]);
+      await expect(
+        api3Pool
+          .connect(roles.api3VotingApp)
+          .updateLastVoteSnapshotBlock(snapshotBlockNumber)
+      )
+        .to.emit(api3Pool, "UpdatedLastVoteSnapshotBlock")
+        .withArgs(snapshotBlockNumber, nextBlockTimestamp);
+    });
+  });
+  context("Caller is not an authorized Api3Voting app", function () {
+    it("reverts", async function () {
+      await api3Pool
+        .connect(roles.randomPerson)
+        .setVotingApps([roles.api3VotingApp.address]);
       await expect(
         api3Pool.connect(roles.randomPerson).updateLastVoteSnapshotBlock(123)
       ).to.be.revertedWith("Unauthorized");
