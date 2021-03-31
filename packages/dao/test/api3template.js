@@ -1,11 +1,16 @@
 const { expect } = require("chai");
 
+let name;
+let votingSettings;
 let roles;
-let daoFactory, ens, miniMeTokenFactory, fifsResolvingRegistrar, api3TemplateFactory;
+let pool, api3dao, daoFactory, ens, miniMeTokenFactory, fifsResolvingRegistrar, api3TemplateFactory;
 
 
 
 beforeEach(async () => {
+    name = "aragonid.eth";
+    votingSettings = [ethers.BigNumber.from(50), ethers.BigNumber.from(20), ethers.BigNumber.from(1000)];
+
     const accounts = await ethers.getSigners();
     roles = {
         deployer: accounts[0],
@@ -18,6 +23,11 @@ beforeEach(async () => {
 
     api3TemplateFactory = await ethers.getContractFactory(
         "Api3Template",
+        roles.deployer
+    );
+
+    const poolFactory = await ethers.getContractFactory(
+        "MiniMeToken",
         roles.deployer
     );
 
@@ -70,6 +80,8 @@ beforeEach(async () => {
 
     miniMeTokenFactory =  await MiniMeTokenFactoryFactory.deploy();
 
+    pool = await poolFactory.deploy('0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', 0, 'n', 18, 'n', true);
+
     fifsResolvingRegistrar =  await FIFSResolvingRegistrarFactory.deploy(
         ens.address,
         publicResolver.address,
@@ -108,7 +120,7 @@ describe("api3template tests", function () {
         });
 
         it("construction completes correctly", async () => {
-            await api3TemplateFactory.deploy(
+            api3dao = await api3TemplateFactory.deploy(
                 daoFactory.address,
                 ens.address,
                 miniMeTokenFactory.address,
@@ -116,5 +128,8 @@ describe("api3template tests", function () {
             );
         });
 
+        it("creates api3dao instance", async () => {
+            await api3dao.newInstance(name, pool.address, votingSettings, roles.deployer.address);
+        });
     });
 });

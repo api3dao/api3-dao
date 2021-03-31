@@ -23,6 +23,15 @@ import "@aragon/id/contracts/IFIFSResolvingRegistrar.sol";
 contract Api3BaseTemplate is IsContract {
     using Uint256Helpers for uint256;
 
+    /* Hardcoded constant to save gas
+    * bytes32 constant internal AGENT_APP_ID = apmNamehash("agent");                  // agent.aragonpm.eth
+    * bytes32 constant internal VAULT_APP_ID = apmNamehash("vault");                  // vault.aragonpm.eth
+    * bytes32 constant internal VOTING_APP_ID = apmNamehash("voting");                // voting.aragonpm.eth
+    * bytes32 constant internal SURVEY_APP_ID = apmNamehash("survey");                // survey.aragonpm.eth
+    * bytes32 constant internal PAYROLL_APP_ID = apmNamehash("payroll");              // payroll.aragonpm.eth
+    * bytes32 constant internal FINANCE_APP_ID = apmNamehash("finance");              // finance.aragonpm.eth
+    * bytes32 constant internal TOKEN_MANAGER_APP_ID = apmNamehash("token-manager");  // token-manager.aragonpm.eth
+    */
     bytes32 constant internal AGENT_APP_ID = 0x9ac98dc5f995bf0211ed589ef022719d1487e5cb2bab505676f0d084c07cf89a;
     bytes32 constant internal VAULT_APP_ID = 0x7e852e0fcfce6551c13800f1e7476f982525c2b5277ba14b24339c68416336d1;
     bytes32 constant internal VOTING_APP_ID = 0x9fa3927f639745e587912d4b0fea7ef9013bf93fb907d29faeab57417ba6e1d4;

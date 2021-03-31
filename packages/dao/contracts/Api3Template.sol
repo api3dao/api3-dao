@@ -32,7 +32,7 @@ contract Api3Template is Api3BaseTemplate {
   * @dev Deploy an authoritative DAO using the API3 Staking Pool
   * @param _id String with the name for org, will assign `[id].aragonid.eth`
   * @param _api3Pool Address of the API3 staking pool, supplies voting power
-  * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration, minProposerPower] to set up the voting app of the organization
+  * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization NOTE: deleted minProposerPower
   * @param _permissionManager The administrator that's initially granted control over the DAO's permissions
   */
   function newInstance(
