@@ -8,10 +8,13 @@ beforeEach(async () => {
   const accounts = await ethers.getSigners();
   roles = {
     deployer: accounts[0],
-    daoAgent: accounts[1],
-    claimsManager: accounts[2],
-    user1: accounts[3],
-    user2: accounts[4],
+    agentAppPrimary: accounts[1],
+    agentAppSecondary: accounts[2],
+    votingAppPrimary: accounts[3],
+    votingAppSecondary: accounts[4],
+    claimsManager: accounts[5],
+    user1: accounts[6],
+    user2: accounts[7],
     randomPerson: accounts[9],
   };
   const api3TokenFactory = await ethers.getContractFactory(

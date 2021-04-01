@@ -74,15 +74,25 @@ contract StateUtils is IStateUtils {
     /// @notice API3 token contract
     IApi3Token public api3Token;
 
-    /// @notice Address of the Agent app of the API3 DAO
-    /// @dev Since the pool contract will be deployed before the DAO contracts,
-    /// `daoAgent` will not be set in the constructor, but later on. Once it is
-    /// set, it will be immutable.
-    address public daoAgent;
+    /// @notice Address of the primary Agent app of the API3 DAO
+    /// @dev Primary Agent can be operated through the primary Api3Voting app.
+    /// The primary Api3Voting app requires a higher quorum, and the primary
+    /// Agent is more privileged.
+    address public agentAppPrimary;
 
-    /// @notice Address of the DAO Api3Voting apps
-    /// @dev Set in a similar way to `daoAgent`
-    address[] public votingApps;
+    /// @notice Address of the secondary Agent app of the API3 DAO
+    /// @dev Secondary Agent can be operated through the secondary Api3Voting
+    /// app. The secondary Api3Voting app requires a lower quorum, and the primary
+    /// Agent is less privileged.
+    address public agentAppSecondary;
+
+    /// @notice Address of the primary Api3Voting app of the API3 DAO
+    /// @dev Used to operate the primary Agent
+    address public votingAppPrimary;
+
+    /// @notice Address of the secondary Api3Voting app of the API3 DAO
+    /// @dev Used to operate the secondary Agent
+    address public votingAppSecondary;
 
     /// @notice Mapping that keeps the claims manager statuses of addresses
     /// @dev A claims manager is a contract that is authorized to pay out
@@ -159,7 +169,7 @@ contract StateUtils is IStateUtils {
     /// @dev After making a proposal through the Agent app, the user publishes
     /// the specs of the proposal (target contract address, function,
     /// parameters) at a URL
-    mapping(address => mapping(uint256 => string)) public userAddressToProposalIndexToSpecsUrl;
+    mapping(address => mapping(address => mapping(uint256 => string))) public userAddressToVotingAppToProposalIndexToSpecsUrl;
 
     // Snapshot block number of the last vote created at one of the DAO
     // Api3Voting apps
@@ -172,9 +182,18 @@ contract StateUtils is IStateUtils {
     Checkpoint private totalSharesCheckpoint1;
     Checkpoint private totalSharesCheckpoint2;
 
-    /// @dev Reverts if the caller is not the DAO Agent App
-    modifier onlyDaoAgent() {
-        require(msg.sender == daoAgent, ERROR_UNAUTHORIZED);
+    /// @dev Reverts if the caller is not an API3 DAO Agent
+    modifier onlyAgentApp() {
+        require(
+            msg.sender == agentAppPrimary || msg.sender == agentAppSecondary,
+            ERROR_UNAUTHORIZED
+            );
+        _;
+    }
+
+    /// @dev Reverts if the caller is not the primary API3 DAO Agent
+    modifier onlyAgentAppPrimary() {
+        require(msg.sender == agentAppPrimary, ERROR_UNAUTHORIZED);
         _;
     }
 
@@ -192,39 +211,43 @@ contract StateUtils is IStateUtils {
         epochIndexOfLastRewardPayment = currentEpoch;
     }
 
-    /// @notice Called after deployment to set the address of the DAO Agent app
-    /// @dev The DAO Agent app will be authorized to act on behalf of the DAO
-    /// to update parameters, which is why we need to specify it. However, the
-    /// pool and the DAO contracts refer to each other cyclically, which is why
-    /// we cannot set it in the constructor. Instead, the pool will be
-    /// deployed, the DAO contracts will be deployed with the pool address as
-    /// a constructor argument, then this method will be called to set the DAO
-    /// Agent address. Before using the resulting setup, it must be verified
-    /// that the Agent address is set correctly.
-    /// This method can set the DAO Agent only once. Therefore, no access
-    /// control is needed.
-    /// @param _daoAgent Address of the Agent app of the API3 DAO
-    function setDaoAgent(address _daoAgent)
+    /// @notice Called after deployment to set the addresses of the DAO apps
+    /// @dev This can also be called later on by the primary Agent to update
+    /// all app addresses as a means of upgrade
+    /// @param _agentAppPrimary Address of the primary Agent
+    /// @param _agentAppSecondary Address of the secondary Agent
+    /// @param _votingAppPrimary Address of the primary Api3Voting
+    /// @param _votingAppSecondary Address of the secondary Api3Voting
+    function setDaoApps(
+        address _agentAppPrimary,
+        address _agentAppSecondary,
+        address _votingAppPrimary,
+        address _votingAppSecondary
+        )
         external
         override
     {
-        require(_daoAgent != address(0), ERROR_ADDRESS);
-        require(daoAgent == address(0), ERROR_UNAUTHORIZED);
-        daoAgent = _daoAgent;
-        emit SetDaoAgent(daoAgent);
-    }
-
-    /// @notice Called after deployment to set the addresses of the DAO Voting
-    /// apps
-    /// @param _votingApps Addresses of the DAO Api3Voting apps
-    function setVotingApps(address[] calldata _votingApps)
-        external
-        override
-    {
-        require(_votingApps.length != 0, ERROR_VALUE);
-        require(votingApps.length == 0, ERROR_UNAUTHORIZED);
-        votingApps = _votingApps;
-        emit SetVotingApps(votingApps);
+        require(
+            agentAppPrimary == address(0) || msg.sender == agentAppPrimary,
+            ERROR_UNAUTHORIZED
+            );
+        require(
+            _agentAppPrimary != address(0)
+                && _agentAppSecondary  != address(0)
+                && _votingAppPrimary  != address(0)
+                && _votingAppSecondary  != address(0),
+            ERROR_ADDRESS
+            );
+        agentAppPrimary = _agentAppPrimary;
+        agentAppSecondary = _agentAppSecondary;
+        votingAppPrimary = _votingAppPrimary;
+        votingAppSecondary = _votingAppSecondary;
+        emit SetDaoApps(
+            agentAppPrimary,
+            agentAppSecondary,
+            votingAppPrimary,
+            votingAppSecondary
+            );
     }
 
     /// @notice Called by the DAO Agent to set the authorization status of a
@@ -232,6 +255,7 @@ contract StateUtils is IStateUtils {
     /// @dev The claims manager is a trusted contract that is allowed to
     /// withdraw as many tokens as it wants from the pool to pay out insurance
     /// claims.
+    /// Only the primary Agent can do this because it is a critical operation.
     /// @param claimsManager Claims manager contract address
     /// @param status Authorization status
     function setClaimsManagerStatus(
@@ -240,7 +264,7 @@ contract StateUtils is IStateUtils {
         )
         external
         override
-        onlyDaoAgent()
+        onlyAgentAppPrimary()
     {
         claimsManagerStatus[claimsManager] = status;
         emit SetClaimsManagerStatus(
@@ -254,7 +278,7 @@ contract StateUtils is IStateUtils {
     function setStakeTarget(uint256 _stakeTarget)
         external
         override
-        onlyDaoAgent()
+        onlyAgentApp()
     {
         require(
             _stakeTarget <= HUNDRED_PERCENT
@@ -273,7 +297,7 @@ contract StateUtils is IStateUtils {
     function setMaxApr(uint256 _maxApr)
         external
         override
-        onlyDaoAgent()
+        onlyAgentApp()
     {
         require(_maxApr >= minApr, ERROR_VALUE);
         uint256 oldMaxApr = maxApr;
@@ -289,7 +313,7 @@ contract StateUtils is IStateUtils {
     function setMinApr(uint256 _minApr)
         external
         override
-        onlyDaoAgent()
+        onlyAgentApp()
     {
         require(_minApr <= maxApr, ERROR_VALUE);
         uint256 oldMinApr = minApr;
@@ -307,11 +331,12 @@ contract StateUtils is IStateUtils {
     /// valid value is `EPOCH_LENGTH` to prevent users from unstaking,
     /// withdrawing and staking with another address to work around the
     /// proposal spam protection.
+    /// Only the primary Agent can do this because it is a critical operation.
     /// @param _unstakeWaitPeriod Unstake waiting period
     function setUnstakeWaitPeriod(uint256 _unstakeWaitPeriod)
         external
         override
-        onlyDaoAgent()
+        onlyAgentAppPrimary()
     {
         require(_unstakeWaitPeriod >= EPOCH_LENGTH, ERROR_VALUE);
         uint256 oldUnstakeWaitPeriod = unstakeWaitPeriod;
@@ -327,7 +352,7 @@ contract StateUtils is IStateUtils {
     function setAprUpdateCoefficient(uint256 _aprUpdateCoefficient)
         external
         override
-        onlyDaoAgent()
+        onlyAgentApp()
     {
         require(
             _aprUpdateCoefficient <= 1_000_000_000
@@ -344,12 +369,13 @@ contract StateUtils is IStateUtils {
 
     /// @notice Called by the DAO Agent to set the voting power threshold for
     /// proposals
+    /// Only the primary Agent can do this because it is a critical operation.
     /// @param _proposalVotingPowerThreshold Voting power threshold for
     /// proposals
     function setProposalVotingPowerThreshold(uint256 _proposalVotingPowerThreshold)
         external
         override
-        onlyDaoAgent()
+        onlyAgentAppPrimary()
     {
         require(
             _proposalVotingPowerThreshold <= 10 * ONE_PERCENT,
@@ -369,14 +395,16 @@ contract StateUtils is IStateUtils {
     /// @param specsUrl URL that hosts the specs of the transaction that will
     /// be made if the proposal passes
     function publishSpecsUrl(
+        address votingApp,
         uint256 proposalIndex,
         string calldata specsUrl
         )
         external
         override
     {
-        userAddressToProposalIndexToSpecsUrl[msg.sender][proposalIndex] = specsUrl;
+        userAddressToVotingAppToProposalIndexToSpecsUrl[msg.sender][votingApp][proposalIndex] = specsUrl;
         emit PublishedSpecsUrl(
+            votingApp,
             proposalIndex,
             msg.sender,
             specsUrl
@@ -390,19 +418,17 @@ contract StateUtils is IStateUtils {
         external
         override
     {
-        bool notAuthorized = true;
-        for (uint256 i = 0; i < votingApps.length; i++)
-        {
-            if (votingApps[i] == msg.sender)
-            {
-                notAuthorized = false;
-                break;
-            }
-        }
-        require(!notAuthorized, ERROR_UNAUTHORIZED);
+        require(
+            msg.sender == votingAppPrimary || msg.sender == votingAppSecondary,
+            ERROR_UNAUTHORIZED
+            );
         lastVoteSnapshotBlock = snapshotBlock;
         snapshotBlockToTimestamp[snapshotBlock] = block.timestamp;
-        emit UpdatedLastVoteSnapshotBlock(snapshotBlock, block.timestamp);
+        emit UpdatedLastVoteSnapshotBlock(
+            msg.sender,
+            snapshotBlock,
+            block.timestamp
+            );
     }
 
     /// @notice Called internally to update the total shares history

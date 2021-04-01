@@ -2,9 +2,12 @@
 pragma solidity 0.8.2;
 
 interface IStateUtils {
-    event SetDaoAgent(address daoAgent);
-
-    event SetVotingApps(address[] votingApps);
+    event SetDaoApps(
+        address agentAppPrimary,
+        address agentAppSecondary,
+        address votingAppPrimary,
+        address votingAppSecondary
+        );
 
     event SetClaimsManagerStatus(
         address claimsManager,
@@ -42,20 +45,24 @@ interface IStateUtils {
         );
 
     event PublishedSpecsUrl(
-        uint256 proposalIndex,
+        address indexed votingApp,
+        uint256 indexed proposalIndex,
         address userAddress,
         string specsUrl
         );
 
     event UpdatedLastVoteSnapshotBlock(
+        address votingApp,
         uint256 lastVoteSnapshotBlock,
         uint256 lastVoteSnapshotBlockUpdateTimestamp
         );
 
-    function setDaoAgent(address _daoAgent)
-        external;
-
-    function setVotingApps(address[] calldata _votingApps)
+    function setDaoApps(
+        address _agentAppPrimary,
+        address _agentAppSecondary,
+        address _votingAppPrimary,
+        address _votingAppSecondary
+        )
         external;
 
     function setClaimsManagerStatus(
@@ -83,6 +90,7 @@ interface IStateUtils {
         external;
 
     function publishSpecsUrl(
+        address votingApp,
         uint256 proposalIndex,
         string calldata specsUrl
         )
