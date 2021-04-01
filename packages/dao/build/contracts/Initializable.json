@@ -1,0 +1,2416 @@
+{
+  "contractName": "Initializable",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getInitializationBlock",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "hasInitialized",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5061011d806100206000396000f30060806040526004361060485763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416630803fac08114604d5780638b3dd749146073575b600080fd5b348015605857600080fd5b50605f6097565b604080519115158252519081900360200190f35b348015607e57600080fd5b50608560bb565b60408051918252519081900360200190f35b60008060a060bb565b9050801580159060b557508060b260e9565b10155b91505090565b600060e47febb05b386a8d34882b8711d156f463690983dc47815980fb82aeeff1aa43579e60ed565b905090565b4390565b54905600a165627a7a723058209ea8a7ae713814a009edd235bf06e94a62bf6dc234ce2ef1c9179474e51d1bee0029",
+  "deployedBytecode": "0x60806040526004361060485763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416630803fac08114604d5780638b3dd749146073575b600080fd5b348015605857600080fd5b50605f6097565b604080519115158252519081900360200190f35b348015607e57600080fd5b50608560bb565b60408051918252519081900360200190f35b60008060a060bb565b9050801580159060b557508060b260e9565b10155b91505090565b600060e47febb05b386a8d34882b8711d156f463690983dc47815980fb82aeeff1aa43579e60ed565b905090565b4390565b54905600a165627a7a723058209ea8a7ae713814a009edd235bf06e94a62bf6dc234ce2ef1c9179474e51d1bee0029",
+  "sourceMap": "136:1758:41:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;136:1758:41;;;;;;;",
+  "deployedSourceMap": "136:1758:41:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;1128:208;;8:9:-1;5:2;;;30:1;27;20:12;5:2;1128:208:41;;;;;;;;;;;;;;;;;;;;;;881:137;;8:9:-1;5:2;;;30:1;27;20:12;5:2;881:137:41;;;;;;;;;;;;;;;;;;;;1128:208;1175:4;1191:27;1221:24;:22;:24::i;:::-;1191:54;-1:-1:-1;1262:24:41;;;;;:67;;;1310:19;1290:16;:14;:16::i;:::-;:39;;1262:67;1255:74;;1128:208;;:::o;881:137::-;936:7;962:49;345:66;962:47;:49::i;:::-;955:56;;881:137;:::o;347:94:46:-;422:12;347:94;:::o;519:134:48:-;630:15;;620:27::o",
+  "source": "/*\n * SPDX-License-Identitifer:    MIT\n */\n\npragma solidity ^0.4.24;\n\nimport \"./TimeHelpers.sol\";\nimport \"./UnstructuredStorage.sol\";\n\n\ncontract Initializable is TimeHelpers {\n    using UnstructuredStorage for bytes32;\n\n    // keccak256(\"aragonOS.initializable.initializationBlock\")\n    bytes32 internal constant INITIALIZATION_BLOCK_POSITION = 0xebb05b386a8d34882b8711d156f463690983dc47815980fb82aeeff1aa43579e;\n\n    string private constant ERROR_ALREADY_INITIALIZED = \"INIT_ALREADY_INITIALIZED\";\n    string private constant ERROR_NOT_INITIALIZED = \"INIT_NOT_INITIALIZED\";\n\n    modifier onlyInit {\n        require(getInitializationBlock() == 0, ERROR_ALREADY_INITIALIZED);\n        _;\n    }\n\n    modifier isInitialized {\n        require(hasInitialized(), ERROR_NOT_INITIALIZED);\n        _;\n    }\n\n    /**\n    * @return Block number in which the contract was initialized\n    */\n    function getInitializationBlock() public view returns (uint256) {\n        return INITIALIZATION_BLOCK_POSITION.getStorageUint256();\n    }\n\n    /**\n    * @return Whether the contract has been initialized by the time of the current block\n    */\n    function hasInitialized() public view returns (bool) {\n        uint256 initializationBlock = getInitializationBlock();\n        return initializationBlock != 0 && getBlockNumber() >= initializationBlock;\n    }\n\n    /**\n    * @dev Function to be called by top level contract after initialization has finished.\n    */\n    function initialized() internal onlyInit {\n        INITIALIZATION_BLOCK_POSITION.setStorageUint256(getBlockNumber());\n    }\n\n    /**\n    * @dev Function to be called by top level contract after initialization to enable the contract\n    *      at a future block number rather than immediately.\n    */\n    function initializedAt(uint256 _blockNumber) internal onlyInit {\n        INITIALIZATION_BLOCK_POSITION.setStorageUint256(_blockNumber);\n    }\n}\n",
+  "sourcePath": "@aragon/os/contracts/common/Initializable.sol",
+  "ast": {
+    "absolutePath": "@aragon/os/contracts/common/Initializable.sol",
+    "exportedSymbols": {
+      "Initializable": [
+        14258
+      ]
+    },
+    "id": 14259,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 14162,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "44:24:41"
+      },
+      {
+        "absolutePath": "@aragon/os/contracts/common/TimeHelpers.sol",
+        "file": "./TimeHelpers.sol",
+        "id": 14163,
+        "nodeType": "ImportDirective",
+        "scope": 14259,
+        "sourceUnit": 14649,
+        "src": "70:27:41",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "@aragon/os/contracts/common/UnstructuredStorage.sol",
+        "file": "./UnstructuredStorage.sol",
+        "id": 14164,
+        "nodeType": "ImportDirective",
+        "scope": 14259,
+        "sourceUnit": 14755,
+        "src": "98:35:41",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 14165,
+              "name": "TimeHelpers",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 14648,
+              "src": "162:11:41",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_TimeHelpers_$14648",
+                "typeString": "contract TimeHelpers"
+              }
+            },
+            "id": 14166,
+            "nodeType": "InheritanceSpecifier",
+            "src": "162:11:41"
+          }
+        ],
+        "contractDependencies": [
+          14648
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 14258,
+        "linearizedBaseContracts": [
+          14258,
+          14648
+        ],
+        "name": "Initializable",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "id": 14169,
+            "libraryName": {
+              "contractScope": null,
+              "id": 14167,
+              "name": "UnstructuredStorage",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 14754,
+              "src": "186:19:41",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_UnstructuredStorage_$14754",
+                "typeString": "library UnstructuredStorage"
+              }
+            },
+            "nodeType": "UsingForDirective",
+            "src": "180:38:41",
+            "typeName": {
+              "id": 14168,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "210:7:41",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            }
+          },
+          {
+            "constant": true,
+            "id": 14172,
+            "name": "INITIALIZATION_BLOCK_POSITION",
+            "nodeType": "VariableDeclaration",
+            "scope": 14258,
+            "src": "287:124:41",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes32",
+              "typeString": "bytes32"
+            },
+            "typeName": {
+              "id": 14170,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "287:7:41",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "307865626230356233383661386433343838326238373131643135366634363336393039383364633437383135393830666238326165656666316161343335373965",
+              "id": 14171,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "345:66:41",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_106605114080364359579522388881656407901251981291752319576997573973948972095390_by_1",
+                "typeString": "int_const 1066...(70 digits omitted)...5390"
+              },
+              "value": "0xebb05b386a8d34882b8711d156f463690983dc47815980fb82aeeff1aa43579e"
+            },
+            "visibility": "internal"
+          },
+          {
+            "constant": true,
+            "id": 14175,
+            "name": "ERROR_ALREADY_INITIALIZED",
+            "nodeType": "VariableDeclaration",
+            "scope": 14258,
+            "src": "418:78:41",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_string_memory",
+              "typeString": "string"
+            },
+            "typeName": {
+              "id": 14173,
+              "name": "string",
+              "nodeType": "ElementaryTypeName",
+              "src": "418:6:41",
+              "typeDescriptions": {
+                "typeIdentifier": "t_string_storage_ptr",
+                "typeString": "string"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "494e49545f414c52454144595f494e495449414c495a4544",
+              "id": 14174,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "string",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "470:26:41",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_stringliteral_7a2bad6ae343e37d141d3f47355bee0a9a7371affceb8638867384a5d0ab0e73",
+                "typeString": "literal_string \"INIT_ALREADY_INITIALIZED\""
+              },
+              "value": "INIT_ALREADY_INITIALIZED"
+            },
+            "visibility": "private"
+          },
+          {
+            "constant": true,
+            "id": 14178,
+            "name": "ERROR_NOT_INITIALIZED",
+            "nodeType": "VariableDeclaration",
+            "scope": 14258,
+            "src": "502:70:41",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_string_memory",
+              "typeString": "string"
+            },
+            "typeName": {
+              "id": 14176,
+              "name": "string",
+              "nodeType": "ElementaryTypeName",
+              "src": "502:6:41",
+              "typeDescriptions": {
+                "typeIdentifier": "t_string_storage_ptr",
+                "typeString": "string"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "494e49545f4e4f545f494e495449414c495a4544",
+              "id": 14177,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "string",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "550:22:41",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_stringliteral_0447b08a3c6a0d1d9310f95dd98634a89b7d8ccef436579bfc11a41060965373",
+                "typeString": "literal_string \"INIT_NOT_INITIALIZED\""
+              },
+              "value": "INIT_NOT_INITIALIZED"
+            },
+            "visibility": "private"
+          },
+          {
+            "body": {
+              "id": 14189,
+              "nodeType": "Block",
+              "src": "597:93:41",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 14184,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "arguments": [],
+                          "expression": {
+                            "argumentTypes": [],
+                            "id": 14181,
+                            "name": "getInitializationBlock",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 14210,
+                            "src": "615:22:41",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_internal_view$__$returns$_t_uint256_$",
+                              "typeString": "function () view returns (uint256)"
+                            }
+                          },
+                          "id": 14182,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "615:24:41",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "hexValue": "30",
+                          "id": 14183,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "643:1:41",
+                          "subdenomination": null,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_0_by_1",
+                            "typeString": "int_const 0"
+                          },
+                          "value": "0"
+                        },
+                        "src": "615:29:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 14185,
+                        "name": "ERROR_ALREADY_INITIALIZED",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14175,
+                        "src": "646:25:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_memory",
+                          "typeString": "string memory"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_string_memory",
+                          "typeString": "string memory"
+                        }
+                      ],
+                      "id": 14180,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        20281,
+                        20282
+                      ],
+                      "referencedDeclaration": 20282,
+                      "src": "607:7:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 14186,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "607:65:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 14187,
+                  "nodeType": "ExpressionStatement",
+                  "src": "607:65:41"
+                },
+                {
+                  "id": 14188,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "682:1:41"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 14190,
+            "name": "onlyInit",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 14179,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "597:0:41"
+            },
+            "src": "579:111:41",
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 14199,
+              "nodeType": "Block",
+              "src": "719:76:41",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "arguments": [],
+                        "expression": {
+                          "argumentTypes": [],
+                          "id": 14193,
+                          "name": "hasInitialized",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 14230,
+                          "src": "737:14:41",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_internal_view$__$returns$_t_bool_$",
+                            "typeString": "function () view returns (bool)"
+                          }
+                        },
+                        "id": 14194,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "737:16:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 14195,
+                        "name": "ERROR_NOT_INITIALIZED",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14178,
+                        "src": "755:21:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_memory",
+                          "typeString": "string memory"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_string_memory",
+                          "typeString": "string memory"
+                        }
+                      ],
+                      "id": 14192,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        20281,
+                        20282
+                      ],
+                      "referencedDeclaration": 20282,
+                      "src": "729:7:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 14196,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "729:48:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 14197,
+                  "nodeType": "ExpressionStatement",
+                  "src": "729:48:41"
+                },
+                {
+                  "id": 14198,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "787:1:41"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 14200,
+            "name": "isInitialized",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 14191,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "719:0:41"
+            },
+            "src": "696:99:41",
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 14209,
+              "nodeType": "Block",
+              "src": "945:73:41",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 14205,
+                        "name": "INITIALIZATION_BLOCK_POSITION",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14172,
+                        "src": "962:29:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "id": 14206,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "getStorageUint256",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 14717,
+                      "src": "962:47:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_view$_t_bytes32_$returns$_t_uint256_$bound_to$_t_bytes32_$",
+                        "typeString": "function (bytes32) view returns (uint256)"
+                      }
+                    },
+                    "id": 14207,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "962:49:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "functionReturnParameters": 14204,
+                  "id": 14208,
+                  "nodeType": "Return",
+                  "src": "955:56:41"
+                }
+              ]
+            },
+            "documentation": "@return Block number in which the contract was initialized",
+            "id": 14210,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getInitializationBlock",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 14201,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "912:2:41"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 14204,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 14203,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 14210,
+                  "src": "936:7:41",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 14202,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "936:7:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "935:9:41"
+            },
+            "scope": 14258,
+            "src": "881:137:41",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 14229,
+              "nodeType": "Block",
+              "src": "1181:155:41",
+              "statements": [
+                {
+                  "assignments": [
+                    14216
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 14216,
+                      "name": "initializationBlock",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 14230,
+                      "src": "1191:27:41",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "typeName": {
+                        "id": 14215,
+                        "name": "uint256",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "1191:7:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 14219,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 14217,
+                      "name": "getInitializationBlock",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 14210,
+                      "src": "1221:22:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_view$__$returns$_t_uint256_$",
+                        "typeString": "function () view returns (uint256)"
+                      }
+                    },
+                    "id": 14218,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1221:24:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "1191:54:41"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "commonType": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    },
+                    "id": 14227,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "argumentTypes": null,
+                      "commonType": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "id": 14222,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "leftExpression": {
+                        "argumentTypes": null,
+                        "id": 14220,
+                        "name": "initializationBlock",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14216,
+                        "src": "1262:19:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "nodeType": "BinaryOperation",
+                      "operator": "!=",
+                      "rightExpression": {
+                        "argumentTypes": null,
+                        "hexValue": "30",
+                        "id": 14221,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "number",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "1285:1:41",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_rational_0_by_1",
+                          "typeString": "int_const 0"
+                        },
+                        "value": "0"
+                      },
+                      "src": "1262:24:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "&&",
+                    "rightExpression": {
+                      "argumentTypes": null,
+                      "commonType": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "id": 14226,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "leftExpression": {
+                        "argumentTypes": null,
+                        "arguments": [],
+                        "expression": {
+                          "argumentTypes": [],
+                          "id": 14223,
+                          "name": "getBlockNumber",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 14616,
+                          "src": "1290:14:41",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_internal_view$__$returns$_t_uint256_$",
+                            "typeString": "function () view returns (uint256)"
+                          }
+                        },
+                        "id": 14224,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "1290:16:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "nodeType": "BinaryOperation",
+                      "operator": ">=",
+                      "rightExpression": {
+                        "argumentTypes": null,
+                        "id": 14225,
+                        "name": "initializationBlock",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14216,
+                        "src": "1310:19:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "src": "1290:39:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "src": "1262:67:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 14214,
+                  "id": 14228,
+                  "nodeType": "Return",
+                  "src": "1255:74:41"
+                }
+              ]
+            },
+            "documentation": "@return Whether the contract has been initialized by the time of the current block",
+            "id": 14230,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "hasInitialized",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 14211,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1151:2:41"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 14214,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 14213,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 14230,
+                  "src": "1175:4:41",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 14212,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1175:4:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1174:6:41"
+            },
+            "scope": 14258,
+            "src": "1128:208:41",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 14242,
+              "nodeType": "Block",
+              "src": "1488:82:41",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "arguments": [],
+                        "expression": {
+                          "argumentTypes": [],
+                          "id": 14238,
+                          "name": "getBlockNumber",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 14616,
+                          "src": "1546:14:41",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_internal_view$__$returns$_t_uint256_$",
+                            "typeString": "function () view returns (uint256)"
+                          }
+                        },
+                        "id": 14239,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "1546:16:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 14235,
+                        "name": "INITIALIZATION_BLOCK_POSITION",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14172,
+                        "src": "1498:29:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "id": 14237,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "setStorageUint256",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 14753,
+                      "src": "1498:47:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_uint256_$returns$__$bound_to$_t_bytes32_$",
+                        "typeString": "function (bytes32,uint256)"
+                      }
+                    },
+                    "id": 14240,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1498:65:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 14241,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1498:65:41"
+                }
+              ]
+            },
+            "documentation": "@dev Function to be called by top level contract after initialization has finished.",
+            "id": 14243,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [
+              {
+                "arguments": null,
+                "id": 14233,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 14232,
+                  "name": "onlyInit",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 14190,
+                  "src": "1479:8:41",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "1479:8:41"
+              }
+            ],
+            "name": "initialized",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 14231,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1467:2:41"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 14234,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1488:0:41"
+            },
+            "scope": 14258,
+            "src": "1447:123:41",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 14256,
+              "nodeType": "Block",
+              "src": "1814:78:41",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 14253,
+                        "name": "_blockNumber",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14245,
+                        "src": "1872:12:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 14250,
+                        "name": "INITIALIZATION_BLOCK_POSITION",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14172,
+                        "src": "1824:29:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "id": 14252,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "setStorageUint256",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 14753,
+                      "src": "1824:47:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_uint256_$returns$__$bound_to$_t_bytes32_$",
+                        "typeString": "function (bytes32,uint256)"
+                      }
+                    },
+                    "id": 14254,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1824:61:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 14255,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1824:61:41"
+                }
+              ]
+            },
+            "documentation": "@dev Function to be called by top level contract after initialization to enable the contract\n     at a future block number rather than immediately.",
+            "id": 14257,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [
+              {
+                "arguments": null,
+                "id": 14248,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 14247,
+                  "name": "onlyInit",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 14190,
+                  "src": "1805:8:41",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "1805:8:41"
+              }
+            ],
+            "name": "initializedAt",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 14246,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 14245,
+                  "name": "_blockNumber",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 14257,
+                  "src": "1774:20:41",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 14244,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1774:7:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1773:22:41"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 14249,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1814:0:41"
+            },
+            "scope": 14258,
+            "src": "1751:141:41",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "internal"
+          }
+        ],
+        "scope": 14259,
+        "src": "136:1758:41"
+      }
+    ],
+    "src": "44:1851:41"
+  },
+  "legacyAST": {
+    "absolutePath": "@aragon/os/contracts/common/Initializable.sol",
+    "exportedSymbols": {
+      "Initializable": [
+        14258
+      ]
+    },
+    "id": 14259,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 14162,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "44:24:41"
+      },
+      {
+        "absolutePath": "@aragon/os/contracts/common/TimeHelpers.sol",
+        "file": "./TimeHelpers.sol",
+        "id": 14163,
+        "nodeType": "ImportDirective",
+        "scope": 14259,
+        "sourceUnit": 14649,
+        "src": "70:27:41",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "@aragon/os/contracts/common/UnstructuredStorage.sol",
+        "file": "./UnstructuredStorage.sol",
+        "id": 14164,
+        "nodeType": "ImportDirective",
+        "scope": 14259,
+        "sourceUnit": 14755,
+        "src": "98:35:41",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 14165,
+              "name": "TimeHelpers",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 14648,
+              "src": "162:11:41",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_TimeHelpers_$14648",
+                "typeString": "contract TimeHelpers"
+              }
+            },
+            "id": 14166,
+            "nodeType": "InheritanceSpecifier",
+            "src": "162:11:41"
+          }
+        ],
+        "contractDependencies": [
+          14648
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 14258,
+        "linearizedBaseContracts": [
+          14258,
+          14648
+        ],
+        "name": "Initializable",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "id": 14169,
+            "libraryName": {
+              "contractScope": null,
+              "id": 14167,
+              "name": "UnstructuredStorage",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 14754,
+              "src": "186:19:41",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_UnstructuredStorage_$14754",
+                "typeString": "library UnstructuredStorage"
+              }
+            },
+            "nodeType": "UsingForDirective",
+            "src": "180:38:41",
+            "typeName": {
+              "id": 14168,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "210:7:41",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            }
+          },
+          {
+            "constant": true,
+            "id": 14172,
+            "name": "INITIALIZATION_BLOCK_POSITION",
+            "nodeType": "VariableDeclaration",
+            "scope": 14258,
+            "src": "287:124:41",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes32",
+              "typeString": "bytes32"
+            },
+            "typeName": {
+              "id": 14170,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "287:7:41",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "307865626230356233383661386433343838326238373131643135366634363336393039383364633437383135393830666238326165656666316161343335373965",
+              "id": 14171,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "345:66:41",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_106605114080364359579522388881656407901251981291752319576997573973948972095390_by_1",
+                "typeString": "int_const 1066...(70 digits omitted)...5390"
+              },
+              "value": "0xebb05b386a8d34882b8711d156f463690983dc47815980fb82aeeff1aa43579e"
+            },
+            "visibility": "internal"
+          },
+          {
+            "constant": true,
+            "id": 14175,
+            "name": "ERROR_ALREADY_INITIALIZED",
+            "nodeType": "VariableDeclaration",
+            "scope": 14258,
+            "src": "418:78:41",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_string_memory",
+              "typeString": "string"
+            },
+            "typeName": {
+              "id": 14173,
+              "name": "string",
+              "nodeType": "ElementaryTypeName",
+              "src": "418:6:41",
+              "typeDescriptions": {
+                "typeIdentifier": "t_string_storage_ptr",
+                "typeString": "string"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "494e49545f414c52454144595f494e495449414c495a4544",
+              "id": 14174,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "string",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "470:26:41",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_stringliteral_7a2bad6ae343e37d141d3f47355bee0a9a7371affceb8638867384a5d0ab0e73",
+                "typeString": "literal_string \"INIT_ALREADY_INITIALIZED\""
+              },
+              "value": "INIT_ALREADY_INITIALIZED"
+            },
+            "visibility": "private"
+          },
+          {
+            "constant": true,
+            "id": 14178,
+            "name": "ERROR_NOT_INITIALIZED",
+            "nodeType": "VariableDeclaration",
+            "scope": 14258,
+            "src": "502:70:41",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_string_memory",
+              "typeString": "string"
+            },
+            "typeName": {
+              "id": 14176,
+              "name": "string",
+              "nodeType": "ElementaryTypeName",
+              "src": "502:6:41",
+              "typeDescriptions": {
+                "typeIdentifier": "t_string_storage_ptr",
+                "typeString": "string"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "494e49545f4e4f545f494e495449414c495a4544",
+              "id": 14177,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "string",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "550:22:41",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_stringliteral_0447b08a3c6a0d1d9310f95dd98634a89b7d8ccef436579bfc11a41060965373",
+                "typeString": "literal_string \"INIT_NOT_INITIALIZED\""
+              },
+              "value": "INIT_NOT_INITIALIZED"
+            },
+            "visibility": "private"
+          },
+          {
+            "body": {
+              "id": 14189,
+              "nodeType": "Block",
+              "src": "597:93:41",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 14184,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "arguments": [],
+                          "expression": {
+                            "argumentTypes": [],
+                            "id": 14181,
+                            "name": "getInitializationBlock",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 14210,
+                            "src": "615:22:41",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_internal_view$__$returns$_t_uint256_$",
+                              "typeString": "function () view returns (uint256)"
+                            }
+                          },
+                          "id": 14182,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "615:24:41",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "hexValue": "30",
+                          "id": 14183,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "643:1:41",
+                          "subdenomination": null,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_0_by_1",
+                            "typeString": "int_const 0"
+                          },
+                          "value": "0"
+                        },
+                        "src": "615:29:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 14185,
+                        "name": "ERROR_ALREADY_INITIALIZED",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14175,
+                        "src": "646:25:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_memory",
+                          "typeString": "string memory"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_string_memory",
+                          "typeString": "string memory"
+                        }
+                      ],
+                      "id": 14180,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        20281,
+                        20282
+                      ],
+                      "referencedDeclaration": 20282,
+                      "src": "607:7:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 14186,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "607:65:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 14187,
+                  "nodeType": "ExpressionStatement",
+                  "src": "607:65:41"
+                },
+                {
+                  "id": 14188,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "682:1:41"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 14190,
+            "name": "onlyInit",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 14179,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "597:0:41"
+            },
+            "src": "579:111:41",
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 14199,
+              "nodeType": "Block",
+              "src": "719:76:41",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "arguments": [],
+                        "expression": {
+                          "argumentTypes": [],
+                          "id": 14193,
+                          "name": "hasInitialized",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 14230,
+                          "src": "737:14:41",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_internal_view$__$returns$_t_bool_$",
+                            "typeString": "function () view returns (bool)"
+                          }
+                        },
+                        "id": 14194,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "737:16:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 14195,
+                        "name": "ERROR_NOT_INITIALIZED",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14178,
+                        "src": "755:21:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_memory",
+                          "typeString": "string memory"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_string_memory",
+                          "typeString": "string memory"
+                        }
+                      ],
+                      "id": 14192,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        20281,
+                        20282
+                      ],
+                      "referencedDeclaration": 20282,
+                      "src": "729:7:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 14196,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "729:48:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 14197,
+                  "nodeType": "ExpressionStatement",
+                  "src": "729:48:41"
+                },
+                {
+                  "id": 14198,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "787:1:41"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 14200,
+            "name": "isInitialized",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 14191,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "719:0:41"
+            },
+            "src": "696:99:41",
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 14209,
+              "nodeType": "Block",
+              "src": "945:73:41",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 14205,
+                        "name": "INITIALIZATION_BLOCK_POSITION",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14172,
+                        "src": "962:29:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "id": 14206,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "getStorageUint256",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 14717,
+                      "src": "962:47:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_view$_t_bytes32_$returns$_t_uint256_$bound_to$_t_bytes32_$",
+                        "typeString": "function (bytes32) view returns (uint256)"
+                      }
+                    },
+                    "id": 14207,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "962:49:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "functionReturnParameters": 14204,
+                  "id": 14208,
+                  "nodeType": "Return",
+                  "src": "955:56:41"
+                }
+              ]
+            },
+            "documentation": "@return Block number in which the contract was initialized",
+            "id": 14210,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getInitializationBlock",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 14201,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "912:2:41"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 14204,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 14203,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 14210,
+                  "src": "936:7:41",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 14202,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "936:7:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "935:9:41"
+            },
+            "scope": 14258,
+            "src": "881:137:41",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 14229,
+              "nodeType": "Block",
+              "src": "1181:155:41",
+              "statements": [
+                {
+                  "assignments": [
+                    14216
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 14216,
+                      "name": "initializationBlock",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 14230,
+                      "src": "1191:27:41",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "typeName": {
+                        "id": 14215,
+                        "name": "uint256",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "1191:7:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 14219,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 14217,
+                      "name": "getInitializationBlock",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 14210,
+                      "src": "1221:22:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_view$__$returns$_t_uint256_$",
+                        "typeString": "function () view returns (uint256)"
+                      }
+                    },
+                    "id": 14218,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1221:24:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "1191:54:41"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "commonType": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    },
+                    "id": 14227,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "argumentTypes": null,
+                      "commonType": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "id": 14222,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "leftExpression": {
+                        "argumentTypes": null,
+                        "id": 14220,
+                        "name": "initializationBlock",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14216,
+                        "src": "1262:19:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "nodeType": "BinaryOperation",
+                      "operator": "!=",
+                      "rightExpression": {
+                        "argumentTypes": null,
+                        "hexValue": "30",
+                        "id": 14221,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "number",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "1285:1:41",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_rational_0_by_1",
+                          "typeString": "int_const 0"
+                        },
+                        "value": "0"
+                      },
+                      "src": "1262:24:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "&&",
+                    "rightExpression": {
+                      "argumentTypes": null,
+                      "commonType": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "id": 14226,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "leftExpression": {
+                        "argumentTypes": null,
+                        "arguments": [],
+                        "expression": {
+                          "argumentTypes": [],
+                          "id": 14223,
+                          "name": "getBlockNumber",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 14616,
+                          "src": "1290:14:41",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_internal_view$__$returns$_t_uint256_$",
+                            "typeString": "function () view returns (uint256)"
+                          }
+                        },
+                        "id": 14224,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "1290:16:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "nodeType": "BinaryOperation",
+                      "operator": ">=",
+                      "rightExpression": {
+                        "argumentTypes": null,
+                        "id": 14225,
+                        "name": "initializationBlock",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14216,
+                        "src": "1310:19:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "src": "1290:39:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "src": "1262:67:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 14214,
+                  "id": 14228,
+                  "nodeType": "Return",
+                  "src": "1255:74:41"
+                }
+              ]
+            },
+            "documentation": "@return Whether the contract has been initialized by the time of the current block",
+            "id": 14230,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "hasInitialized",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 14211,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1151:2:41"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 14214,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 14213,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 14230,
+                  "src": "1175:4:41",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 14212,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1175:4:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1174:6:41"
+            },
+            "scope": 14258,
+            "src": "1128:208:41",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 14242,
+              "nodeType": "Block",
+              "src": "1488:82:41",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "arguments": [],
+                        "expression": {
+                          "argumentTypes": [],
+                          "id": 14238,
+                          "name": "getBlockNumber",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 14616,
+                          "src": "1546:14:41",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_internal_view$__$returns$_t_uint256_$",
+                            "typeString": "function () view returns (uint256)"
+                          }
+                        },
+                        "id": 14239,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "1546:16:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 14235,
+                        "name": "INITIALIZATION_BLOCK_POSITION",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14172,
+                        "src": "1498:29:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "id": 14237,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "setStorageUint256",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 14753,
+                      "src": "1498:47:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_uint256_$returns$__$bound_to$_t_bytes32_$",
+                        "typeString": "function (bytes32,uint256)"
+                      }
+                    },
+                    "id": 14240,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1498:65:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 14241,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1498:65:41"
+                }
+              ]
+            },
+            "documentation": "@dev Function to be called by top level contract after initialization has finished.",
+            "id": 14243,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [
+              {
+                "arguments": null,
+                "id": 14233,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 14232,
+                  "name": "onlyInit",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 14190,
+                  "src": "1479:8:41",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "1479:8:41"
+              }
+            ],
+            "name": "initialized",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 14231,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1467:2:41"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 14234,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1488:0:41"
+            },
+            "scope": 14258,
+            "src": "1447:123:41",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 14256,
+              "nodeType": "Block",
+              "src": "1814:78:41",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 14253,
+                        "name": "_blockNumber",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14245,
+                        "src": "1872:12:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 14250,
+                        "name": "INITIALIZATION_BLOCK_POSITION",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14172,
+                        "src": "1824:29:41",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "id": 14252,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "setStorageUint256",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 14753,
+                      "src": "1824:47:41",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_uint256_$returns$__$bound_to$_t_bytes32_$",
+                        "typeString": "function (bytes32,uint256)"
+                      }
+                    },
+                    "id": 14254,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1824:61:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 14255,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1824:61:41"
+                }
+              ]
+            },
+            "documentation": "@dev Function to be called by top level contract after initialization to enable the contract\n     at a future block number rather than immediately.",
+            "id": 14257,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [
+              {
+                "arguments": null,
+                "id": 14248,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 14247,
+                  "name": "onlyInit",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 14190,
+                  "src": "1805:8:41",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "1805:8:41"
+              }
+            ],
+            "name": "initializedAt",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 14246,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 14245,
+                  "name": "_blockNumber",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 14257,
+                  "src": "1774:20:41",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 14244,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1774:7:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1773:22:41"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 14249,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1814:0:41"
+            },
+            "scope": 14258,
+            "src": "1751:141:41",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "internal"
+          }
+        ],
+        "scope": 14259,
+        "src": "136:1758:41"
+      }
+    ],
+    "src": "44:1851:41"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.24+commit.e67f0147.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "2.0.1",
+  "updatedAt": "2021-04-01T16:02:51.302Z"
+}

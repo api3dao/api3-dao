@@ -1,0 +1,945 @@
+{
+  "contractName": "ReentrancyGuard",
+  "abi": [],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603580601d6000396000f3006080604052600080fd00a165627a7a723058207bf6597c251fe5e280cb4ecb7a41339597de1cbfc1fe51470c3bc0a351d9990a0029",
+  "deployedBytecode": "0x6080604052600080fd00a165627a7a723058207bf6597c251fe5e280cb4ecb7a41339597de1cbfc1fe51470c3bc0a351d9990a0029",
+  "sourceMap": "116:821:44:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;116:821:44;;;;;;;",
+  "deployedSourceMap": "116:821:44:-;;;;;",
+  "source": "/*\n * SPDX-License-Identitifer:    MIT\n */\n\npragma solidity ^0.4.24;\n\nimport \"../common/UnstructuredStorage.sol\";\n\n\ncontract ReentrancyGuard {\n    using UnstructuredStorage for bytes32;\n\n    /* Hardcoded constants to save gas\n    bytes32 internal constant REENTRANCY_MUTEX_POSITION = keccak256(\"aragonOS.reentrancyGuard.mutex\");\n    */\n    bytes32 private constant REENTRANCY_MUTEX_POSITION = 0xe855346402235fdd185c890e68d2c4ecad599b88587635ee285bce2fda58dacb;\n\n    string private constant ERROR_REENTRANT = \"REENTRANCY_REENTRANT_CALL\";\n\n    modifier nonReentrant() {\n        // Ensure mutex is unlocked\n        require(!REENTRANCY_MUTEX_POSITION.getStorageBool(), ERROR_REENTRANT);\n\n        // Lock mutex before function call\n        REENTRANCY_MUTEX_POSITION.setStorageBool(true);\n\n        // Perform function call\n        _;\n\n        // Unlock mutex after function call\n        REENTRANCY_MUTEX_POSITION.setStorageBool(false);\n    }\n}\n",
+  "sourcePath": "@aragon/os/contracts/common/ReentrancyGuard.sol",
+  "ast": {
+    "absolutePath": "@aragon/os/contracts/common/ReentrancyGuard.sol",
+    "exportedSymbols": {
+      "ReentrancyGuard": [
+        14356
+      ]
+    },
+    "id": 14357,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 14321,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "44:24:44"
+      },
+      {
+        "absolutePath": "@aragon/os/contracts/common/UnstructuredStorage.sol",
+        "file": "../common/UnstructuredStorage.sol",
+        "id": 14322,
+        "nodeType": "ImportDirective",
+        "scope": 14357,
+        "sourceUnit": 14755,
+        "src": "70:43:44",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 14356,
+        "linearizedBaseContracts": [
+          14356
+        ],
+        "name": "ReentrancyGuard",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "id": 14325,
+            "libraryName": {
+              "contractScope": null,
+              "id": 14323,
+              "name": "UnstructuredStorage",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 14754,
+              "src": "153:19:44",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_UnstructuredStorage_$14754",
+                "typeString": "library UnstructuredStorage"
+              }
+            },
+            "nodeType": "UsingForDirective",
+            "src": "147:38:44",
+            "typeName": {
+              "id": 14324,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "177:7:44",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            }
+          },
+          {
+            "constant": true,
+            "id": 14328,
+            "name": "REENTRANCY_MUTEX_POSITION",
+            "nodeType": "VariableDeclaration",
+            "scope": 14356,
+            "src": "340:119:44",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes32",
+              "typeString": "bytes32"
+            },
+            "typeName": {
+              "id": 14326,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "340:7:44",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "307865383535333436343032323335666464313835633839306536386432633465636164353939623838353837363335656532383562636532666461353864616362",
+              "id": 14327,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "393:66:44",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_105087124458853841390171415992387591928788234697064850153887443616718040652491_by_1",
+                "typeString": "int_const 1050...(70 digits omitted)...2491"
+              },
+              "value": "0xe855346402235fdd185c890e68d2c4ecad599b88587635ee285bce2fda58dacb"
+            },
+            "visibility": "private"
+          },
+          {
+            "constant": true,
+            "id": 14331,
+            "name": "ERROR_REENTRANT",
+            "nodeType": "VariableDeclaration",
+            "scope": 14356,
+            "src": "466:69:44",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_string_memory",
+              "typeString": "string"
+            },
+            "typeName": {
+              "id": 14329,
+              "name": "string",
+              "nodeType": "ElementaryTypeName",
+              "src": "466:6:44",
+              "typeDescriptions": {
+                "typeIdentifier": "t_string_storage_ptr",
+                "typeString": "string"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "5245454e5452414e43595f5245454e5452414e545f43414c4c",
+              "id": 14330,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "string",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "508:27:44",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_stringliteral_93b2455b3a825682ce89cca764505383e472c2457989cfc22050e4efb70a0da3",
+                "typeString": "literal_string \"REENTRANCY_REENTRANT_CALL\""
+              },
+              "value": "REENTRANCY_REENTRANT_CALL"
+            },
+            "visibility": "private"
+          },
+          {
+            "body": {
+              "id": 14354,
+              "nodeType": "Block",
+              "src": "566:369:44",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 14337,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "UnaryOperation",
+                        "operator": "!",
+                        "prefix": true,
+                        "src": "620:43:44",
+                        "subExpression": {
+                          "argumentTypes": null,
+                          "arguments": [],
+                          "expression": {
+                            "argumentTypes": [],
+                            "expression": {
+                              "argumentTypes": null,
+                              "id": 14334,
+                              "name": "REENTRANCY_MUTEX_POSITION",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 14328,
+                              "src": "621:25:44",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_bytes32",
+                                "typeString": "bytes32"
+                              }
+                            },
+                            "id": 14335,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "memberName": "getStorageBool",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 14690,
+                            "src": "621:40:44",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_internal_view$_t_bytes32_$returns$_t_bool_$bound_to$_t_bytes32_$",
+                              "typeString": "function (bytes32) view returns (bool)"
+                            }
+                          },
+                          "id": 14336,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "621:42:44",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 14338,
+                        "name": "ERROR_REENTRANT",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14331,
+                        "src": "665:15:44",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_memory",
+                          "typeString": "string memory"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_string_memory",
+                          "typeString": "string memory"
+                        }
+                      ],
+                      "id": 14333,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        20281,
+                        20282
+                      ],
+                      "referencedDeclaration": 20282,
+                      "src": "612:7:44",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 14339,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "612:69:44",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 14340,
+                  "nodeType": "ExpressionStatement",
+                  "src": "612:69:44"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "74727565",
+                        "id": 14344,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "bool",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "776:4:44",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        "value": "true"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 14341,
+                        "name": "REENTRANCY_MUTEX_POSITION",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14328,
+                        "src": "735:25:44",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "id": 14343,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "setStorageBool",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 14726,
+                      "src": "735:40:44",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_bool_$returns$__$bound_to$_t_bytes32_$",
+                        "typeString": "function (bytes32,bool)"
+                      }
+                    },
+                    "id": 14345,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "735:46:44",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 14346,
+                  "nodeType": "ExpressionStatement",
+                  "src": "735:46:44"
+                },
+                {
+                  "id": 14347,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "825:1:44"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "66616c7365",
+                        "id": 14351,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "bool",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "922:5:44",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        "value": "false"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 14348,
+                        "name": "REENTRANCY_MUTEX_POSITION",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14328,
+                        "src": "881:25:44",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "id": 14350,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "setStorageBool",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 14726,
+                      "src": "881:40:44",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_bool_$returns$__$bound_to$_t_bytes32_$",
+                        "typeString": "function (bytes32,bool)"
+                      }
+                    },
+                    "id": 14352,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "881:47:44",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 14353,
+                  "nodeType": "ExpressionStatement",
+                  "src": "881:47:44"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 14355,
+            "name": "nonReentrant",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 14332,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "563:2:44"
+            },
+            "src": "542:393:44",
+            "visibility": "internal"
+          }
+        ],
+        "scope": 14357,
+        "src": "116:821:44"
+      }
+    ],
+    "src": "44:894:44"
+  },
+  "legacyAST": {
+    "absolutePath": "@aragon/os/contracts/common/ReentrancyGuard.sol",
+    "exportedSymbols": {
+      "ReentrancyGuard": [
+        14356
+      ]
+    },
+    "id": 14357,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 14321,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "44:24:44"
+      },
+      {
+        "absolutePath": "@aragon/os/contracts/common/UnstructuredStorage.sol",
+        "file": "../common/UnstructuredStorage.sol",
+        "id": 14322,
+        "nodeType": "ImportDirective",
+        "scope": 14357,
+        "sourceUnit": 14755,
+        "src": "70:43:44",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 14356,
+        "linearizedBaseContracts": [
+          14356
+        ],
+        "name": "ReentrancyGuard",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "id": 14325,
+            "libraryName": {
+              "contractScope": null,
+              "id": 14323,
+              "name": "UnstructuredStorage",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 14754,
+              "src": "153:19:44",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_UnstructuredStorage_$14754",
+                "typeString": "library UnstructuredStorage"
+              }
+            },
+            "nodeType": "UsingForDirective",
+            "src": "147:38:44",
+            "typeName": {
+              "id": 14324,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "177:7:44",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            }
+          },
+          {
+            "constant": true,
+            "id": 14328,
+            "name": "REENTRANCY_MUTEX_POSITION",
+            "nodeType": "VariableDeclaration",
+            "scope": 14356,
+            "src": "340:119:44",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes32",
+              "typeString": "bytes32"
+            },
+            "typeName": {
+              "id": 14326,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "340:7:44",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "307865383535333436343032323335666464313835633839306536386432633465636164353939623838353837363335656532383562636532666461353864616362",
+              "id": 14327,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "393:66:44",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_105087124458853841390171415992387591928788234697064850153887443616718040652491_by_1",
+                "typeString": "int_const 1050...(70 digits omitted)...2491"
+              },
+              "value": "0xe855346402235fdd185c890e68d2c4ecad599b88587635ee285bce2fda58dacb"
+            },
+            "visibility": "private"
+          },
+          {
+            "constant": true,
+            "id": 14331,
+            "name": "ERROR_REENTRANT",
+            "nodeType": "VariableDeclaration",
+            "scope": 14356,
+            "src": "466:69:44",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_string_memory",
+              "typeString": "string"
+            },
+            "typeName": {
+              "id": 14329,
+              "name": "string",
+              "nodeType": "ElementaryTypeName",
+              "src": "466:6:44",
+              "typeDescriptions": {
+                "typeIdentifier": "t_string_storage_ptr",
+                "typeString": "string"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "5245454e5452414e43595f5245454e5452414e545f43414c4c",
+              "id": 14330,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "string",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "508:27:44",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_stringliteral_93b2455b3a825682ce89cca764505383e472c2457989cfc22050e4efb70a0da3",
+                "typeString": "literal_string \"REENTRANCY_REENTRANT_CALL\""
+              },
+              "value": "REENTRANCY_REENTRANT_CALL"
+            },
+            "visibility": "private"
+          },
+          {
+            "body": {
+              "id": 14354,
+              "nodeType": "Block",
+              "src": "566:369:44",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 14337,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "UnaryOperation",
+                        "operator": "!",
+                        "prefix": true,
+                        "src": "620:43:44",
+                        "subExpression": {
+                          "argumentTypes": null,
+                          "arguments": [],
+                          "expression": {
+                            "argumentTypes": [],
+                            "expression": {
+                              "argumentTypes": null,
+                              "id": 14334,
+                              "name": "REENTRANCY_MUTEX_POSITION",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 14328,
+                              "src": "621:25:44",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_bytes32",
+                                "typeString": "bytes32"
+                              }
+                            },
+                            "id": 14335,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "memberName": "getStorageBool",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 14690,
+                            "src": "621:40:44",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_internal_view$_t_bytes32_$returns$_t_bool_$bound_to$_t_bytes32_$",
+                              "typeString": "function (bytes32) view returns (bool)"
+                            }
+                          },
+                          "id": 14336,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "621:42:44",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 14338,
+                        "name": "ERROR_REENTRANT",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14331,
+                        "src": "665:15:44",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_memory",
+                          "typeString": "string memory"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_string_memory",
+                          "typeString": "string memory"
+                        }
+                      ],
+                      "id": 14333,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        20281,
+                        20282
+                      ],
+                      "referencedDeclaration": 20282,
+                      "src": "612:7:44",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 14339,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "612:69:44",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 14340,
+                  "nodeType": "ExpressionStatement",
+                  "src": "612:69:44"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "74727565",
+                        "id": 14344,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "bool",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "776:4:44",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        "value": "true"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 14341,
+                        "name": "REENTRANCY_MUTEX_POSITION",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14328,
+                        "src": "735:25:44",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "id": 14343,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "setStorageBool",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 14726,
+                      "src": "735:40:44",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_bool_$returns$__$bound_to$_t_bytes32_$",
+                        "typeString": "function (bytes32,bool)"
+                      }
+                    },
+                    "id": 14345,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "735:46:44",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 14346,
+                  "nodeType": "ExpressionStatement",
+                  "src": "735:46:44"
+                },
+                {
+                  "id": 14347,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "825:1:44"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "66616c7365",
+                        "id": 14351,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "bool",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "922:5:44",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        "value": "false"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 14348,
+                        "name": "REENTRANCY_MUTEX_POSITION",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14328,
+                        "src": "881:25:44",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "id": 14350,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "setStorageBool",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 14726,
+                      "src": "881:40:44",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_bool_$returns$__$bound_to$_t_bytes32_$",
+                        "typeString": "function (bytes32,bool)"
+                      }
+                    },
+                    "id": 14352,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "881:47:44",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 14353,
+                  "nodeType": "ExpressionStatement",
+                  "src": "881:47:44"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 14355,
+            "name": "nonReentrant",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 14332,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "563:2:44"
+            },
+            "src": "542:393:44",
+            "visibility": "internal"
+          }
+        ],
+        "scope": 14357,
+        "src": "116:821:44"
+      }
+    ],
+    "src": "44:894:44"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.24+commit.e67f0147.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "2.0.1",
+  "updatedAt": "2021-04-01T16:02:51.242Z"
+}
