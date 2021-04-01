@@ -29,6 +29,7 @@
     }
   },
   "dependencies": {
+    "@api3-dao/dao": "file:packages/dao",
     "@openzeppelin/test-helpers": "^0.5.10"
   }
 }
