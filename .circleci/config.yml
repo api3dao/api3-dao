@@ -21,6 +21,7 @@ jobs:
       - run: sudo apt install python
       - run: sudo apt install make
       - run: sudo apt install g++
+      - run: sudo chown -R 65534:3434 "/root/.npm"
       - run: sudo npm install -g @aragon/cli
 
       - run: npm run bootstrap
