@@ -7,7 +7,7 @@ import "./interfaces/ITimelockUtils.sol";
 /// @title Contract that implements vesting functionality
 /// @dev TimelockManager contracts interface with this contract to transfer
 /// API3 tokens that are locked under a vesting schedule.
-contract TimelockUtils is ClaimUtils, ITimelockUtils {
+abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
     struct Timelock
     {
         uint256 totalAmount;
@@ -23,11 +23,6 @@ contract TimelockUtils is ClaimUtils, ITimelockUtils {
     /// acceptable, because the TimelockManager is implemented in a way to not
     /// allow multiple timelocks per user.
     mapping(address => mapping(address => Timelock)) public userToDepositorToTimelock;
-
-    /// @param api3TokenAddress API3 token contract address
-    constructor(address api3TokenAddress)
-        ClaimUtils(api3TokenAddress)
-    {}
 
     /// @notice Called by TimelockManager contracts to deposit tokens on behalf
     /// of a user on a linear vesting schedule

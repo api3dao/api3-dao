@@ -25,6 +25,6 @@ import "./interfaces/IApi3Pool.sol";
 contract Api3Pool is TimelockUtils, IApi3Pool {
     /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
-        TimelockUtils(api3TokenAddress)
+        StateUtils(api3TokenAddress)
     {}
 }
