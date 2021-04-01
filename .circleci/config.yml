@@ -17,10 +17,10 @@ jobs:
           - v1-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
-      - run: apt install git
-      - run: apt install python
-      - run: apt install make
-      - run: apt install g++
+      - run: sudo apt install git
+      - run: sudo apt install python
+      - run: sudo apt install make
+      - run: sudo apt install g++
       - run: npm install -g @aragon/cli
 
       - run: npm run bootstrap
