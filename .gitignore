@@ -5,6 +5,7 @@
 **/artifacts/**
 **/build/**
 **/diff/**
+**/abi/**
 
 **/credentials.json
 **/*.flat.sol
