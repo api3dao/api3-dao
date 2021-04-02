@@ -2,7 +2,8 @@
 
 **/cache/**
 **/artifacts/**
-**/coverage/**
+**/artifacts/**
+**/build/**
 **/diff/**
 
 **/credentials.json
