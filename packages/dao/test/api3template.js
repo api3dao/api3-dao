@@ -1,3 +1,6 @@
+/*global artifacts, web3, contract, before, it, context, assert*/
+/*eslint no-undef: "error"*/
+
 const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { assertRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const { getEventArgument } = require('@aragon/test-helpers/events')
