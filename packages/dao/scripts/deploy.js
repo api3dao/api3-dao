@@ -1,3 +1,5 @@
+/*global artifacts, web3*/
+
 const deployTemplate = require('@aragon/templates-shared/scripts/deploy-template')
 
 const TEMPLATE_NAME = 'api3-template'

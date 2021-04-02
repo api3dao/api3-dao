@@ -1,10 +1,10 @@
-/*global artifacts, web3, contract, before, it, context, assert*/
+/*global artifacts, web3, contract, before, assert*/
 /*eslint no-undef: "error"*/
 
-const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
+// const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { assertRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const { getEventArgument } = require('@aragon/test-helpers/events')
-const { getENS, getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts)
+const { /*getENS,*/ getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts)
 const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
 
 const ACL = artifacts.require('ACL')
@@ -12,7 +12,7 @@ const Kernel = artifacts.require('Kernel')
 const Voting = artifacts.require('Voting')
 const Api3Template = artifacts.require('Api3Template')
 
-contract('Api3Template', ([_, deployer, tokenAddress, authorized]) => {
+contract('Api3Template', ([_, deployer, tokenAddress, authorized]) => { // eslint-disable-line no-unused-vars
   let api3Template, dao, acl, receipt, CREATE_VOTES_ROLE
 
   const SUPPORT = 50e16
@@ -25,8 +25,8 @@ contract('Api3Template', ([_, deployer, tokenAddress, authorized]) => {
 
   before('create bare entity', async () => {
     const votingBase = await Voting.new()
-    CREATE_VOTES_ROLE = await votingBase.CREATE_VOTES_ROLE()
-    const initializeData = votingBase.contract.initialize.getData(tokenAddress, SUPPORT, ACCEPTANCE, VOTING_DURATION)
+    CREATE_VOTES_ROLE = await votingBase.CREATE_VOTES_ROLE() // eslint-disable-line no-unused-vars
+    const initializeData = votingBase.contract.initialize.getData(tokenAddress, SUPPORT, ACCEPTANCE, VOTING_DURATION) // eslint-disable-line no-unused-vars
 
     receipt = await api3Template.newInstance('api3-dao', deployer, [SUPPORT, ACCEPTANCE, VOTING_DURATION], deployer, { from: deployer })
 
