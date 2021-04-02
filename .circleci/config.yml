@@ -63,7 +63,7 @@ jobs:
           at: .
       - run: npm run test:api3-voting
 
-  build_dao:
+  test_dao:
     docker:
       # specify the version you desire here
       - image: circleci/node:12.16.2
@@ -73,7 +73,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: npm run build:dao
+      - run: npm run test:dao
 
   test_pool:
     docker:
