@@ -23,6 +23,8 @@ jobs:
       - run: sudo apt install g++
       - run: npm config set prefix ~/npm
       - run: export PATH="$PATH:$HOME/npm/bin"
+      - run: npm install -g @aragon/cli
+      #      - run: npm i -g truffle
       - run: npm run bootstrap
 
       - save_cache:
