@@ -38,7 +38,7 @@ jobs:
   lint:
     docker:
       # specify the version you desire here
-      - image: circleci/node:12.16.2
+      - image: circleci/node:10.22.0
 
     working_directory: ~/repo
 
@@ -52,7 +52,7 @@ jobs:
   test_voting:
     docker:
       # specify the version you desire here
-      - image: circleci/node:12.16.2
+      - image: circleci/node:10.22.0
 
     working_directory: ~/repo/
 
@@ -64,7 +64,7 @@ jobs:
   test_dao:
     docker:
       # specify the version you desire here
-      - image: circleci/node:12.16.2
+      - image: circleci/node:10.22.0
 
     working_directory: ~/repo/
 
@@ -76,7 +76,7 @@ jobs:
   test_pool:
     docker:
       # specify the version you desire here
-      - image: circleci/node:12.16.2
+      - image: circleci/node:10.22.0
 
     working_directory: ~/repo/packages/pool
 
