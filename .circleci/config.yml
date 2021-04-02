@@ -25,7 +25,6 @@ jobs:
       - run: export PATH="$PATH:$HOME/npm/bin"
       - run: npm install -g @aragon/cli
       - run: npm i -g truffle
-      - run: npm install ./packages/dao
       - run: npm run bootstrap
 
       - save_cache:
