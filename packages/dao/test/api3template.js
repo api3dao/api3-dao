@@ -5,7 +5,7 @@
 const { assertRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const { getEventArgument } = require('@aragon/test-helpers/events')
 const { /*getENS,*/ getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts)
-const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
+// const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
 
 const ACL = artifacts.require('ACL')
 const Kernel = artifacts.require('Kernel')
