@@ -24,8 +24,8 @@ jobs:
       - run: npm config set prefix ~/npm
       - run: export PATH="$PATH:$HOME/npm/bin"
       - run: npm install -g @aragon/cli
-
-      - run: npm install
+      - run: npm install ./packages/dao
+      - run: npm run bootstrap
 
       - save_cache:
           paths:
