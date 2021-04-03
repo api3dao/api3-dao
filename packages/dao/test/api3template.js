@@ -2,42 +2,42 @@
 /*eslint no-undef: "error"*/
 
 // const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
-const { assertRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
-const { getEventArgument } = require('@aragon/test-helpers/events')
-const { /*getENS,*/ getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts)
+const { assertRole } = require('@aragon/templates-shared/helpers/assertRole')(web3);
+const { getEventArgument } = require('@aragon/test-helpers/events');
+const { /*getENS,*/ getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts);
 // const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
 
-const ACL = artifacts.require('ACL')
-const Kernel = artifacts.require('Kernel')
-const Voting = artifacts.require('Voting')
-const Api3Template = artifacts.require('Api3Template')
+const ACL = artifacts.require('ACL');
+const Kernel = artifacts.require('Kernel');
+const Voting = artifacts.require('Voting');
+const Api3Template = artifacts.require('Api3Template');
 
 contract('Api3Template', ([_, deployer, tokenAddress, authorized]) => { // eslint-disable-line no-unused-vars
-  let api3Template, dao, acl, receipt, CREATE_VOTES_ROLE
+  let api3Template, dao, acl, receipt, CREATE_VOTES_ROLE;
 
-  const SUPPORT = 50e16
-  const ACCEPTANCE = 20e16
-  const VOTING_DURATION = 60
+  const SUPPORT = 50e16;
+  const ACCEPTANCE = 20e16;
+  const VOTING_DURATION = 60;
 
   before('fetch bare template', async () => {
     api3Template = Api3Template.at(await getTemplateAddress())
-  })
+  });
 
   before('create bare entity', async () => {
-    const votingBase = await Voting.new()
-    CREATE_VOTES_ROLE = await votingBase.CREATE_VOTES_ROLE() // eslint-disable-line no-unused-vars
-    const initializeData = votingBase.contract.initialize.getData(tokenAddress, SUPPORT, ACCEPTANCE, VOTING_DURATION) // eslint-disable-line no-unused-vars
+    const votingBase = await Voting.new();
+    CREATE_VOTES_ROLE = await votingBase.CREATE_VOTES_ROLE(); // eslint-disable-line no-unused-vars
+    const initializeData = votingBase.contract.initialize.getData(tokenAddress, SUPPORT, ACCEPTANCE, VOTING_DURATION); // eslint-disable-line no-unused-vars
 
-    receipt = await api3Template.newInstance('api3-dao', deployer, [SUPPORT, ACCEPTANCE, VOTING_DURATION], deployer, { from: deployer })
+    receipt = await api3Template.newInstance('api3-dao', deployer, [SUPPORT, ACCEPTANCE, VOTING_DURATION], deployer, { from: deployer });
 
-    dao = Kernel.at(getEventArgument(receipt, 'DeployDao', 'dao'))
-    acl = ACL.at(await dao.acl())
+    dao = Kernel.at(getEventArgument(receipt, 'DeployDao', 'dao'));
+    acl = ACL.at(await dao.acl());
 
     assert.equal(dao.address, getEventArgument(receipt, 'SetupDao', 'dao'), 'should have emitted a SetupDao event')
-  })
+  });
 
   it('sets up DAO and ACL permissions correctly', async () => {
-    await assertRole(acl, dao, { address: deployer }, 'APP_MANAGER_ROLE')
+    await assertRole(acl, dao, { address: deployer }, 'APP_MANAGER_ROLE');
     await assertRole(acl, acl, { address: deployer }, 'CREATE_PERMISSIONS_ROLE')
   })
 
@@ -54,4 +54,4 @@ contract('Api3Template', ([_, deployer, tokenAddress, authorized]) => { // eslin
 
   //   await assertRole(acl, voting, { address: deployer }, 'CREATE_VOTES_ROLE', { address: authorized })
   // })
-})
+});
