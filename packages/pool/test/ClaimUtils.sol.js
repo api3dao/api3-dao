@@ -7,10 +7,13 @@ beforeEach(async () => {
   const accounts = await ethers.getSigners();
   roles = {
     deployer: accounts[0],
-    daoAgent: accounts[1],
-    claimsManager: accounts[2],
-    user1: accounts[3],
-    user2: accounts[4],
+    agentAppPrimary: accounts[1],
+    agentAppSecondary: accounts[2],
+    votingAppPrimary: accounts[3],
+    votingAppSecondary: accounts[4],
+    claimsManager: accounts[5],
+    user1: accounts[6],
+    user2: accounts[7],
     randomPerson: accounts[9],
   };
   const api3TokenFactory = await ethers.getContractFactory(
@@ -35,13 +38,18 @@ describe("payOutClaim", function () {
         // Set the DAO Agent
         await api3Pool
           .connect(roles.randomPerson)
-          .setDaoAgent(roles.daoAgent.address);
+          .setDaoApps(
+            roles.agentAppPrimary.address,
+            roles.agentAppSecondary.address,
+            roles.votingAppPrimary.address,
+            roles.votingAppSecondary.address
+          );
         // Set claims manager status as true with the DAO Agent
         await api3Pool
-          .connect(roles.daoAgent)
+          .connect(roles.agentAppPrimary)
           .setClaimsManagerStatus(roles.claimsManager.address, true);
         // Have the user stake
-        const user1Stake = ethers.utils.parseEther("10" + "000" + "000");
+        const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
         await api3Token
           .connect(roles.deployer)
           .transfer(roles.user1.address, user1Stake);
@@ -77,10 +85,15 @@ describe("payOutClaim", function () {
         // Set the DAO Agent
         await api3Pool
           .connect(roles.randomPerson)
-          .setDaoAgent(roles.daoAgent.address);
+          .setDaoApps(
+            roles.agentAppPrimary.address,
+            roles.agentAppSecondary.address,
+            roles.votingAppPrimary.address,
+            roles.votingAppSecondary.address
+          );
         // Set claims manager status as true with the DAO Agent
         await api3Pool
-          .connect(roles.daoAgent)
+          .connect(roles.agentAppPrimary)
           .setClaimsManagerStatus(roles.claimsManager.address, true);
         await expect(
           api3Pool

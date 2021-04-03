@@ -1,6 +1,7 @@
 [![api3-dao](https://circleci.com/gh/api3dao/api3-dao.svg?style=svg)](https://app.circleci.com/pipelines/github/api3dao)
 
 # API3 DAO
+
 - Install the dependencies
 ```sh
 npm run bootstrap
@@ -20,4 +21,4 @@ The package that keeps the DAO configuration and deployment implementation.
 ### [`@api3-dao/pool`](/packages/pool/README.md)
 
 A pool contract that users can stake API3 tokens to receive voting power at the DAO.
-It implements a MiniMe interface that integrates to the API3 Voting app.
+It implements a MiniMe interface that integrates to the Api3Voting app.

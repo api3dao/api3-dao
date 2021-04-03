@@ -7,13 +7,16 @@ beforeEach(async () => {
   const accounts = await ethers.getSigners();
   roles = {
     deployer: accounts[0],
-    daoAgent: accounts[1],
-    claimsManager: accounts[2],
-    user1: accounts[3],
-    user2: accounts[4],
-    timelockManagerOwner: accounts[5],
-    mockTimelockManager: accounts[6],
-    randomPerson: accounts[9],
+    agentAppPrimary: accounts[1],
+    agentAppSecondary: accounts[2],
+    votingAppPrimary: accounts[3],
+    votingAppSecondary: accounts[4],
+    claimsManager: accounts[5],
+    user1: accounts[6],
+    user2: accounts[7],
+    timelockManagerOwner: accounts[8],
+    mockTimelockManager: accounts[9],
+    randomPerson: accounts[10],
   };
   const api3TokenFactory = await ethers.getContractFactory(
     "Api3Token",
@@ -35,7 +38,7 @@ describe("depositWithVesting", function () {
     context("Release end is later than release start", function () {
       context("Amount is not zero", function () {
         it("deposits with vesting", async function () {
-          const depositAmount = ethers.utils.parseEther("10" + "000" + "000");
+          const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
           await api3Token
             .connect(roles.deployer)
             .transfer(roles.mockTimelockManager.address, depositAmount);
@@ -91,7 +94,7 @@ describe("depositWithVesting", function () {
     });
     context("Release end is not later than release start", function () {
       it("reverts", async function () {
-        const depositAmount = ethers.utils.parseEther("10" + "000" + "000");
+        const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
         const currentBlock = await ethers.provider.getBlock(
           await ethers.provider.getBlockNumber()
         );
@@ -113,7 +116,7 @@ describe("depositWithVesting", function () {
   });
   context("User has received from this timelock manager before", function () {
     it("reverts", async function () {
-      const depositAmount = ethers.utils.parseEther("10" + "000" + "000");
+      const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
       await api3Token
         .connect(roles.deployer)
         .transfer(roles.mockTimelockManager.address, depositAmount);
@@ -154,7 +157,7 @@ describe("updateTimelockStatus", function () {
     context("Timelock has remaining tokens", function () {
       context("It is past release end", function () {
         it("updates timelock status", async function () {
-          const depositAmount = ethers.utils.parseEther("10" + "000" + "000");
+          const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
           await api3Token
             .connect(roles.deployer)
             .transfer(roles.mockTimelockManager.address, depositAmount);
@@ -193,7 +196,7 @@ describe("updateTimelockStatus", function () {
       });
       context("It is not past release end", function () {
         it("updates timelock status", async function () {
-          const depositAmount = ethers.utils.parseEther("10" + "000" + "000");
+          const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
           await api3Token
             .connect(roles.deployer)
             .transfer(roles.mockTimelockManager.address, depositAmount);
@@ -234,7 +237,7 @@ describe("updateTimelockStatus", function () {
     });
     context("Timelock does not have remaining tokens", function () {
       it("reverts", async function () {
-        const depositAmount = ethers.utils.parseEther("10" + "000" + "000");
+        const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
         await api3Token
           .connect(roles.deployer)
           .transfer(roles.mockTimelockManager.address, depositAmount);
@@ -274,7 +277,7 @@ describe("updateTimelockStatus", function () {
   });
   context("Timelock has not started releasing", function () {
     it("reverts", async function () {
-      const depositAmount = ethers.utils.parseEther("10" + "000" + "000");
+      const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
       await api3Token
         .connect(roles.deployer)
         .transfer(roles.mockTimelockManager.address, depositAmount);

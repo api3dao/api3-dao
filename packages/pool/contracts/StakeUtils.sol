@@ -16,8 +16,8 @@ contract StakeUtils is TransferUtils, IStakeUtils {
     function stake(uint256 amount)
         public
         override
-        payEpochRewardBefore()
     {
+        payReward();
         User storage user = users[msg.sender];
         require(user.unstaked >= amount, ERROR_VALUE);
         user.unstaked = user.unstaked - amount;
@@ -66,8 +66,8 @@ contract StakeUtils is TransferUtils, IStakeUtils {
     function scheduleUnstake(uint256 amount)
         external
         override
-        payEpochRewardBefore()
     {
+        payReward();
         User storage user = users[msg.sender];
         uint256 userSharesNow = userShares(msg.sender);
         uint256 userStakedNow = userSharesNow * totalStake / totalShares();
@@ -89,9 +89,9 @@ contract StakeUtils is TransferUtils, IStakeUtils {
     function unstake()
         public
         override
-        payEpochRewardBefore()
         returns(uint256)
     {
+        payReward();
         User storage user = users[msg.sender];
         require(block.timestamp > user.unstakeScheduledFor, ERROR_UNAUTHORIZED);
         require(block.timestamp < user.unstakeScheduledFor + EPOCH_LENGTH, ERROR_UNAUTHORIZED);

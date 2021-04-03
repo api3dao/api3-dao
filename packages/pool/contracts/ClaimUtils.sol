@@ -32,9 +32,9 @@ contract ClaimUtils is StakeUtils, IClaimUtils {
         )
         external
         override
-        payEpochRewardBefore()
         onlyClaimsManager()
     {
+        payReward();
         // totalStake should not go lower than 1
         require(totalStake > amount, ERROR_VALUE);
         totalStake = totalStake - amount;

@@ -5,7 +5,7 @@
   "scripts": {
     "bootstrap": "npm install && lerna bootstrap",
     "lint": "npm run lint:eslint && npm run lint:solhint",
-    "lint:solhint": "solhint ./packages/pool/contracts/*.sol && solhint ./packages/dao/contracts/*.sol",
+    "lint:solhint": "solhint ./packages/pool/contracts/*.sol && solhint ./packages/api3-voting/contracts/*.sol && solhint ./packages/dao/contracts/*.sol",
     "lint:eslint": "eslint . --ext .js",
     "test:pool": "cd ./packages/pool && npm run test",
     "test:api3-voting": "cd ./packages/api3-voting && npm run compile && npm run test",

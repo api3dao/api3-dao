@@ -24,6 +24,7 @@ contract TransferUtils is DelegationUtils, ITransferUtils {
         public
         override
     {
+        payReward();
         users[userAddress].unstaked = users[userAddress].unstaked + amount;
         api3Token.transferFrom(source, address(this), amount);
         emit Deposited(
@@ -44,6 +45,7 @@ contract TransferUtils is DelegationUtils, ITransferUtils {
         public
         override
     {
+        payReward();
         User storage user = users[msg.sender];
         uint256 userLocked = getUserLocked(msg.sender);
         // Check if the user has `amount` unlocked tokens to withdraw
