@@ -49,7 +49,7 @@ contract Api3Template is Api3BaseTemplate {
         _validateVotingSettings(_votingSettings);
 
         (Kernel dao, ACL acl) = _createDAO();
-        (Voting voting, Agent agent) = _setupApps(
+        (Api3Voting voting, Agent agent) = _setupApps(
             dao, acl, _api3Pool, _votingSettings, _permissionManager
         );
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, _permissionManager);
@@ -72,10 +72,10 @@ contract Api3Template is Api3BaseTemplate {
         address _permissionManager
     )
     internal
-    returns (Voting, Agent)
+    returns (Api3Voting, Agent)
     {
         Agent agent = _installDefaultAgentApp(_dao);
-        Voting voting = _installVotingApp(_dao, _api3Pool, _votingSettings);
+        Api3Voting voting = _installVotingApp(_dao, _api3Pool, _votingSettings);
 
         _setupPermissions(
             _acl,
@@ -90,7 +90,7 @@ contract Api3Template is Api3BaseTemplate {
     function _setupPermissions(
         ACL _acl,
         Agent _agent,
-        Voting _voting,
+        Api3Voting _voting,
         address _permissionManager
     )
     internal

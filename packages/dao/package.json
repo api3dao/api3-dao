@@ -9,7 +9,7 @@
     "abi:extract": "truffle-extract --output abi/ --keys abi",
     "compile": "truffle compile --all",
     "lint": "solium --dir ./contracts",
-    "test": "npm run test:ganache",
+    "test": "cd ../pool && npm run build && cp ./artifacts/contracts/Api3Pool.sol/Api3Pool.json ../dao/build/contracts/Api3Pool.json && cd ../dao  && npm run test:ganache",
     "test:ganache": "./node_modules/@aragon/templates-shared/scripts/test-ganache.sh",
     "test:geth": "npm run docker:run && npm run docker:wait-gas && npm run deploy:devnet && truffle test --network devnet && npm run docker:stop",
     "docker:run": "cd ./node_modules/@aragon/templates-shared/; docker-compose -f docker-compose.yml up -d; RESULT=$?; cd -; $(exit $RESULT)",
