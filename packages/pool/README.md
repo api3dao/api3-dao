@@ -12,6 +12,7 @@ npm run test
 npm run test:coverage
 npm run test:gas
 ```
+
 - Create `credentials.json` similar to `credentials.example.json` and deploy
 ```sh
 npm run deploy:rinkeby

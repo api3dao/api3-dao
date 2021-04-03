@@ -199,7 +199,7 @@ describe("delegateVotingPower", function () {
               );
             });
             context("User had the same delegate", function () {
-              it("does nothing", async function () {
+              it("reverts", async function () {
                 // Have two users stake
                 const user1Stake = ethers.utils.parseEther(
                   "20" + "000" + "000"
@@ -243,10 +243,11 @@ describe("delegateVotingPower", function () {
                 ]);
                 // ... then have user 1 delegate to user 2 again
                 await expect(
-                  api3Pool
-                    .connect(roles.user1)
-                    .delegateVotingPower(roles.user2.address)
-                ).to.not.emit(api3Pool, "Delegated");
+                api3Pool
+                  .connect(roles.user1)
+                  .delegateVotingPower(roles.user2.address)
+                 ).to.be.revertedWith("Cannot delegate to the same address");
+
                 expect(await api3Pool.balanceOf(roles.user1.address)).to.equal(
                   ethers.BigNumber.from(0)
                 );

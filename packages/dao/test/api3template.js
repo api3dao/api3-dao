@@ -41,7 +41,7 @@ contract('Api3Template', ([_, deployer, api3Pool, tokenAddress, authorized]) => 
 
   it('sets up DAO and ACL permissions correctly', async () => {
     await assertRole(acl, dao, { address: deployer }, 'APP_MANAGER_ROLE');
-    await assertRole(acl, acl, { address: deployer }, 'CREATE_PERMISSIONS_ROLE')
+    await assertRole(acl, acl, { address: deployer }, 'CREATE_PERMISSIONS_ROLE');
   });
 
   it('installs the requested application correctly', async () => {
@@ -72,4 +72,5 @@ contract('Api3Template', ([_, deployer, api3Pool, tokenAddress, authorized]) => 
 
     await api3Pool.setDaoApps(agent_1.address, agent_2.address, voting_1.address, voting_2.address);
   })
+
 });

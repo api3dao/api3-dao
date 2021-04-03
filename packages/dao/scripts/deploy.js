@@ -20,3 +20,4 @@ module.exports = callback => deployTemplate(web3, artifacts, TEMPLATE_NAME, CONT
         callback()
     })
     .catch(callback);
+
