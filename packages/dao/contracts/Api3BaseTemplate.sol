@@ -2,7 +2,7 @@ pragma solidity 0.4.24;
 
 import "@aragon/apps-agent/contracts/Agent.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
-import "@aragon/apps-voting/contracts/Voting.sol";
+import "./utils/Api3Voting.sol";
 import "@aragon/apps-payroll/contracts/Payroll.sol";
 import "@aragon/apps-finance/contracts/Finance.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
@@ -140,7 +140,7 @@ contract Api3BaseTemplate is IsContract {
 
     /* VOTING */
 
-    function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64[3] memory _votingSettings) internal returns (Voting) {
+    function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64[3] memory _votingSettings) internal returns (Api3Voting) {
         return _installVotingApp(_dao, _token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
     }
 
@@ -151,15 +151,15 @@ contract Api3BaseTemplate is IsContract {
         uint64 _acceptance,
         uint64 _duration
     )
-        internal returns (Voting)
+        internal returns (Api3Voting)
     {
-        bytes memory initializeData = abi.encodeWithSelector(Voting(0).initialize.selector, _token, _support, _acceptance, _duration);
-        return Voting(_installNonDefaultApp(_dao, VOTING_APP_ID, initializeData));
+        bytes memory initializeData = abi.encodeWithSelector(Api3Voting(0).initialize.selector, _token, _support, _acceptance, _duration);
+        return Api3Voting(_installNonDefaultApp(_dao, VOTING_APP_ID, initializeData));
     }
 
     function _createVotingPermissions(
         ACL _acl,
-        Voting _voting,
+        Api3Voting _voting,
         address _settingsGrantee,
         address _createVotesGrantee,
         address _manager
