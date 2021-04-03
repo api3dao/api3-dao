@@ -37,9 +37,9 @@ contract DelegationUtils is RewardUtils, IDelegationUtils {
         user.lastDelegationUpdateTimestamp = block.timestamp;
         uint256 userShares = userShares(msg.sender);
         address userDelegate = userDelegate(msg.sender);
-        if (userDelegate == delegate) {
-            return;
-        }
+
+        require(userDelegate != delegate, ERROR_DELEGATE);
+
         if (userDelegate != address(0)) {
             // Need to revoke previous delegation
             updateCheckpointArray(

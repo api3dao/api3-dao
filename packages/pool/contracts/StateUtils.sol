@@ -66,6 +66,7 @@ contract StateUtils is IStateUtils {
     string internal constant ERROR_ADDRESS = "Invalid address";
     string internal constant ERROR_UNAUTHORIZED = "Unauthorized";
     string internal constant ERROR_FREQUENCY = "Try again a week later";
+    string internal constant ERROR_DELEGATE = "Cannot delegate to the same address";
 
     // All percentage values are represented by multiplying by 1e6
     uint256 internal constant ONE_PERCENT = 1_000_000;
