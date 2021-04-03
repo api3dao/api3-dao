@@ -130,11 +130,15 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             let latest = Number(await time.latest());
             await time.increaseTo(latest+Number(time.duration.weeks(1)));
             await pool.undelegateVotingPower({from: voter2});
-            await pool.delegateVotingPower(voter2, {from: voter1});
+            // await pool.delegateVotingPower(voter2, {from: voter1});
+            await expectRevert(
+                pool.delegateVotingPower(voter2, {from: voter1}),
+                "Cannot delegate to the same address"
+            );
             latest = Number(await time.latest());
             await time.increaseTo(latest+Number(time.duration.weeks(1)));
             await expectRevert(
-                pool.delegateVotingPower(voter1, {from: voter1}),
+                pool.delegateVotingPower(voter1, {from: voter2}),
                 "Invalid address"
             );
         });
