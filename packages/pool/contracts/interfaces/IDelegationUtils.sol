@@ -1,9 +1,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.2;
 
-import "./IGetterUtils.sol";
+import "./IRewardUtils.sol";
 
-interface IDelegationUtils is IGetterUtils {
+interface IDelegationUtils is IRewardUtils {
     event Delegated(
         address indexed user,
         address indexed delegate

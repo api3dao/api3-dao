@@ -33,25 +33,66 @@ contract StateUtils is IStateUtils {
         uint256 unstakeAmount;
     }
 
-    string constant internal ERROR_VALUE = "Invalid value";
-    string constant internal ERROR_ADDRESS = "Invalid address";
-    string constant internal ERROR_UNAUTHORIZED = "Unauthorized";
-    string constant internal ERROR_FREQUENCY = "Try again a week later";
+    /// @notice Length of the epoch in which the staking reward is paid out
+    /// once. It is hardcoded as 7 days in seconds.
+    /// @dev In addition to regulating reward payments, this variable is used
+    /// for four additional things:
+    /// (1) Once an unstaking scheduling matures, the user has `EPOCH_LENGTH`
+    /// to execute the unstaking before it expires
+    /// (2) After a user makes a proposal, they cannot make a second one
+    /// before `EPOCH_LENGTH` has passed
+    /// (3) After a user updates their delegation status, they have to wait
+    /// `EPOCH_LENGTH` before updating it again
+    /// (4) A user's `delegatedTo` or `delegates` checkpoint arrays can be
+    /// extended up to `MAX_INTERACTION_FREQUENCY` in an `EPOCH_LENGTH`
+    uint256 public constant EPOCH_LENGTH = 7 * 24 * 60 * 60;
 
-    uint256 constant internal MAX_INTERACTION_FREQUENCY = 10;
+    /// @notice Number of epochs before the staking rewards get unlocked.
+    /// Hardcoded as 52 epochs, which corresponds to a year.
+    uint256 public constant REWARD_VESTING_PERIOD = 52;
+
+    /// @notice Maximum number of additions interactions can make to a specific
+    /// user's `delegatedTo` and `delegates` in an EPOCH_LENGTH before it
+    /// starts to revert
+    /// @dev Note that interactions overwrite checkpoints rather than adding a
+    /// new element to the arrays unless a new proposal is made between them.
+    /// This means that at least `MAX_INTERACTION_FREQUENCY` proposals need
+    /// to be made for this mechanism to prevent further interactions, which is
+    /// not likely to happen in practice due to the proposal spam protection
+    /// mechanisms.
+    uint256 public constant MAX_INTERACTION_FREQUENCY = 20;
+
+    string internal constant ERROR_VALUE = "Invalid value";
+    string internal constant ERROR_ADDRESS = "Invalid address";
+    string internal constant ERROR_UNAUTHORIZED = "Unauthorized";
+    string internal constant ERROR_FREQUENCY = "Try again a week later";
+
+    // All percentage values are represented by multiplying by 1e6
+    uint256 internal constant ONE_PERCENT = 1_000_000;
+    uint256 internal constant HUNDRED_PERCENT = 100_000_000;
     
     /// @notice API3 token contract
     IApi3Token public api3Token;
 
-    /// @notice Address of the Agent app of the API3 DAO
-    /// @dev Since the pool contract will be deployed before the DAO contracts,
-    /// `daoAgent` will not be set in the constructor, but later on. Once it is
-    /// set, it will be immutable.
-    address public daoAgent;
+    /// @notice Address of the primary Agent app of the API3 DAO
+    /// @dev Primary Agent can be operated through the primary Api3Voting app.
+    /// The primary Api3Voting app requires a higher quorum, and the primary
+    /// Agent is more privileged.
+    address public agentAppPrimary;
 
-    /// @notice Address of the DAO Api3Voting apps
-    /// @dev Set in a similar way to `daoAgent`
-    address[] public votingApps;
+    /// @notice Address of the secondary Agent app of the API3 DAO
+    /// @dev Secondary Agent can be operated through the secondary Api3Voting
+    /// app. The secondary Api3Voting app requires a lower quorum, and the primary
+    /// Agent is less privileged.
+    address public agentAppSecondary;
+
+    /// @notice Address of the primary Api3Voting app of the API3 DAO
+    /// @dev Used to operate the primary Agent
+    address public votingAppPrimary;
+
+    /// @notice Address of the secondary Api3Voting app of the API3 DAO
+    /// @dev Used to operate the secondary Agent
+    address public votingAppSecondary;
 
     /// @notice Mapping that keeps the claims manager statuses of addresses
     /// @dev A claims manager is a contract that is authorized to pay out
@@ -59,36 +100,17 @@ contract StateUtils is IStateUtils {
     /// statuses are kept as a mapping to support multiple claims managers.
     mapping(address => bool) public claimsManagerStatus;
 
-    /// @notice Length of the epoch in which the staking reward is paid out
-    /// once. It is hardcoded as 7 days in seconds.
-    /// @dev In addition to regulating reward payments, this variable is used
-    /// for three additional things:
-    /// (1) Once an unstaking scheduling matures, the user has `EPOCH_LENGTH`
-    /// to execute the unstaking before it expires
-    /// (2) After a user makes a proposal, they cannot make a second one
-    /// before `EPOCH_LENGTH` has passed
-    /// (3) After a user updates their delegation status, they have to wait
-    /// `EPOCH_LENGTH` before updating it again
-    uint256 public constant EPOCH_LENGTH = 7 * 24 * 60 * 60;
-
-    /// @notice Number of epochs before the staking rewards get unlocked.
-    /// Hardcoded as 52 epochs, which corresponds to a year.
-    uint256 public constant REWARD_VESTING_PERIOD = 52;
-
     /// @notice Epochs are indexed as `block.timestamp / EPOCH_LENGTH`.
     /// `genesisEpoch` is the index of the epoch in which the pool is deployed.
     uint256 public immutable genesisEpoch;
 
     /// @notice Records of rewards paid in each epoch
+    /// @dev `.atBlock` of a past epoch's reward record being `0` means no
+    /// reward was paid for that block
     mapping(uint256 => Reward) public epochIndexToReward;
 
     /// @notice Epoch index of the most recent reward payment
     uint256 public epochIndexOfLastRewardPayment;
-
-    // Snapshot block number of the last vote created at one of the DAO
-    // Api3Voting apps
-    uint256 private lastVoteSnapshotBlock;
-    mapping(uint256 => uint256) private snapshotBlockToTimestamp;
 
     /// @notice User records
     mapping(address => User) public users;
@@ -96,21 +118,12 @@ contract StateUtils is IStateUtils {
     /// @notice Total number of tokens staked at the pool
     uint256 public totalStake;
 
-    // We keep checkpoints for two most recent blocks at which totalShares has
-    // been updated. Note that the indices do not indicate chronological
-    // ordering.
-    Checkpoint private totalSharesCheckpoint1;
-    Checkpoint private totalSharesCheckpoint2;
-
-    // All percentage values are represented by multiplying by 1e6
-    uint256 internal constant ONE_PERCENT = 1_000_000;
-    uint256 internal constant HUNDRED_PERCENT = 100_000_000;
-
-    /// @notice Stake target the pool will aim to meet. The staking rewards
-    /// increase if the total staked amount is below this, and vice versa.
-    /// @dev Default value is 30% of the total API3 token supply. This
+    /// @notice Stake target the pool will aim to meet in percentages of the
+    /// total token supply. The staking rewards increase if the total staked
+    ///  amount is below this, and vice versa.
+    /// @dev Default value is 50% of the total API3 token supply. This
     /// parameter is governable by the DAO.
-    uint256 public stakeTarget = 30_000_000;
+    uint256 public stakeTarget = 50_000_000;
 
     /// @notice Minimum APR (annual percentage rate) the pool will pay as
     /// staking rewards in percentages
@@ -146,7 +159,7 @@ contract StateUtils is IStateUtils {
     uint256 public proposalVotingPowerThreshold = 100_000;
 
     /// @notice APR that will be paid next epoch
-    /// @dev This is initialized at maximum APR, but will come to an
+    /// @dev This is initialized at maximum APR, but will reach an
     /// equilibrium based on the stake target.
     /// Every epoch (week), APR/52 of the total staked tokens will be added to
     /// the pool, effectively distributing them to the stakers.
@@ -156,11 +169,31 @@ contract StateUtils is IStateUtils {
     /// @dev After making a proposal through the Agent app, the user publishes
     /// the specs of the proposal (target contract address, function,
     /// parameters) at a URL
-    mapping(address => mapping(uint256 => string)) public userAddressToProposalIndexToSpecsUrl;
+    mapping(address => mapping(address => mapping(uint256 => string))) public userAddressToVotingAppToProposalIndexToSpecsUrl;
 
-    /// @dev Reverts if the caller is not the DAO Agent App
-    modifier onlyDaoAgent() {
-        require(msg.sender == daoAgent, ERROR_UNAUTHORIZED);
+    // Snapshot block number of the last vote created at one of the DAO
+    // Api3Voting apps
+    uint256 private lastVoteSnapshotBlock;
+    mapping(uint256 => uint256) private snapshotBlockToTimestamp;
+
+    // We keep checkpoints for two most recent blocks at which totalShares has
+    // been updated. Note that the indices do not indicate chronological
+    // ordering.
+    Checkpoint private totalSharesCheckpoint1;
+    Checkpoint private totalSharesCheckpoint2;
+
+    /// @dev Reverts if the caller is not an API3 DAO Agent
+    modifier onlyAgentApp() {
+        require(
+            msg.sender == agentAppPrimary || msg.sender == agentAppSecondary,
+            ERROR_UNAUTHORIZED
+            );
+        _;
+    }
+
+    /// @dev Reverts if the caller is not the primary API3 DAO Agent
+    modifier onlyAgentAppPrimary() {
+        require(msg.sender == agentAppPrimary, ERROR_UNAUTHORIZED);
         _;
     }
 
@@ -178,39 +211,43 @@ contract StateUtils is IStateUtils {
         epochIndexOfLastRewardPayment = currentEpoch;
     }
 
-    /// @notice Called after deployment to set the address of the DAO Agent app
-    /// @dev The DAO Agent app will be authorized to act on behalf of the DAO
-    /// to update parameters, which is why we need to specify it. However, the
-    /// pool and the DAO contracts refer to each other cyclically, which is why
-    /// we cannot set it in the constructor. Instead, the pool will be
-    /// deployed, the DAO contracts will be deployed with the pool address as
-    /// a constructor argument, then this method will be called to set the DAO
-    /// Agent address. Before using the resulting setup, it must be verified
-    /// that the Agent address is set correctly.
-    /// This method can set the DAO Agent only once. Therefore, no access
-    /// control is needed.
-    /// @param _daoAgent Address of the Agent app of the API3 DAO
-    function setDaoAgent(address _daoAgent)
+    /// @notice Called after deployment to set the addresses of the DAO apps
+    /// @dev This can also be called later on by the primary Agent to update
+    /// all app addresses as a means of upgrade
+    /// @param _agentAppPrimary Address of the primary Agent
+    /// @param _agentAppSecondary Address of the secondary Agent
+    /// @param _votingAppPrimary Address of the primary Api3Voting
+    /// @param _votingAppSecondary Address of the secondary Api3Voting
+    function setDaoApps(
+        address _agentAppPrimary,
+        address _agentAppSecondary,
+        address _votingAppPrimary,
+        address _votingAppSecondary
+        )
         external
         override
     {
-        require(_daoAgent != address(0), ERROR_ADDRESS);
-        require(daoAgent == address(0), ERROR_UNAUTHORIZED);
-        daoAgent = _daoAgent;
-        emit SetDaoAgent(daoAgent);
-    }
-
-    /// @notice Called after deployment to set the addresses of the DAO Voting
-    /// apps
-    /// @param _votingApps Addresses of the DAO Api3Voting apps
-    function setVotingApps(address[] calldata _votingApps)
-        external
-        override
-    {
-        require(_votingApps.length != 0, ERROR_VALUE);
-        require(votingApps.length == 0, ERROR_UNAUTHORIZED);
-        votingApps = _votingApps;
-        emit SetVotingApps(votingApps);
+        require(
+            agentAppPrimary == address(0) || msg.sender == agentAppPrimary,
+            ERROR_UNAUTHORIZED
+            );
+        require(
+            _agentAppPrimary != address(0)
+                && _agentAppSecondary  != address(0)
+                && _votingAppPrimary  != address(0)
+                && _votingAppSecondary  != address(0),
+            ERROR_ADDRESS
+            );
+        agentAppPrimary = _agentAppPrimary;
+        agentAppSecondary = _agentAppSecondary;
+        votingAppPrimary = _votingAppPrimary;
+        votingAppSecondary = _votingAppSecondary;
+        emit SetDaoApps(
+            agentAppPrimary,
+            agentAppSecondary,
+            votingAppPrimary,
+            votingAppSecondary
+            );
     }
 
     /// @notice Called by the DAO Agent to set the authorization status of a
@@ -218,6 +255,7 @@ contract StateUtils is IStateUtils {
     /// @dev The claims manager is a trusted contract that is allowed to
     /// withdraw as many tokens as it wants from the pool to pay out insurance
     /// claims.
+    /// Only the primary Agent can do this because it is a critical operation.
     /// @param claimsManager Claims manager contract address
     /// @param status Authorization status
     function setClaimsManagerStatus(
@@ -226,7 +264,7 @@ contract StateUtils is IStateUtils {
         )
         external
         override
-        onlyDaoAgent()
+        onlyAgentAppPrimary()
     {
         claimsManagerStatus[claimsManager] = status;
         emit SetClaimsManagerStatus(
@@ -240,7 +278,7 @@ contract StateUtils is IStateUtils {
     function setStakeTarget(uint256 _stakeTarget)
         external
         override
-        onlyDaoAgent()
+        onlyAgentApp()
     {
         require(
             _stakeTarget <= HUNDRED_PERCENT
@@ -259,7 +297,7 @@ contract StateUtils is IStateUtils {
     function setMaxApr(uint256 _maxApr)
         external
         override
-        onlyDaoAgent()
+        onlyAgentApp()
     {
         require(_maxApr >= minApr, ERROR_VALUE);
         uint256 oldMaxApr = maxApr;
@@ -275,7 +313,7 @@ contract StateUtils is IStateUtils {
     function setMinApr(uint256 _minApr)
         external
         override
-        onlyDaoAgent()
+        onlyAgentApp()
     {
         require(_minApr <= maxApr, ERROR_VALUE);
         uint256 oldMinApr = minApr;
@@ -293,11 +331,12 @@ contract StateUtils is IStateUtils {
     /// valid value is `EPOCH_LENGTH` to prevent users from unstaking,
     /// withdrawing and staking with another address to work around the
     /// proposal spam protection.
+    /// Only the primary Agent can do this because it is a critical operation.
     /// @param _unstakeWaitPeriod Unstake waiting period
     function setUnstakeWaitPeriod(uint256 _unstakeWaitPeriod)
         external
         override
-        onlyDaoAgent()
+        onlyAgentAppPrimary()
     {
         require(_unstakeWaitPeriod >= EPOCH_LENGTH, ERROR_VALUE);
         uint256 oldUnstakeWaitPeriod = unstakeWaitPeriod;
@@ -313,7 +352,7 @@ contract StateUtils is IStateUtils {
     function setAprUpdateCoefficient(uint256 _aprUpdateCoefficient)
         external
         override
-        onlyDaoAgent()
+        onlyAgentApp()
     {
         require(
             _aprUpdateCoefficient <= 1_000_000_000
@@ -330,12 +369,13 @@ contract StateUtils is IStateUtils {
 
     /// @notice Called by the DAO Agent to set the voting power threshold for
     /// proposals
+    /// Only the primary Agent can do this because it is a critical operation.
     /// @param _proposalVotingPowerThreshold Voting power threshold for
     /// proposals
     function setProposalVotingPowerThreshold(uint256 _proposalVotingPowerThreshold)
         external
         override
-        onlyDaoAgent()
+        onlyAgentAppPrimary()
     {
         require(
             _proposalVotingPowerThreshold <= 10 * ONE_PERCENT,
@@ -355,14 +395,16 @@ contract StateUtils is IStateUtils {
     /// @param specsUrl URL that hosts the specs of the transaction that will
     /// be made if the proposal passes
     function publishSpecsUrl(
+        address votingApp,
         uint256 proposalIndex,
         string calldata specsUrl
         )
         external
         override
     {
-        userAddressToProposalIndexToSpecsUrl[msg.sender][proposalIndex] = specsUrl;
+        userAddressToVotingAppToProposalIndexToSpecsUrl[msg.sender][votingApp][proposalIndex] = specsUrl;
         emit PublishedSpecsUrl(
+            votingApp,
             proposalIndex,
             msg.sender,
             specsUrl
@@ -376,18 +418,17 @@ contract StateUtils is IStateUtils {
         external
         override
     {
-        bool notAuthorized = true;
-        for (uint256 i = 0; i < votingApps.length; i++)
-        {
-            if (votingApps[i] == msg.sender)
-            {
-                notAuthorized = false;
-                break;
-            }
-        }
-        require(!notAuthorized, ERROR_UNAUTHORIZED);
+        require(
+            msg.sender == votingAppPrimary || msg.sender == votingAppSecondary,
+            ERROR_UNAUTHORIZED
+            );
         lastVoteSnapshotBlock = snapshotBlock;
         snapshotBlockToTimestamp[snapshotBlock] = block.timestamp;
+        emit UpdatedLastVoteSnapshotBlock(
+            msg.sender,
+            snapshotBlock,
+            block.timestamp
+            );
     }
 
     /// @notice Called internally to update the total shares history
@@ -478,9 +519,9 @@ contract StateUtils is IStateUtils {
         }
         else
         {
-            if (checkpointArray.length > MAX_INTERACTION_FREQUENCY)
+            if (checkpointArray.length + 1 >= MAX_INTERACTION_FREQUENCY)
             {
-                uint256 interactionTimestampMaxInteractionFrequencyAgo = snapshotBlockToTimestamp[checkpointArray[checkpointArray.length - MAX_INTERACTION_FREQUENCY].fromBlock];
+                uint256 interactionTimestampMaxInteractionFrequencyAgo = snapshotBlockToTimestamp[checkpointArray[checkpointArray.length + 1 - MAX_INTERACTION_FREQUENCY].fromBlock];
                 require(
                     block.timestamp - interactionTimestampMaxInteractionFrequencyAgo > EPOCH_LENGTH,
                     ERROR_FREQUENCY
@@ -519,14 +560,6 @@ contract StateUtils is IStateUtils {
         }
         else
         {
-            if (addressCheckpointArray.length > MAX_INTERACTION_FREQUENCY)
-            {
-                uint256 interactionTimestampMaxInteractionFrequencyAgo = snapshotBlockToTimestamp[addressCheckpointArray[addressCheckpointArray.length - MAX_INTERACTION_FREQUENCY].fromBlock];
-                require(
-                    block.timestamp - interactionTimestampMaxInteractionFrequencyAgo > EPOCH_LENGTH,
-                    ERROR_FREQUENCY
-                    );
-            }
             AddressCheckpoint storage lastElement = addressCheckpointArray[addressCheckpointArray.length - 1];
             if (lastElement.fromBlock < lastVoteSnapshotBlock)
             {
