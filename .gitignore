@@ -2,8 +2,10 @@
 
 **/cache/**
 **/artifacts/**
-**/coverage/**
+**/artifacts/**
+**/build/**
 **/diff/**
+**/abi/**
 
 **/credentials.json
 **/*.flat.sol

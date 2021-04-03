@@ -1,120 +1,57 @@
-const { expect } = require("chai");
+/*global artifacts, web3, contract, before, assert*/
+/*eslint no-undef: "error"*/
 
-let roles;
-let daoFactory, ens, miniMeTokenFactory, fifsResolvingRegistrar, api3TemplateFactory;
+// const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
+const { assertRole } = require('@aragon/templates-shared/helpers/assertRole')(web3);
+const { getEventArgument } = require('@aragon/test-helpers/events');
+const { /*getENS,*/ getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts);
+// const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
 
+const ACL = artifacts.require('ACL');
+const Kernel = artifacts.require('Kernel');
+const Voting = artifacts.require('Voting');
+const Api3Template = artifacts.require('Api3Template');
 
+contract('Api3Template', ([_, deployer, tokenAddress, authorized]) => { // eslint-disable-line no-unused-vars
+  let api3Template, dao, acl, receipt, CREATE_VOTES_ROLE;
 
-beforeEach(async () => {
-    const accounts = await ethers.getSigners();
-    roles = {
-        deployer: accounts[0],
-        daoAgent: accounts[1],
-        claimsManager: accounts[2],
-        user1: accounts[3],
-        user2: accounts[4],
-        randomPerson: accounts[9],
-    };
+  const SUPPORT = 50e16;
+  const ACCEPTANCE = 20e16;
+  const VOTING_DURATION = 60;
 
-    api3TemplateFactory = await ethers.getContractFactory(
-        "Api3Template",
-        roles.deployer
-    );
+  before('fetch bare template', async () => {
+    api3Template = Api3Template.at(await getTemplateAddress())
+  });
 
-    const DaoFactoryFactory = await ethers.getContractFactory(
-        "DAOFactory",
-        roles.deployer
-    );
-    const KernelFactory = await ethers.getContractFactory(
-        "Kernel",
-        roles.deployer
-    );
-    const ACLFactory = await ethers.getContractFactory(
-        "ACL",
-        roles.deployer
-    );
-    const EVMScriptRegistryFactoryFactory = await ethers.getContractFactory(
-        "EVMScriptRegistryFactory",
-        roles.deployer
-    );
-    const PublicResolverFactory = await ethers.getContractFactory(
-        "PublicResolver",
-        roles.deployer
-    );
-    const ENSFactory = await ethers.getContractFactory(
-        "ENS",
-        roles.deployer
-    );
-    const MiniMeTokenFactoryFactory = await ethers.getContractFactory(
-        "MiniMeTokenFactory",
-        roles.deployer
-    );
-    const FIFSResolvingRegistrarFactory = await ethers.getContractFactory(
-        "FIFSResolvingRegistrar",
-        roles.deployer
-    );
+  before('create bare entity', async () => {
+    const votingBase = await Voting.new();
+    CREATE_VOTES_ROLE = await votingBase.CREATE_VOTES_ROLE(); // eslint-disable-line no-unused-vars
+    const initializeData = votingBase.contract.initialize.getData(tokenAddress, SUPPORT, ACCEPTANCE, VOTING_DURATION); // eslint-disable-line no-unused-vars
 
-    const kernel = await KernelFactory.deploy(true);
-    const acl = await ACLFactory.deploy();
-    const evmScriptRegistryFactory = await EVMScriptRegistryFactoryFactory.deploy();
+    receipt = await api3Template.newInstance('api3-dao', deployer, [SUPPORT, ACCEPTANCE, VOTING_DURATION], deployer, { from: deployer });
 
-    daoFactory =  await DaoFactoryFactory.deploy(
-        kernel.address,
-        acl.address,
-        evmScriptRegistryFactory.address
-    );
+    dao = Kernel.at(getEventArgument(receipt, 'DeployDao', 'dao'));
+    acl = ACL.at(await dao.acl());
 
-    ens =  await ENSFactory.deploy();
+    assert.equal(dao.address, getEventArgument(receipt, 'SetupDao', 'dao'), 'should have emitted a SetupDao event')
+  });
 
-    const publicResolver = await PublicResolverFactory.deploy(ens.address);
+  it('sets up DAO and ACL permissions correctly', async () => {
+    await assertRole(acl, dao, { address: deployer }, 'APP_MANAGER_ROLE');
+    await assertRole(acl, acl, { address: deployer }, 'CREATE_PERMISSIONS_ROLE')
+  })
 
-    miniMeTokenFactory =  await MiniMeTokenFactoryFactory.deploy();
+  // it('installs the requested application correctly', async () => {
+  //   const installedApps = getInstalledAppsById(receipt)
+  //   assert.equal(installedApps.voting.length, 1, 'should have installed 1 voting app')
+  //   const voting = Voting.at(installedApps.voting[0])
 
-    fifsResolvingRegistrar =  await FIFSResolvingRegistrarFactory.deploy(
-        ens.address,
-        publicResolver.address,
-        '0x0000000000000000000000000000000000000000000000000000000000000000'
-    );
-});
+  //   assert.isTrue(await voting.hasInitialized(), 'voting not initialized')
+  //   assert.equal((await voting.token()), tokenAddress)
+  //   assert.equal((await voting.voteTime()).toString(), 60)
+  //   assert.equal((await voting.supportRequiredPct()).toString(), 50e16)
+  //   assert.equal((await voting.minAcceptQuorumPct()).toString(), 20e16)
 
-describe("api3template tests", function () {
-    context("creation of the api3", function () {
-        it("construction revert because of contracts addresses", async () => {
-
-            try {
-                await api3TemplateFactory.deploy(
-                    "0x0000000000000000000000000000000000000000",
-                    ens.address,
-                    miniMeTokenFactory.address,
-                    fifsResolvingRegistrar.address
-                );
-                throw new Error("Test without daoFactory works");
-            } catch(error) {
-                expect(error.toString()).to.equal("Error: VM Exception while processing transaction: revert TEMPLATE_DAO_FAC_NOT_CONTRACT");
-            }
-
-            try {
-                await api3TemplateFactory.deploy(
-                    daoFactory.address,
-                    "0x0000000000000000000000000000000000000000",
-                    miniMeTokenFactory.address,
-                    fifsResolvingRegistrar.address
-                );
-                throw new Error("Test without ENS works");
-            } catch(error) {
-                expect(error.toString()).to.equal("Error: VM Exception while processing transaction: revert TEMPLATE_ENS_NOT_CONTRACT");
-            }
-
-        });
-
-        it("construction completes correctly", async () => {
-            await api3TemplateFactory.deploy(
-                daoFactory.address,
-                ens.address,
-                miniMeTokenFactory.address,
-                fifsResolvingRegistrar.address
-            );
-        });
-
-    });
+  //   await assertRole(acl, voting, { address: deployer }, 'CREATE_VOTES_ROLE', { address: authorized })
+  // })
 });
