@@ -7503,14 +7503,13 @@ contract Api3BaseTemplate is IsContract {
 
     /* AGENT */
 
-    function _installDefaultAgentApps(Kernel _dao) internal returns (Agent, Agent) {
+    function _installDefaultAgentApp(Kernel _dao) internal returns (Agent) {
         bytes memory initializeData = abi.encodeWithSelector(Agent(0).initialize.selector);
         Agent mainAgent = Agent(_installDefaultApp(_dao, AGENT_APP_ID, initializeData));
-        Agent secondaryAgent = Agent(_installDefaultApp(_dao, AGENT_APP_ID, initializeData));
         // We assume that installing the Agent app as a default app means the DAO should have its
         // Vault replaced by the Agent. Thus, we also set the DAO's recovery app to the Agent.
         _dao.setRecoveryVaultAppId(AGENT_APP_ID);
-        return (mainAgent, secondaryAgent);
+        return mainAgent;
     }
 
     function _installNonDefaultAgentApp(Kernel _dao) internal returns (Agent) {
@@ -7665,8 +7664,8 @@ contract Api3Template is Api3BaseTemplate {
     * @dev Deploy an authoritative DAO using the API3 Staking Pool
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _api3Pool Address of the API3 staking pool, supplies voting power
-    * @param _mainVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization NOTE: deleted minProposerPower
-    * @param _secondaryVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization NOTE: deleted minProposerPower
+    * @param _mainVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
+    * @param _secondaryVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
     * @param _permissionManager The administrator that's initially granted control over the DAO's permissions
     */
     function newInstance(
@@ -7713,7 +7712,8 @@ contract Api3Template is Api3BaseTemplate {
     internal
     returns (Api3Voting, Api3Voting, Agent, Agent)
     {
-        (Agent mainAgent, Agent secondaryAgent) = _installDefaultAgentApps(_dao);
+        Agent mainAgent = _installDefaultAgentApp(_dao);
+        Agent secondaryAgent = _installNonDefaultAgentApp(_dao);
         (Api3Voting mainVoting, Api3Voting secondaryVoting) = _installVotingApps(_dao, _api3Pool, _mainVotingSettings, _secondaryVotingSettings);
 
         _setupPermissions(

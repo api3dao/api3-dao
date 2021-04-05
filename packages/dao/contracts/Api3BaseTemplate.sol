@@ -112,14 +112,13 @@ contract Api3BaseTemplate is IsContract {
 
     /* AGENT */
 
-    function _installDefaultAgentApps(Kernel _dao) internal returns (Agent, Agent) {
+    function _installDefaultAgentApp(Kernel _dao) internal returns (Agent) {
         bytes memory initializeData = abi.encodeWithSelector(Agent(0).initialize.selector);
         Agent mainAgent = Agent(_installDefaultApp(_dao, AGENT_APP_ID, initializeData));
-        Agent secondaryAgent = Agent(_installDefaultApp(_dao, AGENT_APP_ID, initializeData));
         // We assume that installing the Agent app as a default app means the DAO should have its
         // Vault replaced by the Agent. Thus, we also set the DAO's recovery app to the Agent.
         _dao.setRecoveryVaultAppId(AGENT_APP_ID);
-        return (mainAgent, secondaryAgent);
+        return mainAgent;
     }
 
     function _installNonDefaultAgentApp(Kernel _dao) internal returns (Agent) {

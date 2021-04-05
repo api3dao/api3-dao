@@ -34,8 +34,8 @@ contract Api3Template is Api3BaseTemplate {
     * @dev Deploy an authoritative DAO using the API3 Staking Pool
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _api3Pool Address of the API3 staking pool, supplies voting power
-    * @param _mainVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization NOTE: deleted minProposerPower
-    * @param _secondaryVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization NOTE: deleted minProposerPower
+    * @param _mainVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
+    * @param _secondaryVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
     * @param _permissionManager The administrator that's initially granted control over the DAO's permissions
     */
     function newInstance(
@@ -82,7 +82,8 @@ contract Api3Template is Api3BaseTemplate {
     internal
     returns (Api3Voting, Api3Voting, Agent, Agent)
     {
-        (Agent mainAgent, Agent secondaryAgent) = _installDefaultAgentApps(_dao);
+        Agent mainAgent = _installDefaultAgentApp(_dao);
+        Agent secondaryAgent = _installNonDefaultAgentApp(_dao);
         (Api3Voting mainVoting, Api3Voting secondaryVoting) = _installVotingApps(_dao, _api3Pool, _mainVotingSettings, _secondaryVotingSettings);
 
         _setupPermissions(
