@@ -2,7 +2,7 @@
 /*eslint no-undef: "error"*/
 
 // const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
-const { assertRole } = require('@aragon/templates-shared/helpers/assertRole')(web3);
+const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3);
 const { getEventArgument } = require('@aragon/test-helpers/events');
 const { getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts);
 const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts);
@@ -14,7 +14,7 @@ const Api3Template = artifacts.require('Api3Template');
 const Api3Pool = artifacts.require('Api3Pool');
 
 contract('Api3Template', ([_, deployer, api3Pool, tokenAddress, authorized]) => { // eslint-disable-line no-unused-vars
-  let api3Template, dao, acl, receipt1,receipt2;
+  let api3Template, dao, acl, receipt1;
 
   const SUPPORT_1 = 80e16;
   const ACCEPTANCE_1 = 40e16;
@@ -64,7 +64,17 @@ contract('Api3Template', ([_, deployer, api3Pool, tokenAddress, authorized]) => 
 
     assert.equal((await votingMain.api3Pool()), api3Pool.address);
 
-    await assertRole(acl, votingMain, { address: deployer }, 'CREATE_VOTES_ROLE', { address: authorized })
+    assert.isTrue(await agentMain.hasInitialized(), 'agent not initialized');
+
+
+    await assertRole(acl, votingMain, { address: deployer }, 'MODIFY_SUPPORT_ROLE', {address: agentMain.address});
+    await assertRole(acl, votingMain, { address: deployer }, 'MODIFY_QUORUM_ROLE', {address: agentMain.address});
+    await assertRole(acl, votingSecondary, { address: deployer }, 'MODIFY_SUPPORT_ROLE', {address: agentMain.address});
+    await assertRole(acl, votingSecondary, { address: deployer }, 'MODIFY_QUORUM_ROLE', {address: agentMain.address});
+
+
+    await assertRole(acl, votingMain, { address: deployer }, 'CREATE_VOTES_ROLE', { address: authorized });
+    await assertRole(acl, votingSecondary, { address: deployer }, 'CREATE_VOTES_ROLE', { address: authorized });
 
     await api3Pool.setDaoApps(agentMain.address, agentSecondary.address, votingMain.address, votingSecondary.address);
   })

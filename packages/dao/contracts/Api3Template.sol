@@ -107,8 +107,8 @@ contract Api3Template is Api3BaseTemplate {
     )
     internal
     {
-        _createAgentPermissions(_acl, _mainAgent, _mainVoting, _permissionManager);
         _createAgentPermissions(_acl, _secondaryAgent, _secondaryVoting, _permissionManager);
+        _createAgentPermissions(_acl, _mainAgent, _mainVoting, _permissionManager);
         _createVaultPermissions(_acl, Vault(_mainAgent), _mainVoting, _permissionManager);
         _createEvmScriptsRegistryPermissions(_acl, _permissionManager, _permissionManager);
         _createVotingPermissions(_acl, _mainVoting, _mainAgent, ANY_ENTITY, _permissionManager);
