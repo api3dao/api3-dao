@@ -7505,11 +7505,11 @@ contract Api3BaseTemplate is IsContract {
 
     function _installDefaultAgentApp(Kernel _dao) internal returns (Agent) {
         bytes memory initializeData = abi.encodeWithSelector(Agent(0).initialize.selector);
-        Agent mainAgent = Agent(_installDefaultApp(_dao, AGENT_APP_ID, initializeData));
+        Agent agent = Agent(_installDefaultApp(_dao, AGENT_APP_ID, initializeData));
         // We assume that installing the Agent app as a default app means the DAO should have its
         // Vault replaced by the Agent. Thus, we also set the DAO's recovery app to the Agent.
         _dao.setRecoveryVaultAppId(AGENT_APP_ID);
-        return mainAgent;
+        return agent;
     }
 
     function _installNonDefaultAgentApp(Kernel _dao) internal returns (Agent) {
@@ -7517,7 +7517,6 @@ contract Api3BaseTemplate is IsContract {
         return Agent(_installNonDefaultApp(_dao, AGENT_APP_ID, initializeData));
     }
 
-//  TODO: GRANT RIGHTS ONLY TO AN AGENTS EVEN IF THEY ARE ABOUT VOTING
     function _createAgentPermissions(ACL _acl, Agent _agent, address _grantee, address _manager) internal {
         _acl.createPermission(_grantee, _agent, _agent.EXECUTE_ROLE(), _manager);
         _acl.createPermission(_grantee, _agent, _agent.RUN_SCRIPT_ROLE(), _manager);
@@ -7532,10 +7531,8 @@ contract Api3BaseTemplate is IsContract {
 
     /* VOTING */
 
-    function _installVotingApps(Kernel _dao, MiniMeToken _token, uint64[3] memory _mainVotingSettings, uint64[3] memory _secondaryVotingSettings) internal returns (Api3Voting, Api3Voting) {
-        Api3Voting mainVoting = _installVotingApp(_dao, _token, _mainVotingSettings[0], _mainVotingSettings[1], _mainVotingSettings[2]);
-        Api3Voting secondaryVoting = _installVotingApp(_dao, _token, _secondaryVotingSettings[0], _secondaryVotingSettings[1], _secondaryVotingSettings[2]);
-        return (mainVoting, secondaryVoting);
+    function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64[3] memory _votingSettings) internal returns (Api3Voting) {
+        return _installVotingApp(_dao, _token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
     }
 
     function _installVotingApp(
@@ -7714,7 +7711,8 @@ contract Api3Template is Api3BaseTemplate {
     {
         Agent mainAgent = _installDefaultAgentApp(_dao);
         Agent secondaryAgent = _installNonDefaultAgentApp(_dao);
-        (Api3Voting mainVoting, Api3Voting secondaryVoting) = _installVotingApps(_dao, _api3Pool, _mainVotingSettings, _secondaryVotingSettings);
+        Api3Voting mainVoting = _installVotingApp(_dao, _api3Pool, _mainVotingSettings);
+        Api3Voting secondaryVoting = _installVotingApp(_dao, _api3Pool, _secondaryVotingSettings);
 
         _setupPermissions(
             _acl,

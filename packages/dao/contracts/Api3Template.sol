@@ -84,7 +84,8 @@ contract Api3Template is Api3BaseTemplate {
     {
         Agent mainAgent = _installDefaultAgentApp(_dao);
         Agent secondaryAgent = _installNonDefaultAgentApp(_dao);
-        (Api3Voting mainVoting, Api3Voting secondaryVoting) = _installVotingApps(_dao, _api3Pool, _mainVotingSettings, _secondaryVotingSettings);
+        Api3Voting mainVoting = _installVotingApp(_dao, _api3Pool, _mainVotingSettings);
+        Api3Voting secondaryVoting = _installVotingApp(_dao, _api3Pool, _secondaryVotingSettings);
 
         _setupPermissions(
             _acl,
