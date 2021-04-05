@@ -7503,13 +7503,14 @@ contract Api3BaseTemplate is IsContract {
 
     /* AGENT */
 
-    function _installDefaultAgentApp(Kernel _dao) internal returns (Agent) {
+    function _installDefaultAgentApps(Kernel _dao) internal returns (Agent, Agent) {
         bytes memory initializeData = abi.encodeWithSelector(Agent(0).initialize.selector);
-        Agent agent = Agent(_installDefaultApp(_dao, AGENT_APP_ID, initializeData));
+        Agent mainAgent = Agent(_installDefaultApp(_dao, AGENT_APP_ID, initializeData));
+        Agent secondaryAgent = Agent(_installDefaultApp(_dao, AGENT_APP_ID, initializeData));
         // We assume that installing the Agent app as a default app means the DAO should have its
         // Vault replaced by the Agent. Thus, we also set the DAO's recovery app to the Agent.
         _dao.setRecoveryVaultAppId(AGENT_APP_ID);
-        return agent;
+        return (mainAgent, secondaryAgent);
     }
 
     function _installNonDefaultAgentApp(Kernel _dao) internal returns (Agent) {
@@ -7517,6 +7518,7 @@ contract Api3BaseTemplate is IsContract {
         return Agent(_installNonDefaultApp(_dao, AGENT_APP_ID, initializeData));
     }
 
+//  TODO: GRANT RIGHTS ONLY TO AN AGENTS EVEN IF THEY ARE ABOUT VOTING
     function _createAgentPermissions(ACL _acl, Agent _agent, address _grantee, address _manager) internal {
         _acl.createPermission(_grantee, _agent, _agent.EXECUTE_ROLE(), _manager);
         _acl.createPermission(_grantee, _agent, _agent.RUN_SCRIPT_ROLE(), _manager);
@@ -7531,8 +7533,10 @@ contract Api3BaseTemplate is IsContract {
 
     /* VOTING */
 
-    function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64[3] memory _votingSettings) internal returns (Api3Voting) {
-        return _installVotingApp(_dao, _token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
+    function _installVotingApps(Kernel _dao, MiniMeToken _token, uint64[3] memory _mainVotingSettings, uint64[3] memory _secondaryVotingSettings) internal returns (Api3Voting, Api3Voting) {
+        Api3Voting mainVoting = _installVotingApp(_dao, _token, _mainVotingSettings[0], _mainVotingSettings[1], _mainVotingSettings[2]);
+        Api3Voting secondaryVoting = _installVotingApp(_dao, _token, _secondaryVotingSettings[0], _secondaryVotingSettings[1], _secondaryVotingSettings[2]);
+        return (mainVoting, secondaryVoting);
     }
 
     function _installVotingApp(
@@ -7639,8 +7643,10 @@ contract Api3Template is Api3BaseTemplate {
       address dao,
       address acl,
       address api3Pool,
-      address voting,
-      address agent
+      address mainVoting,
+      address secondaryVoting,
+      address mainAgent,
+      address secondaryAgent
     );
 
     constructor(
@@ -7659,13 +7665,15 @@ contract Api3Template is Api3BaseTemplate {
     * @dev Deploy an authoritative DAO using the API3 Staking Pool
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _api3Pool Address of the API3 staking pool, supplies voting power
-    * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization NOTE: deleted minProposerPower
+    * @param _mainVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization NOTE: deleted minProposerPower
+    * @param _secondaryVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization NOTE: deleted minProposerPower
     * @param _permissionManager The administrator that's initially granted control over the DAO's permissions
     */
     function newInstance(
         string memory _id,
         MiniMeToken _api3Pool,
-        uint64[3] memory _votingSettings,
+        uint64[3] memory _mainVotingSettings,
+        uint64[3] memory _secondaryVotingSettings,
         address _permissionManager
     )
     public
@@ -7673,11 +7681,12 @@ contract Api3Template is Api3BaseTemplate {
         require(_api3Pool != address(0), "Invalid API3 Voting Rights");
 
         _validateId(_id);
-        _validateVotingSettings(_votingSettings);
+        _validateVotingSettings(_mainVotingSettings);
+        _validateVotingSettings(_secondaryVotingSettings);
 
         (Kernel dao, ACL acl) = _createDAO();
-        (Api3Voting voting, Agent agent) = _setupApps(
-            dao, acl, _api3Pool, _votingSettings, _permissionManager
+        (Api3Voting mainVoting, Api3Voting secondaryVoting, Agent mainAgent, Agent secondaryAgent) = _setupApps(
+            dao, acl, _api3Pool, _mainVotingSettings,_secondaryVotingSettings, _permissionManager
         );
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, _permissionManager);
         _registerID(_id, dao);
@@ -7686,8 +7695,10 @@ contract Api3Template is Api3BaseTemplate {
             address(dao),
             address(acl),
             address(_api3Pool),
-            address(voting),
-            address(agent)
+            address(mainVoting),
+            address(secondaryVoting),
+            address(mainAgent),
+            address(secondaryAgent)
         );
     }
 
@@ -7695,37 +7706,42 @@ contract Api3Template is Api3BaseTemplate {
         Kernel _dao,
         ACL _acl,
         MiniMeToken _api3Pool,
-        uint64[3] memory _votingSettings,
+        uint64[3] memory _mainVotingSettings,
+        uint64[3] memory _secondaryVotingSettings,
         address _permissionManager
     )
     internal
-    returns (Api3Voting, Agent)
+    returns (Api3Voting, Api3Voting, Agent, Agent)
     {
-        Agent agent = _installDefaultAgentApp(_dao);
-        Api3Voting voting = _installVotingApp(_dao, _api3Pool, _votingSettings);
+        (Agent mainAgent, Agent secondaryAgent) = _installDefaultAgentApps(_dao);
+        (Api3Voting mainVoting, Api3Voting secondaryVoting) = _installVotingApps(_dao, _api3Pool, _mainVotingSettings, _secondaryVotingSettings);
 
         _setupPermissions(
             _acl,
-            agent,
-            voting,
+            mainAgent,
+            mainVoting,
+            secondaryAgent,
+            secondaryVoting,
             _permissionManager
         );
 
-        return (voting, agent);
+        return (mainVoting, secondaryVoting, mainAgent, secondaryAgent);
     }
 
     function _setupPermissions(
         ACL _acl,
-        Agent _agent,
-        Api3Voting _voting,
+        Agent _mainAgent,
+        Api3Voting _mainVoting,
+        Agent _secondaryAgent,
+        Api3Voting _secondaryVoting,
         address _permissionManager
     )
     internal
     {
-        _createAgentPermissions(_acl, _agent, _voting, _permissionManager);
-        _createVaultPermissions(_acl, Vault(_agent), _voting, _permissionManager);
+        _createAgentPermissions(_acl, _mainAgent, _mainVoting, _permissionManager);
+        _createVaultPermissions(_acl, Vault(_mainAgent), _mainVoting, _permissionManager);
         _createEvmScriptsRegistryPermissions(_acl, _permissionManager, _permissionManager);
-        _createVotingPermissions(_acl, _voting, _voting, ANY_ENTITY, _permissionManager);
+        _createVotingPermissions(_acl, _mainVoting, _mainVoting, ANY_ENTITY, _permissionManager);
     }
 
     function _validateVotingSettings(uint64[3] memory _votingSettings) private pure {

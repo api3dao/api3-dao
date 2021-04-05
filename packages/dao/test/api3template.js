@@ -30,8 +30,7 @@ contract('Api3Template', ([_, deployer, api3Pool, tokenAddress, authorized]) => 
 
   before('create bare entity', async () => {
     api3Pool = await Api3Pool.new(tokenAddress);
-    receipt1 = await api3Template.newInstance('api3-heavy', (api3Pool.address), [SUPPORT_1, ACCEPTANCE_1, VOTING_DURATION_1], deployer, { from: deployer });
-    receipt2 = await api3Template.newInstance('api3-light', (api3Pool.address), [SUPPORT_2, ACCEPTANCE_2, VOTING_DURATION_2], deployer, { from: deployer });
+    receipt1 = await api3Template.newInstance('api3-heavy', (api3Pool.address), [SUPPORT_1, ACCEPTANCE_1, VOTING_DURATION_1], [SUPPORT_2, ACCEPTANCE_2, VOTING_DURATION_2], deployer, { from: deployer });
 
     dao = Kernel.at(getEventArgument(receipt1, 'DeployDao', 'dao'));
     acl = ACL.at(await dao.acl());
@@ -46,31 +45,28 @@ contract('Api3Template', ([_, deployer, api3Pool, tokenAddress, authorized]) => 
 
   it('installs the requested application correctly', async () => {
     let installedApps = getInstalledAppsById(receipt1);
-    assert.equal(installedApps.voting.length, 1, 'should have installed 1 voting app');
-    assert.equal(installedApps.agent.length, 1, 'should have installed 1 voting app');
-    const voting_1 = Api3Voting.at(installedApps.voting[0]);
-    const agent_1 = Api3Voting.at(installedApps.agent[0]);
-    installedApps = getInstalledAppsById(receipt2);
-    assert.equal(installedApps.voting.length, 1, 'should have installed 1 voting app');
-    assert.equal(installedApps.agent.length, 1, 'should have installed 1 voting app');
-    const voting_2 = Api3Voting.at(installedApps.voting[0]);
-    const agent_2 = Api3Voting.at(installedApps.agent[0]);
+    assert.equal(installedApps.voting.length, 2, 'should have installed 2 voting apps');
+    assert.equal(installedApps.agent.length, 2, 'should have installed 2 agent apps');
+    const votingMain = Api3Voting.at(installedApps.voting[0]);
+    const votingSecondary = Api3Voting.at(installedApps.voting[1]);
+    const agentMain = Api3Voting.at(installedApps.agent[0]);
+    const agentSecondary = Api3Voting.at(installedApps.agent[1]);
 
-    assert.isTrue(await voting_1.hasInitialized(), 'voting not initialized');
-    assert.equal((await voting_1.voteTime()).toString(), VOTING_DURATION_1);
-    assert.equal((await voting_1.supportRequiredPct()).toString(), SUPPORT_1);
-    assert.equal((await voting_1.minAcceptQuorumPct()).toString(), ACCEPTANCE_1);
+    assert.isTrue(await votingMain.hasInitialized(), 'voting not initialized');
+    assert.equal((await votingMain.voteTime()).toString(), VOTING_DURATION_1);
+    assert.equal((await votingMain.supportRequiredPct()).toString(), SUPPORT_1);
+    assert.equal((await votingMain.minAcceptQuorumPct()).toString(), ACCEPTANCE_1);
 
-    assert.isTrue(await voting_2.hasInitialized(), 'voting not initialized');
-    assert.equal((await voting_2.voteTime()).toString(), VOTING_DURATION_2);
-    assert.equal((await voting_2.supportRequiredPct()).toString(), SUPPORT_2);
-    assert.equal((await voting_2.minAcceptQuorumPct()).toString(), ACCEPTANCE_2);
+    assert.isTrue(await votingSecondary.hasInitialized(), 'voting not initialized');
+    assert.equal((await votingSecondary.voteTime()).toString(), VOTING_DURATION_2);
+    assert.equal((await votingSecondary.supportRequiredPct()).toString(), SUPPORT_2);
+    assert.equal((await votingSecondary.minAcceptQuorumPct()).toString(), ACCEPTANCE_2);
 
-    assert.equal((await voting_1.api3Pool()), api3Pool.address);
+    assert.equal((await votingMain.api3Pool()), api3Pool.address);
 
-    await assertRole(acl, voting_1, { address: deployer }, 'CREATE_VOTES_ROLE', { address: authorized })
+    await assertRole(acl, votingMain, { address: deployer }, 'CREATE_VOTES_ROLE', { address: authorized })
 
-    await api3Pool.setDaoApps(agent_1.address, agent_2.address, voting_1.address, voting_2.address);
+    await api3Pool.setDaoApps(agentMain.address, agentSecondary.address, votingMain.address, votingSecondary.address);
   })
 
 });
