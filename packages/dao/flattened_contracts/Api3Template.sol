@@ -7519,7 +7519,7 @@ contract Api3BaseTemplate is IsContract {
     }
 
 //  TODO: GRANT RIGHTS ONLY TO AN AGENTS EVEN IF THEY ARE ABOUT VOTING
-    function _createAgentPermissions(ACL _acl, Agent _agent, Api3Voting _grantee, address _manager) internal {
+    function _createAgentPermissions(ACL _acl, Agent _agent, address _grantee, address _manager) internal {
         _acl.createPermission(_grantee, _agent, _agent.EXECUTE_ROLE(), _manager);
         _acl.createPermission(_grantee, _agent, _agent.RUN_SCRIPT_ROLE(), _manager);
     }
@@ -7738,8 +7738,8 @@ contract Api3Template is Api3BaseTemplate {
     )
     internal
     {
-        _createAgentPermissions(_acl, _secondaryAgent, _secondaryVoting, _permissionManager);
         _createAgentPermissions(_acl, _mainAgent, _mainVoting, _permissionManager);
+        _createAgentPermissions(_acl, _secondaryAgent, _secondaryVoting, _permissionManager);
         _createVaultPermissions(_acl, Vault(_mainAgent), _mainVoting, _permissionManager);
         _createEvmScriptsRegistryPermissions(_acl, _permissionManager, _permissionManager);
         _createVotingPermissions(_acl, _mainVoting, _mainAgent, ANY_ENTITY, _permissionManager);
