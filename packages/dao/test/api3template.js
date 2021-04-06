@@ -31,7 +31,7 @@ contract('Api3Template', ([_, deployer, api3Pool, tokenAddress, authorized]) => 
 
   before('create bare entity', async () => {
     api3Pool = await Api3Pool.new(tokenAddress);
-    receipt1 = await api3Template.newInstance('api3-heavy', (api3Pool.address), [SUPPORT_1, ACCEPTANCE_1, VOTING_DURATION_1], [SUPPORT_2, ACCEPTANCE_2, VOTING_DURATION_2], deployer, { from: deployer });
+    receipt1 = await api3Template.newInstance('api3-heavy', (api3Pool.address), [SUPPORT_1, ACCEPTANCE_1, VOTING_DURATION_1], [SUPPORT_2, ACCEPTANCE_2, VOTING_DURATION_2], { from: deployer });
 
     dao = Kernel.at(getEventArgument(receipt1, 'DeployDao', 'dao'));
     acl = ACL.at(await dao.acl());
@@ -39,10 +39,6 @@ contract('Api3Template', ([_, deployer, api3Pool, tokenAddress, authorized]) => 
     assert.equal(dao.address, getEventArgument(receipt1, 'SetupDao', 'dao'), 'should have emitted a SetupDao event')
   });
 
-  it('sets up DAO and ACL permissions correctly', async () => {
-    await assertRole(acl, dao, { address: deployer }, 'APP_MANAGER_ROLE');
-    await assertRole(acl, acl, { address: deployer }, 'CREATE_PERMISSIONS_ROLE');
-  });
 
   it('installs the requested application correctly', async () => {
     let installedApps = getInstalledAppsById(receipt1);
@@ -52,6 +48,10 @@ contract('Api3Template', ([_, deployer, api3Pool, tokenAddress, authorized]) => 
     const votingSecondary = Api3Voting.at(installedApps.voting[1]);
     const agentMain = Agent.at(installedApps.agent[0]);
     const agentSecondary = Agent.at(installedApps.agent[1]);
+
+
+    await assertRole(acl, dao, { address: votingMain.address }, 'APP_MANAGER_ROLE');
+    await assertRole(acl, acl, { address: votingMain.address }, 'CREATE_PERMISSIONS_ROLE');
 
     assert.isTrue(await votingMain.hasInitialized(), 'voting not initialized');
     assert.equal((await votingMain.voteTime()).toString(), VOTING_DURATION_1);
@@ -75,21 +75,21 @@ contract('Api3Template', ([_, deployer, api3Pool, tokenAddress, authorized]) => 
     await assertMissingRole(acl, agentSecondary, 'ADD_PRESIGNED_HASH_ROLE');
 
     // The main agent app can modify voting configurations
-    await assertRole(acl, votingMain, { address: deployer }, 'MODIFY_SUPPORT_ROLE', {address: agentMain.address});
-    await assertRole(acl, votingMain, { address: deployer }, 'MODIFY_QUORUM_ROLE', {address: agentMain.address});
-    await assertRole(acl, votingSecondary, { address: deployer }, 'MODIFY_SUPPORT_ROLE', {address: agentMain.address});
-    await assertRole(acl, votingSecondary, { address: deployer }, 'MODIFY_QUORUM_ROLE', {address: agentMain.address});
+    await assertRole(acl, votingMain, { address: votingMain.address }, 'MODIFY_SUPPORT_ROLE', {address: agentMain.address});
+    await assertRole(acl, votingMain, { address: votingMain.address }, 'MODIFY_QUORUM_ROLE', {address: agentMain.address});
+    await assertRole(acl, votingSecondary, { address: votingMain.address }, 'MODIFY_SUPPORT_ROLE', {address: agentMain.address});
+    await assertRole(acl, votingSecondary, { address: votingMain.address }, 'MODIFY_QUORUM_ROLE', {address: agentMain.address});
 
-    await assertRole(acl, votingMain, { address: deployer }, 'CREATE_VOTES_ROLE', { address: authorized });
-    await assertRole(acl, votingSecondary, { address: deployer }, 'CREATE_VOTES_ROLE', { address: authorized });
+    await assertRole(acl, votingMain, { address: votingMain.address }, 'CREATE_VOTES_ROLE', { address: authorized });
+    await assertRole(acl, votingSecondary, { address: votingMain.address }, 'CREATE_VOTES_ROLE', { address: authorized });
 
     // Voting can execute all actions on agent which is connected to this voting
-    await assertRole(acl, agentMain, { address: deployer }, 'EXECUTE_ROLE', { address: votingMain.address });
-    await assertRole(acl, agentMain, { address: deployer }, 'RUN_SCRIPT_ROLE', { address: votingMain.address });
+    await assertRole(acl, agentMain, { address: votingMain.address }, 'EXECUTE_ROLE', { address: votingMain.address });
+    await assertRole(acl, agentMain, { address: votingMain.address }, 'RUN_SCRIPT_ROLE', { address: votingMain.address });
 
 
-    await assertRole(acl, agentSecondary, { address: deployer }, 'EXECUTE_ROLE', { address: votingSecondary.address });
-    await assertRole(acl, agentSecondary, { address: deployer }, 'RUN_SCRIPT_ROLE', { address: votingSecondary.address });
+    await assertRole(acl, agentSecondary, { address: votingMain.address }, 'EXECUTE_ROLE', { address: votingSecondary.address });
+    await assertRole(acl, agentSecondary, { address: votingMain.address }, 'RUN_SCRIPT_ROLE', { address: votingSecondary.address });
 
     await api3Pool.setDaoApps(agentMain.address, agentSecondary.address, votingMain.address, votingSecondary.address);
   })
