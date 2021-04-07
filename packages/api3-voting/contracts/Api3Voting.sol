@@ -11,9 +11,10 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
 import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
 import "./interfaces/IApi3Pool.sol";
+import "../../dao/flattened_contracts/Api3Template.sol";
 
 
-contract Api3Voting is IForwarder, AragonApp {
+contract Api3Voting is IForwarder, AragonApp, Voting {
     using SafeMath for uint256;
     using SafeMath64 for uint64;
 

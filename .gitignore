@@ -1,4 +1,5 @@
 **/node_modules/**
+**/flattend_contracts/**
 
 **/cache/**
 **/artifacts/**

@@ -1,11 +1,12 @@
 /*global artifacts, web3, contract, before, assert*/
 /*eslint no-undef: "error"*/
+const { hash: namehash } = require('eth-ens-namehash')
 
 // const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3);
 const { getEventArgument } = require('@aragon/test-helpers/events');
-const { getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts);
-const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts);
+const { getENS, getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts);
+const { getInstalledAppsById, getInstalledApps } = require('@aragon/templates-shared/helpers/events')(artifacts);
 
 const ACL = artifacts.require('ACL');
 const Kernel = artifacts.require('Kernel');
@@ -14,8 +15,9 @@ const Api3Template = artifacts.require('Api3Template');
 const Api3Pool = artifacts.require('Api3Pool');
 const Agent = artifacts.require('Agent');
 
-contract('Api3Template', ([_, deployer, api3Pool, tokenAddress, authorized]) => { // eslint-disable-line no-unused-vars
+contract('Api3Template', ([_, deployer, tokenAddress, authorized]) => { // eslint-disable-line no-unused-vars
   let api3Template, dao, acl, receipt1;
+
 
   const SUPPORT_1 = 80e16;
   const ACCEPTANCE_1 = 40e16;
@@ -31,7 +33,7 @@ contract('Api3Template', ([_, deployer, api3Pool, tokenAddress, authorized]) => 
 
   before('create bare entity', async () => {
     api3Pool = await Api3Pool.new(tokenAddress);
-    receipt1 = await api3Template.newInstance('api3-heavy', (api3Pool.address), [SUPPORT_1, ACCEPTANCE_1, VOTING_DURATION_1], [SUPPORT_2, ACCEPTANCE_2, VOTING_DURATION_2], { from: deployer });
+    receipt1 = await api3Template.newInstance('api3template', (api3Pool.address), [SUPPORT_1, ACCEPTANCE_1, VOTING_DURATION_1], [SUPPORT_2, ACCEPTANCE_2, VOTING_DURATION_2], { from: deployer });
 
     dao = Kernel.at(getEventArgument(receipt1, 'DeployDao', 'dao'));
     acl = ACL.at(await dao.acl());
@@ -41,11 +43,12 @@ contract('Api3Template', ([_, deployer, api3Pool, tokenAddress, authorized]) => 
 
 
   it('installs the requested application correctly', async () => {
-    let installedApps = getInstalledAppsById(receipt1);
-    assert.equal(installedApps.voting.length, 2, 'should have installed 2 voting apps');
+    const installedApps = getInstalledAppsById(receipt1);
+    const votingApps = getInstalledApps(receipt1, namehash('api3voting.aragonpm.eth'));
+    assert.equal(votingApps.length, 2, 'should have installed 2 voting apps');
     assert.equal(installedApps.agent.length, 2, 'should have installed 2 agent apps');
-    const votingMain = Api3Voting.at(installedApps.voting[0]);
-    const votingSecondary = Api3Voting.at(installedApps.voting[1]);
+    const votingMain = Api3Voting.at(votingApps[0]);
+    const votingSecondary = Api3Voting.at(votingApps[1]);
     const agentMain = Agent.at(installedApps.agent[0]);
     const agentSecondary = Agent.at(installedApps.agent[1]);
 

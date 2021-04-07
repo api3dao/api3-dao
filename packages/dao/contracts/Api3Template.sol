@@ -6,8 +6,9 @@ import "./utils/Api3Voting.sol";
 
 contract Api3Template is BaseTemplate {
 
-    bytes32 constant internal API3_VOTING_APP_ID = 0x9fa3927f639745e587912d4b0fea7ef9013bf93fb907d29faeab57417ba6e1d4;
-
+//    bytes32 constant internal API3_VOTING_APP_ID = 0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554;
+//    0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554
+    bytes32 constant internal API3_VOTING_APP_ID = 0x727a0cf100ef0e645bad5a5b920d7fb71f8fd0eaf0fa579c341a045f597526f5;
     string constant private ERROR_BAD_VOTE_SETTINGS = "API3_DAO_BAD_VOTE_SETTINGS";
 
     address private constant ANY_ENTITY = address(-1);
