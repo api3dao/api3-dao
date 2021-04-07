@@ -8203,9 +8203,8 @@ pragma solidity 0.4.24;
 
 
 contract Api3Template is BaseTemplate {
-
+//    Comment below is ID for Rinkeby/Mainnet
 //    bytes32 constant internal API3_VOTING_APP_ID = 0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554;
-//    0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554
     bytes32 constant internal API3_VOTING_APP_ID = 0x727a0cf100ef0e645bad5a5b920d7fb71f8fd0eaf0fa579c341a045f597526f5;
     string constant private ERROR_BAD_VOTE_SETTINGS = "API3_DAO_BAD_VOTE_SETTINGS";
 

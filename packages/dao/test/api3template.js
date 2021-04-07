@@ -16,7 +16,7 @@ const Api3Pool = artifacts.require('Api3Pool');
 const Agent = artifacts.require('Agent');
 
 contract('Api3Template', ([_, deployer, tokenAddress, authorized]) => { // eslint-disable-line no-unused-vars
-  let api3Template, dao, acl, receipt1;
+  let api3Template, dao, acl, receipt1, api3Pool;
 
 
   const SUPPORT_1 = 80e16;
