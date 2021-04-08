@@ -82,4 +82,5 @@ _Handle board's vault_
 
 | App     | Permission          | Grantee          | Manager              |
 | ------- | ------------------- | ---------------- | -------------------- |
-| Vault   | TRANSFER            | MainVoting       | MainVoting `[SHARE]` |
+| Vault(MainAgent)   | TRANSFER            | MainVoting       | MainVoting `[SHARE]` |
+| Vault(SecondaryAgent)   | TRANSFER            | SecondaryVoting       | SecondaryVoting `[SHARE]` |
