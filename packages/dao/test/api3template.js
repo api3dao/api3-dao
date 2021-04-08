@@ -5,7 +5,7 @@ const { hash: namehash } = require('eth-ens-namehash')
 // const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3);
 const { getEventArgument } = require('@aragon/test-helpers/events');
-const { getENS, getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts);
+const { getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts);
 const { getInstalledAppsById, getInstalledApps } = require('@aragon/templates-shared/helpers/events')(artifacts);
 
 const ACL = artifacts.require('ACL');
