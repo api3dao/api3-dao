@@ -2,7 +2,7 @@
 pragma solidity 0.4.24;
 
 import "@aragon/templates-shared/contracts/BaseTemplate.sol";
-import "./utils/Api3Voting.sol";
+import "@api3-dao/api3-voting/contracts/Api3Voting.sol";
 
 contract Api3Template is BaseTemplate {
 //    Comment below is ID for Rinkeby/Mainnet
