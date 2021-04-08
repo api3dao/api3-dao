@@ -47,18 +47,6 @@ jobs:
       - run: npm run lint # triggers lint
 
 
-  test_voting:
-    docker:
-      # specify the version you desire here
-      - image: circleci/node:10.22.1
-
-    working_directory: ~/repo/
-
-    steps:
-      - attach_workspace:
-          at: .
-      - run: npm run test:api3-voting
-
   test_dao:
     docker:
       # specify the version you desire here
@@ -70,6 +58,18 @@ jobs:
       - attach_workspace:
           at: .
       - run: npm run test:dao
+
+  test_voting:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:10.22.1
+
+    working_directory: ~/repo/
+
+    steps:
+      - attach_workspace:
+          at: .
+      - run: npm run test:api3-voting
 
   test_pool:
     docker:
