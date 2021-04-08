@@ -1935,40 +1935,614 @@ library SafeMath64 {
     }
 }
 
-// File: contracts/utils/interfaces/IApi3Pool.sol
+// File: @aragon/apps-shared-minime/contracts/ITokenController.sol
 
-//SPDX-License-Identifier: MIT
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
-interface IApi3Pool {
-    function EPOCH_LENGTH()
-        external
-        view
-        returns(uint256);
+/// @dev The token controller contract must implement these functions
 
-    function proposalVotingPowerThreshold()
-        external
-        view
-        returns(uint256);
 
-    function balanceOfAt(
-        address userAddress,
-        uint256 _block
-        )
-        external
-        view
-        returns(uint256);
+interface ITokenController {
+    /// @notice Called when `_owner` sends ether to the MiniMe Token contract
+    /// @param _owner The address that sent the ether to create tokens
+    /// @return True if the ether is accepted, false if it throws
+    function proxyPayment(address _owner) external payable returns(bool);
 
-    function totalSupplyOneBlockAgo()
-        external
-        view
-        returns(uint256);
+    /// @notice Notifies the controller about a token transfer allowing the
+    ///  controller to react if desired
+    /// @param _from The origin of the transfer
+    /// @param _to The destination of the transfer
+    /// @param _amount The amount of the transfer
+    /// @return False if the controller does not authorize the transfer
+    function onTransfer(address _from, address _to, uint _amount) external returns(bool);
 
-    function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
-        external;
+    /// @notice Notifies the controller about an approval allowing the
+    ///  controller to react if desired
+    /// @param _owner The address that calls `approve()`
+    /// @param _spender The spender in the `approve()` call
+    /// @param _amount The amount in the `approve()` call
+    /// @return False if the controller does not authorize the approval
+    function onApprove(address _owner, address _spender, uint _amount) external returns(bool);
 }
 
-// File: contracts/utils/Api3Voting.sol
+// File: @aragon/apps-shared-minime/contracts/MiniMeToken.sol
+
+pragma solidity ^0.4.24;
+
+/*
+    Copyright 2016, Jordi Baylina
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/// @title MiniMeToken Contract
+/// @author Jordi Baylina
+/// @dev This token contract's goal is to make it easy for anyone to clone this
+///  token using the token distribution at a given block, this will allow DAO's
+///  and DApps to upgrade their features in a decentralized manner without
+///  affecting the original token
+/// @dev It is ERC20 compliant, but still needs to under go further testing.
+
+
+contract Controlled {
+    /// @notice The address of the controller is the only address that can call
+    ///  a function with this modifier
+    modifier onlyController {
+        require(msg.sender == controller);
+        _;
+    }
+
+    address public controller;
+
+    function Controlled()  public { controller = msg.sender;}
+
+    /// @notice Changes the controller of the contract
+    /// @param _newController The new controller of the contract
+    function changeController(address _newController) onlyController  public {
+        controller = _newController;
+    }
+}
+
+contract ApproveAndCallFallBack {
+    function receiveApproval(
+        address from,
+        uint256 _amount,
+        address _token,
+        bytes _data
+    ) public;
+}
+
+/// @dev The actual token contract, the default controller is the msg.sender
+///  that deploys the contract, so usually this token will be deployed by a
+///  token controller contract, which Giveth will call a "Campaign"
+contract MiniMeToken is Controlled {
+
+    string public name;                //The Token's name: e.g. DigixDAO Tokens
+    uint8 public decimals;             //Number of decimals of the smallest unit
+    string public symbol;              //An identifier: e.g. REP
+    string public version = "MMT_0.1"; //An arbitrary versioning scheme
+
+
+    /// @dev `Checkpoint` is the structure that attaches a block number to a
+    ///  given value, the block number attached is the one that last changed the
+    ///  value
+    struct Checkpoint {
+
+        // `fromBlock` is the block number that the value was generated from
+        uint128 fromBlock;
+
+        // `value` is the amount of tokens at a specific block number
+        uint128 value;
+    }
+
+    // `parentToken` is the Token address that was cloned to produce this token;
+    //  it will be 0x0 for a token that was not cloned
+    MiniMeToken public parentToken;
+
+    // `parentSnapShotBlock` is the block number from the Parent Token that was
+    //  used to determine the initial distribution of the Clone Token
+    uint public parentSnapShotBlock;
+
+    // `creationBlock` is the block number that the Clone Token was created
+    uint public creationBlock;
+
+    // `balances` is the map that tracks the balance of each address, in this
+    //  contract when the balance changes the block number that the change
+    //  occurred is also included in the map
+    mapping (address => Checkpoint[]) balances;
+
+    // `allowed` tracks any extra transfer rights as in all ERC20 tokens
+    mapping (address => mapping (address => uint256)) allowed;
+
+    // Tracks the history of the `totalSupply` of the token
+    Checkpoint[] totalSupplyHistory;
+
+    // Flag that determines if the token is transferable or not.
+    bool public transfersEnabled;
+
+    // The factory used to create new clone tokens
+    MiniMeTokenFactory public tokenFactory;
+
+////////////////
+// Constructor
+////////////////
+
+    /// @notice Constructor to create a MiniMeToken
+    /// @param _tokenFactory The address of the MiniMeTokenFactory contract that
+    ///  will create the Clone token contracts, the token factory needs to be
+    ///  deployed first
+    /// @param _parentToken Address of the parent token, set to 0x0 if it is a
+    ///  new token
+    /// @param _parentSnapShotBlock Block of the parent token that will
+    ///  determine the initial distribution of the clone token, set to 0 if it
+    ///  is a new token
+    /// @param _tokenName Name of the new token
+    /// @param _decimalUnits Number of decimals of the new token
+    /// @param _tokenSymbol Token Symbol for the new token
+    /// @param _transfersEnabled If true, tokens will be able to be transferred
+    function MiniMeToken(
+        MiniMeTokenFactory _tokenFactory,
+        MiniMeToken _parentToken,
+        uint _parentSnapShotBlock,
+        string _tokenName,
+        uint8 _decimalUnits,
+        string _tokenSymbol,
+        bool _transfersEnabled
+    )  public
+    {
+        tokenFactory = _tokenFactory;
+        name = _tokenName;                                 // Set the name
+        decimals = _decimalUnits;                          // Set the decimals
+        symbol = _tokenSymbol;                             // Set the symbol
+        parentToken = _parentToken;
+        parentSnapShotBlock = _parentSnapShotBlock;
+        transfersEnabled = _transfersEnabled;
+        creationBlock = block.number;
+    }
+
+
+///////////////////
+// ERC20 Methods
+///////////////////
+
+    /// @notice Send `_amount` tokens to `_to` from `msg.sender`
+    /// @param _to The address of the recipient
+    /// @param _amount The amount of tokens to be transferred
+    /// @return Whether the transfer was successful or not
+    function transfer(address _to, uint256 _amount) public returns (bool success) {
+        require(transfersEnabled);
+        return doTransfer(msg.sender, _to, _amount);
+    }
+
+    /// @notice Send `_amount` tokens to `_to` from `_from` on the condition it
+    ///  is approved by `_from`
+    /// @param _from The address holding the tokens being transferred
+    /// @param _to The address of the recipient
+    /// @param _amount The amount of tokens to be transferred
+    /// @return True if the transfer was successful
+    function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {
+
+        // The controller of this contract can move tokens around at will,
+        //  this is important to recognize! Confirm that you trust the
+        //  controller of this contract, which in most situations should be
+        //  another open source smart contract or 0x0
+        if (msg.sender != controller) {
+            require(transfersEnabled);
+
+            // The standard ERC 20 transferFrom functionality
+            if (allowed[_from][msg.sender] < _amount)
+                return false;
+            allowed[_from][msg.sender] -= _amount;
+        }
+        return doTransfer(_from, _to, _amount);
+    }
+
+    /// @dev This is the actual transfer function in the token contract, it can
+    ///  only be called by other functions in this contract.
+    /// @param _from The address holding the tokens being transferred
+    /// @param _to The address of the recipient
+    /// @param _amount The amount of tokens to be transferred
+    /// @return True if the transfer was successful
+    function doTransfer(address _from, address _to, uint _amount) internal returns(bool) {
+        if (_amount == 0) {
+            return true;
+        }
+        require(parentSnapShotBlock < block.number);
+        // Do not allow transfer to 0x0 or the token contract itself
+        require((_to != 0) && (_to != address(this)));
+        // If the amount being transfered is more than the balance of the
+        //  account the transfer returns false
+        var previousBalanceFrom = balanceOfAt(_from, block.number);
+        if (previousBalanceFrom < _amount) {
+            return false;
+        }
+        // Alerts the token controller of the transfer
+        if (isContract(controller)) {
+            // Adding the ` == true` makes the linter shut up so...
+            require(ITokenController(controller).onTransfer(_from, _to, _amount) == true);
+        }
+        // First update the balance array with the new value for the address
+        //  sending the tokens
+        updateValueAtNow(balances[_from], previousBalanceFrom - _amount);
+        // Then update the balance array with the new value for the address
+        //  receiving the tokens
+        var previousBalanceTo = balanceOfAt(_to, block.number);
+        require(previousBalanceTo + _amount >= previousBalanceTo); // Check for overflow
+        updateValueAtNow(balances[_to], previousBalanceTo + _amount);
+        // An event to make the transfer easy to find on the blockchain
+        Transfer(_from, _to, _amount);
+        return true;
+    }
+
+    /// @param _owner The address that's balance is being requested
+    /// @return The balance of `_owner` at the current block
+    function balanceOf(address _owner) public constant returns (uint256 balance) {
+        return balanceOfAt(_owner, block.number);
+    }
+
+    /// @notice `msg.sender` approves `_spender` to spend `_amount` tokens on
+    ///  its behalf. This is a modified version of the ERC20 approve function
+    ///  to be a little bit safer
+    /// @param _spender The address of the account able to transfer the tokens
+    /// @param _amount The amount of tokens to be approved for transfer
+    /// @return True if the approval was successful
+    function approve(address _spender, uint256 _amount) public returns (bool success) {
+        require(transfersEnabled);
+
+        // To change the approve amount you first have to reduce the addresses`
+        //  allowance to zero by calling `approve(_spender,0)` if it is not
+        //  already 0 to mitigate the race condition described here:
+        //  https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+        require((_amount == 0) || (allowed[msg.sender][_spender] == 0));
+
+        // Alerts the token controller of the approve function call
+        if (isContract(controller)) {
+            // Adding the ` == true` makes the linter shut up so...
+            require(ITokenController(controller).onApprove(msg.sender, _spender, _amount) == true);
+        }
+
+        allowed[msg.sender][_spender] = _amount;
+        Approval(msg.sender, _spender, _amount);
+        return true;
+    }
+
+    /// @dev This function makes it easy to read the `allowed[]` map
+    /// @param _owner The address of the account that owns the token
+    /// @param _spender The address of the account able to transfer the tokens
+    /// @return Amount of remaining tokens of _owner that _spender is allowed
+    ///  to spend
+    function allowance(address _owner, address _spender) public constant returns (uint256 remaining) {
+        return allowed[_owner][_spender];
+    }
+
+    /// @notice `msg.sender` approves `_spender` to send `_amount` tokens on
+    ///  its behalf, and then a function is triggered in the contract that is
+    ///  being approved, `_spender`. This allows users to use their tokens to
+    ///  interact with contracts in one function call instead of two
+    /// @param _spender The address of the contract able to transfer the tokens
+    /// @param _amount The amount of tokens to be approved for transfer
+    /// @return True if the function call was successful
+    function approveAndCall(ApproveAndCallFallBack _spender, uint256 _amount, bytes _extraData) public returns (bool success) {
+        require(approve(_spender, _amount));
+
+        _spender.receiveApproval(
+            msg.sender,
+            _amount,
+            this,
+            _extraData
+        );
+
+        return true;
+    }
+
+    /// @dev This function makes it easy to get the total number of tokens
+    /// @return The total number of tokens
+    function totalSupply() public constant returns (uint) {
+        return totalSupplyAt(block.number);
+    }
+
+
+////////////////
+// Query balance and totalSupply in History
+////////////////
+
+    /// @dev Queries the balance of `_owner` at a specific `_blockNumber`
+    /// @param _owner The address from which the balance will be retrieved
+    /// @param _blockNumber The block number when the balance is queried
+    /// @return The balance at `_blockNumber`
+    function balanceOfAt(address _owner, uint _blockNumber) public constant returns (uint) {
+
+        // These next few lines are used when the balance of the token is
+        //  requested before a check point was ever created for this token, it
+        //  requires that the `parentToken.balanceOfAt` be queried at the
+        //  genesis block for that token as this contains initial balance of
+        //  this token
+        if ((balances[_owner].length == 0) || (balances[_owner][0].fromBlock > _blockNumber)) {
+            if (address(parentToken) != 0) {
+                return parentToken.balanceOfAt(_owner, min(_blockNumber, parentSnapShotBlock));
+            } else {
+                // Has no parent
+                return 0;
+            }
+
+        // This will return the expected balance during normal situations
+        } else {
+            return getValueAt(balances[_owner], _blockNumber);
+        }
+    }
+
+    /// @notice Total amount of tokens at a specific `_blockNumber`.
+    /// @param _blockNumber The block number when the totalSupply is queried
+    /// @return The total amount of tokens at `_blockNumber`
+    function totalSupplyAt(uint _blockNumber) public constant returns(uint) {
+
+        // These next few lines are used when the totalSupply of the token is
+        //  requested before a check point was ever created for this token, it
+        //  requires that the `parentToken.totalSupplyAt` be queried at the
+        //  genesis block for this token as that contains totalSupply of this
+        //  token at this block number.
+        if ((totalSupplyHistory.length == 0) || (totalSupplyHistory[0].fromBlock > _blockNumber)) {
+            if (address(parentToken) != 0) {
+                return parentToken.totalSupplyAt(min(_blockNumber, parentSnapShotBlock));
+            } else {
+                return 0;
+            }
+
+        // This will return the expected totalSupply during normal situations
+        } else {
+            return getValueAt(totalSupplyHistory, _blockNumber);
+        }
+    }
+
+////////////////
+// Clone Token Method
+////////////////
+
+    /// @notice Creates a new clone token with the initial distribution being
+    ///  this token at `_snapshotBlock`
+    /// @param _cloneTokenName Name of the clone token
+    /// @param _cloneDecimalUnits Number of decimals of the smallest unit
+    /// @param _cloneTokenSymbol Symbol of the clone token
+    /// @param _snapshotBlock Block when the distribution of the parent token is
+    ///  copied to set the initial distribution of the new clone token;
+    ///  if the block is zero than the actual block, the current block is used
+    /// @param _transfersEnabled True if transfers are allowed in the clone
+    /// @return The address of the new MiniMeToken Contract
+    function createCloneToken(
+        string _cloneTokenName,
+        uint8 _cloneDecimalUnits,
+        string _cloneTokenSymbol,
+        uint _snapshotBlock,
+        bool _transfersEnabled
+    ) public returns(MiniMeToken)
+    {
+        uint256 snapshot = _snapshotBlock == 0 ? block.number - 1 : _snapshotBlock;
+
+        MiniMeToken cloneToken = tokenFactory.createCloneToken(
+            this,
+            snapshot,
+            _cloneTokenName,
+            _cloneDecimalUnits,
+            _cloneTokenSymbol,
+            _transfersEnabled
+        );
+
+        cloneToken.changeController(msg.sender);
+
+        // An event to make the token easy to find on the blockchain
+        NewCloneToken(address(cloneToken), snapshot);
+        return cloneToken;
+    }
+
+////////////////
+// Generate and destroy tokens
+////////////////
+
+    /// @notice Generates `_amount` tokens that are assigned to `_owner`
+    /// @param _owner The address that will be assigned the new tokens
+    /// @param _amount The quantity of tokens generated
+    /// @return True if the tokens are generated correctly
+    function generateTokens(address _owner, uint _amount) onlyController public returns (bool) {
+        uint curTotalSupply = totalSupply();
+        require(curTotalSupply + _amount >= curTotalSupply); // Check for overflow
+        uint previousBalanceTo = balanceOf(_owner);
+        require(previousBalanceTo + _amount >= previousBalanceTo); // Check for overflow
+        updateValueAtNow(totalSupplyHistory, curTotalSupply + _amount);
+        updateValueAtNow(balances[_owner], previousBalanceTo + _amount);
+        Transfer(0, _owner, _amount);
+        return true;
+    }
+
+
+    /// @notice Burns `_amount` tokens from `_owner`
+    /// @param _owner The address that will lose the tokens
+    /// @param _amount The quantity of tokens to burn
+    /// @return True if the tokens are burned correctly
+    function destroyTokens(address _owner, uint _amount) onlyController public returns (bool) {
+        uint curTotalSupply = totalSupply();
+        require(curTotalSupply >= _amount);
+        uint previousBalanceFrom = balanceOf(_owner);
+        require(previousBalanceFrom >= _amount);
+        updateValueAtNow(totalSupplyHistory, curTotalSupply - _amount);
+        updateValueAtNow(balances[_owner], previousBalanceFrom - _amount);
+        Transfer(_owner, 0, _amount);
+        return true;
+    }
+
+////////////////
+// Enable tokens transfers
+////////////////
+
+
+    /// @notice Enables token holders to transfer their tokens freely if true
+    /// @param _transfersEnabled True if transfers are allowed in the clone
+    function enableTransfers(bool _transfersEnabled) onlyController public {
+        transfersEnabled = _transfersEnabled;
+    }
+
+////////////////
+// Internal helper functions to query and set a value in a snapshot array
+////////////////
+
+    /// @dev `getValueAt` retrieves the number of tokens at a given block number
+    /// @param checkpoints The history of values being queried
+    /// @param _block The block number to retrieve the value at
+    /// @return The number of tokens being queried
+    function getValueAt(Checkpoint[] storage checkpoints, uint _block) constant internal returns (uint) {
+        if (checkpoints.length == 0)
+            return 0;
+
+        // Shortcut for the actual value
+        if (_block >= checkpoints[checkpoints.length-1].fromBlock)
+            return checkpoints[checkpoints.length-1].value;
+        if (_block < checkpoints[0].fromBlock)
+            return 0;
+
+        // Binary search of the value in the array
+        uint min = 0;
+        uint max = checkpoints.length-1;
+        while (max > min) {
+            uint mid = (max + min + 1) / 2;
+            if (checkpoints[mid].fromBlock<=_block) {
+                min = mid;
+            } else {
+                max = mid-1;
+            }
+        }
+        return checkpoints[min].value;
+    }
+
+    /// @dev `updateValueAtNow` used to update the `balances` map and the
+    ///  `totalSupplyHistory`
+    /// @param checkpoints The history of data being updated
+    /// @param _value The new number of tokens
+    function updateValueAtNow(Checkpoint[] storage checkpoints, uint _value) internal {
+        if ((checkpoints.length == 0) || (checkpoints[checkpoints.length - 1].fromBlock < block.number)) {
+            Checkpoint storage newCheckPoint = checkpoints[checkpoints.length++];
+            newCheckPoint.fromBlock = uint128(block.number);
+            newCheckPoint.value = uint128(_value);
+        } else {
+            Checkpoint storage oldCheckPoint = checkpoints[checkpoints.length - 1];
+            oldCheckPoint.value = uint128(_value);
+        }
+    }
+
+    /// @dev Internal function to determine if an address is a contract
+    /// @param _addr The address being queried
+    /// @return True if `_addr` is a contract
+    function isContract(address _addr) constant internal returns(bool) {
+        uint size;
+        if (_addr == 0)
+            return false;
+
+        assembly {
+            size := extcodesize(_addr)
+        }
+
+        return size>0;
+    }
+
+    /// @dev Helper function to return a min betwen the two uints
+    function min(uint a, uint b) pure internal returns (uint) {
+        return a < b ? a : b;
+    }
+
+    /// @notice The fallback function: If the contract's controller has not been
+    ///  set to 0, then the `proxyPayment` method is called which relays the
+    ///  ether and creates tokens as described in the token controller contract
+    function () external payable {
+        require(isContract(controller));
+        // Adding the ` == true` makes the linter shut up so...
+        require(ITokenController(controller).proxyPayment.value(msg.value)(msg.sender) == true);
+    }
+
+//////////
+// Safety Methods
+//////////
+
+    /// @notice This method can be used by the controller to extract mistakenly
+    ///  sent tokens to this contract.
+    /// @param _token The address of the token contract that you want to recover
+    ///  set to 0 in case you want to extract ether.
+    function claimTokens(address _token) onlyController public {
+        if (_token == 0x0) {
+            controller.transfer(this.balance);
+            return;
+        }
+
+        MiniMeToken token = MiniMeToken(_token);
+        uint balance = token.balanceOf(this);
+        token.transfer(controller, balance);
+        ClaimedTokens(_token, controller, balance);
+    }
+
+////////////////
+// Events
+////////////////
+    event ClaimedTokens(address indexed _token, address indexed _controller, uint _amount);
+    event Transfer(address indexed _from, address indexed _to, uint256 _amount);
+    event NewCloneToken(address indexed _cloneToken, uint _snapshotBlock);
+    event Approval(
+        address indexed _owner,
+        address indexed _spender,
+        uint256 _amount
+        );
+
+}
+
+
+////////////////
+// MiniMeTokenFactory
+////////////////
+
+/// @dev This contract is used to generate clone contracts from a contract.
+///  In solidity this is the way to create a contract from a contract of the
+///  same class
+contract MiniMeTokenFactory {
+
+    /// @notice Update the DApp by creating a new token with new functionalities
+    ///  the msg.sender becomes the controller of this clone token
+    /// @param _parentToken Address of the token being cloned
+    /// @param _snapshotBlock Block of the parent token that will
+    ///  determine the initial distribution of the clone token
+    /// @param _tokenName Name of the new token
+    /// @param _decimalUnits Number of decimals of the new token
+    /// @param _tokenSymbol Token Symbol for the new token
+    /// @param _transfersEnabled If true, tokens will be able to be transferred
+    /// @return The address of the new token contract
+    function createCloneToken(
+        MiniMeToken _parentToken,
+        uint _snapshotBlock,
+        string _tokenName,
+        uint8 _decimalUnits,
+        string _tokenSymbol,
+        bool _transfersEnabled
+    ) public returns (MiniMeToken)
+    {
+        MiniMeToken newToken = new MiniMeToken(
+            this,
+            _parentToken,
+            _snapshotBlock,
+            _tokenName,
+            _decimalUnits,
+            _tokenSymbol,
+            _transfersEnabled
+        );
+
+        newToken.changeController(msg.sender);
+        return newToken;
+    }
+}
+
+// File: @aragon/apps-voting/contracts/Voting.sol
 
 /*
  * SPDX-License-Identitifer:    GPL-3.0-or-later
@@ -1982,7 +2556,7 @@ pragma solidity 0.4.24;
 
 
 
-contract Api3Voting is IForwarder, AragonApp {
+contract Voting is IForwarder, AragonApp {
     using SafeMath for uint256;
     using SafeMath64 for uint64;
 
@@ -2018,12 +2592,10 @@ contract Api3Voting is IForwarder, AragonApp {
         mapping (address => VoterState) voters;
     }
 
+    MiniMeToken public token;
     uint64 public supportRequiredPct;
     uint64 public minAcceptQuorumPct;
     uint64 public voteTime;
-
-    IApi3Pool public api3Pool;
-    mapping (address => uint256) private userAddressToLastNewProposalTimestamp;
 
     // We are mimicing an array, we use a mapping instead to make app upgrade more graceful
     mapping (uint256 => Vote) internal votes;
@@ -2048,7 +2620,7 @@ contract Api3Voting is IForwarder, AragonApp {
     * @param _voteTime Seconds that a vote will be open for token holders to vote (unless enough yeas or nays have been cast to make an early decision)
     */
     function initialize(
-        address _token,
+        MiniMeToken _token,
         uint64 _supportRequiredPct,
         uint64 _minAcceptQuorumPct,
         uint64 _voteTime
@@ -2061,11 +2633,10 @@ contract Api3Voting is IForwarder, AragonApp {
         require(_minAcceptQuorumPct <= _supportRequiredPct, ERROR_INIT_PCTS);
         require(_supportRequiredPct < PCT_BASE, ERROR_INIT_SUPPORT_TOO_BIG);
 
+        token = _token;
         supportRequiredPct = _supportRequiredPct;
         minAcceptQuorumPct = _minAcceptQuorumPct;
         voteTime = _voteTime;
-        // The pool acts as the MiniMe token
-        api3Pool = IApi3Pool(_token);
     }
 
     /**
@@ -2226,19 +2797,9 @@ contract Api3Voting is IForwarder, AragonApp {
         internal
         returns (uint256 voteId)
     {
-        require(userAddressToLastNewProposalTimestamp[msg.sender].add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_PROPOSAL_COOLDOWN");
-        userAddressToLastNewProposalTimestamp[msg.sender] = now;
-
         uint64 snapshotBlock = getBlockNumber64() - 1; // avoid double voting in this very block
-
-        uint256 votingPower = api3Pool.totalSupplyOneBlockAgo();
+        uint256 votingPower = token.totalSupplyAt(snapshotBlock);
         require(votingPower > 0, ERROR_NO_VOTING_POWER);
-        uint256 proposalMakerVotingPower = api3Pool.balanceOfAt(msg.sender, snapshotBlock);
-        require(
-            proposalMakerVotingPower >= votingPower.mul(api3Pool.proposalVotingPowerThreshold()).div(1e8),
-            "API3_HIT_PROPOSAL_THRESHOLD"
-            );
-        api3Pool.updateLastVoteSnapshotBlock(snapshotBlock);
 
         voteId = votesLength++;
 
@@ -2267,7 +2828,7 @@ contract Api3Voting is IForwarder, AragonApp {
         Vote storage vote_ = votes[_voteId];
 
         // This could re-enter, though we can assume the governance token is not malicious
-        uint256 voterStake = api3Pool.balanceOfAt(_voter, vote_.snapshotBlock);
+        uint256 voterStake = token.balanceOfAt(_voter, vote_.snapshotBlock);
         VoterState state = vote_.voters[_voter];
 
         // If voter had previously voted, decrease count
@@ -2344,7 +2905,7 @@ contract Api3Voting is IForwarder, AragonApp {
     function _canVote(uint256 _voteId, address _voter) internal view returns (bool) {
         Vote storage vote_ = votes[_voteId];
 
-        return _isVoteOpen(vote_) && api3Pool.balanceOfAt(_voter, vote_.snapshotBlock) > 0;
+        return _isVoteOpen(vote_) && token.balanceOfAt(_voter, vote_.snapshotBlock) > 0;
     }
 
     function _isVoteOpen(Vote storage vote_) internal view returns (bool) {
@@ -4053,613 +4614,6 @@ contract Payroll is EtherTokenConstant, IForwarder, IsContract, AragonApp {
     }
 }
 
-// File: @aragon/apps-shared-minime/contracts/ITokenController.sol
-
-pragma solidity ^0.4.24;
-
-/// @dev The token controller contract must implement these functions
-
-
-interface ITokenController {
-    /// @notice Called when `_owner` sends ether to the MiniMe Token contract
-    /// @param _owner The address that sent the ether to create tokens
-    /// @return True if the ether is accepted, false if it throws
-    function proxyPayment(address _owner) external payable returns(bool);
-
-    /// @notice Notifies the controller about a token transfer allowing the
-    ///  controller to react if desired
-    /// @param _from The origin of the transfer
-    /// @param _to The destination of the transfer
-    /// @param _amount The amount of the transfer
-    /// @return False if the controller does not authorize the transfer
-    function onTransfer(address _from, address _to, uint _amount) external returns(bool);
-
-    /// @notice Notifies the controller about an approval allowing the
-    ///  controller to react if desired
-    /// @param _owner The address that calls `approve()`
-    /// @param _spender The spender in the `approve()` call
-    /// @param _amount The amount in the `approve()` call
-    /// @return False if the controller does not authorize the approval
-    function onApprove(address _owner, address _spender, uint _amount) external returns(bool);
-}
-
-// File: @aragon/apps-shared-minime/contracts/MiniMeToken.sol
-
-pragma solidity ^0.4.24;
-
-/*
-    Copyright 2016, Jordi Baylina
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-/// @title MiniMeToken Contract
-/// @author Jordi Baylina
-/// @dev This token contract's goal is to make it easy for anyone to clone this
-///  token using the token distribution at a given block, this will allow DAO's
-///  and DApps to upgrade their features in a decentralized manner without
-///  affecting the original token
-/// @dev It is ERC20 compliant, but still needs to under go further testing.
-
-
-contract Controlled {
-    /// @notice The address of the controller is the only address that can call
-    ///  a function with this modifier
-    modifier onlyController {
-        require(msg.sender == controller);
-        _;
-    }
-
-    address public controller;
-
-    function Controlled()  public { controller = msg.sender;}
-
-    /// @notice Changes the controller of the contract
-    /// @param _newController The new controller of the contract
-    function changeController(address _newController) onlyController  public {
-        controller = _newController;
-    }
-}
-
-contract ApproveAndCallFallBack {
-    function receiveApproval(
-        address from,
-        uint256 _amount,
-        address _token,
-        bytes _data
-    ) public;
-}
-
-/// @dev The actual token contract, the default controller is the msg.sender
-///  that deploys the contract, so usually this token will be deployed by a
-///  token controller contract, which Giveth will call a "Campaign"
-contract MiniMeToken is Controlled {
-
-    string public name;                //The Token's name: e.g. DigixDAO Tokens
-    uint8 public decimals;             //Number of decimals of the smallest unit
-    string public symbol;              //An identifier: e.g. REP
-    string public version = "MMT_0.1"; //An arbitrary versioning scheme
-
-
-    /// @dev `Checkpoint` is the structure that attaches a block number to a
-    ///  given value, the block number attached is the one that last changed the
-    ///  value
-    struct Checkpoint {
-
-        // `fromBlock` is the block number that the value was generated from
-        uint128 fromBlock;
-
-        // `value` is the amount of tokens at a specific block number
-        uint128 value;
-    }
-
-    // `parentToken` is the Token address that was cloned to produce this token;
-    //  it will be 0x0 for a token that was not cloned
-    MiniMeToken public parentToken;
-
-    // `parentSnapShotBlock` is the block number from the Parent Token that was
-    //  used to determine the initial distribution of the Clone Token
-    uint public parentSnapShotBlock;
-
-    // `creationBlock` is the block number that the Clone Token was created
-    uint public creationBlock;
-
-    // `balances` is the map that tracks the balance of each address, in this
-    //  contract when the balance changes the block number that the change
-    //  occurred is also included in the map
-    mapping (address => Checkpoint[]) balances;
-
-    // `allowed` tracks any extra transfer rights as in all ERC20 tokens
-    mapping (address => mapping (address => uint256)) allowed;
-
-    // Tracks the history of the `totalSupply` of the token
-    Checkpoint[] totalSupplyHistory;
-
-    // Flag that determines if the token is transferable or not.
-    bool public transfersEnabled;
-
-    // The factory used to create new clone tokens
-    MiniMeTokenFactory public tokenFactory;
-
-////////////////
-// Constructor
-////////////////
-
-    /// @notice Constructor to create a MiniMeToken
-    /// @param _tokenFactory The address of the MiniMeTokenFactory contract that
-    ///  will create the Clone token contracts, the token factory needs to be
-    ///  deployed first
-    /// @param _parentToken Address of the parent token, set to 0x0 if it is a
-    ///  new token
-    /// @param _parentSnapShotBlock Block of the parent token that will
-    ///  determine the initial distribution of the clone token, set to 0 if it
-    ///  is a new token
-    /// @param _tokenName Name of the new token
-    /// @param _decimalUnits Number of decimals of the new token
-    /// @param _tokenSymbol Token Symbol for the new token
-    /// @param _transfersEnabled If true, tokens will be able to be transferred
-    function MiniMeToken(
-        MiniMeTokenFactory _tokenFactory,
-        MiniMeToken _parentToken,
-        uint _parentSnapShotBlock,
-        string _tokenName,
-        uint8 _decimalUnits,
-        string _tokenSymbol,
-        bool _transfersEnabled
-    )  public
-    {
-        tokenFactory = _tokenFactory;
-        name = _tokenName;                                 // Set the name
-        decimals = _decimalUnits;                          // Set the decimals
-        symbol = _tokenSymbol;                             // Set the symbol
-        parentToken = _parentToken;
-        parentSnapShotBlock = _parentSnapShotBlock;
-        transfersEnabled = _transfersEnabled;
-        creationBlock = block.number;
-    }
-
-
-///////////////////
-// ERC20 Methods
-///////////////////
-
-    /// @notice Send `_amount` tokens to `_to` from `msg.sender`
-    /// @param _to The address of the recipient
-    /// @param _amount The amount of tokens to be transferred
-    /// @return Whether the transfer was successful or not
-    function transfer(address _to, uint256 _amount) public returns (bool success) {
-        require(transfersEnabled);
-        return doTransfer(msg.sender, _to, _amount);
-    }
-
-    /// @notice Send `_amount` tokens to `_to` from `_from` on the condition it
-    ///  is approved by `_from`
-    /// @param _from The address holding the tokens being transferred
-    /// @param _to The address of the recipient
-    /// @param _amount The amount of tokens to be transferred
-    /// @return True if the transfer was successful
-    function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {
-
-        // The controller of this contract can move tokens around at will,
-        //  this is important to recognize! Confirm that you trust the
-        //  controller of this contract, which in most situations should be
-        //  another open source smart contract or 0x0
-        if (msg.sender != controller) {
-            require(transfersEnabled);
-
-            // The standard ERC 20 transferFrom functionality
-            if (allowed[_from][msg.sender] < _amount)
-                return false;
-            allowed[_from][msg.sender] -= _amount;
-        }
-        return doTransfer(_from, _to, _amount);
-    }
-
-    /// @dev This is the actual transfer function in the token contract, it can
-    ///  only be called by other functions in this contract.
-    /// @param _from The address holding the tokens being transferred
-    /// @param _to The address of the recipient
-    /// @param _amount The amount of tokens to be transferred
-    /// @return True if the transfer was successful
-    function doTransfer(address _from, address _to, uint _amount) internal returns(bool) {
-        if (_amount == 0) {
-            return true;
-        }
-        require(parentSnapShotBlock < block.number);
-        // Do not allow transfer to 0x0 or the token contract itself
-        require((_to != 0) && (_to != address(this)));
-        // If the amount being transfered is more than the balance of the
-        //  account the transfer returns false
-        var previousBalanceFrom = balanceOfAt(_from, block.number);
-        if (previousBalanceFrom < _amount) {
-            return false;
-        }
-        // Alerts the token controller of the transfer
-        if (isContract(controller)) {
-            // Adding the ` == true` makes the linter shut up so...
-            require(ITokenController(controller).onTransfer(_from, _to, _amount) == true);
-        }
-        // First update the balance array with the new value for the address
-        //  sending the tokens
-        updateValueAtNow(balances[_from], previousBalanceFrom - _amount);
-        // Then update the balance array with the new value for the address
-        //  receiving the tokens
-        var previousBalanceTo = balanceOfAt(_to, block.number);
-        require(previousBalanceTo + _amount >= previousBalanceTo); // Check for overflow
-        updateValueAtNow(balances[_to], previousBalanceTo + _amount);
-        // An event to make the transfer easy to find on the blockchain
-        Transfer(_from, _to, _amount);
-        return true;
-    }
-
-    /// @param _owner The address that's balance is being requested
-    /// @return The balance of `_owner` at the current block
-    function balanceOf(address _owner) public constant returns (uint256 balance) {
-        return balanceOfAt(_owner, block.number);
-    }
-
-    /// @notice `msg.sender` approves `_spender` to spend `_amount` tokens on
-    ///  its behalf. This is a modified version of the ERC20 approve function
-    ///  to be a little bit safer
-    /// @param _spender The address of the account able to transfer the tokens
-    /// @param _amount The amount of tokens to be approved for transfer
-    /// @return True if the approval was successful
-    function approve(address _spender, uint256 _amount) public returns (bool success) {
-        require(transfersEnabled);
-
-        // To change the approve amount you first have to reduce the addresses`
-        //  allowance to zero by calling `approve(_spender,0)` if it is not
-        //  already 0 to mitigate the race condition described here:
-        //  https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-        require((_amount == 0) || (allowed[msg.sender][_spender] == 0));
-
-        // Alerts the token controller of the approve function call
-        if (isContract(controller)) {
-            // Adding the ` == true` makes the linter shut up so...
-            require(ITokenController(controller).onApprove(msg.sender, _spender, _amount) == true);
-        }
-
-        allowed[msg.sender][_spender] = _amount;
-        Approval(msg.sender, _spender, _amount);
-        return true;
-    }
-
-    /// @dev This function makes it easy to read the `allowed[]` map
-    /// @param _owner The address of the account that owns the token
-    /// @param _spender The address of the account able to transfer the tokens
-    /// @return Amount of remaining tokens of _owner that _spender is allowed
-    ///  to spend
-    function allowance(address _owner, address _spender) public constant returns (uint256 remaining) {
-        return allowed[_owner][_spender];
-    }
-
-    /// @notice `msg.sender` approves `_spender` to send `_amount` tokens on
-    ///  its behalf, and then a function is triggered in the contract that is
-    ///  being approved, `_spender`. This allows users to use their tokens to
-    ///  interact with contracts in one function call instead of two
-    /// @param _spender The address of the contract able to transfer the tokens
-    /// @param _amount The amount of tokens to be approved for transfer
-    /// @return True if the function call was successful
-    function approveAndCall(ApproveAndCallFallBack _spender, uint256 _amount, bytes _extraData) public returns (bool success) {
-        require(approve(_spender, _amount));
-
-        _spender.receiveApproval(
-            msg.sender,
-            _amount,
-            this,
-            _extraData
-        );
-
-        return true;
-    }
-
-    /// @dev This function makes it easy to get the total number of tokens
-    /// @return The total number of tokens
-    function totalSupply() public constant returns (uint) {
-        return totalSupplyAt(block.number);
-    }
-
-
-////////////////
-// Query balance and totalSupply in History
-////////////////
-
-    /// @dev Queries the balance of `_owner` at a specific `_blockNumber`
-    /// @param _owner The address from which the balance will be retrieved
-    /// @param _blockNumber The block number when the balance is queried
-    /// @return The balance at `_blockNumber`
-    function balanceOfAt(address _owner, uint _blockNumber) public constant returns (uint) {
-
-        // These next few lines are used when the balance of the token is
-        //  requested before a check point was ever created for this token, it
-        //  requires that the `parentToken.balanceOfAt` be queried at the
-        //  genesis block for that token as this contains initial balance of
-        //  this token
-        if ((balances[_owner].length == 0) || (balances[_owner][0].fromBlock > _blockNumber)) {
-            if (address(parentToken) != 0) {
-                return parentToken.balanceOfAt(_owner, min(_blockNumber, parentSnapShotBlock));
-            } else {
-                // Has no parent
-                return 0;
-            }
-
-        // This will return the expected balance during normal situations
-        } else {
-            return getValueAt(balances[_owner], _blockNumber);
-        }
-    }
-
-    /// @notice Total amount of tokens at a specific `_blockNumber`.
-    /// @param _blockNumber The block number when the totalSupply is queried
-    /// @return The total amount of tokens at `_blockNumber`
-    function totalSupplyAt(uint _blockNumber) public constant returns(uint) {
-
-        // These next few lines are used when the totalSupply of the token is
-        //  requested before a check point was ever created for this token, it
-        //  requires that the `parentToken.totalSupplyAt` be queried at the
-        //  genesis block for this token as that contains totalSupply of this
-        //  token at this block number.
-        if ((totalSupplyHistory.length == 0) || (totalSupplyHistory[0].fromBlock > _blockNumber)) {
-            if (address(parentToken) != 0) {
-                return parentToken.totalSupplyAt(min(_blockNumber, parentSnapShotBlock));
-            } else {
-                return 0;
-            }
-
-        // This will return the expected totalSupply during normal situations
-        } else {
-            return getValueAt(totalSupplyHistory, _blockNumber);
-        }
-    }
-
-////////////////
-// Clone Token Method
-////////////////
-
-    /// @notice Creates a new clone token with the initial distribution being
-    ///  this token at `_snapshotBlock`
-    /// @param _cloneTokenName Name of the clone token
-    /// @param _cloneDecimalUnits Number of decimals of the smallest unit
-    /// @param _cloneTokenSymbol Symbol of the clone token
-    /// @param _snapshotBlock Block when the distribution of the parent token is
-    ///  copied to set the initial distribution of the new clone token;
-    ///  if the block is zero than the actual block, the current block is used
-    /// @param _transfersEnabled True if transfers are allowed in the clone
-    /// @return The address of the new MiniMeToken Contract
-    function createCloneToken(
-        string _cloneTokenName,
-        uint8 _cloneDecimalUnits,
-        string _cloneTokenSymbol,
-        uint _snapshotBlock,
-        bool _transfersEnabled
-    ) public returns(MiniMeToken)
-    {
-        uint256 snapshot = _snapshotBlock == 0 ? block.number - 1 : _snapshotBlock;
-
-        MiniMeToken cloneToken = tokenFactory.createCloneToken(
-            this,
-            snapshot,
-            _cloneTokenName,
-            _cloneDecimalUnits,
-            _cloneTokenSymbol,
-            _transfersEnabled
-        );
-
-        cloneToken.changeController(msg.sender);
-
-        // An event to make the token easy to find on the blockchain
-        NewCloneToken(address(cloneToken), snapshot);
-        return cloneToken;
-    }
-
-////////////////
-// Generate and destroy tokens
-////////////////
-
-    /// @notice Generates `_amount` tokens that are assigned to `_owner`
-    /// @param _owner The address that will be assigned the new tokens
-    /// @param _amount The quantity of tokens generated
-    /// @return True if the tokens are generated correctly
-    function generateTokens(address _owner, uint _amount) onlyController public returns (bool) {
-        uint curTotalSupply = totalSupply();
-        require(curTotalSupply + _amount >= curTotalSupply); // Check for overflow
-        uint previousBalanceTo = balanceOf(_owner);
-        require(previousBalanceTo + _amount >= previousBalanceTo); // Check for overflow
-        updateValueAtNow(totalSupplyHistory, curTotalSupply + _amount);
-        updateValueAtNow(balances[_owner], previousBalanceTo + _amount);
-        Transfer(0, _owner, _amount);
-        return true;
-    }
-
-
-    /// @notice Burns `_amount` tokens from `_owner`
-    /// @param _owner The address that will lose the tokens
-    /// @param _amount The quantity of tokens to burn
-    /// @return True if the tokens are burned correctly
-    function destroyTokens(address _owner, uint _amount) onlyController public returns (bool) {
-        uint curTotalSupply = totalSupply();
-        require(curTotalSupply >= _amount);
-        uint previousBalanceFrom = balanceOf(_owner);
-        require(previousBalanceFrom >= _amount);
-        updateValueAtNow(totalSupplyHistory, curTotalSupply - _amount);
-        updateValueAtNow(balances[_owner], previousBalanceFrom - _amount);
-        Transfer(_owner, 0, _amount);
-        return true;
-    }
-
-////////////////
-// Enable tokens transfers
-////////////////
-
-
-    /// @notice Enables token holders to transfer their tokens freely if true
-    /// @param _transfersEnabled True if transfers are allowed in the clone
-    function enableTransfers(bool _transfersEnabled) onlyController public {
-        transfersEnabled = _transfersEnabled;
-    }
-
-////////////////
-// Internal helper functions to query and set a value in a snapshot array
-////////////////
-
-    /// @dev `getValueAt` retrieves the number of tokens at a given block number
-    /// @param checkpoints The history of values being queried
-    /// @param _block The block number to retrieve the value at
-    /// @return The number of tokens being queried
-    function getValueAt(Checkpoint[] storage checkpoints, uint _block) constant internal returns (uint) {
-        if (checkpoints.length == 0)
-            return 0;
-
-        // Shortcut for the actual value
-        if (_block >= checkpoints[checkpoints.length-1].fromBlock)
-            return checkpoints[checkpoints.length-1].value;
-        if (_block < checkpoints[0].fromBlock)
-            return 0;
-
-        // Binary search of the value in the array
-        uint min = 0;
-        uint max = checkpoints.length-1;
-        while (max > min) {
-            uint mid = (max + min + 1) / 2;
-            if (checkpoints[mid].fromBlock<=_block) {
-                min = mid;
-            } else {
-                max = mid-1;
-            }
-        }
-        return checkpoints[min].value;
-    }
-
-    /// @dev `updateValueAtNow` used to update the `balances` map and the
-    ///  `totalSupplyHistory`
-    /// @param checkpoints The history of data being updated
-    /// @param _value The new number of tokens
-    function updateValueAtNow(Checkpoint[] storage checkpoints, uint _value) internal {
-        if ((checkpoints.length == 0) || (checkpoints[checkpoints.length - 1].fromBlock < block.number)) {
-            Checkpoint storage newCheckPoint = checkpoints[checkpoints.length++];
-            newCheckPoint.fromBlock = uint128(block.number);
-            newCheckPoint.value = uint128(_value);
-        } else {
-            Checkpoint storage oldCheckPoint = checkpoints[checkpoints.length - 1];
-            oldCheckPoint.value = uint128(_value);
-        }
-    }
-
-    /// @dev Internal function to determine if an address is a contract
-    /// @param _addr The address being queried
-    /// @return True if `_addr` is a contract
-    function isContract(address _addr) constant internal returns(bool) {
-        uint size;
-        if (_addr == 0)
-            return false;
-
-        assembly {
-            size := extcodesize(_addr)
-        }
-
-        return size>0;
-    }
-
-    /// @dev Helper function to return a min betwen the two uints
-    function min(uint a, uint b) pure internal returns (uint) {
-        return a < b ? a : b;
-    }
-
-    /// @notice The fallback function: If the contract's controller has not been
-    ///  set to 0, then the `proxyPayment` method is called which relays the
-    ///  ether and creates tokens as described in the token controller contract
-    function () external payable {
-        require(isContract(controller));
-        // Adding the ` == true` makes the linter shut up so...
-        require(ITokenController(controller).proxyPayment.value(msg.value)(msg.sender) == true);
-    }
-
-//////////
-// Safety Methods
-//////////
-
-    /// @notice This method can be used by the controller to extract mistakenly
-    ///  sent tokens to this contract.
-    /// @param _token The address of the token contract that you want to recover
-    ///  set to 0 in case you want to extract ether.
-    function claimTokens(address _token) onlyController public {
-        if (_token == 0x0) {
-            controller.transfer(this.balance);
-            return;
-        }
-
-        MiniMeToken token = MiniMeToken(_token);
-        uint balance = token.balanceOf(this);
-        token.transfer(controller, balance);
-        ClaimedTokens(_token, controller, balance);
-    }
-
-////////////////
-// Events
-////////////////
-    event ClaimedTokens(address indexed _token, address indexed _controller, uint _amount);
-    event Transfer(address indexed _from, address indexed _to, uint256 _amount);
-    event NewCloneToken(address indexed _cloneToken, uint _snapshotBlock);
-    event Approval(
-        address indexed _owner,
-        address indexed _spender,
-        uint256 _amount
-        );
-
-}
-
-
-////////////////
-// MiniMeTokenFactory
-////////////////
-
-/// @dev This contract is used to generate clone contracts from a contract.
-///  In solidity this is the way to create a contract from a contract of the
-///  same class
-contract MiniMeTokenFactory {
-
-    /// @notice Update the DApp by creating a new token with new functionalities
-    ///  the msg.sender becomes the controller of this clone token
-    /// @param _parentToken Address of the token being cloned
-    /// @param _snapshotBlock Block of the parent token that will
-    ///  determine the initial distribution of the clone token
-    /// @param _tokenName Name of the new token
-    /// @param _decimalUnits Number of decimals of the new token
-    /// @param _tokenSymbol Token Symbol for the new token
-    /// @param _transfersEnabled If true, tokens will be able to be transferred
-    /// @return The address of the new token contract
-    function createCloneToken(
-        MiniMeToken _parentToken,
-        uint _snapshotBlock,
-        string _tokenName,
-        uint8 _decimalUnits,
-        string _tokenSymbol,
-        bool _transfersEnabled
-    ) public returns (MiniMeToken)
-    {
-        MiniMeToken newToken = new MiniMeToken(
-            this,
-            _parentToken,
-            _snapshotBlock,
-            _tokenName,
-            _decimalUnits,
-            _tokenSymbol,
-            _transfersEnabled
-        );
-
-        newToken.changeController(msg.sender);
-        return newToken;
-    }
-}
-
 // File: @aragon/apps-token-manager/contracts/TokenManager.sol
 
 /*
@@ -6048,6 +6002,26 @@ contract Repo is AragonApp {
     }
 }
 
+// File: @aragon/os/contracts/apm/APMNamehash.sol
+
+/*
+ * SPDX-License-Identitifer:    MIT
+ */
+
+pragma solidity ^0.4.24;
+
+
+contract APMNamehash {
+    /* Hardcoded constants to save gas
+    bytes32 internal constant APM_NODE = keccak256(abi.encodePacked(ETH_TLD_NODE, keccak256(abi.encodePacked("aragonpm"))));
+    */
+    bytes32 internal constant APM_NODE = 0x9065c3e7f7b7ef1ef4e53d2d0b8e0cef02874ab020c1ece79d5f0d3d0111c0ba;
+
+    function apmNamehash(string name) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(APM_NODE, keccak256(bytes(name))));
+    }
+}
+
 // File: @aragon/os/contracts/kernel/KernelStorage.sol
 
 pragma solidity 0.4.24;
@@ -7389,7 +7363,7 @@ interface IFIFSResolvingRegistrar {
     function registerWithResolver(bytes32 _subnode, address _owner, IPublicResolver _resolver) public;
 }
 
-// File: contracts/Api3BaseTemplate.sol
+// File: @aragon/templates-shared/contracts/BaseTemplate.sol
 
 pragma solidity 0.4.24;
 
@@ -7411,7 +7385,8 @@ pragma solidity 0.4.24;
 
 
 
-contract Api3BaseTemplate is IsContract {
+
+contract BaseTemplate is APMNamehash, IsContract {
     using Uint256Helpers for uint256;
 
     /* Hardcoded constant to save gas
@@ -7475,6 +7450,15 @@ contract Api3BaseTemplate is IsContract {
 
     /* ACL */
 
+    function _createPermissions(ACL _acl, address[] memory _grantees, address _app, bytes32 _permission, address _manager) internal {
+        _acl.createPermission(_grantees[0], _app, _permission, address(this));
+        for (uint256 i = 1; i < _grantees.length; i++) {
+            _acl.grantPermission(_grantees[i], _app, _permission);
+        }
+        _acl.revokePermission(address(this), _app, _permission);
+        _acl.setPermissionManager(_manager, _app, _permission);
+    }
+
     function _createPermissionForTemplate(ACL _acl, address _app, bytes32 _permission) internal {
         _acl.createPermission(address(this), _app, _permission, address(this));
     }
@@ -7524,6 +7508,10 @@ contract Api3BaseTemplate is IsContract {
 
     /* VAULT */
 
+    function _installVaultApp(Kernel _dao) internal returns (Vault) {
+        bytes memory initializeData = abi.encodeWithSelector(Vault(0).initialize.selector);
+        return Vault(_installDefaultApp(_dao, VAULT_APP_ID, initializeData));
+    }
 
     function _createVaultPermissions(ACL _acl, Vault _vault, address _grantee, address _manager) internal {
         _acl.createPermission(_grantee, _vault, _vault.TRANSFER_ROLE(), _manager);
@@ -7531,7 +7519,7 @@ contract Api3BaseTemplate is IsContract {
 
     /* VOTING */
 
-    function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64[3] memory _votingSettings) internal returns (Api3Voting) {
+    function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64[3] memory _votingSettings) internal returns (Voting) {
         return _installVotingApp(_dao, _token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
     }
 
@@ -7542,15 +7530,15 @@ contract Api3BaseTemplate is IsContract {
         uint64 _acceptance,
         uint64 _duration
     )
-        internal returns (Api3Voting)
+        internal returns (Voting)
     {
-        bytes memory initializeData = abi.encodeWithSelector(Api3Voting(0).initialize.selector, _token, _support, _acceptance, _duration);
-        return Api3Voting(_installNonDefaultApp(_dao, VOTING_APP_ID, initializeData));
+        bytes memory initializeData = abi.encodeWithSelector(Voting(0).initialize.selector, _token, _support, _acceptance, _duration);
+        return Voting(_installNonDefaultApp(_dao, VOTING_APP_ID, initializeData));
     }
 
     function _createVotingPermissions(
         ACL _acl,
-        Api3Voting _voting,
+        Voting _voting,
         address _settingsGrantee,
         address _createVotesGrantee,
         address _manager
@@ -7562,6 +7550,147 @@ contract Api3BaseTemplate is IsContract {
         _acl.createPermission(_createVotesGrantee, _voting, _voting.CREATE_VOTES_ROLE(), _manager);
     }
 
+    /* SURVEY */
+
+    function _installSurveyApp(Kernel _dao, MiniMeToken _token, uint64 _minParticipationPct, uint64 _surveyTime) internal returns (Survey) {
+        bytes memory initializeData = abi.encodeWithSelector(Survey(0).initialize.selector, _token, _minParticipationPct, _surveyTime);
+        return Survey(_installNonDefaultApp(_dao, SURVEY_APP_ID, initializeData));
+    }
+
+    function _createSurveyPermissions(ACL _acl, Survey _survey, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _survey, _survey.CREATE_SURVEYS_ROLE(), _manager);
+        _acl.createPermission(_grantee, _survey, _survey.MODIFY_PARTICIPATION_ROLE(), _manager);
+    }
+
+    /* PAYROLL */
+
+    function _installPayrollApp(
+        Kernel _dao,
+        Finance _finance,
+        address _denominationToken,
+        IFeed _priceFeed,
+        uint64 _rateExpiryTime
+    )
+        internal returns (Payroll)
+    {
+        bytes memory initializeData = abi.encodeWithSelector(
+            Payroll(0).initialize.selector,
+            _finance,
+            _denominationToken,
+            _priceFeed,
+            _rateExpiryTime
+        );
+        return Payroll(_installNonDefaultApp(_dao, PAYROLL_APP_ID, initializeData));
+    }
+
+    /**
+    * @dev Internal function to configure payroll permissions. Note that we allow defining different managers for
+    *      payroll since it may be useful to have one control the payroll settings (rate expiration, price feed,
+    *      and allowed tokens), and another one to control the employee functionality (bonuses, salaries,
+    *      reimbursements, employees, etc).
+    * @param _acl ACL instance being configured
+    * @param _acl Payroll app being configured
+    * @param _employeeManager Address that will receive permissions to handle employee payroll functionality
+    * @param _settingsManager Address that will receive permissions to manage payroll settings
+    * @param _permissionsManager Address that will be the ACL manager for the payroll permissions
+    */
+    function _createPayrollPermissions(
+        ACL _acl,
+        Payroll _payroll,
+        address _employeeManager,
+        address _settingsManager,
+        address _permissionsManager
+    )
+        internal
+    {
+        _acl.createPermission(_employeeManager, _payroll, _payroll.ADD_BONUS_ROLE(), _permissionsManager);
+        _acl.createPermission(_employeeManager, _payroll, _payroll.ADD_EMPLOYEE_ROLE(), _permissionsManager);
+        _acl.createPermission(_employeeManager, _payroll, _payroll.ADD_REIMBURSEMENT_ROLE(), _permissionsManager);
+        _acl.createPermission(_employeeManager, _payroll, _payroll.TERMINATE_EMPLOYEE_ROLE(), _permissionsManager);
+        _acl.createPermission(_employeeManager, _payroll, _payroll.SET_EMPLOYEE_SALARY_ROLE(), _permissionsManager);
+
+        _acl.createPermission(_settingsManager, _payroll, _payroll.MODIFY_PRICE_FEED_ROLE(), _permissionsManager);
+        _acl.createPermission(_settingsManager, _payroll, _payroll.MODIFY_RATE_EXPIRY_ROLE(), _permissionsManager);
+        _acl.createPermission(_settingsManager, _payroll, _payroll.MANAGE_ALLOWED_TOKENS_ROLE(), _permissionsManager);
+    }
+
+    function _unwrapPayrollSettings(
+        uint256[4] memory _payrollSettings
+    )
+        internal pure returns (address denominationToken, IFeed priceFeed, uint64 rateExpiryTime, address employeeManager)
+    {
+        denominationToken = _toAddress(_payrollSettings[0]);
+        priceFeed = IFeed(_toAddress(_payrollSettings[1]));
+        rateExpiryTime = _payrollSettings[2].toUint64();
+        employeeManager = _toAddress(_payrollSettings[3]);
+    }
+
+    /* FINANCE */
+
+    function _installFinanceApp(Kernel _dao, Vault _vault, uint64 _periodDuration) internal returns (Finance) {
+        bytes memory initializeData = abi.encodeWithSelector(Finance(0).initialize.selector, _vault, _periodDuration);
+        return Finance(_installNonDefaultApp(_dao, FINANCE_APP_ID, initializeData));
+    }
+
+    function _createFinancePermissions(ACL _acl, Finance _finance, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _finance, _finance.EXECUTE_PAYMENTS_ROLE(), _manager);
+        _acl.createPermission(_grantee, _finance, _finance.MANAGE_PAYMENTS_ROLE(), _manager);
+    }
+
+    function _createFinanceCreatePaymentsPermission(ACL _acl, Finance _finance, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _finance, _finance.CREATE_PAYMENTS_ROLE(), _manager);
+    }
+
+    function _grantCreatePaymentPermission(ACL _acl, Finance _finance, address _to) internal {
+        _acl.grantPermission(_to, _finance, _finance.CREATE_PAYMENTS_ROLE());
+    }
+
+    function _transferCreatePaymentManagerFromTemplate(ACL _acl, Finance _finance, address _manager) internal {
+        _acl.setPermissionManager(_manager, _finance, _finance.CREATE_PAYMENTS_ROLE());
+    }
+
+    /* TOKEN MANAGER */
+
+    function _installTokenManagerApp(
+        Kernel _dao,
+        MiniMeToken _token,
+        bool _transferable,
+        uint256 _maxAccountTokens
+    )
+        internal returns (TokenManager)
+    {
+        TokenManager tokenManager = TokenManager(_installNonDefaultApp(_dao, TOKEN_MANAGER_APP_ID));
+        _token.changeController(tokenManager);
+        tokenManager.initialize(_token, _transferable, _maxAccountTokens);
+        return tokenManager;
+    }
+
+    function _createTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _tokenManager, _tokenManager.MINT_ROLE(), _manager);
+        _acl.createPermission(_grantee, _tokenManager, _tokenManager.BURN_ROLE(), _manager);
+    }
+
+    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] memory _holders, uint256[] memory _stakes) internal {
+        _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+        for (uint256 i = 0; i < _holders.length; i++) {
+            _tokenManager.mint(_holders[i], _stakes[i]);
+        }
+        _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+    }
+
+    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] memory _holders, uint256 _stake) internal {
+        _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+        for (uint256 i = 0; i < _holders.length; i++) {
+            _tokenManager.mint(_holders[i], _stake);
+        }
+        _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+    }
+
+    function _mintTokens(ACL _acl, TokenManager _tokenManager, address _holder, uint256 _stake) internal {
+        _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+        _tokenManager.mint(_holder, _stake);
+        _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+    }
 
     /* EVM SCRIPTS */
 
@@ -7601,6 +7730,19 @@ contract Api3BaseTemplate is IsContract {
         (,base,) = repo.getLatest();
     }
 
+    /* TOKEN */
+
+    function _createToken(string memory _name, string memory _symbol, uint8 _decimals) internal returns (MiniMeToken) {
+        require(address(miniMeFactory) != address(0), ERROR_MINIME_FACTORY_NOT_PROVIDED);
+        MiniMeToken token = miniMeFactory.createCloneToken(MiniMeToken(address(0)), 0, _name, _decimals, _symbol, true);
+        emit DeployToken(address(token));
+        return token;
+    }
+
+    function _ensureMiniMeFactoryIsValid(address _miniMeFactory) internal view {
+        require(isContract(address(_miniMeFactory)), ERROR_MINIME_FACTORY_NOT_CONTRACT);
+    }
+
     /* IDS */
 
     function _validateId(string memory _id) internal pure {
@@ -7624,13 +7766,446 @@ contract Api3BaseTemplate is IsContract {
     }
 }
 
+// File: contracts/utils/interfaces/IApi3Pool.sol
+
+//SPDX-License-Identifier: MIT
+pragma solidity 0.4.24;
+
+interface IApi3Pool {
+    function EPOCH_LENGTH()
+        external
+        view
+        returns(uint256);
+
+    function proposalVotingPowerThreshold()
+        external
+        view
+        returns(uint256);
+
+    function balanceOfAt(
+        address userAddress,
+        uint256 _block
+        )
+        external
+        view
+        returns(uint256);
+
+    function totalSupplyOneBlockAgo()
+        external
+        view
+        returns(uint256);
+
+    function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
+        external;
+}
+
+// File: contracts/utils/Api3Voting.sol
+
+/*
+ * SPDX-License-Identitifer:    GPL-3.0-or-later
+ */
+
+pragma solidity 0.4.24;
+
+
+
+
+
+
+
+contract Api3Voting is IForwarder, AragonApp {
+    using SafeMath for uint256;
+    using SafeMath64 for uint64;
+
+    bytes32 public constant CREATE_VOTES_ROLE = keccak256("CREATE_VOTES_ROLE");
+    bytes32 public constant MODIFY_SUPPORT_ROLE = keccak256("MODIFY_SUPPORT_ROLE");
+    bytes32 public constant MODIFY_QUORUM_ROLE = keccak256("MODIFY_QUORUM_ROLE");
+
+    uint64 public constant PCT_BASE = 10 ** 18; // 0% = 0; 1% = 10^16; 100% = 10^18
+
+    string private constant ERROR_NO_VOTE = "VOTING_NO_VOTE";
+    string private constant ERROR_INIT_PCTS = "VOTING_INIT_PCTS";
+    string private constant ERROR_CHANGE_SUPPORT_PCTS = "VOTING_CHANGE_SUPPORT_PCTS";
+    string private constant ERROR_CHANGE_QUORUM_PCTS = "VOTING_CHANGE_QUORUM_PCTS";
+    string private constant ERROR_INIT_SUPPORT_TOO_BIG = "VOTING_INIT_SUPPORT_TOO_BIG";
+    string private constant ERROR_CHANGE_SUPPORT_TOO_BIG = "VOTING_CHANGE_SUPP_TOO_BIG";
+    string private constant ERROR_CAN_NOT_VOTE = "VOTING_CAN_NOT_VOTE";
+    string private constant ERROR_CAN_NOT_EXECUTE = "VOTING_CAN_NOT_EXECUTE";
+    string private constant ERROR_CAN_NOT_FORWARD = "VOTING_CAN_NOT_FORWARD";
+    string private constant ERROR_NO_VOTING_POWER = "VOTING_NO_VOTING_POWER";
+
+    enum VoterState { Absent, Yea, Nay }
+
+    struct Vote {
+        bool executed;
+        uint64 startDate;
+        uint64 snapshotBlock;
+        uint64 supportRequiredPct;
+        uint64 minAcceptQuorumPct;
+        uint256 yea;
+        uint256 nay;
+        uint256 votingPower;
+        bytes executionScript;
+        mapping (address => VoterState) voters;
+    }
+
+    uint64 public supportRequiredPct;
+    uint64 public minAcceptQuorumPct;
+    uint64 public voteTime;
+
+    IApi3Pool public api3Pool;
+    mapping (address => uint256) private userAddressToLastNewProposalTimestamp;
+
+    // We are mimicing an array, we use a mapping instead to make app upgrade more graceful
+    mapping (uint256 => Vote) internal votes;
+    uint256 public votesLength;
+
+    event StartVote(uint256 indexed voteId, address indexed creator, string metadata);
+    event CastVote(uint256 indexed voteId, address indexed voter, bool supports, uint256 stake);
+    event ExecuteVote(uint256 indexed voteId);
+    event ChangeSupportRequired(uint64 supportRequiredPct);
+    event ChangeMinQuorum(uint64 minAcceptQuorumPct);
+
+    modifier voteExists(uint256 _voteId) {
+        require(_voteId < votesLength, ERROR_NO_VOTE);
+        _;
+    }
+
+    /**
+    * @notice Initialize Voting app with `_token.symbol(): string` for governance, minimum support of `@formatPct(_supportRequiredPct)`%, minimum acceptance quorum of `@formatPct(_minAcceptQuorumPct)`%, and a voting duration of `@transformTime(_voteTime)`
+    * @param _token MiniMeToken Address that will be used as governance token
+    * @param _supportRequiredPct Percentage of yeas in casted votes for a vote to succeed (expressed as a percentage of 10^18; eg. 10^16 = 1%, 10^18 = 100%)
+    * @param _minAcceptQuorumPct Percentage of yeas in total possible votes for a vote to succeed (expressed as a percentage of 10^18; eg. 10^16 = 1%, 10^18 = 100%)
+    * @param _voteTime Seconds that a vote will be open for token holders to vote (unless enough yeas or nays have been cast to make an early decision)
+    */
+    function initialize(
+        address _token,
+        uint64 _supportRequiredPct,
+        uint64 _minAcceptQuorumPct,
+        uint64 _voteTime
+    )
+        external
+        onlyInit
+    {
+        initialized();
+
+        require(_minAcceptQuorumPct <= _supportRequiredPct, ERROR_INIT_PCTS);
+        require(_supportRequiredPct < PCT_BASE, ERROR_INIT_SUPPORT_TOO_BIG);
+
+        supportRequiredPct = _supportRequiredPct;
+        minAcceptQuorumPct = _minAcceptQuorumPct;
+        voteTime = _voteTime;
+        // The pool acts as the MiniMe token
+        api3Pool = IApi3Pool(_token);
+    }
+
+    /**
+    * @notice Change required support to `@formatPct(_supportRequiredPct)`%
+    * @param _supportRequiredPct New required support
+    */
+    function changeSupportRequiredPct(uint64 _supportRequiredPct)
+        external
+        authP(MODIFY_SUPPORT_ROLE, arr(uint256(_supportRequiredPct), uint256(supportRequiredPct)))
+    {
+        require(minAcceptQuorumPct <= _supportRequiredPct, ERROR_CHANGE_SUPPORT_PCTS);
+        require(_supportRequiredPct < PCT_BASE, ERROR_CHANGE_SUPPORT_TOO_BIG);
+        supportRequiredPct = _supportRequiredPct;
+
+        emit ChangeSupportRequired(_supportRequiredPct);
+    }
+
+    /**
+    * @notice Change minimum acceptance quorum to `@formatPct(_minAcceptQuorumPct)`%
+    * @param _minAcceptQuorumPct New acceptance quorum
+    */
+    function changeMinAcceptQuorumPct(uint64 _minAcceptQuorumPct)
+        external
+        authP(MODIFY_QUORUM_ROLE, arr(uint256(_minAcceptQuorumPct), uint256(minAcceptQuorumPct)))
+    {
+        require(_minAcceptQuorumPct <= supportRequiredPct, ERROR_CHANGE_QUORUM_PCTS);
+        minAcceptQuorumPct = _minAcceptQuorumPct;
+
+        emit ChangeMinQuorum(_minAcceptQuorumPct);
+    }
+
+    /**
+    * @notice Create a new vote about "`_metadata`"
+    * @param _executionScript EVM script to be executed on approval
+    * @param _metadata Vote metadata
+    * @return voteId Id for newly created vote
+    */
+    function newVote(bytes _executionScript, string _metadata) external auth(CREATE_VOTES_ROLE) returns (uint256 voteId) {
+        return _newVote(_executionScript, _metadata, true, true);
+    }
+
+    /**
+    * @notice Create a new vote about "`_metadata`"
+    * @param _executionScript EVM script to be executed on approval
+    * @param _metadata Vote metadata
+    * @param _castVote Whether to also cast newly created vote
+    * @param _executesIfDecided Whether to also immediately execute newly created vote if decided
+    * @return voteId id for newly created vote
+    */
+    function newVote(bytes _executionScript, string _metadata, bool _castVote, bool _executesIfDecided)
+        external
+        auth(CREATE_VOTES_ROLE)
+        returns (uint256 voteId)
+    {
+        return _newVote(_executionScript, _metadata, _castVote, _executesIfDecided);
+    }
+
+    /**
+    * @notice Vote `_supports ? 'yes' : 'no'` in vote #`_voteId`
+    * @dev Initialization check is implicitly provided by `voteExists()` as new votes can only be
+    *      created via `newVote(),` which requires initialization
+    * @param _voteId Id for vote
+    * @param _supports Whether voter supports the vote
+    * @param _executesIfDecided Whether the vote should execute its action if it becomes decided
+    */
+    function vote(uint256 _voteId, bool _supports, bool _executesIfDecided) external voteExists(_voteId) {
+        require(_canVote(_voteId, msg.sender), ERROR_CAN_NOT_VOTE);
+        _vote(_voteId, _supports, msg.sender, _executesIfDecided);
+    }
+
+    /**
+    * @notice Execute vote #`_voteId`
+    * @dev Initialization check is implicitly provided by `voteExists()` as new votes can only be
+    *      created via `newVote(),` which requires initialization
+    * @param _voteId Id for vote
+    */
+    function executeVote(uint256 _voteId) external voteExists(_voteId) {
+        _executeVote(_voteId);
+    }
+
+    // Forwarding fns
+
+    function isForwarder() external pure returns (bool) {
+        return true;
+    }
+
+    /**
+    * @notice Creates a vote to execute the desired action, and casts a support vote if possible
+    * @dev IForwarder interface conformance
+    * @param _evmScript Start vote with script
+    */
+    function forward(bytes _evmScript) public {
+        require(canForward(msg.sender, _evmScript), ERROR_CAN_NOT_FORWARD);
+        _newVote(_evmScript, "", true, true);
+    }
+
+    function canForward(address _sender, bytes) public view returns (bool) {
+        // Note that `canPerform()` implicitly does an initialization check itself
+        return canPerform(_sender, CREATE_VOTES_ROLE, arr());
+    }
+
+    // Getter fns
+
+    /**
+    * @dev Initialization check is implicitly provided by `voteExists()` as new votes can only be
+    *      created via `newVote(),` which requires initialization
+    */
+    function canExecute(uint256 _voteId) public view voteExists(_voteId) returns (bool) {
+        return _canExecute(_voteId);
+    }
+
+    /**
+    * @dev Initialization check is implicitly provided by `voteExists()` as new votes can only be
+    *      created via `newVote(),` which requires initialization
+    */
+    function canVote(uint256 _voteId, address _voter) public view voteExists(_voteId) returns (bool) {
+        return _canVote(_voteId, _voter);
+    }
+
+    function getVote(uint256 _voteId)
+        public
+        view
+        voteExists(_voteId)
+        returns (
+            bool open,
+            bool executed,
+            uint64 startDate,
+            uint64 snapshotBlock,
+            uint64 supportRequired,
+            uint64 minAcceptQuorum,
+            uint256 yea,
+            uint256 nay,
+            uint256 votingPower,
+            bytes script
+        )
+    {
+        Vote storage vote_ = votes[_voteId];
+
+        open = _isVoteOpen(vote_);
+        executed = vote_.executed;
+        startDate = vote_.startDate;
+        snapshotBlock = vote_.snapshotBlock;
+        supportRequired = vote_.supportRequiredPct;
+        minAcceptQuorum = vote_.minAcceptQuorumPct;
+        yea = vote_.yea;
+        nay = vote_.nay;
+        votingPower = vote_.votingPower;
+        script = vote_.executionScript;
+    }
+
+    function getVoterState(uint256 _voteId, address _voter) public view voteExists(_voteId) returns (VoterState) {
+        return votes[_voteId].voters[_voter];
+    }
+
+    // Internal fns
+
+    function _newVote(bytes _executionScript, string _metadata, bool _castVote, bool _executesIfDecided)
+        internal
+        returns (uint256 voteId)
+    {
+        require(userAddressToLastNewProposalTimestamp[msg.sender].add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_PROPOSAL_COOLDOWN");
+        userAddressToLastNewProposalTimestamp[msg.sender] = now;
+
+        uint64 snapshotBlock = getBlockNumber64() - 1; // avoid double voting in this very block
+
+        uint256 votingPower = api3Pool.totalSupplyOneBlockAgo();
+        require(votingPower > 0, ERROR_NO_VOTING_POWER);
+        uint256 proposalMakerVotingPower = api3Pool.balanceOfAt(msg.sender, snapshotBlock);
+        require(
+            proposalMakerVotingPower >= votingPower.mul(api3Pool.proposalVotingPowerThreshold()).div(1e8),
+            "API3_HIT_PROPOSAL_THRESHOLD"
+            );
+        api3Pool.updateLastVoteSnapshotBlock(snapshotBlock);
+
+        voteId = votesLength++;
+
+        Vote storage vote_ = votes[voteId];
+        vote_.startDate = getTimestamp64();
+        vote_.snapshotBlock = snapshotBlock;
+        vote_.supportRequiredPct = supportRequiredPct;
+        vote_.minAcceptQuorumPct = minAcceptQuorumPct;
+        vote_.votingPower = votingPower;
+        vote_.executionScript = _executionScript;
+
+        emit StartVote(voteId, msg.sender, _metadata);
+
+        if (_castVote && _canVote(voteId, msg.sender)) {
+            _vote(voteId, true, msg.sender, _executesIfDecided);
+        }
+    }
+
+    function _vote(
+        uint256 _voteId,
+        bool _supports,
+        address _voter,
+        bool _executesIfDecided
+    ) internal
+    {
+        Vote storage vote_ = votes[_voteId];
+
+        // This could re-enter, though we can assume the governance token is not malicious
+        uint256 voterStake = api3Pool.balanceOfAt(_voter, vote_.snapshotBlock);
+        VoterState state = vote_.voters[_voter];
+
+        // If voter had previously voted, decrease count
+        if (state == VoterState.Yea) {
+            vote_.yea = vote_.yea.sub(voterStake);
+        } else if (state == VoterState.Nay) {
+            vote_.nay = vote_.nay.sub(voterStake);
+        }
+
+        if (_supports) {
+            vote_.yea = vote_.yea.add(voterStake);
+        } else {
+            vote_.nay = vote_.nay.add(voterStake);
+        }
+
+        vote_.voters[_voter] = _supports ? VoterState.Yea : VoterState.Nay;
+
+        emit CastVote(_voteId, _voter, _supports, voterStake);
+
+        if (_executesIfDecided && _canExecute(_voteId)) {
+            // We've already checked if the vote can be executed with `_canExecute()`
+            _unsafeExecuteVote(_voteId);
+        }
+    }
+
+    function _executeVote(uint256 _voteId) internal {
+        require(_canExecute(_voteId), ERROR_CAN_NOT_EXECUTE);
+        _unsafeExecuteVote(_voteId);
+    }
+
+    /**
+    * @dev Unsafe version of _executeVote that assumes you have already checked if the vote can be executed
+    */
+    function _unsafeExecuteVote(uint256 _voteId) internal {
+        Vote storage vote_ = votes[_voteId];
+
+        vote_.executed = true;
+
+        bytes memory input = new bytes(0); // TODO: Consider input for voting scripts
+        runScript(vote_.executionScript, input, new address[](0));
+
+        emit ExecuteVote(_voteId);
+    }
+
+    function _canExecute(uint256 _voteId) internal view returns (bool) {
+        Vote storage vote_ = votes[_voteId];
+
+        if (vote_.executed) {
+            return false;
+        }
+
+        // Voting is already decided
+        if (_isValuePct(vote_.yea, vote_.votingPower, vote_.supportRequiredPct)) {
+            return true;
+        }
+
+        // Vote ended?
+        if (_isVoteOpen(vote_)) {
+            return false;
+        }
+        // Has enough support?
+        uint256 totalVotes = vote_.yea.add(vote_.nay);
+        if (!_isValuePct(vote_.yea, totalVotes, vote_.supportRequiredPct)) {
+            return false;
+        }
+        // Has min quorum?
+        if (!_isValuePct(vote_.yea, vote_.votingPower, vote_.minAcceptQuorumPct)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    function _canVote(uint256 _voteId, address _voter) internal view returns (bool) {
+        Vote storage vote_ = votes[_voteId];
+
+        return _isVoteOpen(vote_) && api3Pool.balanceOfAt(_voter, vote_.snapshotBlock) > 0;
+    }
+
+    function _isVoteOpen(Vote storage vote_) internal view returns (bool) {
+        return getTimestamp64() < vote_.startDate.add(voteTime) && !vote_.executed;
+    }
+
+    /**
+    * @dev Calculates whether `_value` is more than a percentage `_pct` of `_total`
+    */
+    function _isValuePct(uint256 _value, uint256 _total, uint256 _pct) internal pure returns (bool) {
+        if (_total == 0) {
+            return false;
+        }
+
+        uint256 computedPct = _value.mul(PCT_BASE) / _total;
+        return computedPct > _pct;
+    }
+}
+
 // File: contracts/Api3Template.sol
 
 //SPDX-License-Identifier: MIT
 pragma solidity 0.4.24;
 
 
-contract Api3Template is Api3BaseTemplate {
+
+contract Api3Template is BaseTemplate {
+//    Comment below is ID for Rinkeby/Mainnet
+//    bytes32 constant internal API3_VOTING_APP_ID = 0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554;
+    bytes32 constant internal API3_VOTING_APP_ID = 0x727a0cf100ef0e645bad5a5b920d7fb71f8fd0eaf0fa579c341a045f597526f5;
     string constant private ERROR_BAD_VOTE_SETTINGS = "API3_DAO_BAD_VOTE_SETTINGS";
 
     address private constant ANY_ENTITY = address(-1);
@@ -7639,8 +8214,10 @@ contract Api3Template is Api3BaseTemplate {
       address dao,
       address acl,
       address api3Pool,
-      address voting,
-      address agent
+      address mainVoting,
+      address secondaryVoting,
+      address mainAgent,
+      address secondaryAgent
     );
 
     constructor(
@@ -7650,7 +8227,7 @@ contract Api3Template is Api3BaseTemplate {
       IFIFSResolvingRegistrar _aragonID
     )
     public
-    Api3BaseTemplate(_daoFactory, _ens, _minimeTokenFactory, _aragonID)
+    BaseTemplate(_daoFactory, _ens, _minimeTokenFactory, _aragonID)
     {
         _ensureAragonIdIsValid(_aragonID);
     }
@@ -7659,35 +8236,38 @@ contract Api3Template is Api3BaseTemplate {
     * @dev Deploy an authoritative DAO using the API3 Staking Pool
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _api3Pool Address of the API3 staking pool, supplies voting power
-    * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization NOTE: deleted minProposerPower
-    * @param _permissionManager The administrator that's initially granted control over the DAO's permissions
+    * @param _mainVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
+    * @param _secondaryVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
     */
     function newInstance(
         string memory _id,
         MiniMeToken _api3Pool,
-        uint64[3] memory _votingSettings,
-        address _permissionManager
+        uint64[3] memory _mainVotingSettings,
+        uint64[3] memory _secondaryVotingSettings
     )
     public
     {
-        require(_api3Pool != address(0), "Invalid API3 Voting Rights");
+        require(_api3Pool != address(0), "Invalid API3 Api3Voting Rights");
 
         _validateId(_id);
-        _validateVotingSettings(_votingSettings);
+        _validateVotingSettings(_mainVotingSettings);
+        _validateVotingSettings(_secondaryVotingSettings);
 
         (Kernel dao, ACL acl) = _createDAO();
-        (Api3Voting voting, Agent agent) = _setupApps(
-            dao, acl, _api3Pool, _votingSettings, _permissionManager
+        (Api3Voting mainVoting, Api3Voting secondaryVoting, Agent mainAgent, Agent secondaryAgent) = _setupApps(
+            dao, acl, _api3Pool, _mainVotingSettings,_secondaryVotingSettings
         );
-        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, _permissionManager);
+        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, mainVoting);
         _registerID(_id, dao);
 
         emit Api3DaoDeployed(
             address(dao),
             address(acl),
             address(_api3Pool),
-            address(voting),
-            address(agent)
+            address(mainVoting),
+            address(secondaryVoting),
+            address(mainAgent),
+            address(secondaryAgent)
         );
     }
 
@@ -7695,40 +8275,81 @@ contract Api3Template is Api3BaseTemplate {
         Kernel _dao,
         ACL _acl,
         MiniMeToken _api3Pool,
-        uint64[3] memory _votingSettings,
-        address _permissionManager
+        uint64[3] memory _mainVotingSettings,
+        uint64[3] memory _secondaryVotingSettings
     )
     internal
-    returns (Api3Voting, Agent)
+    returns (Api3Voting, Api3Voting, Agent, Agent)
     {
-        Agent agent = _installDefaultAgentApp(_dao);
-        Api3Voting voting = _installVotingApp(_dao, _api3Pool, _votingSettings);
+        Agent mainAgent = _installDefaultAgentApp(_dao);
+        Agent secondaryAgent = _installNonDefaultAgentApp(_dao);
+        Api3Voting mainVoting = _installApi3VotingApp(_dao, _api3Pool, _mainVotingSettings);
+        Api3Voting secondaryVoting = _installApi3VotingApp(_dao, _api3Pool, _secondaryVotingSettings);
 
         _setupPermissions(
             _acl,
-            agent,
-            voting,
-            _permissionManager
+            mainAgent,
+            mainVoting,
+            secondaryAgent,
+            secondaryVoting,
+            mainVoting
         );
 
-        return (voting, agent);
+        return (mainVoting, secondaryVoting, mainAgent, secondaryAgent);
     }
 
     function _setupPermissions(
         ACL _acl,
-        Agent _agent,
-        Api3Voting _voting,
+        Agent _mainAgent,
+        Api3Voting _mainVoting,
+        Agent _secondaryAgent,
+        Api3Voting _secondaryVoting,
         address _permissionManager
     )
     internal
     {
-        _createAgentPermissions(_acl, _agent, _voting, _permissionManager);
-        _createVaultPermissions(_acl, Vault(_agent), _voting, _permissionManager);
+        _createAgentPermissions(_acl, _mainAgent, _mainVoting, _permissionManager);
+        _createAgentPermissions(_acl, _secondaryAgent, _secondaryVoting, _permissionManager);
+        _createVaultPermissions(_acl, Vault(_mainAgent), _mainVoting, _permissionManager);
         _createEvmScriptsRegistryPermissions(_acl, _permissionManager, _permissionManager);
-        _createVotingPermissions(_acl, _voting, _voting, ANY_ENTITY, _permissionManager);
+        _createApi3VotingPermissions(_acl, _mainVoting, _mainAgent, ANY_ENTITY, _permissionManager);
+        _createApi3VotingPermissions(_acl, _secondaryVoting, _mainAgent, ANY_ENTITY, _permissionManager);
     }
 
     function _validateVotingSettings(uint64[3] memory _votingSettings) private pure {
         require(_votingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
+    }
+
+    /*API3 VOTING*/
+
+    function _installApi3VotingApp(Kernel _dao, MiniMeToken _token, uint64[3] memory _votingSettings) internal returns (Api3Voting) {
+        return _installApi3VotingApp(_dao, _token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
+    }
+
+    function _installApi3VotingApp(
+        Kernel _dao,
+        MiniMeToken _token,
+        uint64 _support,
+        uint64 _acceptance,
+        uint64 _duration
+    )
+    internal returns (Api3Voting)
+    {
+        bytes memory initializeData = abi.encodeWithSelector(Api3Voting(0).initialize.selector, _token, _support, _acceptance, _duration);
+        return Api3Voting(_installNonDefaultApp(_dao, API3_VOTING_APP_ID, initializeData));
+    }
+
+    function _createApi3VotingPermissions(
+        ACL _acl,
+        Api3Voting _voting,
+        address _settingsGrantee,
+        address _createVotesGrantee,
+        address _manager
+    )
+    internal
+    {
+        _acl.createPermission(_settingsGrantee, _voting, _voting.MODIFY_QUORUM_ROLE(), _manager);
+        _acl.createPermission(_settingsGrantee, _voting, _voting.MODIFY_SUPPORT_ROLE(), _manager);
+        _acl.createPermission(_createVotesGrantee, _voting, _voting.CREATE_VOTES_ROLE(), _manager);
     }
 }

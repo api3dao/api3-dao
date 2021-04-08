@@ -1,4 +1,5 @@
 **/node_modules/**
+**/flattend_contracts/**
 
 **/cache/**
 **/artifacts/**
@@ -14,4 +15,5 @@
 .env
 .idea
 .DS_Store
+.aragon
 yarn-error.log

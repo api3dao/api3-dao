@@ -10,7 +10,7 @@ const VOTE_NAME = 'Api3Voting';
 module.exports = callback => deployTemplate(web3, artifacts, TEMPLATE_NAME, CONTRACT_NAME,
     [ { name: 'agent', contractName: 'Agent' },
             { name: 'vault', contractName: 'Vault' },
-            { name: 'voting', contractName: VOTE_NAME },
+            { name: 'api3voting', contractName: VOTE_NAME },
             { name: 'survey', contractName: 'Survey' },
             { name: 'payroll', contractName: 'Payroll' },
             { name: 'finance', contractName: 'Finance' },
