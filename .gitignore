@@ -15,4 +15,5 @@
 .env
 .idea
 .DS_Store
+.aragon
 yarn-error.log
