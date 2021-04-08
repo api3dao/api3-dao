@@ -5,12 +5,7 @@ import "./StateUtils.sol";
 import "./interfaces/IGetterUtils.sol";
 
 /// @title Contract that implements getters
-contract GetterUtils is StateUtils, IGetterUtils {
-    /// @param api3TokenAddress API3 token contract address
-    constructor(address api3TokenAddress)
-        StateUtils(api3TokenAddress)
-    {}
-
+abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// @notice Called to get the voting power of a user at a specific block
     /// @dev This method is used to implement the MiniMe interface for the
     /// Api3Voting app

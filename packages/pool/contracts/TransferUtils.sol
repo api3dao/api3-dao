@@ -5,12 +5,7 @@ import "./DelegationUtils.sol";
 import "./interfaces/ITransferUtils.sol";
 
 /// @title Contract that implements token transfer functionality
-contract TransferUtils is DelegationUtils, ITransferUtils {
-    /// @param api3TokenAddress API3 token contract address
-    constructor(address api3TokenAddress)
-        DelegationUtils(api3TokenAddress)
-    {}
-
+abstract contract TransferUtils is DelegationUtils, ITransferUtils {
     /// @notice Called to deposit tokens for a user by using `transferFrom()`
     /// @dev This method is used by `TimelockManager.sol`
     /// @param source Token transfer source

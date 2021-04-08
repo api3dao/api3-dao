@@ -5,17 +5,12 @@ import "./StakeUtils.sol";
 import "./interfaces/IClaimUtils.sol";
 
 /// @title Contract that implements the insurance claim payout functionality
-contract ClaimUtils is StakeUtils, IClaimUtils {
+abstract contract ClaimUtils is StakeUtils, IClaimUtils {
     /// @dev Reverts if the caller is not a claims manager
     modifier onlyClaimsManager() {
         require(claimsManagerStatus[msg.sender], ERROR_UNAUTHORIZED);
         _;
     }
-
-    /// @param api3TokenAddress API3 token contract address
-    constructor(address api3TokenAddress)
-        StakeUtils(api3TokenAddress)
-    {}
 
     /// @notice Called by a claims manager to pay out an insurance claim
     /// @dev The claims manager is a trusted contract that is allowed to

@@ -5,12 +5,7 @@ import "./GetterUtils.sol";
 import "./interfaces/IRewardUtils.sol";
 
 /// @title Contract that implements reward payments and locks
-contract RewardUtils is GetterUtils, IRewardUtils {
-    /// @param api3TokenAddress API3 token contract address
-    constructor(address api3TokenAddress)
-        GetterUtils(api3TokenAddress)
-    {}
-
+abstract contract RewardUtils is GetterUtils, IRewardUtils {
     /// @notice Called to pay the reward for the current epoch
     /// @dev Skips past epochs for which rewards have not been paid for.
     /// Skips the reward payment if the pool is not authorized to mint tokens.
