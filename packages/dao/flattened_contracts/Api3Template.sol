@@ -8203,9 +8203,13 @@ pragma solidity 0.4.24;
 
 
 contract Api3Template is BaseTemplate {
-//    Comment below is ID for Rinkeby/Mainnet
-//    bytes32 constant internal API3_VOTING_APP_ID = 0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554;
-    bytes32 constant internal API3_VOTING_APP_ID = 0x727a0cf100ef0e645bad5a5b920d7fb71f8fd0eaf0fa579c341a045f597526f5;
+
+
+//    Record below is ID for Rinkeby/Mainnet
+    bytes32 constant internal API3_VOTING_APP_ID = 0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554;
+
+//    Record below is ID for testing
+//    bytes32 constant internal API3_VOTING_APP_ID = 0x9fa3927f639745e587912d4b0fea7ef9013bf93fb907d29faeab57417ba6e1d2;
     string constant private ERROR_BAD_VOTE_SETTINGS = "API3_DAO_BAD_VOTE_SETTINGS";
 
     address private constant ANY_ENTITY = address(-1);
@@ -8311,6 +8315,7 @@ contract Api3Template is BaseTemplate {
         _createAgentPermissions(_acl, _mainAgent, _mainVoting, _permissionManager);
         _createAgentPermissions(_acl, _secondaryAgent, _secondaryVoting, _permissionManager);
         _createVaultPermissions(_acl, Vault(_mainAgent), _mainVoting, _permissionManager);
+        _createVaultPermissions(_acl, Vault(_secondaryAgent), _secondaryVoting, _permissionManager);
         _createEvmScriptsRegistryPermissions(_acl, _permissionManager, _permissionManager);
         _createApi3VotingPermissions(_acl, _mainVoting, _mainAgent, ANY_ENTITY, _permissionManager);
         _createApi3VotingPermissions(_acl, _secondaryVoting, _mainAgent, ANY_ENTITY, _permissionManager);

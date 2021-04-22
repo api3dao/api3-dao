@@ -51,8 +51,8 @@
     "eth-gas-reporter": "^0.1.1",
     "ganache-cli": "^6.0.3",
     "solium": "^1.0.4",
-    "truffle": "4.1.14",
+    "truffle": "^4.1.14",
     "truffle-extract": "^1.2.1",
-    "truffle-hdwallet-provider": "0.0.3"
+    "truffle-hdwallet-provider": "^0.0.3"
   }
 }

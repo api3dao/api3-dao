@@ -1,23 +1,26 @@
-const { usePlugin } = require('@nomiclabs/buidler/config')
+const { usePlugin } = require('@nomiclabs/buidler/config');
 
-usePlugin("@nomiclabs/buidler-ganache")
-usePlugin('@nomiclabs/buidler-truffle5')
-usePlugin('buidler-gas-reporter')
-usePlugin('solidity-coverage')
+// usePlugin("@nomiclabs/buidler-ganache");
+// usePlugin('@nomiclabs/buidler-truffle5');
+// usePlugin('@nomiclabs/buidler-web3');
+// usePlugin('buidler-gas-reporter');
+// usePlugin('solidity-coverage');
+usePlugin('@aragon/buidler-aragon');
 
 const ACCOUNTS = (process.env.ETH_KEYS ? process.env.ETH_KEYS.split(',') : [])
-  .map(key => key.trim())
+  .map(key => key.trim());
 
 module.exports = {
+  defaultNetwork: 'localhost',
   networks: {
     // Local development network using ganache. You can set any of the
     // Ganache's options. All of them are supported, with the exception
     // of accounts.
     // https://github.com/trufflesuite/ganache-core#options
-    ganache: {
+    localhost: {
       url: 'http://localhost:8545',
-      gasLimit: 6000000000,
-      defaultBalanceEther: 100
+      // gasLimit: 6000000000,
+      // defaultBalanceEther: 100
     },
     // Local development network to test coverage. Solidity coverage
     // pluging launches its own in-process ganache server.
@@ -27,13 +30,17 @@ module.exports = {
     },
     // Mainnet network configured with Aragon node.
     mainnet: {
-      url: 'https://mainnet.eth.aragon.network',
+      url: 'https://mainnet.infura.io/v3/4c9049736af84c46ad0972910df0476a',
       accounts: ACCOUNTS,
+      defaultBalanceEther: 100
     },
     // Rinkeby network configured with Aragon node.
     rinkeby: {
-      url: 'https://rinkeby.eth.aragon.network',
-      accounts: ACCOUNTS,
+      url: 'https://rinkeby.infura.io/v3/4c9049736af84c46ad0972910df0476a',
+      chainId: 4,
+      accounts: ['0xff5886c7e52052fc95e4bd6956b1e420d10693e62fbe506d61fa25b152093d54'],
+      gasLimit: 'auto',
+      gasPrice: 1000000000,
     },
     // Network configured to interact with Frame wallet. Requires
     // to have Frame running on your machine. Download it from:
@@ -58,4 +65,12 @@ module.exports = {
   gasReporter: {
     enabled: process.env.REPORT_GAS ? true : false,
   },
-}
+  aragon: {
+    appServePort: 8001,
+    clientServePort: 3000,
+    appBuildOutputPath: 'dist/',
+    hooks: require('./scripts/buidler-hooks'),
+    appSrcPath: './',
+    appName: 'api3voting'
+  },
+};

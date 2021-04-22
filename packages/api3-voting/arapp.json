@@ -1,9 +1,22 @@
 {
-  "path": "contracts/Api3Voting.sol",
+  "path": "./contracts/Api3Voting.sol",
   "environments": {
-    "aragon:local": {
+    "default": {
       "network": "localhost",
-      "appName": "api3voting.aragonpm.eth"
+      "appName": "api3voting.aragonpm.eth",
+      "registry": "0xdA71454D2a71D63116cd67099e4a0fdd3a8Dfb47"
+    },
+    "rinkeby": {
+      "apm": {
+        "ipfs": {
+          "gateway": "https://ipfs.eth.aragon.network/ipfs"
+        }
+      },
+      "network": "rinkeby",
+      "appName": "api3voting.open.aragonpm.eth",
+      "wsRPC": "wss://rinkeby.infura.io/ws/v3/4c9049736af84c46ad0972910df0476a",
+      "rpc": "https://rinkeby.infura.io/v3/4c9049736af84c46ad0972910df0476a",
+      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D"
     }
   },
   "roles": [
