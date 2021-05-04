@@ -5,12 +5,7 @@ import "./RewardUtils.sol";
 import "./interfaces/IDelegationUtils.sol";
 
 /// @title Contract that implements voting power delegation
-contract DelegationUtils is RewardUtils, IDelegationUtils {
-    /// @param api3TokenAddress API3 token contract address
-    constructor(address api3TokenAddress)
-        RewardUtils(api3TokenAddress)
-    {}
-
+abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
     /// @notice Called by the user to delegate voting power
     /// @param delegate User address the voting power will be delegated to
     function delegateVotingPower(address delegate) 

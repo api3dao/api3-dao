@@ -5,12 +5,7 @@ import "./TransferUtils.sol";
 import "./interfaces/IStakeUtils.sol";
 
 /// @title Contract that implements staking functionality
-contract StakeUtils is TransferUtils, IStakeUtils {
-    /// @param api3TokenAddress API3 token contract address
-    constructor(address api3TokenAddress)
-        TransferUtils(api3TokenAddress)
-    {}
-
+abstract contract StakeUtils is TransferUtils, IStakeUtils {
     /// @notice Called to stake tokens to receive pools in the share
     /// @param amount Amount of tokens to stake
     function stake(uint256 amount)

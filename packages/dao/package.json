@@ -31,6 +31,7 @@
     "publish:mainnet": "aragon apm publish major $(npm run deploy:mainnet | tail -n 1) --environment mainnet"
   },
   "dependencies": {
+    "@api3-dao/api3-voting": "^1.0.0",
     "@aragon/apps-shared-minime": "^1.0.0",
     "@aragon/id": "2.0.3",
     "@aragon/os": "4.3.0",

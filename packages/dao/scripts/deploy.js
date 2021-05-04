@@ -1,9 +1,7 @@
 /*global artifacts, web3*/
 
-const fs = require('fs');
 const { getNetworkName } = require('@aragon/templates-shared/lib/network')(web3);
 const deployTemplate = require('@aragon/templates-shared/scripts/deploy-template');
-const arappFile = require('@aragon/templates-shared/lib/arapp-file');
 
 const TEMPLATE_NAME = 'api3-template';
 const CONTRACT_NAME = 'Api3Template';
@@ -16,10 +14,10 @@ module.exports = async callback => {
         const template = await deployTemplate(
             web3,
             artifacts,
-            // network === "rinkeby" ||
-            // network === "mainnet" ||
-            // network === "ropsten" ?
-            //     TEMPLATE_NAME + ".open" :
+            network === "rinkeby" ||
+            network === "mainnet" ||
+            network === "ropsten" ?
+                TEMPLATE_NAME + ".open" :
                 TEMPLATE_NAME,
             CONTRACT_NAME, CONTRACT_NAME,
             [{name: 'agent', contractName: 'Agent'},

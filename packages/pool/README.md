@@ -23,6 +23,14 @@ The contracts in `contracts/auxiliary/` are provided for reference and are outsi
 
 The contracts in `contracts/mock/` are implemented to facilitate unit tests and will not be used in production.
 
+If you have [Graphviz](https://www.graphviz.org/) installed, you can also view dependency graphs of the various components which make up the `Api3Pool` contract, via the [`surya` analysis tool](https://github.com/ConsenSys/surya), e.g.:
+
+```sh
+cd packages/pool/contracts
+../node_modules/.bin/surya inheritance *.sol interfaces/*.sol | dot -Tpng >pool-inheritance.png
+../node_modules/.bin/surya graph *.sol | fdp -Tpng >pool-graph.png
+```
+
 # Specifications
 
 Staking API3 tokens at the API3 pool contract grants the following:
