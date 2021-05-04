@@ -10,8 +10,7 @@ const VOTE_NAME = 'Api3Voting';
 module.exports = async callback => {
     try {
         const network = await getNetworkName();
-        console.log("here");
-        const template = await deployTemplate(
+        await deployTemplate(
             web3,
             artifacts,
             network === "rinkeby" ||
@@ -27,8 +26,6 @@ module.exports = async callback => {
                 {name: 'payroll', contractName: 'Payroll'},
                 {name: 'finance', contractName: 'Finance'},
                 {name: 'token-manager', contractName: 'TokenManager'}]);
-        console.log("there");
-        console.log(template.address);
     } catch (error) {
         callback(error);
     }

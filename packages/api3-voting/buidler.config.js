@@ -1,10 +1,5 @@
 const { usePlugin } = require('@nomiclabs/buidler/config');
 
-// usePlugin("@nomiclabs/buidler-ganache");
-// usePlugin('@nomiclabs/buidler-truffle5');
-// usePlugin('@nomiclabs/buidler-web3');
-// usePlugin('buidler-gas-reporter');
-// usePlugin('solidity-coverage');
 usePlugin('@aragon/buidler-aragon');
 
 const ACCOUNTS = (process.env.ETH_KEYS ? process.env.ETH_KEYS.split(',') : [])
@@ -19,8 +14,8 @@ module.exports = {
     // https://github.com/trufflesuite/ganache-core#options
     localhost: {
       url: 'http://localhost:8545',
-      // gasLimit: 6000000000,
-      // defaultBalanceEther: 100
+      gasLimit: 6000000000,
+      defaultBalanceEther: 100
     },
     // Local development network to test coverage. Solidity coverage
     // pluging launches its own in-process ganache server.

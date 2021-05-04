@@ -2,16 +2,16 @@
 pragma solidity 0.4.24;
 
 import "@aragon/templates-shared/contracts/BaseTemplate.sol";
-import "./utils/Api3Voting.sol";
+import "@api3-dao/api3-voting/contracts/Api3Voting.sol";
 
 contract Api3Template is BaseTemplate {
 
 
 //    Record below is ID for Rinkeby/Mainnet
-    bytes32 constant internal API3_VOTING_APP_ID = 0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554;
+//    bytes32 constant internal API3_VOTING_APP_ID = 0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554;
 
 //    Record below is ID for testing
-//    bytes32 constant internal API3_VOTING_APP_ID = 0x9fa3927f639745e587912d4b0fea7ef9013bf93fb907d29faeab57417ba6e1d2;
+    bytes32 constant internal API3_VOTING_APP_ID = 0x9fa3927f639745e587912d4b0fea7ef9013bf93fb907d29faeab57417ba6e1d2;
     string constant private ERROR_BAD_VOTE_SETTINGS = "API3_DAO_BAD_VOTE_SETTINGS";
 
     address private constant ANY_ENTITY = address(-1);

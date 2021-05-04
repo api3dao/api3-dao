@@ -8,7 +8,6 @@ module.exports = async ({ getUnnamedAccounts, deployments, network }) => {
       args: ["0x0b38210ea11411557c13457D4dA7dC6ea731B88a"],
     });
   } else {
-    console.log(accounts[0]);
     const api3Token = await deploy("Api3Token", {
       from: accounts[0],
       args: [accounts[0], accounts[0]],
