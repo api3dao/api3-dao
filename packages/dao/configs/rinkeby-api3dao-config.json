@@ -1,0 +1,6 @@
+{
+  "name": "api3dao",
+  "supportRequiredPct": 50,
+  "minAcceptQuorumPct": 5,
+  "voteTimeDays": 7
+}

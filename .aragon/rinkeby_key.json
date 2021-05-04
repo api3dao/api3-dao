@@ -1,0 +1,6 @@
+{
+  "rpc": "https://rinkeby.infura.io/v3/4c9049736af84c46ad0972910df0476a",
+  "keys": [
+    "ff5886c7e52052fc95e4bd6956b1e420d10693e62fbe506d61fa25b152093d54" // ADMIN
+  ]
+}
