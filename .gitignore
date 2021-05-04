@@ -15,9 +15,5 @@
 .env
 .idea
 .DS_Store
-<<<<<<< HEAD
-packages/dao/.aragon
-=======
 .aragon
->>>>>>> 171-deployment-odyssey
 yarn-error.log
