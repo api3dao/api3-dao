@@ -1,18 +1,22 @@
 const { usePlugin } = require('@nomiclabs/buidler/config');
 
+usePlugin("@nomiclabs/buidler-ganache");
+usePlugin('@nomiclabs/buidler-truffle5');
+usePlugin('buidler-gas-reporter');
+usePlugin('solidity-coverage');
 usePlugin('@aragon/buidler-aragon');
 
 const ACCOUNTS = (process.env.ETH_KEYS ? process.env.ETH_KEYS.split(',') : [])
   .map(key => key.trim());
 
 module.exports = {
-  defaultNetwork: 'localhost',
+  defaultNetwork: 'ganache',
   networks: {
     // Local development network using ganache. You can set any of the
     // Ganache's options. All of them are supported, with the exception
     // of accounts.
     // https://github.com/trufflesuite/ganache-core#options
-    localhost: {
+    ganache: {
       url: 'http://localhost:8545',
       gasLimit: 6000000000,
       defaultBalanceEther: 100
@@ -64,7 +68,6 @@ module.exports = {
     appServePort: 8001,
     clientServePort: 3000,
     appBuildOutputPath: 'dist/',
-    hooks: require('./scripts/buidler-hooks'),
     appSrcPath: './',
     appName: 'api3voting'
   },
