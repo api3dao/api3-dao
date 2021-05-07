@@ -1,7 +1,7 @@
 const { usePlugin } = require('@nomiclabs/buidler/config');
 
 usePlugin("@nomiclabs/buidler-ganache");
-// usePlugin('@nomiclabs/buidler-truffle5');
+usePlugin('@nomiclabs/buidler-truffle5');
 usePlugin('buidler-gas-reporter');
 usePlugin('solidity-coverage');
 usePlugin('@aragon/buidler-aragon');
@@ -10,7 +10,6 @@ const ACCOUNTS = (process.env.ETH_KEYS ? process.env.ETH_KEYS.split(',') : [])
   .map(key => key.trim());
 
 module.exports = {
-  defaultNetwork: 'ganache',
   networks: {
     // Local development network using ganache. You can set any of the
     // Ganache's options. All of them are supported, with the exception
@@ -30,8 +29,7 @@ module.exports = {
     // Mainnet network configured with Aragon node.
     mainnet: {
       url: 'https://mainnet.infura.io/v3/4c9049736af84c46ad0972910df0476a',
-      accounts: ACCOUNTS,
-      defaultBalanceEther: 100
+      accounts: ACCOUNTS
     },
     // Rinkeby network configured with Aragon node.
     rinkeby: {
