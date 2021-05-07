@@ -4,7 +4,7 @@ usePlugin("@nomiclabs/buidler-ganache");
 usePlugin('@nomiclabs/buidler-truffle5');
 usePlugin('buidler-gas-reporter');
 usePlugin('solidity-coverage');
-usePlugin('@aragon/buidler-aragon');
+// usePlugin('@aragon/buidler-aragon');
 
 const ACCOUNTS = (process.env.ETH_KEYS ? process.env.ETH_KEYS.split(',') : [])
   .map(key => key.trim());
