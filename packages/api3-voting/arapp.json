@@ -1,7 +1,7 @@
 {
-  "path": "./contracts/Api3Voting.sol",
+  "path": "contracts/Api3Voting.sol",
   "environments": {
-    "default": {
+    "aragon:local": {
       "network": "localhost",
       "appName": "api3voting.aragonpm.eth",
       "registry": "0xdA71454D2a71D63116cd67099e4a0fdd3a8Dfb47"
