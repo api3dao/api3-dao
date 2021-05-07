@@ -12,7 +12,7 @@
       "wsRPC": "wss://mainnet.eth.aragon.network/ws"
     },
     "rinkeby": {
-      "appName": "api3-template.aragonpm.eth",
+      "appName": "api3-template.open.aragonpm.eth",
       "network": "rinkeby",
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws"

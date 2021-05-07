@@ -24,3 +24,17 @@ npm run test:gas # while running `npm run devchain` on another terminal
 ```sh
 npm run diff
 ```
+
+- Deployment 
+
+To deploy updates of the contract on the rinkeby chain you should call the following command in your terminal:
+
+```shell script
+npx buidler publish minor --network rinkeby
+```
+If you want to change address from which you are deploying the contract, you should
+change it in the `buidler.config.js` rinkeby config
+
+
+In case of deployment on mainnet additional configuration needs to be done, 
+you'll need to provide your address in the `buidler.conf.js`.
