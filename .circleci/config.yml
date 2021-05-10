@@ -96,7 +96,7 @@ jobs:
         - run: npm run coverage:api3-voting
 
 
-  coverage_dao:
+  coverage_pool:
     docker:
       # specify the version you desire here
       - image: circleci/node:10.22.1
@@ -106,7 +106,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: npm run coverage:dao
+      - run: npm run coverage:pool
 
 
 workflows:
@@ -125,9 +125,9 @@ workflows:
       - test_voting:
           requires:
             - lint
-      - coverage_dao:
+      - coverage_pool:
           requires:
-            - lint
+            - test_pool
       - coverage_voting:
           requires:
             - lint
