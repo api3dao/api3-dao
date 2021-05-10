@@ -10,7 +10,7 @@
     "flatten:delete-license-lines": "sed --in-place '/SPDX-License-Identifier/d' *.flat.sol",
     "lint": "solium --no-soliumignore --dir ./contracts",
     "test": "hardhat test",
-    "test:coverage": "hardhat coverage",
+    "test:coverage": "ls && hardhat coverage",
     "test:gas": "REPORT_GAS=TRUE hardhat test"
   },
   "devDependencies": {
