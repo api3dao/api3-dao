@@ -96,7 +96,7 @@ jobs:
             at: .
         - run: sudo npm install -g codecov
 
-        - run:  npm run coverage:pool && npm run coverage:api3-voting
+        - run: npm run coverage:api3-voting
 
         - run: codecov
 
