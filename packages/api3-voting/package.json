@@ -8,7 +8,7 @@
     "lint": "solium --no-soliumignore --dir ./contracts",
     "test": "cd ../pool && npm run build && cp ./artifacts/contracts/Api3Pool.sol/Api3Pool.json ../api3-voting/artifacts/Api3Pool.json  && cd ../api3-voting && buidler test",
     "test:gas": "REPORT_GAS=true buidler test --network localhost",
-    "coverage": "buidler coverage --network coverage"
+    "coverage": "cd ../pool && npm run build && cp ./artifacts/contracts/Api3Pool.sol/Api3Pool.json ../api3-voting/artifacts/Api3Pool.json  && cd ../api3-voting && buidler coverage --network coverage"
   },
   "dependencies": {
     "@aragon/minime": "1.0.0",
