@@ -1,0 +1,8 @@
+{
+  "contractName": "ACLSyntaxSugar",
+  "abi": [],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603580601d6000396000f3006080604052600080fd00a165627a7a72305820ed38a49cf6d25303ac38cffb0da2565191b81d139dc1b4b76acd00ea632bef1c0029",
+  "deployedBytecode": "0x6080604052600080fd00a165627a7a72305820ed38a49cf6d25303ac38cffb0da2565191b81d139dc1b4b76acd00ea632bef1c0029",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

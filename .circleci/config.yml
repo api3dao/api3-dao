@@ -83,6 +83,19 @@ jobs:
           at: .
       - run: npm run test:pool
 
+  coverage_voting:
+      docker:
+        # specify the version you desire here
+        - image: circleci/node:10.22.1
+
+      working_directory: ~/repo/
+
+      steps:
+        - attach_workspace:
+            at: .
+        - run: npm run coverage:api3-voting
+
+
 workflows:
   build_and_test:
     jobs:
@@ -97,5 +110,8 @@ workflows:
           requires:
             - lint
       - test_voting:
+          requires:
+            - lint
+      - coverage_voting:
           requires:
             - lint
