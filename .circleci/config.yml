@@ -83,30 +83,22 @@ jobs:
           at: .
       - run: npm run test:pool
 
-  coverage_voting:
+  coverage:
       docker:
         # specify the version you desire here
         - image: circleci/node:10.22.1
 
       working_directory: ~/repo/
 
+
       steps:
         - attach_workspace:
             at: .
-        - run: npm run coverage:api3-voting
+        - run: sudo npm install -g codecov
 
+        - run: npm run coverage:api3-voting &&  npm run coverage:pool
 
-  coverage_pool:
-    docker:
-      # specify the version you desire here
-      - image: circleci/node:10.22.1
-
-    working_directory: ~/repo/
-
-    steps:
-      - attach_workspace:
-          at: .
-      - run: npm run coverage:pool
+        - run: codecov
 
 
 workflows:
@@ -125,9 +117,6 @@ workflows:
       - test_voting:
           requires:
             - lint
-      - coverage_pool:
+      - coverage:
           requires:
             - test_pool
-      - coverage_voting:
-          requires:
-            - lint
