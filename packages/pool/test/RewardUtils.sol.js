@@ -344,6 +344,24 @@ describe("setStakeTarget", function () {
         });
       }
     );
+    context("Stake target to be set is larger than 100%", function () {
+      it("reverts", async function () {
+        await api3Pool
+          .connect(roles.randomPerson)
+          .setDaoApps(
+            roles.agentAppPrimary.address,
+            roles.agentAppSecondary.address,
+            roles.votingAppPrimary.address,
+            roles.votingAppSecondary.address
+          );
+        const newStakeTarget = ethers.BigNumber.from("1000000000000000001");
+        await expect(
+          api3Pool
+            .connect(roles.agentAppSecondary)
+            .setStakeTarget(newStakeTarget)
+        ).to.be.revertedWith("Invalid value");
+      });
+    });
   });
   context("Caller is not DAO Agent", function () {
     it("reverts", async function () {
