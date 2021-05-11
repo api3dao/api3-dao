@@ -96,9 +96,7 @@ jobs:
             at: .
         - run:  npm run coverage:pool && npm run coverage:api3-voting
       
-      filters:
-            branches:
-              only: develop
+      
 
 
 
@@ -109,9 +107,6 @@ workflows:
       - lint:
           requires:
             - build
-      - coverage:
-          requires:
-            - lint
       - test_dao:
           requires:
             - lint
@@ -121,4 +116,11 @@ workflows:
       - test_voting:
           requires:
             - lint
+      - coverage:
+          requires:
+            - test_voting
+            - test_pool
+          filters:
+            branches:
+              only: develop
 
