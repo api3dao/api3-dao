@@ -136,11 +136,8 @@ contract StateUtils is IStateUtils {
     /// @dev Default value is 75%. This parameter is governable by the DAO.
     uint256 public maxApr = 75 * ONE_PERCENT;
 
-    /// @notice Coefficient that represents how aggresively the APR will be
-    /// updated to meet the stake target.
-    /// @dev Since this is a coefficient, it has no unit. A coefficient of 1e6
-    /// means 1% deviation from the stake target results in 1% update in APR.
-    /// This parameter is governable by the DAO.
+    /// @notice Steps in which APR will be updated in percentages
+    /// @dev Default value is 1%. This parameter is governable by the DAO.
     uint256 public aprUpdateStep = ONE_PERCENT;
 
     /// @notice Users need to schedule an unstake and wait for
