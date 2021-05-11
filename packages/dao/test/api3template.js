@@ -28,13 +28,16 @@ contract('Api3Template', ([_, deployer, tokenAddress, authorized]) => { // eslin
   const VOTING_DURATION_2 = 60;
 
   before('fetch bare template', async () => {
-    api3Template = Api3Template.at(await getTemplateAddress())
+    api3Template = Api3Template.at(await getTemplateAddress());
   });
 
   before('create bare entity', async () => {
+    console.log('Here');
     api3Pool = await Api3Pool.new(tokenAddress);
+    console.log('There');
     receipt1 = await api3Template.newInstance('api3template', (api3Pool.address), [SUPPORT_1, ACCEPTANCE_1, VOTING_DURATION_1], [SUPPORT_2, ACCEPTANCE_2, VOTING_DURATION_2], { from: deployer });
 
+    console.log('even here');
     dao = Kernel.at(getEventArgument(receipt1, 'DeployDao', 'dao'));
     acl = ACL.at(await dao.acl());
 

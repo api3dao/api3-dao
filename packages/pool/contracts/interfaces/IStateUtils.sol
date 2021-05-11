@@ -34,9 +34,9 @@ interface IStateUtils {
         uint256 unstakeWaitPeriod
         );
 
-    event SetAprUpdateCoefficient(
-        uint256 oldAprUpdateCoefficient,
-        uint256 aprUpdateCoefficient
+    event SetAprUpdateStep(
+        uint256 oldAprUpdateStep,
+        uint256 aprUpdateStep
         );
 
     event SetProposalVotingPowerThreshold(
@@ -83,17 +83,10 @@ interface IStateUtils {
     function setUnstakeWaitPeriod(uint256 _unstakeWaitPeriod)
         external;
 
-    function setAprUpdateCoefficient(uint256 _aprUpdateCoefficient)
+    function setAprUpdateStep(uint256 _aprUpdateStep)
         external;
 
     function setProposalVotingPowerThreshold(uint256 _proposalVotingPowerThreshold)
-        external;
-
-    function publishSpecsUrl(
-        address votingApp,
-        uint256 proposalIndex,
-        string calldata specsUrl
-        )
         external;
 
     function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
