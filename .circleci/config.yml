@@ -94,11 +94,9 @@ jobs:
       steps:
         - attach_workspace:
             at: .
-        - run: sudo npm install -g codecov
 
-        - run: npm run coverage:api3-voting
+        - run:  npm run coverage:pool && npm run coverage:api3-voting
 
-        - run: codecov
 
 
 workflows:
@@ -108,6 +106,9 @@ workflows:
       - lint:
           requires:
             - build
+      - coverage:
+          requires:
+            - lint
       - test_dao:
           requires:
             - lint
@@ -117,6 +118,4 @@ workflows:
       - test_voting:
           requires:
             - lint
-      - coverage:
-          requires:
-            - test_pool
+
