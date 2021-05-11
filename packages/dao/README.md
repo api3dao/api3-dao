@@ -15,13 +15,13 @@ npm run test
 
 - Deploy
 
-To deploy this smart contract on the rinkeby chain you'll need to call
+To deploy the dao to the rinkeby chain please call
 
 ```shell script
 npm run deploy:rinkeby
 ```
 
-In case if you would like to publish it to aragon ens, you'll need to install aragon first.
+In case you would like to publish it to aragon ens, you'll need aragon-cli first.
 
 ## Permissions
 
