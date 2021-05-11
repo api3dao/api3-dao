@@ -724,36 +724,6 @@ describe("setProposalVotingPowerThreshold", function () {
   });
 });
 
-describe("publishSpecsUrl", function () {
-  it("publishes specs URL", async function () {
-    const proposalIndex = 123;
-    const specsUrl = "www.myapi.com/specs.json";
-    await expect(
-      api3Pool
-        .connect(roles.randomPerson)
-        .publishSpecsUrl(
-          roles.votingAppPrimary.address,
-          proposalIndex,
-          specsUrl
-        )
-    )
-      .to.emit(api3Pool, "PublishedSpecsUrl")
-      .withArgs(
-        roles.votingAppPrimary.address,
-        proposalIndex,
-        roles.randomPerson.address,
-        specsUrl
-      );
-    expect(
-      await api3Pool.userAddressToVotingAppToProposalIndexToSpecsUrl(
-        roles.randomPerson.address,
-        roles.votingAppPrimary.address,
-        proposalIndex
-      )
-    ).to.equal(specsUrl);
-  });
-});
-
 describe("updateLastVoteSnapshotBlock", function () {
   context("Caller is a Voting app", function () {
     it("updates lastVoteSnapshotBlock", async function () {
