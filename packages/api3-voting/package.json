@@ -8,7 +8,7 @@
     "lint": "solium --no-soliumignore --dir ./contracts",
     "test": "cd ../pool && npm run build && cp ./artifacts/contracts/Api3Pool.sol/Api3Pool.json ../api3-voting/artifacts/Api3Pool.json  && cd ../api3-voting && buidler test",
     "test:gas": "REPORT_GAS=true buidler test --network localhost",
-    "coverage": "cd ../pool && npm run build && cp ./artifacts/contracts/Api3Pool.sol/Api3Pool.json ../api3-voting/artifacts/Api3Pool.json  && cd ../api3-voting && buidler coverage --network coverage"
+    "coverage": "cd ../pool && npm run build && cp ./artifacts/contracts/Api3Pool.sol/Api3Pool.json ../api3-voting/artifacts/Api3Pool.json  && cd ../api3-voting && buidler coverage --network coverage",
     "sync-assets": "copy-aragon-ui-assets ../dist && copyfiles -u 1 './public/**/*' ../dist",
     "serve": "parcel serve index.html --out-dir ../dist/ --no-cache",
     "watch:script": "parcel watch src/script.js --out-dir ../dist/ --no-hmr",
