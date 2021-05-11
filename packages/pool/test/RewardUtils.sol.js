@@ -2,10 +2,6 @@ const { expect } = require("chai");
 
 let roles;
 let api3Token, api3Pool;
-let EPOCH_LENGTH, REWARD_VESTING_PERIOD;
-
-const onePercent = ethers.BigNumber.from("10" + "000" + "000" + "000" + "000" + "000");
-const hundredPercent = ethers.BigNumber.from("1000" + "000" + "000" + "000" + "000" + "000");
 
 beforeEach(async () => {
   const accounts = await ethers.getSigners();
