@@ -121,7 +121,7 @@ contract StateUtils is IStateUtils {
 
     /// @notice Stake target the pool will aim to meet in percentages of the
     /// total token supply. The staking rewards increase if the total staked
-    ///  amount is below this, and vice versa.
+    /// amount is below this, and vice versa.
     /// @dev Default value is 50% of the total API3 token supply. This
     /// parameter is governable by the DAO.
     uint256 public stakeTarget = 500_000_000_000_000_000;
@@ -135,7 +135,7 @@ contract StateUtils is IStateUtils {
     /// staking rewards in percentages
     /// @dev Default value is 75%. This parameter is governable by the DAO.
     uint256 public maxApr = 750_000_000_000_000_000;
-
+    
     /// @notice Coefficient that represents how aggresively the APR will be
     /// updated to meet the stake target.
     /// @dev Since this is a coefficient, it has no unit. A coefficient of 1e6
@@ -160,17 +160,10 @@ contract StateUtils is IStateUtils {
     uint256 public proposalVotingPowerThreshold = 1_000_000_000_000_000;
 
     /// @notice APR that will be paid next epoch
-    /// @dev This is initialized at maximum APR, but will reach an
-    /// equilibrium based on the stake target.
+    /// @dev This value will reach an equilibrium based on the stake target.
     /// Every epoch (week), APR/52 of the total staked tokens will be added to
     /// the pool, effectively distributing them to the stakers.
-    uint256 public currentApr = maxApr;
-
-    /// @notice Mapping that keeps the specs of a proposal provided by a user
-    /// @dev After making a proposal through the Agent app, the user publishes
-    /// the specs of the proposal (target contract address, function,
-    /// parameters) at a URL
-    mapping(address => mapping(address => mapping(uint256 => string))) public userAddressToVotingAppToProposalIndexToSpecsUrl;
+    uint256 public currentApr = (maxApr + minApr) / 2;
 
     // Snapshot block number of the last vote created at one of the DAO
     // Api3Voting apps
@@ -348,23 +341,19 @@ contract StateUtils is IStateUtils {
             );
     }
 
-    /// @notice Called by the DAO Agent to set the APR update coefficient
-    /// @param _aprUpdateCoefficient APR update coefficient
-    function setAprUpdateCoefficient(uint256 _aprUpdateCoefficient)
+    /// @notice Called by the DAO Agent to set the APR update steps
+    /// @dev aprUpdateStep can be 0% or 100%+
+    /// @param _aprUpdateStep APR update steps
+    function setAprUpdateStep(uint256 _aprUpdateStep)
         external
         override
         onlyAgentApp()
     {
-        require(
-            _aprUpdateCoefficient <= 1_000_000_000
-                && _aprUpdateCoefficient > 0,
-            ERROR_VALUE
-            );
-        uint256 oldAprUpdateCoefficient = aprUpdateCoefficient;
-        aprUpdateCoefficient = _aprUpdateCoefficient;
-        emit SetAprUpdateCoefficient(
-            oldAprUpdateCoefficient,
-            aprUpdateCoefficient
+        uint256 oldAprUpdateStep = aprUpdateStep;
+        aprUpdateStep = _aprUpdateStep;
+        emit SetAprUpdateStep(
+            oldAprUpdateStep,
+            aprUpdateStep
             );
     }
 
@@ -386,29 +375,6 @@ contract StateUtils is IStateUtils {
         emit SetProposalVotingPowerThreshold(
             oldProposalVotingPowerThreshold,
             proposalVotingPowerThreshold
-            );
-    }
-
-    /// @notice Called by the owner of the proposal to publish the specs URL
-    /// @dev Since the owner of a proposal is known, users publishing specs for
-    /// a proposal that is not their own is not a concern
-    /// @param proposalIndex Proposal index
-    /// @param specsUrl URL that hosts the specs of the transaction that will
-    /// be made if the proposal passes
-    function publishSpecsUrl(
-        address votingApp,
-        uint256 proposalIndex,
-        string calldata specsUrl
-        )
-        external
-        override
-    {
-        userAddressToVotingAppToProposalIndexToSpecsUrl[msg.sender][votingApp][proposalIndex] = specsUrl;
-        emit PublishedSpecsUrl(
-            votingApp,
-            proposalIndex,
-            msg.sender,
-            specsUrl
             );
     }
 

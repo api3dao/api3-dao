@@ -83,8 +83,10 @@ describe("constructor", function () {
     expect(await api3Pool.proposalVotingPowerThreshold()).to.equal(
       ethers.BigNumber.from("1" + "000" + "000" + "000" + "000" + "000")
     );
-    // Initialize the APR at max APR
-    expect(await api3Pool.currentApr()).to.equal(await api3Pool.maxApr());
+    // Initialize the APR at (maxApr / minApr) / 2
+    expect(await api3Pool.currentApr()).to.equal(
+      (await api3Pool.maxApr()).add(await api3Pool.minApr()).div(2)
+    );
 
     // Token address set correctly
     expect(await api3Pool.api3Token()).to.equal(api3Token.address);
@@ -566,7 +568,7 @@ describe("setUnstakeWaitPeriod", function () {
   });
 });
 
-describe("setAprUpdateCoefficient", function () {
+describe("setAprUpdateStep", function () {
   context("Caller is DAO Agent", function () {
     context(
       "APR update coefficient to be set is larger than 0 and smaller than or equal to 10,000,000,000,000,000",
@@ -643,7 +645,7 @@ describe("setAprUpdateCoefficient", function () {
       await expect(
         api3Pool
           .connect(roles.randomPerson)
-          .setAprUpdateCoefficient(newAprUpdateCoefficient)
+          .setAprUpdateStep(newAprUpdateCoefficient)
       ).to.be.revertedWith("Unauthorized");
     });
   });
@@ -721,36 +723,6 @@ describe("setProposalVotingPowerThreshold", function () {
           .setProposalVotingPowerThreshold(newProposalVotingPowerThreshold)
       ).to.be.revertedWith("Unauthorized");
     });
-  });
-});
-
-describe("publishSpecsUrl", function () {
-  it("publishes specs URL", async function () {
-    const proposalIndex = 123;
-    const specsUrl = "www.myapi.com/specs.json";
-    await expect(
-      api3Pool
-        .connect(roles.randomPerson)
-        .publishSpecsUrl(
-          roles.votingAppPrimary.address,
-          proposalIndex,
-          specsUrl
-        )
-    )
-      .to.emit(api3Pool, "PublishedSpecsUrl")
-      .withArgs(
-        roles.votingAppPrimary.address,
-        proposalIndex,
-        roles.randomPerson.address,
-        specsUrl
-      );
-    expect(
-      await api3Pool.userAddressToVotingAppToProposalIndexToSpecsUrl(
-        roles.randomPerson.address,
-        roles.votingAppPrimary.address,
-        proposalIndex
-      )
-    ).to.equal(specsUrl);
   });
 });
 
