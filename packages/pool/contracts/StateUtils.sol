@@ -141,7 +141,7 @@ contract StateUtils is IStateUtils {
     /// @dev Since this is a coefficient, it has no unit. A coefficient of 1e6
     /// means 1% deviation from the stake target results in 1% update in APR.
     /// This parameter is governable by the DAO.
-    uint256 public aprUpdateCoefficient = 10_000_000_000_000_000;
+    uint256 public aprUpdateStep = 10_000_000_000_000_000;
 
     /// @notice Users need to schedule an unstake and wait for
     /// `unstakeWaitPeriod` before being able to unstake. This is to prevent
@@ -157,7 +157,7 @@ contract StateUtils is IStateUtils {
     /// proposals (in percentages)
     /// @dev Delegations count towards voting power.
     /// Default value is 0.1%. This parameter is governable by the DAO.
-    uint256 public aprUpdateStep = 1_000_000_000_000_000;
+    uint256 public proposalVotingPowerThreshold = 1_000_000_000_000_000;
 
     /// @notice APR that will be paid next epoch
     /// @dev This value will reach an equilibrium based on the stake target.
