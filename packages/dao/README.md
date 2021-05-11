@@ -13,6 +13,15 @@ If solc gives `RangeError: Maximum call stack size exceeded`, use Node v8 or the
 npm run test
 ```
 
+- Deploy
+
+To deploy the dao to the rinkeby chain please call
+
+```shell script
+npm run deploy:rinkeby
+```
+
+In case you would like to publish it to aragon ens, you'll need aragon-cli first.
 
 ## Permissions
 

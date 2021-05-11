@@ -1,6 +1,6 @@
 {
-  "name": "Voting",
-  "author": "Aragon Association",
+  "name": "Api3Voting",
+  "author": "API3",
   "description": "Create and participate in votes",
   "changelog_url": "https://github.com/aragon/aragon-apps/releases",
   "details_url": "/meta/details.md",
