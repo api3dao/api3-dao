@@ -1,5 +1,5 @@
 **/node_modules/**
-**/flattend_contracts/**
+**/flattened_contracts/**
 
 **/cache/**
 **/artifacts/**
@@ -9,6 +9,7 @@
 **/build/**
 **/diff/**
 **/abi/**
+**/coverage/**
 
 **/credentials.json
 **/*.flat.sol

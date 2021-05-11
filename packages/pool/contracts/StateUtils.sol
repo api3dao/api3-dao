@@ -166,12 +166,6 @@ contract StateUtils is IStateUtils {
     /// the pool, effectively distributing them to the stakers.
     uint256 public currentApr = maxApr;
 
-    /// @notice Mapping that keeps the specs of a proposal provided by a user
-    /// @dev After making a proposal through the Agent app, the user publishes
-    /// the specs of the proposal (target contract address, function,
-    /// parameters) at a URL
-    mapping(address => mapping(address => mapping(uint256 => string))) public userAddressToVotingAppToProposalIndexToSpecsUrl;
-
     // Snapshot block number of the last vote created at one of the DAO
     // Api3Voting apps
     uint256 private lastVoteSnapshotBlock;
@@ -386,29 +380,6 @@ contract StateUtils is IStateUtils {
         emit SetProposalVotingPowerThreshold(
             oldProposalVotingPowerThreshold,
             proposalVotingPowerThreshold
-            );
-    }
-
-    /// @notice Called by the owner of the proposal to publish the specs URL
-    /// @dev Since the owner of a proposal is known, users publishing specs for
-    /// a proposal that is not their own is not a concern
-    /// @param proposalIndex Proposal index
-    /// @param specsUrl URL that hosts the specs of the transaction that will
-    /// be made if the proposal passes
-    function publishSpecsUrl(
-        address votingApp,
-        uint256 proposalIndex,
-        string calldata specsUrl
-        )
-        external
-        override
-    {
-        userAddressToVotingAppToProposalIndexToSpecsUrl[msg.sender][votingApp][proposalIndex] = specsUrl;
-        emit PublishedSpecsUrl(
-            votingApp,
-            proposalIndex,
-            msg.sender,
-            specsUrl
             );
     }
 
