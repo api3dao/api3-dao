@@ -69,8 +69,8 @@ contract StateUtils is IStateUtils {
     string internal constant ERROR_DELEGATE = "Cannot delegate to the same address";
 
     // All percentage values are represented by multiplying by 1e16
-    uint256 internal constant ONE_PERCENT = 10_000_000_000_000_000;
-    uint256 internal constant HUNDRED_PERCENT = 1000_000_000_000_000_000;
+    uint256 internal constant HUNDRED_PERCENT = 1e18;
+    uint256 internal constant ONE_PERCENT = HUNDRED_PERCENT / 100;
 
     /// @notice API3 token contract
     IApi3Token public api3Token;
@@ -124,24 +124,24 @@ contract StateUtils is IStateUtils {
     /// amount is below this, and vice versa.
     /// @dev Default value is 50% of the total API3 token supply. This
     /// parameter is governable by the DAO.
-    uint256 public stakeTarget = 500_000_000_000_000_000;
+    uint256 public stakeTarget = 50 * ONE_PERCENT;
 
     /// @notice Minimum APR (annual percentage rate) the pool will pay as
     /// staking rewards in percentages
     /// @dev Default value is 2.5%. This parameter is governable by the DAO.
-    uint256 public minApr = 25_000_000_000_000_000;
+    uint256 public minApr = 25 * ONE_PERCENT / 10;
 
     /// @notice Maximum APR (annual percentage rate) the pool will pay as
     /// staking rewards in percentages
     /// @dev Default value is 75%. This parameter is governable by the DAO.
-    uint256 public maxApr = 750_000_000_000_000_000;
+    uint256 public maxApr = 75 * ONE_PERCENT;
 
     /// @notice Coefficient that represents how aggresively the APR will be
     /// updated to meet the stake target.
     /// @dev Since this is a coefficient, it has no unit. A coefficient of 1e6
     /// means 1% deviation from the stake target results in 1% update in APR.
     /// This parameter is governable by the DAO.
-    uint256 public aprUpdateStep = 10_000_000_000_000_000;
+    uint256 public aprUpdateStep = ONE_PERCENT;
 
     /// @notice Users need to schedule an unstake and wait for
     /// `unstakeWaitPeriod` before being able to unstake. This is to prevent
@@ -157,7 +157,7 @@ contract StateUtils is IStateUtils {
     /// proposals (in percentages)
     /// @dev Delegations count towards voting power.
     /// Default value is 0.1%. This parameter is governable by the DAO.
-    uint256 public proposalVotingPowerThreshold = 1_000_000_000_000_000;
+    uint256 public proposalVotingPowerThreshold = ONE_PERCENT / 10;
 
     /// @notice APR that will be paid next epoch
     /// @dev This value will reach an equilibrium based on the stake target.
