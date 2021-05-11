@@ -74,7 +74,7 @@ describe("constructor", function () {
     expect(await api3Pool.maxApr()).to.equal(
       ethers.BigNumber.from("75" + "000" + "000")
     );
-    expect(await api3Pool.aprUpdateCoefficient()).to.equal(
+    expect(await api3Pool.aprUpdateStep()).to.equal(
       ethers.BigNumber.from("1" + "000" + "000")
     );
     expect(await api3Pool.unstakeWaitPeriod()).to.equal(
@@ -83,8 +83,10 @@ describe("constructor", function () {
     expect(await api3Pool.proposalVotingPowerThreshold()).to.equal(
       ethers.BigNumber.from("100" + "000")
     );
-    // Initialize the APR at max APR
-    expect(await api3Pool.currentApr()).to.equal(await api3Pool.maxApr());
+    // Initialize the APR at (maxApr / minApr) / 2
+    expect(await api3Pool.currentApr()).to.equal(
+      (await api3Pool.maxApr()).add(await api3Pool.minApr()).div(2)
+    );
 
     // Token address set correctly
     expect(await api3Pool.api3Token()).to.equal(api3Token.address);
@@ -566,76 +568,28 @@ describe("setUnstakeWaitPeriod", function () {
   });
 });
 
-describe("setAprUpdateCoefficient", function () {
+describe("setAprUpdateStep", function () {
   context("Caller is DAO Agent", function () {
-    context(
-      "APR update coefficient to be set is larger than 0 and smaller than or equal to 1,000,000,000",
-      function () {
-        it("sets APR update coefficient", async function () {
-          await api3Pool
-            .connect(roles.randomPerson)
-            .setDaoApps(
-              roles.agentAppPrimary.address,
-              roles.agentAppSecondary.address,
-              roles.votingAppPrimary.address,
-              roles.votingAppSecondary.address
-            );
-          const oldAprUpdateCoefficient = await api3Pool.aprUpdateCoefficient();
-          const newAprUpdateCoefficient = ethers.BigNumber.from(
-            "50" + "000" + "000"
-          );
-          await expect(
-            api3Pool
-              .connect(roles.agentAppPrimary)
-              .setAprUpdateCoefficient(newAprUpdateCoefficient)
-          )
-            .to.emit(api3Pool, "SetAprUpdateCoefficient")
-            .withArgs(oldAprUpdateCoefficient, newAprUpdateCoefficient);
-          expect(await api3Pool.aprUpdateCoefficient()).to.equal(
-            newAprUpdateCoefficient
-          );
-          await expect(
-            api3Pool
-              .connect(roles.agentAppSecondary)
-              .setAprUpdateCoefficient(newAprUpdateCoefficient)
-          )
-            .to.emit(api3Pool, "SetAprUpdateCoefficient")
-            .withArgs(newAprUpdateCoefficient, newAprUpdateCoefficient);
-          expect(await api3Pool.aprUpdateCoefficient()).to.equal(
-            newAprUpdateCoefficient
-          );
-        });
-      }
-    );
-    context(
-      "APR update coefficient to be set is 0 or larger than 1,000,000,000",
-      function () {
-        it("reverts", async function () {
-          await api3Pool
-            .connect(roles.randomPerson)
-            .setDaoApps(
-              roles.agentAppPrimary.address,
-              roles.agentAppSecondary.address,
-              roles.votingAppPrimary.address,
-              roles.votingAppSecondary.address
-            );
-          const newAprUpdateCoefficient1 = ethers.BigNumber.from(0);
-          await expect(
-            api3Pool
-              .connect(roles.agentAppSecondary)
-              .setAprUpdateCoefficient(newAprUpdateCoefficient1)
-          ).to.be.revertedWith("Invalid value");
-          const newAprUpdateCoefficient2 = ethers.BigNumber.from(
-            "50" + "000" + "000" + "000"
-          );
-          await expect(
-            api3Pool
-              .connect(roles.agentAppSecondary)
-              .setAprUpdateCoefficient(newAprUpdateCoefficient2)
-          ).to.be.revertedWith("Invalid value");
-        });
-      }
-    );
+    it("sets APR update coefficient", async function () {
+      await api3Pool
+        .connect(roles.randomPerson)
+        .setDaoApps(
+          roles.agentAppPrimary.address,
+          roles.agentAppSecondary.address,
+          roles.votingAppPrimary.address,
+          roles.votingAppSecondary.address
+        );
+      const oldAprUpdateStep = await api3Pool.aprUpdateStep();
+      const newAprUpdateStep = ethers.BigNumber.from("500" + "000");
+      await expect(
+        api3Pool
+          .connect(roles.agentAppPrimary)
+          .setAprUpdateStep(newAprUpdateStep)
+      )
+        .to.emit(api3Pool, "SetAprUpdateStep")
+        .withArgs(oldAprUpdateStep, newAprUpdateStep);
+      expect(await api3Pool.aprUpdateStep()).to.equal(newAprUpdateStep);
+    });
   });
   context("Caller is not DAO Agent", function () {
     it("reverts", async function () {
@@ -643,7 +597,7 @@ describe("setAprUpdateCoefficient", function () {
       await expect(
         api3Pool
           .connect(roles.randomPerson)
-          .setAprUpdateCoefficient(newAprUpdateCoefficient)
+          .setAprUpdateStep(newAprUpdateCoefficient)
       ).to.be.revertedWith("Unauthorized");
     });
   });
