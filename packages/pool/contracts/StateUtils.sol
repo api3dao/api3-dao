@@ -71,7 +71,7 @@ contract StateUtils is IStateUtils {
     // All percentage values are represented by multiplying by 1e16
     uint256 internal constant ONE_PERCENT = 10_000_000_000_000_000;
     uint256 internal constant HUNDRED_PERCENT = 1000_000_000_000_000_000;
-    
+
     /// @notice API3 token contract
     IApi3Token public api3Token;
 
@@ -135,7 +135,7 @@ contract StateUtils is IStateUtils {
     /// staking rewards in percentages
     /// @dev Default value is 75%. This parameter is governable by the DAO.
     uint256 public maxApr = 750_000_000_000_000_000;
-    
+
     /// @notice Coefficient that represents how aggresively the APR will be
     /// updated to meet the stake target.
     /// @dev Since this is a coefficient, it has no unit. A coefficient of 1e6
@@ -157,7 +157,7 @@ contract StateUtils is IStateUtils {
     /// proposals (in percentages)
     /// @dev Delegations count towards voting power.
     /// Default value is 0.1%. This parameter is governable by the DAO.
-    uint256 public proposalVotingPowerThreshold = 1_000_000_000_000_000;
+    uint256 public aprUpdateStep = 1_000_000_000_000_000;
 
     /// @notice APR that will be paid next epoch
     /// @dev This value will reach an equilibrium based on the stake target.
