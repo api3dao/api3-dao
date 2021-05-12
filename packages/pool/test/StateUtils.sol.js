@@ -599,7 +599,7 @@ describe("setAprUpdateStep", function () {
 describe("setProposalVotingPowerThreshold", function () {
   context("Caller is primary DAO Agent", function () {
     context(
-      "Proposal voting power threshold to be set is smaller than or equal to 100%",
+      "Proposal voting power threshold to be set is smaller than or equal to 10%",
       function () {
         it("sets proposal voting power threshold", async function () {
           await api3Pool
@@ -612,7 +612,7 @@ describe("setProposalVotingPowerThreshold", function () {
             );
           const oldProposalVotingPowerThreshold = await api3Pool.proposalVotingPowerThreshold();
           const newProposalVotingPowerThreshold = ethers.BigNumber.from(
-            ONE_PERCENT.div(10)
+            ONE_PERCENT.mul(10)
           );
           await expect(
             api3Pool
