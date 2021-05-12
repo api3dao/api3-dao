@@ -266,7 +266,7 @@ contract Api3Voting is IForwarder, AragonApp {
         require(votingPower > 0, ERROR_NO_VOTING_POWER);
         uint256 proposalMakerVotingPower = api3Pool.balanceOfAt(msg.sender, snapshotBlock);
         require(
-            proposalMakerVotingPower >= votingPower.mul(api3Pool.proposalVotingPowerThreshold()).div(1e8),
+            proposalMakerVotingPower >= votingPower.mul(api3Pool.proposalVotingPowerThreshold()).div(1e18),
             "API3_HIT_PROPOSAL_THRESHOLD"
             );
         api3Pool.updateLastVoteSnapshotBlock(snapshotBlock);
