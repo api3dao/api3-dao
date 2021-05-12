@@ -6,12 +6,16 @@ import "./interfaces/IDelegationUtils.sol";
 
 /// @title Contract that implements voting power delegation
 abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
+
+    string internal constant ERROR_DELEGATION_BALANCE = "User that is delegating vote should have enough voting power to at least create a voting proposal";
+
     /// @notice Called by the user to delegate voting power
     /// @param delegate User address the voting power will be delegated to
-    function delegateVotingPower(address delegate) 
+    function delegateVotingPower(address delegate)
         external
         override
     {
+        require(balanceOf(msg.sender) > proposalVotingPowerThreshold, ERROR_DELEGATION_BALANCE );
         payReward();
         // Delegating users have cannot use their voting power, so we are
         // verifying that the delegate is not currently delegating. However,
@@ -114,7 +118,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         if (delta) {
             newDelegatedTo = currentlyDelegatedTo + shares;
         } else {
-            newDelegatedTo = currentlyDelegatedTo > shares 
+            newDelegatedTo = currentlyDelegatedTo > shares
                 ? currentlyDelegatedTo - shares
                 : 0;
         }
