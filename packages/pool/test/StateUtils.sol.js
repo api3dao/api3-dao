@@ -631,7 +631,7 @@ describe("setProposalVotingPowerThreshold", function () {
       }
     );
     context(
-      "Proposal voting power threshold to be set is larger than 100%",
+      "Proposal voting power threshold to be set is larger than 10%",
       function () {
         it("reverts", async function () {
           await api3Pool
@@ -643,7 +643,7 @@ describe("setProposalVotingPowerThreshold", function () {
               roles.votingAppSecondary.address
             );
           const newProposalVotingPowerThreshold = ethers.BigNumber.from(
-            HUNDRED_PERCENT.add(1)
+            ONE_PERCENT.mul(10).add(1)
           );
           await expect(
             api3Pool
