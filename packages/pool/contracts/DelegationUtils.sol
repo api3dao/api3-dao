@@ -15,7 +15,6 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         external
         override
     {
-        require(balanceOf(msg.sender) > proposalVotingPowerThreshold, ERROR_DELEGATION_BALANCE );
         payReward();
         // Delegating users have cannot use their voting power, so we are
         // verifying that the delegate is not currently delegating. However,
@@ -26,6 +25,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
                 && userDelegate(delegate) == address(0),
             ERROR_ADDRESS
             );
+        require(userShares(msg.sender) > proposalVotingPowerThreshold, ERROR_DELEGATION_BALANCE );
         User storage user = users[msg.sender];
         // Do not allow frequent delegation updates as that can be used to spam
         // proposals
