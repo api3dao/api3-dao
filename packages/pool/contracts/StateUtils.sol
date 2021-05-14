@@ -23,11 +23,11 @@ contract StateUtils is IStateUtils {
     }
 
     struct User {
-        uint256 unstaked;
-        uint256 vesting;
         Checkpoint[] shares;
         AddressCheckpoint[] delegates;
         Checkpoint[] delegatedTo;
+        uint256 unstaked;
+        uint256 vesting;
         uint256 unstakeScheduledFor;
         uint256 unstakeAmount;
         uint256 mostRecentProposalTimestamp;
