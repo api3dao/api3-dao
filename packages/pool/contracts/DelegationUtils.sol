@@ -7,7 +7,7 @@ import "./interfaces/IDelegationUtils.sol";
 /// @title Contract that implements voting power delegation
 abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
 
-    string internal constant ERROR_DELEGATION_BALANCE = "Not enough voting power to delegate";
+    string internal constant ERROR_DELEGATION_BALANCE = "Cannot delegate zero shares";
 
     /// @notice Called by the user to delegate voting power
     /// @param delegate User address the voting power will be delegated to
