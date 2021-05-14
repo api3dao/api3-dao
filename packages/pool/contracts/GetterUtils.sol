@@ -277,6 +277,28 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         }
     }
 
+    function getUser(address userAddress)
+        external
+        view
+        override
+        returns(
+            uint256 unstaked,
+            uint256 vesting,
+            uint256 lastDelegationUpdateTimestamp,
+            uint256 unstakeScheduledFor,
+            uint256 unstakeAmount,
+            uint256 mostRecentProposalTimestamp
+            )
+    {
+        User storage user = users[userAddress];
+        unstaked = user.unstaked;
+        vesting = user.vesting;
+        lastDelegationUpdateTimestamp = user.lastDelegationUpdateTimestamp;
+        unstakeScheduledFor = user.unstakeScheduledFor;
+        unstakeAmount = user.unstakeAmount;
+        mostRecentProposalTimestamp = user.mostRecentProposalTimestamp;
+    }
+
     /// @notice Called to get the value of a checkpoint array at a specific
     /// block
     /// @param checkpoints Checkpoints array
