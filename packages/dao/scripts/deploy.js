@@ -10,13 +10,13 @@ const VOTE_NAME = 'Api3Voting';
 
 const Api3Pool = artifacts.require('Api3Pool');
 
-const SUPPORT_1 = 80e16;
-const ACCEPTANCE_1 = 40e16;
-const VOTING_DURATION_1 = 100;
+const SUPPORT_1 = 50e16;
+const ACCEPTANCE_1 = 50e16;
+const VOTING_DURATION_1 = 7 * 24 * 60 * 60;
 
 const SUPPORT_2 = 50e16;
-const ACCEPTANCE_2 = 20e16;
-const VOTING_DURATION_2 = 60;
+const ACCEPTANCE_2 = 15e16;
+const VOTING_DURATION_2 = 7 * 24 * 60 * 60;
 
 module.exports = async callback => {
     try {
