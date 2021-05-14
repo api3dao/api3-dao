@@ -21,11 +21,11 @@ contract('Api3Template', ([_, deployer, tokenAddress, authorized]) => { // eslin
 
   const SUPPORT_1 = 80e16;
   const ACCEPTANCE_1 = 40e16;
-  const VOTING_DURATION_1 = 100;
+  const VOTING_DURATION_1 = 60*60*24*7;
 
   const SUPPORT_2 = 50e16;
   const ACCEPTANCE_2 = 20e16;
-  const VOTING_DURATION_2 = 60;
+  const VOTING_DURATION_2 = 60*60*24*7;
 
   before('fetch bare template', async () => {
     api3Template = Api3Template.at(await getTemplateAddress());
