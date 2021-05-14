@@ -22,7 +22,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
   let CREATE_VOTES_ROLE, MODIFY_SUPPORT_ROLE, MODIFY_QUORUM_ROLE;
 
   const NOW = 1;
-  const votingDuration = 1000;
+  const votingDuration = 60*60*24*7;
   const APP_ID = '0x1234123412341234123412341234123412341234123412341234123412341234';
 
   before('load roles', async () => {
