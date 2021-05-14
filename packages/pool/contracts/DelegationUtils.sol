@@ -7,7 +7,7 @@ import "./interfaces/IDelegationUtils.sol";
 /// @title Contract that implements voting power delegation
 abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
 
-    string internal constant ERROR_DELEGATION_BALANCE = "User that is delegating vote should have enough voting power to at least create a voting proposal";
+    string internal constant ERROR_DELEGATION_BALANCE = "Not enough voting power to delegate";
 
     /// @notice Called by the user to delegate voting power
     /// @param delegate User address the voting power will be delegated to
@@ -25,8 +25,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
                 && userDelegate(delegate) == address(0),
             ERROR_ADDRESS
             );
-        require(userShares(msg.sender) > proposalVotingPowerThreshold, ERROR_DELEGATION_BALANCE );
-        User storage user = users[msg.sender];
+                User storage user = users[msg.sender];
         // Do not allow frequent delegation updates as that can be used to spam
         // proposals
         require(
@@ -36,7 +35,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         user.lastDelegationUpdateTimestamp = block.timestamp;
         uint256 userShares = userShares(msg.sender);
         address userDelegate = userDelegate(msg.sender);
-
+        require(userShares > 0, ERROR_DELEGATION_BALANCE );
         require(userDelegate != delegate, ERROR_DELEGATE);
 
         if (userDelegate != address(0)) {
