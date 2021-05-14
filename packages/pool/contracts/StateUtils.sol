@@ -188,6 +188,15 @@ contract StateUtils is IStateUtils {
         _;
     }
 
+    /// @dev Reverts if the caller is not an API3 DAO Api3Voting app
+    modifier onlyVotingApp() {
+        require(
+            msg.sender == votingAppPrimary || msg.sender == votingAppSecondary,
+            ERROR_UNAUTHORIZED
+            );
+        _;
+    }
+
     /// @param api3TokenAddress API3 token contract address
     constructor(address api3TokenAddress)
     {
@@ -381,11 +390,8 @@ contract StateUtils is IStateUtils {
     function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
         external
         override
+        onlyVotingApp()
     {
-        require(
-            msg.sender == votingAppPrimary || msg.sender == votingAppSecondary,
-            ERROR_UNAUTHORIZED
-            );
         lastVoteSnapshotBlock = snapshotBlock;
         snapshotBlockToTimestamp[snapshotBlock] = block.timestamp;
         emit UpdatedLastVoteSnapshotBlock(
