@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@api3-dao/api3-voting": "^1.0.0",
+    "@api3-dao/pool": "^0.1.0",
     "@aragon/apps-shared-minime": "^1.0.0",
     "@aragon/id": "2.0.3",
     "@aragon/os": "4.3.0",
