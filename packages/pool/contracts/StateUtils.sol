@@ -32,6 +32,7 @@ contract StateUtils is IStateUtils {
         uint256 unstakeScheduledFor;
         uint256 unstakeAmount;
         uint256 mostRecentProposalTimestamp;
+        uint256 mostRecentVoteTimestamp;
     }
 
     /// @notice Length of the epoch in which the staking reward is paid out
@@ -411,6 +412,17 @@ contract StateUtils is IStateUtils {
         onlyVotingApp()
     {
         users[userAddress].mostRecentProposalTimestamp = block.timestamp;
+    }
+
+    /// @notice Called by a DAO Api3Voting app at voting-time to update the
+    /// timestamp of the user's most recent vote
+    /// @param userAddress User address
+    function updateMostRecentVoteTimestamp(address userAddress)
+        external
+        override
+        onlyVotingApp()
+    {
+        users[userAddress].mostRecentVoteTimestamp = block.timestamp;
     }
 
     /// @notice Called internally to update the total shares history

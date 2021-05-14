@@ -101,4 +101,9 @@ contract Api3TokenMock is MiniMeToken {
         external
     {
     }
+
+    function updateMostRecentVoteTimestamp(address userAddress)
+        external
+    {
+    }
 }

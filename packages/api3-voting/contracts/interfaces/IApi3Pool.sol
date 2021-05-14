@@ -31,6 +31,9 @@ interface IApi3Pool {
     function updateMostRecentProposalTimestamp(address userAddress)
         external;
 
+    function updateMostRecentVoteTimestamp(address userAddress)
+        external;
+
     function getUser(address userAddress)
         external
         view

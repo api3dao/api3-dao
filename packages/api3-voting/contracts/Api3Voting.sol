@@ -295,6 +295,7 @@ contract Api3Voting is IForwarder, AragonApp {
         bool _executesIfDecided
     ) internal
     {
+        api3Pool.updateMostRecentVoteTimestamp(msg.sender);
         Vote storage vote_ = votes[_voteId];
 
         // This could re-enter, though we can assume the governance token is not malicious
