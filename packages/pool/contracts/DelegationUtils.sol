@@ -25,7 +25,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
                 && userDelegate(delegate) == address(0),
             ERROR_ADDRESS
             );
-                User storage user = users[msg.sender];
+        User storage user = users[msg.sender];
         // Do not allow frequent delegation updates as that can be used to spam
         // proposals
         require(
