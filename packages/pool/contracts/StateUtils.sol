@@ -28,11 +28,11 @@ contract StateUtils is IStateUtils {
         Checkpoint[] shares;
         AddressCheckpoint[] delegates;
         Checkpoint[] delegatedTo;
-        uint256 lastDelegationUpdateTimestamp;
         uint256 unstakeScheduledFor;
         uint256 unstakeAmount;
         uint256 mostRecentProposalTimestamp;
         uint256 mostRecentVoteTimestamp;
+        uint256 mostRecentDelegationTimestamp;
         uint256 mostRecentUndelegationTimestamp;
     }
 

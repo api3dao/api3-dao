@@ -284,22 +284,22 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         returns(
             uint256 unstaked,
             uint256 vesting,
-            uint256 lastDelegationUpdateTimestamp,
             uint256 unstakeScheduledFor,
             uint256 unstakeAmount,
             uint256 mostRecentProposalTimestamp,
             uint256 mostRecentVoteTimestamp,
+            uint256 mostRecentDelegationTimestamp,
             uint256 mostRecentUndelegationTimestamp
             )
     {
         User storage user = users[userAddress];
         unstaked = user.unstaked;
         vesting = user.vesting;
-        lastDelegationUpdateTimestamp = user.lastDelegationUpdateTimestamp;
         unstakeScheduledFor = user.unstakeScheduledFor;
         unstakeAmount = user.unstakeAmount;
         mostRecentProposalTimestamp = user.mostRecentProposalTimestamp;
         mostRecentVoteTimestamp = user.mostRecentVoteTimestamp;
+        mostRecentDelegationTimestamp = user.mostRecentDelegationTimestamp;
         mostRecentUndelegationTimestamp = user.mostRecentUndelegationTimestamp;
     }
 
