@@ -4,7 +4,7 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./interfaces/IApi3Token.sol";
-import "./interfaces/IApi3Pool.sol";
+import "../interfaces/v0.6.12/IApi3Pool.sol";
 import "./interfaces/ITimelockManager.sol";
 
 
