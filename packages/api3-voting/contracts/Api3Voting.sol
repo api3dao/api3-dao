@@ -33,7 +33,7 @@ contract Api3Voting is IForwarder, AragonApp {
     string private constant ERROR_CAN_NOT_EXECUTE = "VOTING_CAN_NOT_EXECUTE";
     string private constant ERROR_CAN_NOT_FORWARD = "VOTING_CAN_NOT_FORWARD";
     string private constant ERROR_NO_VOTING_POWER = "VOTING_NO_VOTING_POWER";
-    string private constant VOTING_NOT_EQUAL_TO_POOL_EPOCH = "VOTING_CANNOT_BE_LONGER_THEN_API3POOL_EPOCH";
+    string private constant ERROR_VOTE_TIME = "VOTING_TIME_NOT_EQUAL_TO_POOL_EPOCH";
 
     enum VoterState { Absent, Yea, Nay }
 
@@ -97,7 +97,7 @@ contract Api3Voting is IForwarder, AragonApp {
         voteTime = _voteTime;
         // The pool acts as the MiniMe token
         api3Pool = IApi3Pool(_token);
-        require(_voteTime == api3Pool.EPOCH_LENGTH(), VOTING_NOT_EQUAL_TO_POOL_EPOCH);
+        require(_voteTime == api3Pool.EPOCH_LENGTH(), ERROR_VOTE_TIME);
     }
 
     /**
