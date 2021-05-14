@@ -91,6 +91,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             address(0)
             );
         user.lastDelegationUpdateTimestamp = block.timestamp;
+        user.mostRecentUndelegationTimestamp = block.timestamp;
         emit Undelegated(
             msg.sender,
             userDelegate

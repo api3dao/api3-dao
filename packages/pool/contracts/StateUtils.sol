@@ -33,6 +33,7 @@ contract StateUtils is IStateUtils {
         uint256 unstakeAmount;
         uint256 mostRecentProposalTimestamp;
         uint256 mostRecentVoteTimestamp;
+        uint256 mostRecentUndelegationTimestamp;
     }
 
     /// @notice Length of the epoch in which the staking reward is paid out

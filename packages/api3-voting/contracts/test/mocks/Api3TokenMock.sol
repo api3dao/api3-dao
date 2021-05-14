@@ -86,7 +86,9 @@ contract Api3TokenMock is MiniMeToken {
             uint256 lastDelegationUpdateTimestamp,
             uint256 unstakeScheduledFor,
             uint256 unstakeAmount,
-            uint256 mostRecentProposalTimestamp
+            uint256 mostRecentProposalTimestamp,
+            uint256 mostRecentVoteTimestamp,
+            uint256 mostRecentUndelegationTimestamp
             )
     {
         unstaked = 0;
@@ -95,6 +97,8 @@ contract Api3TokenMock is MiniMeToken {
         unstakeScheduledFor = 0;
         unstakeAmount = 0;
         mostRecentProposalTimestamp = 0;
+        mostRecentVoteTimestamp = 0;
+        mostRecentUndelegationTimestamp = 0;
     }
 
     function updateMostRecentProposalTimestamp(address userAddress)

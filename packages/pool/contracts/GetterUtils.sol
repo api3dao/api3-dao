@@ -287,7 +287,9 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
             uint256 lastDelegationUpdateTimestamp,
             uint256 unstakeScheduledFor,
             uint256 unstakeAmount,
-            uint256 mostRecentProposalTimestamp
+            uint256 mostRecentProposalTimestamp,
+            uint256 mostRecentVoteTimestamp,
+            uint256 mostRecentUndelegationTimestamp
             )
     {
         User storage user = users[userAddress];
@@ -297,6 +299,8 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         unstakeScheduledFor = user.unstakeScheduledFor;
         unstakeAmount = user.unstakeAmount;
         mostRecentProposalTimestamp = user.mostRecentProposalTimestamp;
+        mostRecentVoteTimestamp = user.mostRecentVoteTimestamp;
+        mostRecentUndelegationTimestamp = user.mostRecentUndelegationTimestamp;
     }
 
     /// @notice Called to get the value of a checkpoint array at a specific
