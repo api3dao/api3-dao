@@ -39,9 +39,9 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
 
     context('delegation for the voting working properly', () => {
 
-        const balance1 = 20;
-        const balance2 = 40;
-        const balance3 = 10;
+        const balance1 = "200" + "000" + "000" + "000" + "000" + "000";
+        const balance2 = "400" + "000" + "000" + "000" + "000" + "000";
+        const balance3 = "100" + "000" + "000" + "000" + "000" + "000";
 
         before('', async () => {
             const { dao, acl } = await newDao(root);
@@ -89,7 +89,7 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
             await voting.vote(voteId, true, false, { from: voter2 });
             const result = await voting.getVote(voteId);
-            expect(Number(result.yea)).to.equal(balance1 + balance2 + balance3);
+            expect(BigInt(result.yea)).to.equal(BigInt(balance1) + BigInt(balance2) + BigInt(balance3));
         });
 
         it('delegate after already delegated', async () => {
@@ -113,7 +113,7 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
             await voting.vote(voteId, true, false, { from: voter2 });
             const result = await voting.getVote(voteId);
-            expect(Number(result.yea)).to.equal(balance2 + balance3);
+            expect(BigInt(result.yea)).to.equal(BigInt(balance2) + BigInt(balance3));
         });
 
         it('delegate delegated', async () => {
@@ -123,7 +123,7 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             await pool.delegateVotingPower(voter3, {from: voter2});
             const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
             const result = await voting.getVote(voteId);
-            expect(Number(result.yea)).to.equal(balance2 + balance3);
+            expect(BigInt(result.yea)).to.equal(BigInt(balance2) + BigInt(balance3));
         });
 
         it('delegate delegated in a cycle', async () => {

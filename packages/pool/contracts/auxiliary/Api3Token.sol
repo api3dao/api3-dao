@@ -7,7 +7,7 @@ import "./interfaces/IApi3Token.sol";
 
 /// @title API3 token contract
 /// @notice The API3 token contract is owned by the API3 DAO, which can grant
-/// minting privileges to addresses. Any account is allowed to burn their 
+/// minting privileges to addresses. Any account is allowed to burn their
 /// tokens, but this functionality is put behind a barrier that requires the
 /// account to make a call to remove.
 contract Api3Token is ERC20, Ownable, IApi3Token {
