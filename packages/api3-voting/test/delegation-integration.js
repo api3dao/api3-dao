@@ -21,7 +21,7 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
     let CREATE_VOTES_ROLE, MODIFY_SUPPORT_ROLE, MODIFY_QUORUM_ROLE, ERROR_ADDRESS, ERROR_ANAUTHORISED;
 
     const NOW = 1;
-    const votingDuration = 1000;
+    const votingDuration = 60*60*24*7;
     const APP_ID = '0x1234123412341234123412341234123412341234123412341234123412341234';
 
     before('Create token, pool and voting', async () => {

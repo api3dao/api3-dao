@@ -94,9 +94,9 @@ contract Api3Voting is IForwarder, AragonApp {
 
         supportRequiredPct = _supportRequiredPct;
         minAcceptQuorumPct = _minAcceptQuorumPct;
-        voteTime = api3Pool.EPOCH_LENGTH();
         // The pool acts as the MiniMe token
         api3Pool = IApi3Pool(_token);
+        voteTime = uint64(api3Pool.EPOCH_LENGTH());
     }
 
     /**
