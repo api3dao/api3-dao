@@ -91,4 +91,10 @@ interface IStateUtils {
 
     function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
         external;
+
+    function updateMostRecentProposalTimestamp(address userAddress)
+        external;
+
+    function updateMostRecentVoteTimestamp(address userAddress)
+        external;
 }

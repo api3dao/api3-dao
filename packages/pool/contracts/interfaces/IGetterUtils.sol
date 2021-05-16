@@ -83,4 +83,18 @@ interface IGetterUtils is IStateUtils {
         external
         view
         returns(uint256);
+
+    function getUser(address userAddress)
+        external
+        view
+        returns(
+            uint256 unstaked,
+            uint256 vesting,
+            uint256 unstakeScheduledFor,
+            uint256 unstakeAmount,
+            uint256 mostRecentProposalTimestamp,
+            uint256 mostRecentVoteTimestamp,
+            uint256 mostRecentDelegationTimestamp,
+            uint256 mostRecentUndelegationTimestamp
+            );
 }

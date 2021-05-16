@@ -23,14 +23,17 @@ contract StateUtils is IStateUtils {
     }
 
     struct User {
-        uint256 unstaked;
-        uint256 vesting;
         Checkpoint[] shares;
         AddressCheckpoint[] delegates;
         Checkpoint[] delegatedTo;
-        uint256 lastDelegationUpdateTimestamp;
+        uint256 unstaked;
+        uint256 vesting;
         uint256 unstakeScheduledFor;
         uint256 unstakeAmount;
+        uint256 mostRecentProposalTimestamp;
+        uint256 mostRecentVoteTimestamp;
+        uint256 mostRecentDelegationTimestamp;
+        uint256 mostRecentUndelegationTimestamp;
     }
 
     /// @notice Length of the epoch in which the staking reward is paid out
@@ -185,6 +188,15 @@ contract StateUtils is IStateUtils {
     /// @dev Reverts if the caller is not the primary API3 DAO Agent
     modifier onlyAgentAppPrimary() {
         require(msg.sender == agentAppPrimary, ERROR_UNAUTHORIZED);
+        _;
+    }
+
+    /// @dev Reverts if the caller is not an API3 DAO Api3Voting app
+    modifier onlyVotingApp() {
+        require(
+            msg.sender == votingAppPrimary || msg.sender == votingAppSecondary,
+            ERROR_UNAUTHORIZED
+            );
         _;
     }
 
@@ -381,11 +393,8 @@ contract StateUtils is IStateUtils {
     function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
         external
         override
+        onlyVotingApp()
     {
-        require(
-            msg.sender == votingAppPrimary || msg.sender == votingAppSecondary,
-            ERROR_UNAUTHORIZED
-            );
         lastVoteSnapshotBlock = snapshotBlock;
         snapshotBlockToTimestamp[snapshotBlock] = block.timestamp;
         emit UpdatedLastVoteSnapshotBlock(
@@ -393,6 +402,28 @@ contract StateUtils is IStateUtils {
             snapshotBlock,
             block.timestamp
             );
+    }
+
+    /// @notice Called by a DAO Api3Voting app at proposal creation-time to
+    /// update the timestamp of the user's most recent proposal
+    /// @param userAddress User address
+    function updateMostRecentProposalTimestamp(address userAddress)
+        external
+        override
+        onlyVotingApp()
+    {
+        users[userAddress].mostRecentProposalTimestamp = block.timestamp;
+    }
+
+    /// @notice Called by a DAO Api3Voting app at voting-time to update the
+    /// timestamp of the user's most recent vote
+    /// @param userAddress User address
+    function updateMostRecentVoteTimestamp(address userAddress)
+        external
+        override
+        onlyVotingApp()
+    {
+        users[userAddress].mostRecentVoteTimestamp = block.timestamp;
     }
 
     /// @notice Called internally to update the total shares history

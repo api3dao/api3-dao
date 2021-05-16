@@ -54,7 +54,6 @@ contract Api3Voting is IForwarder, AragonApp {
     uint64 public voteTime;
 
     IApi3Pool public api3Pool;
-    mapping (address => uint256) private userAddressToLastNewProposalTimestamp;
 
     // We are mimicing an array, we use a mapping instead to make app upgrade more graceful
     mapping (uint256 => Vote) internal votes;
@@ -257,8 +256,10 @@ contract Api3Voting is IForwarder, AragonApp {
         internal
         returns (uint256 voteId)
     {
-        require(userAddressToLastNewProposalTimestamp[msg.sender].add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_PROPOSAL_COOLDOWN");
-        userAddressToLastNewProposalTimestamp[msg.sender] = now;
+        (, , , , uint256 mostRecentProposalTimestamp, , , uint256 mostRecentUndelegationTimestamp) = api3Pool.getUser(msg.sender);
+        require(mostRecentProposalTimestamp.add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_PROPOSAL_COOLDOWN");
+        require(mostRecentUndelegationTimestamp.add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_UNDELEGATION_COOLDOWN");
+        api3Pool.updateMostRecentProposalTimestamp(msg.sender);
 
         uint64 snapshotBlock = getBlockNumber64() - 1; // avoid double voting in this very block
 
@@ -295,6 +296,9 @@ contract Api3Voting is IForwarder, AragonApp {
         bool _executesIfDecided
     ) internal
     {
+        (, , , , , , , uint256 mostRecentUndelegationTimestamp) = api3Pool.getUser(msg.sender);
+        require(mostRecentUndelegationTimestamp.add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_UNDELEGATION_COOLDOWN");
+        api3Pool.updateMostRecentVoteTimestamp(msg.sender);
         Vote storage vote_ = votes[_voteId];
 
         // This could re-enter, though we can assume the governance token is not malicious
