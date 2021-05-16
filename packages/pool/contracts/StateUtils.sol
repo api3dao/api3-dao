@@ -356,6 +356,10 @@ contract StateUtils is IStateUtils {
     /// @notice Called by the DAO Agent to set the voting power threshold for
     /// proposals
     /// Only the primary Agent can do this because it is a critical operation.
+    /// @dev Proposal voting power is limited between 0.1% and 10%. 0.1% is to
+    /// ensure that no more than 1000 proposals can be made within an epoch
+    /// (see `userReceivedDelegationAt()`) and any value above 10% is certainly
+    /// an error.
     /// @param _proposalVotingPowerThreshold Voting power threshold for
     /// proposals
     function setProposalVotingPowerThreshold(uint256 _proposalVotingPowerThreshold)
@@ -364,7 +368,8 @@ contract StateUtils is IStateUtils {
         onlyAgentAppPrimary()
     {
         require(
-            _proposalVotingPowerThreshold <= 10 * ONE_PERCENT,
+            _proposalVotingPowerThreshold >= ONE_PERCENT / 10
+                && _proposalVotingPowerThreshold <= 10 * ONE_PERCENT,
             ERROR_VALUE);
         uint256 oldProposalVotingPowerThreshold = proposalVotingPowerThreshold;
         proposalVotingPowerThreshold = _proposalVotingPowerThreshold;

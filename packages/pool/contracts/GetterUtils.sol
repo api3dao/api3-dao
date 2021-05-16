@@ -139,6 +139,9 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the voting power delegated to a user at a
     /// specific block
+    /// @dev `user.delegatedTo` cannot have grown more than 1000 checkpoints
+    /// in the last epoch due to `proposalVotingPowerThreshold` having a lower
+    /// limit of 0.1%.
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block
@@ -151,8 +154,41 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
+        // Binary searching a 1000-long array takes up to 10 storage reads
+        // (2^10 = 1024). If we approximate the average number of reads
+        // required to be 5 and consider that it is much more likely for the
+        // value we are looking for will be at the end of the array (because
+        // not many proposals will be made per epoch), it is preferable to do
+        // a linear search at the end of the array if possible. Here, the
+        // length of "the end of the array" is specified to be 5 (which was the
+        // expected number of iterations we will need for a binary search).
+        uint256 maximumLengthToLinearSearch = 5;
+        // If the value we are looking for is not among the last
+        // `maximumLengthToLinearSearch`, we will fall back to binary search.
+        // Here, we will only search through the last 1000 checkpoints because
+        // `user.delegatedTo` cannot have grown more than 1000 checkpoints in
+        // the last epoch due to `proposalVotingPowerThreshold` having a lower
+        // limit of 0.1%.
+        uint256 maximumLengthToBinarySearch = 1000;
         Checkpoint[] storage delegatedTo = users[userAddress].delegatedTo;
-        return getValueAtWithBinarySearch(delegatedTo, _block, 0);
+        if (delegatedTo.length < maximumLengthToLinearSearch) {
+            return getValueAt(delegatedTo, _block, 0);
+        }
+        uint256 minimumCheckpointIndexLinearSearch = delegatedTo.length - maximumLengthToLinearSearch;
+        if (delegatedTo[minimumCheckpointIndexLinearSearch].fromBlock < _block) {
+            return getValueAt(delegatedTo, _block, minimumCheckpointIndexLinearSearch);
+        }
+        // It is very unlikely for the method to not have returned until here
+        // because it means there have been `maximumLengthToLinearSearch`
+        // proposals made in the current epoch.
+        uint256 minimumCheckpointIndexBinarySearch = delegatedTo.length > maximumLengthToBinarySearch
+            ? delegatedTo.length - maximumLengthToBinarySearch
+            : 0;
+        // The below will revert if the value being searched is not within the
+        // last `minimumCheckpointIndexBinarySearch` (which is not possible if
+        // `_block` is the snapshot block of an open vote of Api3Voting,
+        // because its vote duration is `EPOCH_LENGTH`).
+        return getValueAtWithBinarySearch(delegatedTo, _block, minimumCheckpointIndexBinarySearch);
     }
 
     /// @notice Called to get the current voting power delegated to a user
