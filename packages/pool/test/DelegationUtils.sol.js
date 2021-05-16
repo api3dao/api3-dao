@@ -47,7 +47,43 @@ beforeEach(async () => {
   MAX_INTERACTION_FREQUENCY = await api3Pool.MAX_INTERACTION_FREQUENCY();
 });
 
+const user1Stake = ethers.utils.parseEther(
+  "20" + "000" + "000"
+);
+const user2Stake = ethers.utils.parseEther(
+  "60" + "000" + "000"
+);
+
 describe("delegateVotingPower", function () {
+  beforeEach(async () => {
+    // Have two users stake
+    await api3Token
+      .connect(roles.deployer)
+      .transfer(roles.user1.address, user1Stake);
+    await api3Token
+      .connect(roles.deployer)
+      .transfer(roles.user2.address, user2Stake);
+    await api3Token
+      .connect(roles.user1)
+      .approve(api3Pool.address, user1Stake);
+    await api3Token
+      .connect(roles.user2)
+      .approve(api3Pool.address, user2Stake);
+    await api3Pool
+      .connect(roles.user1)
+      .depositAndStake(
+        roles.user1.address,
+        user1Stake,
+        roles.user1.address
+      );
+    await api3Pool
+      .connect(roles.user2)
+      .depositAndStake(
+        roles.user2.address,
+        user2Stake,
+        roles.user2.address
+      );
+  });
   context("Delegate address is not zero", function () {
     context("Delegate address is not caller", function () {
       context("Delegate is not delegating", function () {
@@ -59,39 +95,6 @@ describe("delegateVotingPower", function () {
                 "Receiving user has not been delegated to too frequently",
                 function () {
                   it("delegates voting power", async function () {
-                    // Have two users stake
-                    const user1Stake = ethers.utils.parseEther(
-                      "20" + "000" + "000"
-                    );
-                    const user2Stake = ethers.utils.parseEther(
-                      "60" + "000" + "000"
-                    );
-                    await api3Token
-                      .connect(roles.deployer)
-                      .transfer(roles.user1.address, user1Stake);
-                    await api3Token
-                      .connect(roles.deployer)
-                      .transfer(roles.user2.address, user2Stake);
-                    await api3Token
-                      .connect(roles.user1)
-                      .approve(api3Pool.address, user1Stake);
-                    await api3Token
-                      .connect(roles.user2)
-                      .approve(api3Pool.address, user2Stake);
-                    await api3Pool
-                      .connect(roles.user1)
-                      .depositAndStake(
-                        roles.user1.address,
-                        user1Stake,
-                        roles.user1.address
-                      );
-                    await api3Pool
-                      .connect(roles.user2)
-                      .depositAndStake(
-                        roles.user2.address,
-                        user2Stake,
-                        roles.user2.address
-                      );
                     // Have user 1 delegate to someone else first
                     await api3Pool
                       .connect(roles.user1)
@@ -141,7 +144,7 @@ describe("delegateVotingPower", function () {
                         to: randomWallet.address,
                         value: ethers.utils.parseEther("1"),
                       });
-                      const amount = ethers.BigNumber.from(1000);
+                      const amount = ethers.BigNumber.from("10000000000000000");
                       await api3Token
                         .connect(roles.deployer)
                         .transfer(randomWallet.address, amount);
@@ -172,7 +175,7 @@ describe("delegateVotingPower", function () {
                       to: randomWallet.address,
                       value: ethers.utils.parseEther("1"),
                     });
-                    const amount = ethers.BigNumber.from(1000);
+                    const amount = ethers.BigNumber.from("10000000000000000");
                     await api3Token
                       .connect(roles.deployer)
                       .transfer(randomWallet.address, amount);
@@ -200,39 +203,6 @@ describe("delegateVotingPower", function () {
             });
             context("User had the same delegate", function () {
               it("reverts", async function () {
-                // Have two users stake
-                const user1Stake = ethers.utils.parseEther(
-                  "20" + "000" + "000"
-                );
-                const user2Stake = ethers.utils.parseEther(
-                  "60" + "000" + "000"
-                );
-                await api3Token
-                  .connect(roles.deployer)
-                  .transfer(roles.user1.address, user1Stake);
-                await api3Token
-                  .connect(roles.deployer)
-                  .transfer(roles.user2.address, user2Stake);
-                await api3Token
-                  .connect(roles.user1)
-                  .approve(api3Pool.address, user1Stake);
-                await api3Token
-                  .connect(roles.user2)
-                  .approve(api3Pool.address, user2Stake);
-                await api3Pool
-                  .connect(roles.user1)
-                  .depositAndStake(
-                    roles.user1.address,
-                    user1Stake,
-                    roles.user1.address
-                  );
-                await api3Pool
-                  .connect(roles.user2)
-                  .depositAndStake(
-                    roles.user2.address,
-                    user2Stake,
-                    roles.user2.address
-                  );
                 // Have user 1 delegate to user 2
                 await api3Pool
                   .connect(roles.user1)
@@ -278,6 +248,7 @@ describe("delegateVotingPower", function () {
       });
       context("Delegate is delegating", function () {
         it("reverts", async function () {
+
           // Have user 2 delegate to someone else first
           await api3Pool
             .connect(roles.user2)
@@ -311,40 +282,40 @@ describe("delegateVotingPower", function () {
 });
 
 describe("undelegateVotingPower", function () {
+  beforeEach(async () => {
+    // Have two users stake
+    await api3Token
+      .connect(roles.deployer)
+      .transfer(roles.user1.address, user1Stake);
+    await api3Token
+      .connect(roles.deployer)
+      .transfer(roles.user2.address, user2Stake);
+    await api3Token
+      .connect(roles.user1)
+      .approve(api3Pool.address, user1Stake);
+    await api3Token
+      .connect(roles.user2)
+      .approve(api3Pool.address, user2Stake);
+    await api3Pool
+      .connect(roles.user1)
+      .depositAndStake(
+        roles.user1.address,
+        user1Stake,
+        roles.user1.address
+      );
+    await api3Pool
+      .connect(roles.user2)
+      .depositAndStake(
+        roles.user2.address,
+        user2Stake,
+        roles.user2.address
+      );
+  });
   context("User has delegated before", function () {
     context(
       "User has not updated their delegation status less than reward epoch ago",
       function () {
         it("undelegates voting power", async function () {
-          // Have two users stake
-          const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
-          const user2Stake = ethers.utils.parseEther("60" + "000" + "000");
-          await api3Token
-            .connect(roles.deployer)
-            .transfer(roles.user1.address, user1Stake);
-          await api3Token
-            .connect(roles.deployer)
-            .transfer(roles.user2.address, user2Stake);
-          await api3Token
-            .connect(roles.user1)
-            .approve(api3Pool.address, user1Stake);
-          await api3Token
-            .connect(roles.user2)
-            .approve(api3Pool.address, user2Stake);
-          await api3Pool
-            .connect(roles.user1)
-            .depositAndStake(
-              roles.user1.address,
-              user1Stake,
-              roles.user1.address
-            );
-          await api3Pool
-            .connect(roles.user2)
-            .depositAndStake(
-              roles.user2.address,
-              user2Stake,
-              roles.user2.address
-            );
           // Have user 1 delegate to user 2 first
           await api3Pool
             .connect(roles.user1)

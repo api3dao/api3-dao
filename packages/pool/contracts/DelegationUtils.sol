@@ -6,9 +6,12 @@ import "./interfaces/IDelegationUtils.sol";
 
 /// @title Contract that implements voting power delegation
 abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
+
+    string internal constant ERROR_DELEGATION_BALANCE = "Cannot delegate zero shares";
+
     /// @notice Called by the user to delegate voting power
     /// @param delegate User address the voting power will be delegated to
-    function delegateVotingPower(address delegate) 
+    function delegateVotingPower(address delegate)
         external
         override
     {
@@ -40,7 +43,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         user.mostRecentDelegationTimestamp = block.timestamp;
         uint256 userShares = userShares(msg.sender);
         address userDelegate = userDelegate(msg.sender);
-
+        require(userShares > 0, ERROR_DELEGATION_BALANCE );
         require(userDelegate != delegate, ERROR_DELEGATE);
 
         if (userDelegate != address(0)) {
@@ -123,7 +126,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         if (delta) {
             newDelegatedTo = currentlyDelegatedTo + shares;
         } else {
-            newDelegatedTo = currentlyDelegatedTo > shares 
+            newDelegatedTo = currentlyDelegatedTo > shares
                 ? currentlyDelegatedTo - shares
                 : 0;
         }

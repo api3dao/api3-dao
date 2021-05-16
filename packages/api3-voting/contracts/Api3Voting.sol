@@ -10,7 +10,7 @@ import "@aragon/os/contracts/common/IForwarder.sol";
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
 import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
-import "./interfaces/IApi3Pool.sol";
+import "@api3-dao/pool/contracts/interfaces/v0.4.24/IApi3Pool.sol";
 
 
 contract Api3Voting is IForwarder, AragonApp {
