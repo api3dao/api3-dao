@@ -4,7 +4,7 @@ const { expect } = require("chai");
 
 let roles;
 let api3Token, api3Pool, api3Voting, api3Staker;
-let EPOCH_LENGTH, REWARD_VESTING_PERIOD, MAX_INTERACTION_FREQUENCY;
+let EPOCH_LENGTH, REWARD_VESTING_PERIOD;
 
 beforeEach(async () => {
   const accounts = await ethers.getSigners();
@@ -55,7 +55,6 @@ beforeEach(async () => {
   );
   EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
   REWARD_VESTING_PERIOD = await api3Pool.REWARD_VESTING_PERIOD();
-  MAX_INTERACTION_FREQUENCY = await api3Pool.MAX_INTERACTION_FREQUENCY();
 });
 
 describe("totalSupplyOneBlockAgo", function () {
@@ -150,12 +149,12 @@ describe("userSharesAtWithBinarySearch", function () {
 });
 
 describe("userReceivedDelegationAt", function () {
-  context("Searched block is within MAX_INTERACTION_FREQUENCY", function () {
     it("gets user's received delegation at the block", async function () {
       const genesisEpoch = await api3Pool.genesisEpoch();
       const amount = ethers.BigNumber.from("10" + "000" + "000" + "000" + "000" + "000");
       const delegationBlocks = [];
-      for (let i = 0; i < MAX_INTERACTION_FREQUENCY; i++) {
+      const noDelegations = 20;
+      for (let i = 0; i < noDelegations; i++) {
         await api3Voting.newVote();
         delegationBlocks.push(await ethers.provider.getBlockNumber());
         const randomWallet = ethers.Wallet.createRandom().connect(
@@ -183,7 +182,7 @@ describe("userReceivedDelegationAt", function () {
           genesisEpoch.add(i).add(1).mul(EPOCH_LENGTH).toNumber(),
         ]);
       }
-      for (let i = 0; i < MAX_INTERACTION_FREQUENCY; i++) {
+      for (let i = 0; i < noDelegations; i++) {
         expect(
           await api3Pool.userReceivedDelegationAt(
             roles.user1.address,
@@ -192,70 +191,6 @@ describe("userReceivedDelegationAt", function () {
         ).to.equal(amount.mul(ethers.BigNumber.from(i + 1)));
       }
     });
-  });
-  context(
-    "Searched block is not within MAX_INTERACTION_FREQUENCY",
-    function () {
-      it("reverts", async function () {
-        const genesisEpoch = await api3Pool.genesisEpoch();
-        const amount = ethers.BigNumber.from("10" + "000" + "000" + "000" + "000" + "000");
-        const delegationBlocks = [];
-        for (
-          let i = 0;
-          i < MAX_INTERACTION_FREQUENCY.add(ethers.BigNumber.from(1));
-          i++
-        ) {
-          await api3Voting.newVote();
-          delegationBlocks.push(await ethers.provider.getBlockNumber());
-          const randomWallet = ethers.Wallet.createRandom().connect(
-            ethers.provider
-          );
-          await roles.deployer.sendTransaction({
-            to: randomWallet.address,
-            value: ethers.utils.parseEther("1"),
-          });
-          await api3Token
-            .connect(roles.deployer)
-            .transfer(randomWallet.address, amount);
-          await api3Token
-            .connect(randomWallet)
-            .approve(api3Pool.address, amount, { gasLimit: 500000 });
-          await api3Pool
-            .connect(randomWallet)
-            .depositAndStake(
-              randomWallet.address,
-              amount,
-              randomWallet.address,
-              { gasLimit: 500000 }
-            );
-          await api3Pool
-            .connect(randomWallet)
-            .delegateVotingPower(roles.user1.address, { gasLimit: 500000 });
-          await ethers.provider.send("evm_setNextBlockTimestamp", [
-            genesisEpoch.add(i).add(1).mul(EPOCH_LENGTH).toNumber(),
-          ]);
-        }
-        for (
-          let i = 1;
-          i < MAX_INTERACTION_FREQUENCY.add(ethers.BigNumber.from(1));
-          i++
-        ) {
-          expect(
-            await api3Pool.userReceivedDelegationAt(
-              roles.user1.address,
-              delegationBlocks[i]
-            )
-          ).to.equal(amount.mul(ethers.BigNumber.from(i + 1)));
-        }
-        await expect(
-          api3Pool.userReceivedDelegationAt(
-            roles.user1.address,
-            delegationBlocks[0]
-          )
-        ).to.be.revertedWith("Invalid value");
-      });
-    }
-  );
 });
 
 describe("getDelegateAt", function () {

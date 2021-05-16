@@ -139,11 +139,6 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the voting power delegated to a user at a
     /// specific block
-    /// @dev Starts from the most recent value in `user.delegatedTo` and
-    /// searches backwards one element at a time. If `_block` is within
-    /// `EPOCH_LENGTH`, this call is guaranteed to find the value among
-    /// the last `MAX_INTERACTION_FREQUENCY` elements, which is why it only
-    /// searches through them. 
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block
@@ -157,10 +152,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         returns(uint256)
     {
         Checkpoint[] storage delegatedTo = users[userAddress].delegatedTo;
-        uint256 minimumCheckpointIndex = delegatedTo.length > MAX_INTERACTION_FREQUENCY
-            ? delegatedTo.length - MAX_INTERACTION_FREQUENCY
-            : 0;
-        return getValueAt(delegatedTo, _block, minimumCheckpointIndex);
+        return getValueAtWithBinarySearch(delegatedTo, _block, 0);
     }
 
     /// @notice Called to get the current voting power delegated to a user
