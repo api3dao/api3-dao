@@ -103,11 +103,9 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the pool shares of a user at a specific block
     /// using binary search
-    /// @dev From 
-    /// https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
-    /// This method is not used by the current iteration of the DAO/pool and is
-    /// implemented for future external contracts to use to get the user shares
-    /// at an arbitrary block.
+    /// @dev This method is not used by the current iteration of the DAO/pool
+    /// and is implemented for future external contracts to use to get the user
+    /// shares at an arbitrary block.
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Pool shares of the user at the block
@@ -120,28 +118,11 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        Checkpoint[] storage checkpoints = users[userAddress].shares;
-        if (checkpoints.length == 0)
-            return 0;
-
-        // Shortcut for the actual value
-        if (_block >= checkpoints[checkpoints.length -1].fromBlock)
-            return checkpoints[checkpoints.length - 1].value;
-        if (_block < checkpoints[0].fromBlock)
-            return 0;
-
-        // Binary search of the value in the array
-        uint min = 0;
-        uint max = checkpoints.length - 1;
-        while (max > min) {
-            uint mid = (max + min + 1) / 2;
-            if (checkpoints[mid].fromBlock <= _block) {
-                min = mid;
-            } else {
-                max = mid - 1;
-            }
-        }
-        return checkpoints[min].value;
+        return getValueAtWithBinarySearch(
+            users[userAddress].shares,
+            _block,
+            0
+            );
     }
 
     /// @notice Called to get the current staked tokens of the user
@@ -329,5 +310,59 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         // `minimumCheckpointIndex`
         require(i == 0, ERROR_VALUE);
         return 0;
+    }
+
+    /// @notice Called to get the value of the checkpoint array at a specific
+    /// block
+    /// @dev Adapted from 
+    /// https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
+    /// Allows the caller to specify the portion of the array that will be
+    /// searched. This allows us to avoid having to search arrays that can grow
+    /// unboundedly.
+    /// @param checkpoints Checkpoint array
+    /// @param _block Block number for which the query is being made
+    /// @param minimumCheckpointIndex Index of the earliest checkpoint that may
+    /// be keeping the value we are looking for
+    /// @return Value of the checkpoint array at `_block`
+    function getValueAtWithBinarySearch(
+        Checkpoint[] storage checkpoints,
+        uint256 _block,
+        uint256 minimumCheckpointIndex
+        )
+        internal
+        view
+        returns(uint256)
+    {
+        if (checkpoints.length == 0)
+            return 0;
+        assert(checkpoints.length > minimumCheckpointIndex);
+
+        // Shortcut for the actual value
+        if (_block >= checkpoints[checkpoints.length - 1].fromBlock) {
+            return checkpoints[checkpoints.length - 1].value;
+        }
+        // Revert if the value being searched for comes before
+        // `minimumCheckpointIndex`
+        if (_block < checkpoints[minimumCheckpointIndex].fromBlock) {
+            if (minimumCheckpointIndex == 0) {
+                return 0;
+            }
+            else {
+                revert(ERROR_VALUE);
+            }
+        }
+
+        // Binary search of the value in the array
+        uint min = minimumCheckpointIndex;
+        uint max = checkpoints.length - 1;
+        while (max > min) {
+            uint mid = (max + min + 1) / 2;
+            if (checkpoints[mid].fromBlock <= _block) {
+                min = mid;
+            } else {
+                max = mid - 1;
+            }
+        }
+        return checkpoints[min].value;
     }
 }
