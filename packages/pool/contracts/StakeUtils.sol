@@ -26,7 +26,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         uint256 totalSharesAfter = totalSharesNow + sharesToMint; 
         updateTotalShares(totalSharesAfter);
         totalStake = totalStake + amount;
-        updateDelegatedVotingPower(sharesToMint, true);
+        updateDelegatedVotingPower(msg.sender, sharesToMint, true);
         emit Staked(
             msg.sender,
             amount,
@@ -80,19 +80,21 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     }
 
     /// @notice Called to execute a pre-scheduled unstake
+    /// @param userAddress Address of the user whose scheduled unstaking will
+    /// be executed
     /// @return Amount of tokens that are unstaked
-    function unstake()
+    function unstake(address userAddress)
         public
         override
         returns(uint256)
     {
         payReward();
-        User storage user = users[msg.sender];
+        User storage user = users[userAddress];
         require(block.timestamp > user.unstakeScheduledFor, ERROR_UNAUTHORIZED);
         require(block.timestamp < user.unstakeScheduledFor + EPOCH_LENGTH, ERROR_UNAUTHORIZED);
         uint256 amount = user.unstakeAmount;
         uint256 totalSharesNow = totalShares();
-        uint256 userSharesNow = userShares(msg.sender);
+        uint256 userSharesNow = userShares(userAddress);
         uint256 sharesToBurn = totalSharesNow * amount / totalStake;
         // If the user no longer has enough shares to unstake the scheduled
         // amount of tokens, unstake as many tokens as possible instead
@@ -110,7 +112,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
                 ? totalSharesNow - sharesToBurn
                 : 1;
         updateTotalShares(totalSharesAfter);
-        updateDelegatedVotingPower(sharesToBurn, false);
+        updateDelegatedVotingPower(userAddress, sharesToBurn, false);
 
         totalStake = totalStake > amount
             ? totalStake - amount
@@ -118,7 +120,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         user.unstakeScheduledFor = 0;
         user.unstakeAmount = 0;
         emit Unstaked(
-            msg.sender,
+            userAddress,
             amount,
             totalSharesAfter
             );
@@ -134,7 +136,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         external
         override
     {
-        uint256 unstaked = unstake();
+        uint256 unstaked = unstake(msg.sender);
         withdraw(destination, unstaked);
     }
 }

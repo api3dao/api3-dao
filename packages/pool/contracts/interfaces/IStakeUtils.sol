@@ -35,7 +35,7 @@ interface IStakeUtils is ITransferUtils{
     function scheduleUnstake(uint256 amount)
         external;
 
-    function unstake()
+    function unstake(address userAddress)
         external
         returns(uint256);
 

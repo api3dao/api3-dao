@@ -106,16 +106,19 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
     /// the delegated voting power
     /// @dev User shares only get updated while staking, scheduling unstake
     /// or unstaking
+    /// @param userAddress Address of the user whose delegated voting power
+    /// will be updated
     /// @param shares Amount of shares that will be added/removed
     /// @param delta Whether the shares will be added/removed (add for `true`,
     /// and vice versa)
     function updateDelegatedVotingPower(
+        address userAddress,
         uint256 shares,
         bool delta
         )
         internal
     {
-        address userDelegate = userDelegate(msg.sender);
+        address userDelegate = userDelegate(userAddress);
         if (userDelegate == address(0)) {
             return;
         }
