@@ -85,7 +85,7 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             await pool.delegateVotingPower(voter2, {from: voter1});
             const neededSupport = pct16(60);
             const minimumAcceptanceQuorum = pct16(20);
-            await voting.initialize(pool.address, neededSupport, minimumAcceptanceQuorum, votingDuration);
+            await voting.initialize(pool.address, neededSupport, minimumAcceptanceQuorum);
             const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
             await voting.vote(voteId, true, false, { from: voter2 });
             const result = await voting.getVote(voteId);

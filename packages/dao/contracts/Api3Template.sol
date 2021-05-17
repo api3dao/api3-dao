@@ -142,7 +142,7 @@ contract Api3Template is BaseTemplate {
     )
     internal returns (Api3Voting)
     {
-        bytes memory initializeData = abi.encodeWithSelector(Api3Voting(0).initialize.selector, _token, _support, _acceptance, _duration);
+        bytes memory initializeData = abi.encodeWithSelector(Api3Voting(0).initialize.selector, _token, _support, _acceptance);
         return Api3Voting(_installNonDefaultApp(_dao, API3_VOTING_APP_ID, initializeData));
     }
 
