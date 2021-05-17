@@ -33,6 +33,7 @@ contract Api3Voting is IForwarder, AragonApp {
     string private constant ERROR_CAN_NOT_EXECUTE = "VOTING_CAN_NOT_EXECUTE";
     string private constant ERROR_CAN_NOT_FORWARD = "VOTING_CAN_NOT_FORWARD";
     string private constant ERROR_NO_VOTING_POWER = "VOTING_NO_VOTING_POWER";
+    string private constant ERROR_VOTE_TIME = "VOTING_TIME_NOT_EQUAL_TO_POOL_EPOCH";
 
     enum VoterState { Absent, Yea, Nay }
 
@@ -75,27 +76,24 @@ contract Api3Voting is IForwarder, AragonApp {
     * @param _token MiniMeToken Address that will be used as governance token
     * @param _supportRequiredPct Percentage of yeas in casted votes for a vote to succeed (expressed as a percentage of 10^18; eg. 10^16 = 1%, 10^18 = 100%)
     * @param _minAcceptQuorumPct Percentage of yeas in total possible votes for a vote to succeed (expressed as a percentage of 10^18; eg. 10^16 = 1%, 10^18 = 100%)
-    * @param _voteTime Seconds that a vote will be open for token holders to vote (unless enough yeas or nays have been cast to make an early decision)
     */
     function initialize(
         address _token,
         uint64 _supportRequiredPct,
-        uint64 _minAcceptQuorumPct,
-        uint64 _voteTime
+        uint64 _minAcceptQuorumPct
     )
         external
         onlyInit
     {
         initialized();
-
         require(_minAcceptQuorumPct <= _supportRequiredPct, ERROR_INIT_PCTS);
         require(_supportRequiredPct < PCT_BASE, ERROR_INIT_SUPPORT_TOO_BIG);
 
         supportRequiredPct = _supportRequiredPct;
         minAcceptQuorumPct = _minAcceptQuorumPct;
-        voteTime = _voteTime;
         // The pool acts as the MiniMe token
         api3Pool = IApi3Pool(_token);
+        voteTime = uint64(api3Pool.EPOCH_LENGTH());
     }
 
     /**
