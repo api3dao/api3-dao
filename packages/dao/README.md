@@ -69,7 +69,7 @@ _Enforces important board's decisions_
 | MainAgent | DESIGNATE_SIGNER       | NULL                 | NULL                 |
 | MainAgent | ADD_PRESIGNED_HASH     | NULL                 | NULL                 |
 | MainAgent | ADD_PROTECTED_TOKEN    | NULL                 | NULL                 |
-| MainAgent | TRANSFER               | NULL                 | NULL                 |
+| MainAgent | TRANSFER               | MainVoting           | MainVoting           |
 
 
 #### Secondary Agent
@@ -84,7 +84,7 @@ _Enforces less important board's decisions_
 | SecondaryAgent | DESIGNATE_SIGNER       | NULL                      | NULL                 |
 | SecondaryAgent | ADD_PRESIGNED_HASH     | NULL                      | NULL                 |
 | SecondaryAgent | ADD_PROTECTED_TOKEN    | NULL                      | NULL                 |
-| SecondaryAgent | TRANSFER               | NULL                      | NULL                 |
+| SecondaryAgent | TRANSFER               | MainVoting                | MainVoting           |
 
 #### Vault and Finance
 _Handle board's vault_
@@ -92,4 +92,4 @@ _Handle board's vault_
 | App     | Permission          | Grantee          | Manager              |
 | ------- | ------------------- | ---------------- | -------------------- |
 | Vault(MainAgent)   | TRANSFER            | MainVoting       | MainVoting `[SHARE]` |
-| Vault(SecondaryAgent)   | TRANSFER            | SecondaryVoting       | SecondaryVoting `[SHARE]` |
+| Vault(SecondaryAgent)   | TRANSFER            | SecondaryVoting       | MainVoting `[SHARE]` |
