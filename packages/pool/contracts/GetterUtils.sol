@@ -103,11 +103,9 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the pool shares of a user at a specific block
     /// using binary search
-    /// @dev From 
-    /// https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
-    /// This method is not used by the current iteration of the DAO/pool and is
-    /// implemented for future external contracts to use to get the user shares
-    /// at an arbitrary block.
+    /// @dev This method is not used by the current iteration of the DAO/pool
+    /// and is implemented for future external contracts to use to get the user
+    /// shares at an arbitrary block.
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Pool shares of the user at the block
@@ -120,28 +118,11 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        Checkpoint[] storage checkpoints = users[userAddress].shares;
-        if (checkpoints.length == 0)
-            return 0;
-
-        // Shortcut for the actual value
-        if (_block >= checkpoints[checkpoints.length -1].fromBlock)
-            return checkpoints[checkpoints.length - 1].value;
-        if (_block < checkpoints[0].fromBlock)
-            return 0;
-
-        // Binary search of the value in the array
-        uint min = 0;
-        uint max = checkpoints.length - 1;
-        while (max > min) {
-            uint mid = (max + min + 1) / 2;
-            if (checkpoints[mid].fromBlock <= _block) {
-                min = mid;
-            } else {
-                max = mid - 1;
-            }
-        }
-        return checkpoints[min].value;
+        return getValueAtWithBinarySearch(
+            users[userAddress].shares,
+            _block,
+            0
+            );
     }
 
     /// @notice Called to get the current staked tokens of the user
@@ -158,11 +139,9 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the voting power delegated to a user at a
     /// specific block
-    /// @dev Starts from the most recent value in `user.delegatedTo` and
-    /// searches backwards one element at a time. If `_block` is within
-    /// `EPOCH_LENGTH`, this call is guaranteed to find the value among
-    /// the last `MAX_INTERACTION_FREQUENCY` elements, which is why it only
-    /// searches through them. 
+    /// @dev `user.delegatedTo` cannot have grown more than 1000 checkpoints
+    /// in the last epoch due to `proposalVotingPowerThreshold` having a lower
+    /// limit of 0.1%.
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block
@@ -175,11 +154,41 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
+        // Binary searching a 1000-long array takes up to 10 storage reads
+        // (2^10 = 1024). If we approximate the average number of reads
+        // required to be 5 and consider that it is much more likely for the
+        // value we are looking for will be at the end of the array (because
+        // not many proposals will be made per epoch), it is preferable to do
+        // a linear search at the end of the array if possible. Here, the
+        // length of "the end of the array" is specified to be 5 (which was the
+        // expected number of iterations we will need for a binary search).
+        uint256 maximumLengthToLinearSearch = 5;
+        // If the value we are looking for is not among the last
+        // `maximumLengthToLinearSearch`, we will fall back to binary search.
+        // Here, we will only search through the last 1000 checkpoints because
+        // `user.delegatedTo` cannot have grown more than 1000 checkpoints in
+        // the last epoch due to `proposalVotingPowerThreshold` having a lower
+        // limit of 0.1%.
+        uint256 maximumLengthToBinarySearch = 1000;
         Checkpoint[] storage delegatedTo = users[userAddress].delegatedTo;
-        uint256 minimumCheckpointIndex = delegatedTo.length > MAX_INTERACTION_FREQUENCY
-            ? delegatedTo.length - MAX_INTERACTION_FREQUENCY
+        if (delegatedTo.length < maximumLengthToLinearSearch) {
+            return getValueAt(delegatedTo, _block, 0);
+        }
+        uint256 minimumCheckpointIndexLinearSearch = delegatedTo.length - maximumLengthToLinearSearch;
+        if (delegatedTo[minimumCheckpointIndexLinearSearch].fromBlock < _block) {
+            return getValueAt(delegatedTo, _block, minimumCheckpointIndexLinearSearch);
+        }
+        // It is very unlikely for the method to not have returned until here
+        // because it means there have been `maximumLengthToLinearSearch`
+        // proposals made in the current epoch.
+        uint256 minimumCheckpointIndexBinarySearch = delegatedTo.length > maximumLengthToBinarySearch
+            ? delegatedTo.length - maximumLengthToBinarySearch
             : 0;
-        return getValueAt(delegatedTo, _block, minimumCheckpointIndex);
+        // The below will revert if the value being searched is not within the
+        // last `minimumCheckpointIndexBinarySearch` (which is not possible if
+        // `_block` is the snapshot block of an open vote of Api3Voting,
+        // because its vote duration is `EPOCH_LENGTH`).
+        return getValueAtWithBinarySearch(delegatedTo, _block, minimumCheckpointIndexBinarySearch);
     }
 
     /// @notice Called to get the current voting power delegated to a user
@@ -329,5 +338,59 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         // `minimumCheckpointIndex`
         require(i == 0, ERROR_VALUE);
         return 0;
+    }
+
+    /// @notice Called to get the value of the checkpoint array at a specific
+    /// block
+    /// @dev Adapted from 
+    /// https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
+    /// Allows the caller to specify the portion of the array that will be
+    /// searched. This allows us to avoid having to search arrays that can grow
+    /// unboundedly.
+    /// @param checkpoints Checkpoint array
+    /// @param _block Block number for which the query is being made
+    /// @param minimumCheckpointIndex Index of the earliest checkpoint that may
+    /// be keeping the value we are looking for
+    /// @return Value of the checkpoint array at `_block`
+    function getValueAtWithBinarySearch(
+        Checkpoint[] storage checkpoints,
+        uint256 _block,
+        uint256 minimumCheckpointIndex
+        )
+        internal
+        view
+        returns(uint256)
+    {
+        if (checkpoints.length == 0)
+            return 0;
+        assert(checkpoints.length > minimumCheckpointIndex);
+
+        // Shortcut for the actual value
+        if (_block >= checkpoints[checkpoints.length - 1].fromBlock) {
+            return checkpoints[checkpoints.length - 1].value;
+        }
+        // Revert if the value being searched for comes before
+        // `minimumCheckpointIndex`
+        if (_block < checkpoints[minimumCheckpointIndex].fromBlock) {
+            if (minimumCheckpointIndex == 0) {
+                return 0;
+            }
+            else {
+                revert(ERROR_VALUE);
+            }
+        }
+
+        // Binary search of the value in the array
+        uint min = minimumCheckpointIndex;
+        uint max = checkpoints.length - 1;
+        while (max > min) {
+            uint mid = (max + min + 1) / 2;
+            if (checkpoints[mid].fromBlock <= _block) {
+                min = mid;
+            } else {
+                max = mid - 1;
+            }
+        }
+        return checkpoints[min].value;
     }
 }
