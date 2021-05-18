@@ -15,13 +15,55 @@ npm run test
 
 - Deploy
 
-To deploy the dao to the rinkeby chain please call
+To deploy the dao to the local network please run
 
 ```shell script
-npm run deploy:rinkeby
+npx ganache-cli -i 15 --gasLimit 8000000 --port 8545
 ```
 
-In case you would like to publish it to aragon ens, you'll need aragon-cli first.
+and then
+
+```shell script
+npm run deploy:rpc
+```
+
+To deploy the dao to the rinkeby testnet you would first have to run 
+
+```shell script
+cd ~ && mkdir .aragon && cd .aragon && touch rinkeby_key.json
+```
+
+add config to the file
+
+```
+{
+  "rpc": "https://rinkeby.infura.io/v3/your_infura_id",
+  "keys": [
+    "your_private_key"
+  ]
+}
+```
+
+ID for `Api3Voting` app is different on different networks, so for `rinkeby` deployment
+you will need to first go to `contracts/ Api3Template.sol` and uncomment:
+
+```
+//    Record below is ID for Rinkeby/Mainnet
+//    bytes32 constant internal API3_VOTING_APP_ID = 0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554;
+```
+
+then comment out the following line:
+
+```
+    bytes32 constant internal API3_VOTING_APP_ID = 0x727a0cf100ef0e645bad5a5b920d7fb71f8fd0eaf0fa579c341a045f597526f5;
+```
+
+after that you are good to go and deploy dao to rinkeby, please run the following command
+to complete:
+
+```
+npm run deploy:rinkeby
+```
 
 ## Permissions
 
