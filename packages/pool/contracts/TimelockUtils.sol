@@ -8,6 +8,9 @@ import "./interfaces/ITimelockUtils.sol";
 /// @dev TimelockManager contracts interface with this contract to transfer
 /// API3 tokens that are locked under a vesting schedule.
 abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
+
+    string private constant INVALID_TIME_OR_AMOUNT = "AMOUNT SHOULD BE GREATER THEN 0 AND releaseEnd > releaseStart";
+
     struct Timelock
     {
         uint256 totalAmount;
@@ -16,7 +19,7 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         uint256 releaseEnd;
     }
 
-    /// @notice Maps user addresses to TimelockManager contract addresses to 
+    /// @notice Maps user addresses to TimelockManager contract addresses to
     /// timelocks
     /// @dev This implies that a user cannot have multiple timelocks
     /// transferrerd from the same TimelockManager contract. This is
@@ -46,7 +49,7 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         require(
             releaseEnd > releaseStart
                 && amount != 0,
-            ERROR_VALUE
+            INVALID_TIME_OR_AMOUNT
             );
         users[userAddress].unstaked = users[userAddress].unstaked + amount;
         users[userAddress].vesting = users[userAddress].vesting + amount;

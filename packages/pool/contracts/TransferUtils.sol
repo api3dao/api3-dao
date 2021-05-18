@@ -6,6 +6,9 @@ import "./interfaces/ITransferUtils.sol";
 
 /// @title Contract that implements token transfer functionality
 abstract contract TransferUtils is DelegationUtils, ITransferUtils {
+
+    string private constant INVALID_TIME_OR_AMOUNT = "AMOUNT SHOULD BE GREATER THEN 0 AND releaseEnd > releaseStart";
+
     /// @notice Called to deposit tokens for a user by using `transferFrom()`
     /// @dev This method is used by `TimelockManager.sol`
     /// @param source Token transfer source

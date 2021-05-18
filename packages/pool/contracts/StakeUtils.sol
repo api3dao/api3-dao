@@ -6,6 +6,10 @@ import "./interfaces/IStakeUtils.sol";
 
 /// @title Contract that implements staking functionality
 abstract contract StakeUtils is TransferUtils, IStakeUtils {
+
+
+    string private constant NOT_ENOUGH_FUNDS = "USER DONT HAVE ENOUGH TOKENS TO STAKE/UNSTAKE THE PROVIDED AMOUNT";
+
     /// @notice Called to stake tokens to receive pools in the share
     /// @param amount Amount of tokens to stake
     function stake(uint256 amount)
@@ -14,7 +18,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     {
         payReward();
         User storage user = users[msg.sender];
-        require(user.unstaked >= amount, ERROR_VALUE);
+        require(user.unstaked >= amount, NOT_ENOUGH_FUNDS);
         user.unstaked = user.unstaked - amount;
         uint256 totalSharesNow = totalShares();
         uint256 sharesToMint = totalSharesNow * amount / totalStake;
@@ -23,7 +27,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             fromBlock: block.number,
             value: userSharesNow + sharesToMint
             }));
-        uint256 totalSharesAfter = totalSharesNow + sharesToMint; 
+        uint256 totalSharesAfter = totalSharesNow + sharesToMint;
         updateTotalShares(totalSharesAfter);
         totalStake = totalStake + amount;
         updateDelegatedVotingPower(sharesToMint, true);
@@ -57,7 +61,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     /// @dev Users need to schedule an unstake and wait for `unstakeWaitPeriod`
     /// to be able to unstake.
     /// @param amount Amount of tokens for which the unstake will be scheduled
-    /// for 
+    /// for
     function scheduleUnstake(uint256 amount)
         external
         override
@@ -68,7 +72,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         uint256 userStakedNow = userSharesNow * totalStake / totalShares();
         require(
             userStakedNow >= amount,
-            ERROR_VALUE
+            NOT_ENOUGH_FUNDS
             );
         user.unstakeScheduledFor = block.timestamp + unstakeWaitPeriod;
         user.unstakeAmount = amount;

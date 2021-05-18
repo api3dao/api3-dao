@@ -6,6 +6,9 @@ import "./interfaces/IGetterUtils.sol";
 
 /// @title Contract that implements getters
 abstract contract GetterUtils is StateUtils, IGetterUtils {
+
+    string private constant NOT_FOUND_CHECKPOINT = "VALUE CANNOT BE FOUND AFTER PROVIDED CHECKPOINT";
+
     /// @notice Called to get the voting power of a user at a specific block
     /// @dev This method is used to implement the MiniMe interface for the
     /// Api3Voting app
@@ -103,7 +106,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the pool shares of a user at a specific block
     /// using binary search
-    /// @dev From 
+    /// @dev From
     /// https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
     /// This method is not used by the current iteration of the DAO/pool and is
     /// implemented for future external contracts to use to get the user shares
@@ -162,7 +165,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// searches backwards one element at a time. If `_block` is within
     /// `EPOCH_LENGTH`, this call is guaranteed to find the value among
     /// the last `MAX_INTERACTION_FREQUENCY` elements, which is why it only
-    /// searches through them. 
+    /// searches through them.
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block
@@ -327,7 +330,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         }
         // Revert if the value being searched for comes before
         // `minimumCheckpointIndex`
-        require(i == 0, ERROR_VALUE);
+        require(i == 0, NOT_FOUND_CHECKPOINT);
         return 0;
     }
 }
