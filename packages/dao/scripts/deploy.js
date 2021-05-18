@@ -40,7 +40,7 @@ module.exports = async callback => {
                 {name: 'payroll', contractName: 'Payroll'},
                 {name: 'finance', contractName: 'Finance'},
                 {name: 'token-manager', contractName: 'TokenManager'}]);
-        const tx = await template.newInstance('api3template', (api3Pool.address), [SUPPORT_1, ACCEPTANCE_1, VOTING_DURATION_1], [SUPPORT_2, ACCEPTANCE_2, VOTING_DURATION_2])
+        const tx = await template.newInstance(TEMPLATE_NAME, (api3Pool.address), [SUPPORT_1, ACCEPTANCE_1, VOTING_DURATION_1], [SUPPORT_2, ACCEPTANCE_2, VOTING_DURATION_2])
         const mainVoting = getEventArgument(tx, 'Api3DaoDeployed', 'mainVoting');
         const secondaryVoting = getEventArgument(tx, 'Api3DaoDeployed', 'secondaryVoting');
         const mainAgent = getEventArgument(tx, 'Api3DaoDeployed', 'mainAgent');
