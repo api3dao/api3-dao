@@ -27,13 +27,13 @@ and then
 npm run deploy:rpc
 ```
 
-To deploy the dao to the rinkeby testnet you would first have to run 
+To deploy the dao to the `rinkeby` testnet you would first have to run 
 
 ```shell script
 cd ~ && mkdir .aragon && cd .aragon && touch rinkeby_key.json
 ```
 
-add config to the file
+add config to the file that you've just created
 
 ```
 {
@@ -44,8 +44,8 @@ add config to the file
 }
 ```
 
-ID for `Api3Voting` app is different on different networks, so for `rinkeby` deployment
-you will need to first go to `contracts/ Api3Template.sol` and uncomment:
+id for `Api3Voting` app is different on different networks, so for `rinkeby` deployment
+you will need to go first to `contracts/ Api3Template.sol` and uncomment:
 
 ```
 //    Record below is ID for Rinkeby/Mainnet
@@ -58,7 +58,7 @@ then comment out the following line:
     bytes32 constant internal API3_VOTING_APP_ID = 0x727a0cf100ef0e645bad5a5b920d7fb71f8fd0eaf0fa579c341a045f597526f5;
 ```
 
-after that you are good to go and deploy dao to rinkeby, please run the following command
+after that you are good to go and deploy dao to `rinkeby`, please run the following command
 to complete:
 
 ```
