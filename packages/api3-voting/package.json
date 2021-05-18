@@ -1,6 +1,7 @@
 {
   "name": "@api3-dao/api3-voting",
   "version": "1.0.0",
+  "license": "GPL-3.0-or-later",
   "scripts": {
     "compile": "buidler compile --force",
     "devchain": "buidler node",
