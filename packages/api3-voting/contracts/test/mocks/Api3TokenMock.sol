@@ -26,7 +26,8 @@ contract Api3TokenMock is MiniMeToken {
     {
     }
 
-    uint256 private mockEPOCH_LENGTH = 0;
+    uint256 private mockEPOCH_LENGTH = 7 * 24 * 60 * 60;
+
     uint256 private mockProposalVotingPowerThreshold = 0;
 
     function setEPOCH_LENGTH(uint256 _EPOCH_LENGTH)
