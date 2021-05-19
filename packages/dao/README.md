@@ -15,13 +15,55 @@ npm run test
 
 - Deploy
 
-To deploy the dao to the rinkeby chain please call
+To deploy the dao to the local network please run
 
 ```shell script
-npm run deploy:rinkeby
+npx ganache-cli -i 15 --gasLimit 8000000 --port 8545
 ```
 
-In case you would like to publish it to aragon ens, you'll need aragon-cli first.
+and then
+
+```shell script
+npm run deploy:rpc
+```
+
+To deploy the dao to the `rinkeby` testnet you would first have to run 
+
+```shell script
+cd ~ && mkdir .aragon && cd .aragon && touch rinkeby_key.json
+```
+
+add config to the file that you've just created
+
+```
+{
+  "rpc": "https://rinkeby.infura.io/v3/your_infura_id",
+  "keys": [
+    "your_private_key"
+  ]
+}
+```
+
+id for `Api3Voting` app is different on different networks, so for `rinkeby` deployment
+you will need to go first to `contracts/ Api3Template.sol` and uncomment:
+
+```
+//    Record below is ID for Rinkeby/Mainnet
+//    bytes32 constant internal API3_VOTING_APP_ID = 0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554;
+```
+
+then comment out the following line:
+
+```
+    bytes32 constant internal API3_VOTING_APP_ID = 0x727a0cf100ef0e645bad5a5b920d7fb71f8fd0eaf0fa579c341a045f597526f5;
+```
+
+after that you are good to go and deploy dao to `rinkeby`, please run the following command
+to complete:
+
+```
+npm run deploy:rinkeby
+```
 
 ## Permissions
 
@@ -69,7 +111,7 @@ _Enforces important board's decisions_
 | MainAgent | DESIGNATE_SIGNER       | NULL                 | NULL                 |
 | MainAgent | ADD_PRESIGNED_HASH     | NULL                 | NULL                 |
 | MainAgent | ADD_PROTECTED_TOKEN    | NULL                 | NULL                 |
-| MainAgent | TRANSFER               | NULL                 | NULL                 |
+| MainAgent | TRANSFER               | MainVoting           | MainVoting           |
 
 
 #### Secondary Agent
@@ -84,7 +126,7 @@ _Enforces less important board's decisions_
 | SecondaryAgent | DESIGNATE_SIGNER       | NULL                      | NULL                 |
 | SecondaryAgent | ADD_PRESIGNED_HASH     | NULL                      | NULL                 |
 | SecondaryAgent | ADD_PROTECTED_TOKEN    | NULL                      | NULL                 |
-| SecondaryAgent | TRANSFER               | NULL                      | NULL                 |
+| SecondaryAgent | TRANSFER               | MainVoting                | MainVoting           |
 
 #### Vault and Finance
 _Handle board's vault_
@@ -92,4 +134,4 @@ _Handle board's vault_
 | App     | Permission          | Grantee          | Manager              |
 | ------- | ------------------- | ---------------- | -------------------- |
 | Vault(MainAgent)   | TRANSFER            | MainVoting       | MainVoting `[SHARE]` |
-| Vault(SecondaryAgent)   | TRANSFER            | SecondaryVoting       | SecondaryVoting `[SHARE]` |
+| Vault(SecondaryAgent)   | TRANSFER            | SecondaryVoting       | MainVoting `[SHARE]` |

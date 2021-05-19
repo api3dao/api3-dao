@@ -117,10 +117,8 @@ Since this will only happen voluntarily and will get resolved automatically simp
 
 Each time a user is delegated to/undelegated from, their `user.delegatedTo` will be updated.
 Furthermore, if there has been a proposal made since the last update, a new element will be added to the `Checkpoint` array.
-This array will be searched linearly when the delegated user calls `balanceOfAt()` to vote (for the last week).
-A concern here is that too many interleaved proposals and delegation updates may bloat the user's `delegatedTo` array for the last week and prevent them from voting.
-To prevent this from being used as an attack vector, a transaction cannot add more than `MAX_INTERACTION_FREQUENCY` (default value = `20`) elements to a user's `delegatedTo` in a week.
-The proposal spam protection mechanisms are expected to keep the number of proposals in a week well below `20` (and if they cannot, their parameters should be updated to reduce spam further).
+
+TODO: Update
 
 ## Double Agent and Api3Voting apps
 

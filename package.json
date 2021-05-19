@@ -1,6 +1,6 @@
 {
   "name": "api3-dao",
-  "license": "MIT",
+  "license": "Multi-license",
   "version": "0.1.0",
   "scripts": {
     "bootstrap": "npm install && lerna bootstrap",
@@ -29,8 +29,5 @@
     "hooks": {
       "pre-commit": "npm run pretty-quick && npm run lint"
     }
-  },
-  "dependencies": {
-    "@openzeppelin/test-helpers": "^0.5.10"
   }
 }

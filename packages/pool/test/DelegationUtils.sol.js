@@ -2,7 +2,7 @@ const { expect } = require("chai");
 
 let roles;
 let api3Token, api3Pool, api3Voting;
-let EPOCH_LENGTH, MAX_INTERACTION_FREQUENCY;
+let EPOCH_LENGTH;
 
 beforeEach(async () => {
   const accounts = await ethers.getSigners();
@@ -44,7 +44,6 @@ beforeEach(async () => {
       roles.votingAppSecondary.address
     );
   EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
-  MAX_INTERACTION_FREQUENCY = await api3Pool.MAX_INTERACTION_FREQUENCY();
 });
 
 const user1Stake = ethers.utils.parseEther(
@@ -91,9 +90,8 @@ describe("delegateVotingPower", function () {
           "User has not updated their delegation status less than reward epoch ago",
           function () {
             context("User did not have the same delegate", function () {
-              context(
-                "Receiving user has not been delegated to too frequently",
-                function () {
+
+
                   it("delegates voting power", async function () {
                     // Have user 1 delegate to someone else first
                     await api3Pool
@@ -130,76 +128,6 @@ describe("delegateVotingPower", function () {
                       await api3Pool.userDelegate(roles.user1.address)
                     ).to.equal(roles.user2.address);
                   });
-                }
-              );
-              context(
-                "Receiving user has been delegated to too frequently",
-                function () {
-                  it("reverts", async function () {
-                    for (let i = 0; i < MAX_INTERACTION_FREQUENCY; i++) {
-                      const randomWallet = ethers.Wallet.createRandom().connect(
-                        ethers.provider
-                      );
-                      await roles.deployer.sendTransaction({
-                        to: randomWallet.address,
-                        value: ethers.utils.parseEther("1"),
-                      });
-                      const amount = ethers.BigNumber.from("10000000000000000");
-                      await api3Token
-                        .connect(roles.deployer)
-                        .transfer(randomWallet.address, amount);
-                      await api3Token
-                        .connect(randomWallet)
-                        .approve(api3Pool.address, amount, {
-                          gasLimit: 500000,
-                        });
-                      await api3Pool
-                        .connect(randomWallet)
-                        .depositAndStake(
-                          randomWallet.address,
-                          amount,
-                          randomWallet.address,
-                          { gasLimit: 500000 }
-                        );
-                      await api3Pool
-                        .connect(randomWallet)
-                        .delegateVotingPower(roles.user1.address, {
-                          gasLimit: 500000,
-                        });
-                      await api3Voting.newVote();
-                    }
-                    const randomWallet = ethers.Wallet.createRandom().connect(
-                      ethers.provider
-                    );
-                    await roles.deployer.sendTransaction({
-                      to: randomWallet.address,
-                      value: ethers.utils.parseEther("1"),
-                    });
-                    const amount = ethers.BigNumber.from("10000000000000000");
-                    await api3Token
-                      .connect(roles.deployer)
-                      .transfer(randomWallet.address, amount);
-                    await api3Token
-                      .connect(randomWallet)
-                      .approve(api3Pool.address, amount, { gasLimit: 500000 });
-                    await api3Pool
-                      .connect(randomWallet)
-                      .depositAndStake(
-                        randomWallet.address,
-                        amount,
-                        randomWallet.address,
-                        { gasLimit: 500000 }
-                      );
-                    await expect(
-                      api3Pool
-                        .connect(randomWallet)
-                        .delegateVotingPower(roles.user1.address, {
-                          gasLimit: 500000,
-                        })
-                    ).to.be.revertedWith("API3DAO.StateUtils: Try again a week later");
-                  });
-                }
-              );
             });
             context("User had the same delegate", function () {
               it("reverts", async function () {

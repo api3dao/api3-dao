@@ -46,24 +46,11 @@ contract StateUtils is IStateUtils {
     /// before `EPOCH_LENGTH` has passed
     /// (3) After a user updates their delegation status, they have to wait
     /// `EPOCH_LENGTH` before updating it again
-    /// (4) A user's `delegatedTo` or `delegates` checkpoint arrays can be
-    /// extended up to `MAX_INTERACTION_FREQUENCY` in an `EPOCH_LENGTH`
     uint256 public constant EPOCH_LENGTH = 7 * 24 * 60 * 60;
 
     /// @notice Number of epochs before the staking rewards get unlocked.
     /// Hardcoded as 52 epochs, which corresponds to a year.
     uint256 public constant REWARD_VESTING_PERIOD = 52;
-
-    /// @notice Maximum number of additions interactions can make to a specific
-    /// user's `delegatedTo` and `delegates` in an EPOCH_LENGTH before it
-    /// starts to revert
-    /// @dev Note that interactions overwrite checkpoints rather than adding a
-    /// new element to the arrays unless a new proposal is made between them.
-    /// This means that at least `MAX_INTERACTION_FREQUENCY` proposals need
-    /// to be made for this mechanism to prevent further interactions, which is
-    /// not likely to happen in practice due to the proposal spam protection
-    /// mechanisms.
-    uint256 public constant MAX_INTERACTION_FREQUENCY = 20;
 
     string internal constant ERROR_PERCENTAGE = "API3DAO.StateUtils: PERCENTAGE SHOULD BE BETWEEN 0 AND 100";
     string internal constant ERROR_APR = "API3DAO.StateUtils: MAX APR SHOULD BE BIGGER THEN MIN APR";
@@ -374,6 +361,10 @@ contract StateUtils is IStateUtils {
     /// @notice Called by the DAO Agent to set the voting power threshold for
     /// proposals
     /// Only the primary Agent can do this because it is a critical operation.
+    /// @dev Proposal voting power is limited between 0.1% and 10%. 0.1% is to
+    /// ensure that no more than 1000 proposals can be made within an epoch
+    /// (see `userReceivedDelegationAt()`) and any value above 10% is certainly
+    /// an error.
     /// @param _proposalVotingPowerThreshold Voting power threshold for
     /// proposals
     function setProposalVotingPowerThreshold(uint256 _proposalVotingPowerThreshold)
@@ -382,7 +373,8 @@ contract StateUtils is IStateUtils {
         onlyAgentAppPrimary()
     {
         require(
-            _proposalVotingPowerThreshold <= 10 * ONE_PERCENT,
+            _proposalVotingPowerThreshold >= ONE_PERCENT / 10
+                && _proposalVotingPowerThreshold <= 10 * ONE_PERCENT,
             ERROR_PROPOSAL_THRESHOLD);
         uint256 oldProposalVotingPowerThreshold = proposalVotingPowerThreshold;
         proposalVotingPowerThreshold = _proposalVotingPowerThreshold;
@@ -519,14 +511,6 @@ contract StateUtils is IStateUtils {
         }
         else
         {
-            if (checkpointArray.length + 1 >= MAX_INTERACTION_FREQUENCY)
-            {
-                uint256 interactionTimestampMaxInteractionFrequencyAgo = snapshotBlockToTimestamp[checkpointArray[checkpointArray.length + 1 - MAX_INTERACTION_FREQUENCY].fromBlock];
-                require(
-                    block.timestamp - interactionTimestampMaxInteractionFrequencyAgo > EPOCH_LENGTH,
-                    ERROR_FREQUENCY
-                    );
-            }
             Checkpoint storage lastElement = checkpointArray[checkpointArray.length - 1];
             if (lastElement.fromBlock < lastVoteSnapshotBlock)
             {
