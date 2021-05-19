@@ -9,10 +9,11 @@ abstract contract ClaimUtils is StakeUtils, IClaimUtils {
 
 
     string private constant ERROR_CLAIM_AMOUNT = "TOTAL STAKE SHOULD BE BIGGER THEN CLAIM AMOUNT";
+    string private constant ERROR_CLAIM_MANAGER = "ONLY CLAIM MANAGER IS ALLOWED TO PERFORM THIS ACTION";
 
     /// @dev Reverts if the caller is not a claims manager
     modifier onlyClaimsManager() {
-        require(claimsManagerStatus[msg.sender], ERROR_UNAUTHORIZED);
+        require(claimsManagerStatus[msg.sender], ERROR_CLAIM_MANAGER);
         _;
     }
 

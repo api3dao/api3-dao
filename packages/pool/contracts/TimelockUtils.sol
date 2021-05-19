@@ -10,6 +10,9 @@ import "./interfaces/ITimelockUtils.sol";
 abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
 
     string private constant INVALID_TIME_OR_AMOUNT = "AMOUNT SHOULD BE GREATER THEN 0 AND releaseEnd > releaseStart";
+    string private constant LOCKED_TOKENS_ERROR = "USER SHOULDN'T HAVE TIMELOCKED TOKENS";
+    string private constant BEFORE_RELEASE_ERROR = "CANNOT UPDATE STATUS BEFORE releaseStart";
+    string private constant ZERO_AMOUNT_ERROR = "LOCKED AMOUNT SHOULD BE GREATER THEN 0";
 
     struct Timelock
     {
@@ -45,7 +48,7 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         external
         override
     {
-        require(userToDepositorToTimelock[userAddress][msg.sender].remainingAmount == 0, ERROR_UNAUTHORIZED);
+        require(userToDepositorToTimelock[userAddress][msg.sender].remainingAmount == 0, LOCKED_TOKENS_ERROR);
         require(
             releaseEnd > releaseStart
                 && amount != 0,
@@ -81,8 +84,8 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         override
     {
         Timelock storage timelock = userToDepositorToTimelock[userAddress][timelockManagerAddress];
-        require(block.timestamp > timelock.releaseStart, ERROR_UNAUTHORIZED);
-        require(timelock.remainingAmount > 0, ERROR_UNAUTHORIZED);
+        require(block.timestamp > timelock.releaseStart, BEFORE_RELEASE_ERROR);
+        require(timelock.remainingAmount > 0, ZERO_AMOUNT_ERROR);
         uint256 totalUnlocked;
         if (block.timestamp >= timelock.releaseEnd)
         {

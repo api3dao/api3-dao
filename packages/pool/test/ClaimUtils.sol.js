@@ -99,7 +99,7 @@ describe("payOutClaim", function () {
           api3Pool
             .connect(roles.claimsManager)
             .payOutClaim(roles.claimsManager.address, ethers.BigNumber.from(1))
-        ).to.be.revertedWith("Invalid value");
+        ).to.be.revertedWith("TOTAL STAKE SHOULD BE BIGGER THEN CLAIM AMOUNT");
       });
     });
   });

@@ -9,6 +9,8 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
 
 
     string private constant NOT_ENOUGH_FUNDS = "USER DONT HAVE ENOUGH TOKENS TO STAKE/UNSTAKE THE PROVIDED AMOUNT";
+    string private constant UNSTAKE_TIMING_ERROR = "USER IS ALLOWED TO UNSTAKE NO LONGER THEN A WEEK FROM SCHEDULED TIME";
+    string private constant STAKING_ADDRESS_ERROR = "IT IS ONLY POSSIBLE TO STAKE TO YOURSELF";
 
     /// @notice Called to stake tokens to receive pools in the share
     /// @param amount Amount of tokens to stake
@@ -52,7 +54,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         external
         override
     {
-        require(userAddress == msg.sender, ERROR_UNAUTHORIZED);
+        require(userAddress == msg.sender, STAKING_ADDRESS_ERROR);
         deposit(source, amount, userAddress);
         stake(amount);
     }
@@ -92,8 +94,8 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     {
         payReward();
         User storage user = users[msg.sender];
-        require(block.timestamp > user.unstakeScheduledFor, ERROR_UNAUTHORIZED);
-        require(block.timestamp < user.unstakeScheduledFor + EPOCH_LENGTH, ERROR_UNAUTHORIZED);
+        require(block.timestamp < user.unstakeScheduledFor + EPOCH_LENGTH &&
+            block.timestamp > user.unstakeScheduledFor, UNSTAKE_TIMING_ERROR);
         uint256 amount = user.unstakeAmount;
         uint256 totalSharesNow = totalShares();
         uint256 userSharesNow = userShares(msg.sender);

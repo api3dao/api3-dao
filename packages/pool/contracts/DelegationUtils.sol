@@ -8,6 +8,10 @@ import "./interfaces/IDelegationUtils.sol";
 abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
 
     string internal constant ERROR_DELEGATION_BALANCE = "Cannot delegate zero shares";
+    string internal constant ERROR_DELEGATION_ADRESSES =
+    "Cannot delegate to zero addresses, to yourself and if you've already delegated";
+    string internal constant ERROR_DELEGATED_RECENTLY = "This address un/delegated less then a week before";
+    string internal constant ERROR_ACTIVE_RECENTLY = "This address voted or made a proposal less then a week before";
 
     /// @notice Called by the user to delegate voting power
     /// @param delegate User address the voting power will be delegated to
@@ -23,7 +27,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             delegate != address(0)
                 && delegate != msg.sender
                 && userDelegate(delegate) == address(0),
-            ERROR_ADDRESS
+                ERROR_DELEGATION_ADRESSES
             );
         User storage user = users[msg.sender];
         // Do not allow frequent delegation updates as that can be used to spam
@@ -31,14 +35,14 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         require(
             user.mostRecentDelegationTimestamp <= block.timestamp - EPOCH_LENGTH
                 && user.mostRecentUndelegationTimestamp <= block.timestamp - EPOCH_LENGTH,
-            ERROR_UNAUTHORIZED
+                ERROR_DELEGATED_RECENTLY
             );
         // Do not allow the user to delegate if they have voted or made a proposal
         // recently
         require(
             user.mostRecentProposalTimestamp <= block.timestamp - EPOCH_LENGTH
                 && user.mostRecentVoteTimestamp <= block.timestamp - EPOCH_LENGTH,
-            ERROR_UNAUTHORIZED
+                ERROR_ACTIVE_RECENTLY
             );
         user.mostRecentDelegationTimestamp = block.timestamp;
         uint256 userShares = userShares(msg.sender);
@@ -82,7 +86,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             userDelegate != address(0)
                 && user.mostRecentDelegationTimestamp <= block.timestamp - EPOCH_LENGTH
                 && user.mostRecentUndelegationTimestamp <= block.timestamp - EPOCH_LENGTH,
-            ERROR_UNAUTHORIZED
+            ERROR_DELEGATED_RECENTLY
             );
 
         uint256 userShares = userShares(msg.sender);
