@@ -51,7 +51,7 @@ contract Api3Template is BaseTemplate {
         uint64[3] memory _mainVotingSettings,
         uint64[3] memory _secondaryVotingSettings
     )
-    public
+    external
     {
         require(_api3Pool != address(0), "Invalid API3 Api3Voting Rights");
 
