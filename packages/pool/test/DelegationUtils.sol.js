@@ -47,12 +47,8 @@ beforeEach(async () => {
   MAX_INTERACTION_FREQUENCY = await api3Pool.MAX_INTERACTION_FREQUENCY();
 });
 
-const user1Stake = ethers.utils.parseEther(
-  "20" + "000" + "000"
-);
-const user2Stake = ethers.utils.parseEther(
-  "60" + "000" + "000"
-);
+const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+const user2Stake = ethers.utils.parseEther("60" + "000" + "000");
 
 describe("delegateVotingPower", function () {
   beforeEach(async () => {
@@ -63,26 +59,14 @@ describe("delegateVotingPower", function () {
     await api3Token
       .connect(roles.deployer)
       .transfer(roles.user2.address, user2Stake);
-    await api3Token
-      .connect(roles.user1)
-      .approve(api3Pool.address, user1Stake);
-    await api3Token
-      .connect(roles.user2)
-      .approve(api3Pool.address, user2Stake);
+    await api3Token.connect(roles.user1).approve(api3Pool.address, user1Stake);
+    await api3Token.connect(roles.user2).approve(api3Pool.address, user2Stake);
     await api3Pool
       .connect(roles.user1)
-      .depositAndStake(
-        roles.user1.address,
-        user1Stake,
-        roles.user1.address
-      );
+      .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
     await api3Pool
       .connect(roles.user2)
-      .depositAndStake(
-        roles.user2.address,
-        user2Stake,
-        roles.user2.address
-      );
+      .depositAndStake(roles.user2.address, user2Stake, roles.user2.address);
   });
   context("Delegate address is not zero", function () {
     context("Delegate address is not caller", function () {
@@ -248,7 +232,6 @@ describe("delegateVotingPower", function () {
       });
       context("Delegate is delegating", function () {
         it("reverts", async function () {
-
           // Have user 2 delegate to someone else first
           await api3Pool
             .connect(roles.user2)
@@ -290,26 +273,14 @@ describe("undelegateVotingPower", function () {
     await api3Token
       .connect(roles.deployer)
       .transfer(roles.user2.address, user2Stake);
-    await api3Token
-      .connect(roles.user1)
-      .approve(api3Pool.address, user1Stake);
-    await api3Token
-      .connect(roles.user2)
-      .approve(api3Pool.address, user2Stake);
+    await api3Token.connect(roles.user1).approve(api3Pool.address, user1Stake);
+    await api3Token.connect(roles.user2).approve(api3Pool.address, user2Stake);
     await api3Pool
       .connect(roles.user1)
-      .depositAndStake(
-        roles.user1.address,
-        user1Stake,
-        roles.user1.address
-      );
+      .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
     await api3Pool
       .connect(roles.user2)
-      .depositAndStake(
-        roles.user2.address,
-        user2Stake,
-        roles.user2.address
-      );
+      .depositAndStake(roles.user2.address, user2Stake, roles.user2.address);
   });
   context("User has delegated before", function () {
     context(

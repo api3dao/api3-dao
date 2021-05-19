@@ -53,27 +53,30 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         stake(amount);
     }
 
-    /// @notice Called to schedule an unstake by the user
-    /// @dev Users need to schedule an unstake and wait for `unstakeWaitPeriod`
-    /// to be able to unstake.
-    /// @param amount Amount of tokens for which the unstake will be scheduled
-    /// for 
-    function scheduleUnstake(uint256 amount)
+    function scheduleUnstake(uint256 shares)
         external
         override
     {
         payReward();
-        User storage user = users[msg.sender];
         uint256 userSharesNow = userShares(msg.sender);
-        uint256 userStakedNow = userSharesNow * totalStake / totalShares();
         require(
-            userStakedNow >= amount,
+            userSharesNow >= shares,
             ERROR_VALUE
             );
+        uint256 amount = shares * totalStake / totalShares();
+        User storage user = users[msg.sender];
+        require(user.unstakeScheduledFor == 0, ERROR_UNAUTHORIZED);
         user.unstakeScheduledFor = block.timestamp + unstakeWaitPeriod;
         user.unstakeAmount = amount;
+        user.unstakeShares = shares;
+        user.shares.push(Checkpoint({
+            fromBlock: block.number,
+            value: userSharesNow - shares
+            }));
+        updateDelegatedVotingPower(msg.sender, shares, false);
         emit ScheduledUnstake(
             msg.sender,
+            shares,
             amount,
             user.unstakeScheduledFor
             );
@@ -90,41 +93,29 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     {
         payReward();
         User storage user = users[userAddress];
-        require(block.timestamp > user.unstakeScheduledFor, ERROR_UNAUTHORIZED);
-        require(block.timestamp < user.unstakeScheduledFor + EPOCH_LENGTH, ERROR_UNAUTHORIZED);
-        uint256 amount = user.unstakeAmount;
-        uint256 totalSharesNow = totalShares();
-        uint256 userSharesNow = userShares(userAddress);
-        uint256 sharesToBurn = totalSharesNow * amount / totalStake;
-        // If the user no longer has enough shares to unstake the scheduled
-        // amount of tokens, unstake as many tokens as possible instead
-        if (sharesToBurn > userSharesNow)
-        {
-            sharesToBurn = userSharesNow;
-            amount = sharesToBurn * totalStake / totalSharesNow;
-        }
-        user.unstaked = user.unstaked + amount;
-        user.shares.push(Checkpoint({
-            fromBlock: block.number,
-            value: userSharesNow - sharesToBurn
-            }));
-        uint256 totalSharesAfter = totalSharesNow > sharesToBurn
-                ? totalSharesNow - sharesToBurn
-                : 1;
-        updateTotalShares(totalSharesAfter);
-        updateDelegatedVotingPower(userAddress, sharesToBurn, false);
+        require(user.unstakeScheduledFor != 0, ERROR_UNAUTHORIZED);
+        require(user.unstakeScheduledFor < block.timestamp, ERROR_UNAUTHORIZED);
 
-        totalStake = totalStake > amount
-            ? totalStake - amount
-            : 1;
-        user.unstakeScheduledFor = 0;
+        uint256 totalShares = totalShares();
+        uint256 unstakeAmountAtSchedulingTime = user.unstakeAmount;
+        uint256 unstakeAmountByShares = user.unstakeShares * totalStake / totalShares;
+        uint256 unstakeAmount = unstakeAmountAtSchedulingTime > unstakeAmountByShares
+            ? unstakeAmountByShares
+            : unstakeAmountAtSchedulingTime;
+        unstakeAmount = unstakeAmount < totalStake ? unstakeAmount : totalStake - 1;
+        user.unstaked = user.unstaked + unstakeAmount;
+
+        updateTotalShares(totalShares - user.unstakeShares);
+        totalStake = totalStake - unstakeAmount;
+
+        user.unstakeShares = 0;
         user.unstakeAmount = 0;
+        user.unstakeScheduledFor = 0;      
         emit Unstaked(
             userAddress,
-            amount,
-            totalSharesAfter
+            unstakeAmount
             );
-        return amount;
+        return unstakeAmount;
     }
 
     /// @notice Convenience method to execute an unstake and withdraw in a
