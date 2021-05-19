@@ -46,10 +46,10 @@ contract Api3Template is BaseTemplate {
     * @param _secondaryVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
     */
     function newInstance(
-        string memory _id,
+        string _id,
         MiniMeToken _api3Pool,
-        uint64[3] memory _mainVotingSettings,
-        uint64[3] memory _secondaryVotingSettings
+        uint64[3] _mainVotingSettings,
+        uint64[3] _secondaryVotingSettings
     )
     external
     {
