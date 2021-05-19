@@ -345,7 +345,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the value of the checkpoint array at a specific
     /// block
-    /// @dev Adapted from 
+    /// @dev Adapted from
     /// https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
     /// Allows the caller to specify the portion of the array that will be
     /// searched. This allows us to avoid having to search arrays that can grow
@@ -379,7 +379,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
                 return 0;
             }
             else {
-                revert(ERROR_VALUE);
+                revert(NOT_FOUND_CHECKPOINT);
             }
         }
 
