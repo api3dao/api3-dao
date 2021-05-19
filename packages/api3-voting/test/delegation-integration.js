@@ -118,9 +118,8 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
 
         it('delegate delegated', async () => {
             let latest = Number(await time.latest());
-            await time.increaseTo(latest+Number(time.duration.weeks(1)));
+            await time.increaseTo(latest+Number(time.duration.weeks(2)));
             await pool.delegateVotingPower(voter2, {from: voter1});
-            await time.increaseTo(latest+Number(time.duration.weeks(1)));
             await pool.delegateVotingPower(voter3, {from: voter2});
             const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
             const result = await voting.getVote(voteId);
