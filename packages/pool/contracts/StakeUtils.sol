@@ -53,6 +53,21 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         stake(amount);
     }
 
+    /// @notice Called by the user to schedule unstaking of their tokens
+    /// @dev While scheduling an unstake, `shares` get deducted from the user,
+    /// meaning that they will not receive rewards or voting power for them any
+    /// longer.
+    /// At unstaking-time, the user unstakes either the amount of tokens
+    /// `shares` corresponds to at scheduling-time, or the amount of tokens
+    /// `shares` corresponds to at unstaking-time, whichever is smaller. This
+    /// corresponds to tokens being scheduled to be unstaked not receiving any
+    /// rewards, but being subject to claim payouts.
+    /// In the instance that a claim has been paid out before an unstaking is
+    /// executed, the user may potentially receive rewards during
+    /// `unstakeWaitPeriod` (but not if there has not been a claim payout) but
+    /// the amount of tokens that they can unstake will not be able to exceed
+    /// the amount they scheduled the unstaking for.
+    /// @param shares Amount of shares to be burned to unstake tokens
     function scheduleUnstake(uint256 shares)
         external
         override
@@ -63,9 +78,9 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             userSharesNow >= shares,
             ERROR_VALUE
             );
-        uint256 amount = shares * totalStake / totalShares();
         User storage user = users[msg.sender];
         require(user.unstakeScheduledFor == 0, ERROR_UNAUTHORIZED);
+        uint256 amount = shares * totalStake / totalShares();
         user.unstakeScheduledFor = block.timestamp + unstakeWaitPeriod;
         user.unstakeAmount = amount;
         user.unstakeShares = shares;
@@ -83,6 +98,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     }
 
     /// @notice Called to execute a pre-scheduled unstake
+    /// @dev Anyone can execute a mature scheduled unstake
     /// @param userAddress Address of the user whose scheduled unstaking will
     /// be executed
     /// @return Amount of tokens that are unstaked

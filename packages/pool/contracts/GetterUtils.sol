@@ -277,6 +277,21 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         }
     }
 
+    /// @notice Called to get the details of a user
+    /// @param userAddress User address
+    /// @return unstaked Amount of unstaked API3 tokens
+    /// @return vesting Amount of API3 tokens locked by vesting
+    /// @return unstakeShares Shares scheduled to unstake
+    /// @return unstakeAmount Amount scheduled to unstake
+    /// @return unstakeScheduledFor Time unstaking is scheduled for
+    /// @return mostRecentProposalTimestamp Time when the user made their most
+    /// recent proposal
+    /// @return mostRecentVoteTimestamp Time when the user cast their most
+    /// recent vote
+    /// @return mostRecentDelegationTimestamp Time when the user made their
+    /// most recent delegation
+    /// @return mostRecentUndelegationTimestamp Time when the user made their
+    /// most recent undelegation
     function getUser(address userAddress)
         external
         view

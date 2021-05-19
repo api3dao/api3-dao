@@ -16,8 +16,8 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         override
     {
         payReward();
-        // Delegating users have cannot use their voting power, so we are
-        // verifying that the delegate is not currently delegating. However,
+        // Delegating users cannot use their voting power, so we verify that
+        // the delegate is not currently delegating. However,
         // the delegate may delegate after they have been delegated to.
         require(
             delegate != address(0)
@@ -34,7 +34,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             ERROR_UNAUTHORIZED
             );
         // Do not allow the user to delegate if they have voted or made a proposal
-        // recently
+        // in the last epoch to prevent double voting
         require(
             user.mostRecentProposalTimestamp <= block.timestamp - EPOCH_LENGTH
                 && user.mostRecentVoteTimestamp <= block.timestamp - EPOCH_LENGTH,
@@ -47,7 +47,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         require(userDelegate != delegate, ERROR_DELEGATE);
 
         if (userDelegate != address(0)) {
-            // Need to revoke previous delegation
+            // Revoke previous delegation
             updateCheckpointArray(
                 users[userDelegate].delegatedTo,
                 userReceivedDelegation(userDelegate) - userShares
@@ -78,9 +78,11 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         payReward();
         User storage user = users[msg.sender];
         address userDelegate = userDelegate(msg.sender);
+        require(userDelegate != address(0), ERROR_UNAUTHORIZED);
+        // Do not allow frequent delegation updates as that can be used to spam
+        // proposals
         require(
-            userDelegate != address(0)
-                && user.mostRecentDelegationTimestamp <= block.timestamp - EPOCH_LENGTH
+            user.mostRecentDelegationTimestamp <= block.timestamp - EPOCH_LENGTH
                 && user.mostRecentUndelegationTimestamp <= block.timestamp - EPOCH_LENGTH,
             ERROR_UNAUTHORIZED
             );
@@ -104,8 +106,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
 
     /// @notice Called internally when the user shares are updated to update
     /// the delegated voting power
-    /// @dev User shares only get updated while staking, scheduling unstake
-    /// or unstaking
+    /// @dev User shares only get updated while staking or scheduling unstaking
     /// @param userAddress Address of the user whose delegated voting power
     /// will be updated
     /// @param shares Amount of shares that will be added/removed
