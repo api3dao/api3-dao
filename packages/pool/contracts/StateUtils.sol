@@ -65,16 +65,16 @@ contract StateUtils is IStateUtils {
     /// mechanisms.
     uint256 public constant MAX_INTERACTION_FREQUENCY = 20;
 
-    string internal constant ERROR_PERCENTAGE = "PERCENTAGE SHOULD BE BETWEEN 0 AND 100";
-    string internal constant ERROR_APR = "MAX APR SHOULD BE BIGGER THEN MIN APR";
-    string internal constant ERROR_UNSTAKE_PERIOD = "SHOULD WAIT FOR TIME BIGGER THEN EPOCH_LENGTH TO UNSTAKE";
-    string internal constant ERROR_PROPOSAL_THRESHOLD = "THRESHOLD SHOULD BE LOWER THEN 10%";
-    string internal constant ERROR_ZERO_ADDRESS = "Addresses should not be 0x00";
-    string internal constant ERROR_ONLY_AGENT = "Only Agent app is allowed to execute this function";
-    string internal constant ERROR_ONLY_PRIMARY_AGENT = "Only primary Agent app is allowed to execute this function";
-    string internal constant ERROR_ONLY_VOTING = "Only Voting app is allowed to execute this function";
-    string internal constant ERROR_FREQUENCY = "Try again a week later";
-    string internal constant ERROR_DELEGATE = "Cannot delegate to the same address";
+    string internal constant ERROR_PERCENTAGE = "API3DAO.StateUtils: PERCENTAGE SHOULD BE BETWEEN 0 AND 100";
+    string internal constant ERROR_APR = "API3DAO.StateUtils: MAX APR SHOULD BE BIGGER THEN MIN APR";
+    string internal constant ERROR_UNSTAKE_PERIOD = "API3DAO.StateUtils: SHOULD WAIT FOR TIME BIGGER THEN EPOCH_LENGTH TO UNSTAKE";
+    string internal constant ERROR_PROPOSAL_THRESHOLD = "API3DAO.StateUtils: THRESHOLD SHOULD BE LOWER THEN 10%";
+    string internal constant ERROR_ZERO_ADDRESS = "API3DAO.StateUtils: Addresses should not be 0x00";
+    string internal constant ERROR_ONLY_AGENT = "API3DAO.StateUtils: Only Agent app is allowed to execute this function";
+    string internal constant ERROR_ONLY_PRIMARY_AGENT = "API3DAO.StateUtils: Only primary Agent app is allowed to execute this function";
+    string internal constant ERROR_ONLY_VOTING = "API3DAO.StateUtils: Only Voting app is allowed to execute this function";
+    string internal constant ERROR_FREQUENCY = "API3DAO.StateUtils: Try again a week later";
+    string internal constant ERROR_DELEGATE = "API3DAO.StateUtils: Cannot delegate to the same address";
 
     // All percentage values are represented by multiplying by 1e16
     uint256 internal constant HUNDRED_PERCENT = 1e18;

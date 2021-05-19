@@ -7,7 +7,7 @@ import "./interfaces/IGetterUtils.sol";
 /// @title Contract that implements getters
 abstract contract GetterUtils is StateUtils, IGetterUtils {
 
-    string private constant NOT_FOUND_CHECKPOINT = "VALUE CANNOT BE FOUND AFTER PROVIDED CHECKPOINT";
+    string private constant NOT_FOUND_CHECKPOINT = "API3DAO.GetterUtils: VALUE CANNOT BE FOUND AFTER PROVIDED CHECKPOINT";
 
     /// @notice Called to get the voting power of a user at a specific block
     /// @dev This method is used to implement the MiniMe interface for the

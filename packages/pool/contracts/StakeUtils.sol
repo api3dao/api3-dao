@@ -8,9 +8,9 @@ import "./interfaces/IStakeUtils.sol";
 abstract contract StakeUtils is TransferUtils, IStakeUtils {
 
 
-    string private constant NOT_ENOUGH_FUNDS = "USER DONT HAVE ENOUGH TOKENS TO STAKE/UNSTAKE THE PROVIDED AMOUNT";
-    string private constant UNSTAKE_TIMING_ERROR = "USER IS ALLOWED TO UNSTAKE NO LONGER THEN A WEEK FROM SCHEDULED TIME";
-    string private constant STAKING_ADDRESS_ERROR = "IT IS ONLY POSSIBLE TO STAKE TO YOURSELF";
+    string private constant NOT_ENOUGH_FUNDS = "API3DAO.StakeUtils: USER DONT HAVE ENOUGH TOKENS TO STAKE/UNSTAKE THE PROVIDED AMOUNT";
+    string private constant UNSTAKE_TIMING_ERROR = "API3DAO.StakeUtils: USER IS ALLOWED TO UNSTAKE NO LONGER THEN A WEEK FROM SCHEDULED TIME";
+    string private constant STAKING_ADDRESS_ERROR = "API3DAO.StakeUtils: IT IS ONLY POSSIBLE TO STAKE TO YOURSELF";
 
     /// @notice Called to stake tokens to receive pools in the share
     /// @param amount Amount of tokens to stake

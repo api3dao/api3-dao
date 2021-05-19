@@ -7,8 +7,10 @@ import "./interfaces/ITransferUtils.sol";
 /// @title Contract that implements token transfer functionality
 abstract contract TransferUtils is DelegationUtils, ITransferUtils {
 
-    string private constant WRONG_TOTAL_FUNDS = "USER TOTAL FUNDS SHOULD BE BIGGER THEN LOCKED AND AMOUNT TO WITHDRAW";
-    string private constant TOO_BIG_AMOUNT = "WITHDRAWAL AMOUNT SHOULD BE LESS OR EQUAL TO THE UNSTAKED TOKENS";
+    string private constant WRONG_TOTAL_FUNDS =
+    "API3DAO.TransferUtils: USER TOTAL FUNDS SHOULD BE BIGGER THEN LOCKED AND AMOUNT TO WITHDRAW";
+    string private constant TOO_BIG_AMOUNT =
+    "API3DAO.TransferUtils: WITHDRAWAL AMOUNT SHOULD BE LESS OR EQUAL TO THE UNSTAKED TOKENS";
 
     /// @notice Called to deposit tokens for a user by using `transferFrom()`
     /// @dev This method is used by `TimelockManager.sol`

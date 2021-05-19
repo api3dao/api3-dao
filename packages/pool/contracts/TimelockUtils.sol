@@ -9,10 +9,11 @@ import "./interfaces/ITimelockUtils.sol";
 /// API3 tokens that are locked under a vesting schedule.
 abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
 
-    string private constant INVALID_TIME_OR_AMOUNT = "AMOUNT SHOULD BE GREATER THEN 0 AND releaseEnd > releaseStart";
-    string private constant LOCKED_TOKENS_ERROR = "USER SHOULDN'T HAVE TIMELOCKED TOKENS";
-    string private constant BEFORE_RELEASE_ERROR = "CANNOT UPDATE STATUS BEFORE releaseStart";
-    string private constant ZERO_AMOUNT_ERROR = "LOCKED AMOUNT SHOULD BE GREATER THEN 0";
+    string private constant INVALID_TIME_OR_AMOUNT =
+    "API3DAO.TimelockUtils: AMOUNT SHOULD BE GREATER THEN 0 AND releaseEnd > releaseStart";
+    string private constant LOCKED_TOKENS_ERROR = "API3DAO.TimelockUtils: USER SHOULDN'T HAVE TIMELOCKED TOKENS";
+    string private constant BEFORE_RELEASE_ERROR = "API3DAO.TimelockUtils: CANNOT UPDATE STATUS BEFORE releaseStart";
+    string private constant ZERO_AMOUNT_ERROR = "API3DAO.TimelockUtils: LOCKED AMOUNT SHOULD BE GREATER THEN 0";
 
     struct Timelock
     {

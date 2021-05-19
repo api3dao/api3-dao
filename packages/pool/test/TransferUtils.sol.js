@@ -117,7 +117,8 @@ describe("withdraw", function () {
         api3Pool
           .connect(roles.user1)
           .withdraw(roles.user1.address, ethers.BigNumber.from(1))
-      ).to.be.revertedWith("Invalid value");
+      ).to.be.revertedWith(
+        "API3DAO.TransferUtils: WITHDRAWAL AMOUNT SHOULD BE LESS OR EQUAL TO THE UNSTAKED TOKENS");
     });
   });
   context("User does not have enough funds", function () {
@@ -126,7 +127,7 @@ describe("withdraw", function () {
         api3Pool
           .connect(roles.user1)
           .withdraw(roles.user1.address, ethers.BigNumber.from(1))
-      ).to.be.revertedWith("Invalid value");
+      ).to.be.revertedWith("API3DAO.TransferUtils: USER TOTAL FUNDS SHOULD BE BIGGER THEN LOCKED AND AMOUNT TO WITHDRAW");
     });
   });
 });

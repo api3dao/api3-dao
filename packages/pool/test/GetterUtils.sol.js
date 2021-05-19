@@ -252,7 +252,7 @@ describe("userReceivedDelegationAt", function () {
             roles.user1.address,
             delegationBlocks[0]
           )
-        ).to.be.revertedWith("Invalid value");
+        ).to.be.revertedWith("API3DAO.GetterUtils: VALUE CANNOT BE FOUND AFTER PROVIDED CHECKPOINT");
       });
     }
   );

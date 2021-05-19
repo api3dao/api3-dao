@@ -147,7 +147,7 @@ describe("setDaoApps", function () {
               roles.votingAppPrimary.address,
               roles.votingAppSecondary.address
             )
-        ).to.be.revertedWith("Invalid address");
+        ).to.be.revertedWith("API3DAO.StateUtils: Addresses should not be 0x00");
         await expect(
           api3Pool
             .connect(roles.randomPerson)
@@ -157,7 +157,7 @@ describe("setDaoApps", function () {
               roles.votingAppPrimary.address,
               roles.votingAppSecondary.address
             )
-        ).to.be.revertedWith("Invalid address");
+        ).to.be.revertedWith("API3DAO.StateUtils: Addresses should not be 0x00");
         await expect(
           api3Pool
             .connect(roles.randomPerson)
@@ -167,7 +167,7 @@ describe("setDaoApps", function () {
               ethers.constants.AddressZero,
               roles.votingAppSecondary.address
             )
-        ).to.be.revertedWith("Invalid address");
+        ).to.be.revertedWith("API3DAO.StateUtils: Addresses should not be 0x00");
         await expect(
           api3Pool
             .connect(roles.randomPerson)
@@ -177,7 +177,7 @@ describe("setDaoApps", function () {
               roles.votingAppPrimary.address,
               ethers.constants.AddressZero
             )
-        ).to.be.revertedWith("Invalid address");
+        ).to.be.revertedWith("API3DAO.StateUtils: Addresses should not be 0x00");
       });
     });
   });
@@ -246,7 +246,7 @@ describe("setDaoApps", function () {
               roles.votingAppPrimary.address,
               roles.votingAppSecondary.address
             )
-        ).to.be.revertedWith("Unauthorized");
+        ).to.be.revertedWith("API3DAO.StateUtils: Only Agent app is allowed to execute this function");
       });
     });
   });
@@ -293,12 +293,12 @@ describe("setClaimsManagerStatus", function () {
         api3Pool
           .connect(roles.agentAppSecondary)
           .setClaimsManagerStatus(roles.claimsManager.address, false)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.StateUtils: Only primary Agent app is allowed to execute this function");
       await expect(
         api3Pool
           .connect(roles.randomPerson)
           .setClaimsManagerStatus(roles.claimsManager.address, false)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.StateUtils: Only primary Agent app is allowed to execute this function");
     });
   });
 });
@@ -353,7 +353,7 @@ describe("setStakeTarget", function () {
           api3Pool
             .connect(roles.agentAppSecondary)
             .setStakeTarget(newStakeTarget)
-        ).to.be.revertedWith("Invalid value");
+        ).to.be.revertedWith("API3DAO.StateUtils: PERCENTAGE SHOULD BE BETWEEN 0 AND 100");
       });
     });
   });
@@ -362,7 +362,7 @@ describe("setStakeTarget", function () {
       const newStakeTarget = ethers.BigNumber.from(123);
       await expect(
         api3Pool.connect(roles.randomPerson).setStakeTarget(newStakeTarget)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.StateUtils: Only Agent app is allowed to execute this function");
     });
   });
 });
@@ -413,7 +413,7 @@ describe("setMaxApr", function () {
         const newMaxApr = minApr.sub(ethers.BigNumber.from(123));
         await expect(
           api3Pool.connect(roles.agentAppSecondary).setMaxApr(newMaxApr)
-        ).to.be.revertedWith("Invalid value");
+        ).to.be.revertedWith("API3DAO.StateUtils: MAX APR SHOULD BE BIGGER THEN MIN APR");
       });
     });
   });
@@ -422,7 +422,7 @@ describe("setMaxApr", function () {
       const newMaxApr = ethers.BigNumber.from(123);
       await expect(
         api3Pool.connect(roles.randomPerson).setMaxApr(newMaxApr)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.StateUtils: Only Agent app is allowed to execute this function");
     });
   });
 });
@@ -473,7 +473,7 @@ describe("setMinApr", function () {
         const newMinApr = maxApr.add(ethers.BigNumber.from(123));
         await expect(
           api3Pool.connect(roles.agentAppSecondary).setMinApr(newMinApr)
-        ).to.be.revertedWith("Invalid value");
+        ).to.be.revertedWith("API3DAO.StateUtils: MAX APR SHOULD BE BIGGER THEN MIN APR");
       });
     });
   });
@@ -482,7 +482,7 @@ describe("setMinApr", function () {
       const newMinApr = ethers.BigNumber.from(123);
       await expect(
         api3Pool.connect(roles.randomPerson).setMinApr(newMinApr)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.StateUtils: Only Agent app is allowed to execute this function");
     });
   });
 });
@@ -539,7 +539,7 @@ describe("setUnstakeWaitPeriod", function () {
             api3Pool
               .connect(roles.agentAppPrimary)
               .setUnstakeWaitPeriod(newUnstakeWaitPeriod)
-          ).to.be.revertedWith("Invalid value");
+          ).to.be.revertedWith("API3DAO.StateUtils: SHOULD WAIT FOR TIME BIGGER THEN EPOCH_LENGTH TO UNSTAKE");
         });
       }
     );
@@ -551,12 +551,12 @@ describe("setUnstakeWaitPeriod", function () {
         api3Pool
           .connect(roles.agentAppSecondary)
           .setUnstakeWaitPeriod(newUnstakeWaitPeriod)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.StateUtils: Only primary Agent app is allowed to execute this function");
       await expect(
         api3Pool
           .connect(roles.randomPerson)
           .setUnstakeWaitPeriod(newUnstakeWaitPeriod)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.StateUtils: Only primary Agent app is allowed to execute this function");
     });
   });
 });
@@ -591,7 +591,7 @@ describe("setAprUpdateStep", function () {
         api3Pool
           .connect(roles.randomPerson)
           .setAprUpdateStep(newAprUpdateCoefficient)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.StateUtils: Only Agent app is allowed to execute this function");
     });
   });
 });
@@ -649,7 +649,7 @@ describe("setProposalVotingPowerThreshold", function () {
             api3Pool
               .connect(roles.agentAppPrimary)
               .setProposalVotingPowerThreshold(newProposalVotingPowerThreshold)
-          ).to.be.revertedWith("Invalid value");
+          ).to.be.revertedWith("API3DAO.StateUtils: THRESHOLD SHOULD BE LOWER THEN 10%");
         });
       }
     );
@@ -661,12 +661,12 @@ describe("setProposalVotingPowerThreshold", function () {
         api3Pool
           .connect(roles.agentAppSecondary)
           .setProposalVotingPowerThreshold(newProposalVotingPowerThreshold)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.StateUtils: Only primary Agent app is allowed to execute this function");
       await expect(
         api3Pool
           .connect(roles.randomPerson)
           .setProposalVotingPowerThreshold(newProposalVotingPowerThreshold)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.StateUtils: Only primary Agent app is allowed to execute this function");
     });
   });
 });
@@ -731,7 +731,7 @@ describe("updateLastVoteSnapshotBlock", function () {
         );
       await expect(
         api3Pool.connect(roles.randomPerson).updateLastVoteSnapshotBlock(123)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.StateUtils: Only Voting app is allowed to execute this function");
     });
   });
 });
