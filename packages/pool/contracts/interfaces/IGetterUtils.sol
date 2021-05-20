@@ -74,7 +74,7 @@ interface IGetterUtils is IStateUtils {
         view
         returns(address);
 
-    function userDelegate(address userAddress)
+    function getUserDelegate(address userAddress)
         external
         view
         returns(address);
