@@ -52,7 +52,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         external
         override
     {
-        deposit(source, amount);
+        deposit(source, amount, msg.sender);
         stake(amount);
     }
 
