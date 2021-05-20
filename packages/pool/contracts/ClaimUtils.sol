@@ -8,8 +8,8 @@ import "./interfaces/IClaimUtils.sol";
 abstract contract ClaimUtils is StakeUtils, IClaimUtils {
 
 
-    string private constant ERROR_CLAIM_AMOUNT = "API3DAO.ClaimUtils: TOTAL STAKE SHOULD BE BIGGER THEN CLAIM AMOUNT";
-    string private constant ERROR_CLAIM_MANAGER = "API3DAO.ClaimUtils: ONLY CLAIM MANAGER IS ALLOWED TO PERFORM THIS ACTION";
+    string private constant ERROR_CLAIM_AMOUNT = "API3DAO.ClaimUtils: Total stake should be bigger then claim amount";
+    string private constant ERROR_CLAIM_MANAGER = "API3DAO.ClaimUtils: Only claim manager is allowed to perform this action";
 
     /// @dev Reverts if the caller is not a claims manager
     modifier onlyClaimsManager() {

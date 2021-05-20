@@ -11,9 +11,9 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
 
     string private constant INVALID_TIME_OR_AMOUNT =
     "API3DAO.TimelockUtils: AMOUNT SHOULD BE GREATER THEN 0 AND releaseEnd > releaseStart";
-    string private constant LOCKED_TOKENS_ERROR = "API3DAO.TimelockUtils: USER SHOULDN'T HAVE TIMELOCKED TOKENS";
-    string private constant BEFORE_RELEASE_ERROR = "API3DAO.TimelockUtils: CANNOT UPDATE STATUS BEFORE releaseStart";
-    string private constant ZERO_AMOUNT_ERROR = "API3DAO.TimelockUtils: LOCKED AMOUNT SHOULD BE GREATER THEN 0";
+    string private constant ERROR_LOCKED_TOKENS = "API3DAO.TimelockUtils: USER SHOULDN'T HAVE TIMELOCKED TOKENS";
+    string private constant ERROR_BEFORE_RELEASE = "API3DAO.TimelockUtils: CANNOT UPDATE STATUS BEFORE releaseStart";
+    string private constant ERROR_ZERO_AMOUNT = "API3DAO.TimelockUtils: LOCKED AMOUNT SHOULD BE GREATER THEN 0";
 
     struct Timelock
     {
@@ -49,7 +49,7 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         external
         override
     {
-        require(userToDepositorToTimelock[userAddress][msg.sender].remainingAmount == 0, LOCKED_TOKENS_ERROR);
+        require(userToDepositorToTimelock[userAddress][msg.sender].remainingAmount == 0, ERROR_LOCKED_TOKENS);
         require(
             releaseEnd > releaseStart
                 && amount != 0,
@@ -85,8 +85,8 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         override
     {
         Timelock storage timelock = userToDepositorToTimelock[userAddress][timelockManagerAddress];
-        require(block.timestamp > timelock.releaseStart, BEFORE_RELEASE_ERROR);
-        require(timelock.remainingAmount > 0, ZERO_AMOUNT_ERROR);
+        require(block.timestamp > timelock.releaseStart, ERROR_BEFORE_RELEASE);
+        require(timelock.remainingAmount > 0, ERROR_ZERO_AMOUNT);
         uint256 totalUnlocked;
         if (block.timestamp >= timelock.releaseEnd)
         {

@@ -99,7 +99,7 @@ describe("payOutClaim", function () {
           api3Pool
             .connect(roles.claimsManager)
             .payOutClaim(roles.claimsManager.address, ethers.BigNumber.from(1))
-        ).to.be.revertedWith("API3DAO.ClaimUtils: TOTAL STAKE SHOULD BE BIGGER THEN CLAIM AMOUNT");
+        ).to.be.revertedWith("API3DAO.ClaimUtils: Total stake should be bigger then claim amount");
       });
     });
   });
@@ -109,7 +109,7 @@ describe("payOutClaim", function () {
         api3Pool
           .connect(roles.randomPerson)
           .payOutClaim(roles.randomPerson.address, ethers.BigNumber.from(1))
-      ).to.be.revertedWith("API3DAO.ClaimUtils: ONLY CLAIM MANAGER IS ALLOWED TO PERFORM THIS ACTION");
+      ).to.be.revertedWith("API3DAO.ClaimUtils: Only claim manager is allowed to perform this action");
     });
   });
 });

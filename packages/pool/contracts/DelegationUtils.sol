@@ -9,11 +9,11 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
 
     string internal constant ERROR_DELEGATION_BALANCE = "API3DAO.DelegationUtils: Cannot delegate zero shares";
     string internal constant ERROR_DELEGATION_ADRESSES =
-    "API3DAO.DelegationUtils: Cannot delegate to zero addresses, to yourself and if you've already delegated";
+    "API3DAO.DelegationUtils: Cannot delegate to yourself or zero address and if you've already delegated";
     string internal constant ERROR_DELEGATED_RECENTLY =
-    "API3DAO.DelegationUtils: This address un/delegated less then a week before";
+    "API3DAO.DelegationUtils: This address un/delegated less than a week before";
     string internal constant ERROR_ACTIVE_RECENTLY =
-    "API3DAO.DelegationUtils: This address voted or made a proposal less then a week before";
+    "API3DAO.DelegationUtils: This address voted or made a proposal less than a week before";
 
     /// @notice Called by the user to delegate voting power
     /// @param delegate User address the voting power will be delegated to

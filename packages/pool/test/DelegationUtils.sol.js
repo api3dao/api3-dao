@@ -169,7 +169,7 @@ describe("delegateVotingPower", function () {
                 api3Pool
                   .connect(roles.user1)
                   .delegateVotingPower(roles.user2.address)
-              ).to.be.revertedWith("API3DAO.DelegationUtils: This address un/delegated less then a week before");
+              ).to.be.revertedWith("API3DAO.DelegationUtils: This address un/delegated less than a week before");
             });
           }
         );
@@ -186,7 +186,7 @@ describe("delegateVotingPower", function () {
             api3Pool
               .connect(roles.user1)
               .delegateVotingPower(roles.user2.address)
-          ).to.be.revertedWith("API3DAO.DelegationUtils: Cannot delegate to zero addresses, to yourself and if you've already delegated");
+          ).to.be.revertedWith("API3DAO.DelegationUtils: Cannot delegate to yourself or zero address and if you've already delegated");
         });
       });
     });
@@ -194,7 +194,7 @@ describe("delegateVotingPower", function () {
       it("reverts", async function () {
         await expect(
           api3Pool.connect(roles.user1).delegateVotingPower(roles.user1.address)
-        ).to.be.revertedWith("API3DAO.DelegationUtils: Cannot delegate to zero addresses, to yourself and if you've already delegated");
+        ).to.be.revertedWith("API3DAO.DelegationUtils: Cannot delegate to yourself or zero address and if you've already delegated");
       });
     });
   });
@@ -204,7 +204,7 @@ describe("delegateVotingPower", function () {
         api3Pool
           .connect(roles.user1)
           .delegateVotingPower(ethers.constants.AddressZero)
-      ).to.be.revertedWith("API3DAO.DelegationUtils: Cannot delegate to zero addresses, to yourself and if you've already delegated");
+      ).to.be.revertedWith("API3DAO.DelegationUtils: Cannot delegate to yourself or zero address and if you've already delegated");
     });
   });
 });
@@ -282,7 +282,7 @@ describe("undelegateVotingPower", function () {
           // Attempt to have user 1 undelegate without waiting
           await expect(
             api3Pool.connect(roles.user1).undelegateVotingPower()
-          ).to.be.revertedWith("API3DAO.DelegationUtils: This address un/delegated less then a week before");
+          ).to.be.revertedWith("API3DAO.DelegationUtils: This address un/delegated less than a week before");
         });
       }
     );
@@ -291,7 +291,7 @@ describe("undelegateVotingPower", function () {
     it("reverts", async function () {
       await expect(
         api3Pool.connect(roles.user1).undelegateVotingPower()
-      ).to.be.revertedWith("API3DAO.DelegationUtils: This address un/delegated less then a week before");
+      ).to.be.revertedWith("API3DAO.DelegationUtils: This address un/delegated less than a week before");
     });
   });
 });

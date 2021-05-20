@@ -7,7 +7,7 @@ import "./interfaces/IGetterUtils.sol";
 /// @title Contract that implements getters
 abstract contract GetterUtils is StateUtils, IGetterUtils {
 
-    string private constant NOT_FOUND_CHECKPOINT = "API3DAO.GetterUtils: VALUE CANNOT BE FOUND AFTER PROVIDED CHECKPOINT";
+    string private constant CHECKPOINT_NOT_FOUND = "API3DAO.GetterUtils: Value cannot be found after provided checkpoint";
 
     /// @notice Called to get the voting power of a user at a specific block
     /// @dev This method is used to implement the MiniMe interface for the
@@ -339,7 +339,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         }
         // Revert if the value being searched for comes before
         // `minimumCheckpointIndex`
-        require(i == 0, NOT_FOUND_CHECKPOINT);
+        require(i == 0, CHECKPOINT_NOT_FOUND);
         return 0;
     }
 
@@ -379,7 +379,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
                 return 0;
             }
             else {
-                revert(NOT_FOUND_CHECKPOINT);
+                revert(CHECKPOINT_NOT_FOUND);
             }
         }
 
