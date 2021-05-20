@@ -28,7 +28,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         require(
             delegate != address(0)
                 && delegate != msg.sender
-                && userDelegate(delegate) == address(0),
+                && getUserDelegate(delegate) == address(0),
                 ERROR_DELEGATION_ADRESSES
             );
         User storage user = users[msg.sender];
@@ -48,7 +48,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             );
         user.mostRecentDelegationTimestamp = block.timestamp;
         uint256 userShares = userShares(msg.sender);
-        address userDelegate = userDelegate(msg.sender);
+        address userDelegate = getUserDelegate(msg.sender);
         require(userShares > 0, ERROR_DELEGATION_BALANCE );
         require(userDelegate != delegate, ERROR_DELEGATE);
 
@@ -83,7 +83,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
     {
         payReward();
         User storage user = users[msg.sender];
-        address userDelegate = userDelegate(msg.sender);
+        address userDelegate = getUserDelegate(msg.sender);
         require(
             userDelegate != address(0)
                 && user.mostRecentDelegationTimestamp <= block.timestamp - EPOCH_LENGTH
@@ -121,7 +121,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         )
         internal
     {
-        address userDelegate = userDelegate(msg.sender);
+        address userDelegate = getUserDelegate(msg.sender);
         if (userDelegate == address(0)) {
             return;
         }
