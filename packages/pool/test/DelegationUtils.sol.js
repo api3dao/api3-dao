@@ -128,7 +128,6 @@ describe("delegateVotingPower", function () {
                       await api3Pool.userDelegate(roles.user1.address)
                     ).to.equal(roles.user2.address);
                   });
-                  
             });
             context("User had the same delegate", function () {
               it("reverts", async function () {
@@ -145,7 +144,7 @@ describe("delegateVotingPower", function () {
                   api3Pool
                     .connect(roles.user1)
                     .delegateVotingPower(roles.user2.address)
-                ).to.be.revertedWith("Cannot delegate to the same address");
+                ).to.be.revertedWith("API3DAO.StateUtils: Cannot delegate to the same address");
 
                 expect(await api3Pool.balanceOf(roles.user1.address)).to.equal(
                   ethers.BigNumber.from(0)
@@ -170,7 +169,7 @@ describe("delegateVotingPower", function () {
                 api3Pool
                   .connect(roles.user1)
                   .delegateVotingPower(roles.user2.address)
-              ).to.be.revertedWith("Unauthorized");
+              ).to.be.revertedWith("API3DAO.DelegationUtils: This address un/delegated less than a week before");
             });
           }
         );
@@ -187,7 +186,7 @@ describe("delegateVotingPower", function () {
             api3Pool
               .connect(roles.user1)
               .delegateVotingPower(roles.user2.address)
-          ).to.be.revertedWith("Invalid address");
+          ).to.be.revertedWith("API3DAO.DelegationUtils: Cannot delegate to yourself or zero address and if you've already delegated");
         });
       });
     });
@@ -195,7 +194,7 @@ describe("delegateVotingPower", function () {
       it("reverts", async function () {
         await expect(
           api3Pool.connect(roles.user1).delegateVotingPower(roles.user1.address)
-        ).to.be.revertedWith("Invalid address");
+        ).to.be.revertedWith("API3DAO.DelegationUtils: Cannot delegate to yourself or zero address and if you've already delegated");
       });
     });
   });
@@ -205,7 +204,7 @@ describe("delegateVotingPower", function () {
         api3Pool
           .connect(roles.user1)
           .delegateVotingPower(ethers.constants.AddressZero)
-      ).to.be.revertedWith("Invalid address");
+      ).to.be.revertedWith("API3DAO.DelegationUtils: Cannot delegate to yourself or zero address and if you've already delegated");
     });
   });
 });
@@ -283,7 +282,7 @@ describe("undelegateVotingPower", function () {
           // Attempt to have user 1 undelegate without waiting
           await expect(
             api3Pool.connect(roles.user1).undelegateVotingPower()
-          ).to.be.revertedWith("Unauthorized");
+          ).to.be.revertedWith("API3DAO.DelegationUtils: This address un/delegated less than a week before");
         });
       }
     );
@@ -292,7 +291,7 @@ describe("undelegateVotingPower", function () {
     it("reverts", async function () {
       await expect(
         api3Pool.connect(roles.user1).undelegateVotingPower()
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.DelegationUtils: This address un/delegated less than a week before");
     });
   });
 });

@@ -88,7 +88,7 @@ describe("depositWithVesting", function () {
                 releaseStart,
                 releaseEnd
               )
-          ).to.be.revertedWith("Invalid value");
+          ).to.be.revertedWith("API3DAO.TimelockUtils: AMOUNT SHOULD BE GREATER THEN 0 AND releaseEnd > releaseStart");
         });
       });
     });
@@ -110,7 +110,7 @@ describe("depositWithVesting", function () {
               releaseStart,
               releaseEnd
             )
-        ).to.be.revertedWith("Invalid value");
+        ).to.be.revertedWith("API3DAO.TimelockUtils: AMOUNT SHOULD BE GREATER THEN 0 AND releaseEnd > releaseStart");
       });
     });
   });
@@ -147,7 +147,7 @@ describe("depositWithVesting", function () {
             releaseStart,
             releaseEnd
           )
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.TimelockUtils: User shouldn't have timelocked tokens");
     });
   });
 });
@@ -271,7 +271,7 @@ describe("updateTimelockStatus", function () {
               roles.user1.address,
               roles.mockTimelockManager.address
             )
-        ).to.be.revertedWith("Unauthorized");
+        ).to.be.revertedWith("API3DAO.TimelockUtils: Locked amount should be greater than 0");
       });
     });
   });
@@ -305,7 +305,7 @@ describe("updateTimelockStatus", function () {
             roles.user1.address,
             roles.mockTimelockManager.address
           )
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.TimelockUtils: Cannot update status before releaseStart");
     });
   });
 });
