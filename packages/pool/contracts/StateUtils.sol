@@ -277,7 +277,7 @@ contract StateUtils is IStateUtils {
     {
         require(
             _stakeTarget <= HUNDRED_PERCENT,
-            ERROR_VALUE);
+            ERROR_PERCENTAGE);
         uint256 oldStakeTarget = stakeTarget;
         stakeTarget = _stakeTarget;
         emit SetStakeTarget(
