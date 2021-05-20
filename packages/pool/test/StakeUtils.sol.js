@@ -148,16 +148,6 @@ describe("depositAndStake", function () {
         );
     });
   });
-  context("Caller is not the beneficiary", function () {
-    it("reverts", async function () {
-      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
-      await expect(
-        api3Pool
-          .connect(roles.randomPerson)
-          .depositAndStake(roles.user1.address, user1Stake)
-      ).to.be.revertedWith("API3DAO.StakeUtils: It is only possible to stake to yourself");
-    });
-  });
 });
 
 describe("scheduleUnstake", function () {
