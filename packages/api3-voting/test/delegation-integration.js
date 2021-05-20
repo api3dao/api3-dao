@@ -59,13 +59,13 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             await token.generateTokens(voter3, balance3);
 
             await token.approve(pool.address, balance1, {from:voter1});
-            await pool.depositAndStake(voter1, balance1, voter1, {from:voter1});
+            await pool.depositAndStake(voter1, balance1, {from:voter1});
 
             await token.approve(pool.address, balance2, {from:voter2});
-            await pool.depositAndStake(voter2, balance2, voter2, {from:voter2});
+            await pool.depositAndStake(voter2, balance2, {from:voter2});
 
             await token.approve(pool.address, balance3, {from:voter3});
-            await pool.depositAndStake(voter3, balance3, voter3, {from:voter3});
+            await pool.depositAndStake(voter3, balance3, {from:voter3});
 
             await pool.setDaoApps(voting.address, voting.address, voting.address, voting.address);
         });

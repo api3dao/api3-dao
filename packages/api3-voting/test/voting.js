@@ -117,15 +117,15 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
 
         // holder 51 deposit and stake
         await token.approve(api3Pool.address, bigExp(51, decimals), {from:holder51});
-        await api3Pool.depositAndStake(holder51, bigExp(51, decimals), holder51, {from:holder51});
+        await api3Pool.depositAndStake(holder51, bigExp(51, decimals), {from:holder51});
 
         // holder 29
         await token.approve(api3Pool.address, bigExp(29, decimals), {from:holder29});
-        await api3Pool.depositAndStake(holder29, bigExp(29, decimals), holder29, {from:holder29});
+        await api3Pool.depositAndStake(holder29, bigExp(29, decimals), {from:holder29});
 
         // holder 20
         await token.approve(api3Pool.address, bigExp(20, decimals), {from:holder20});
-        await api3Pool.depositAndStake(holder20, bigExp(20, decimals), holder20, {from:holder20});
+        await api3Pool.depositAndStake(holder20, bigExp(20, decimals), {from:holder20});
 
         executionTarget = await ExecutionTarget.new()
       });

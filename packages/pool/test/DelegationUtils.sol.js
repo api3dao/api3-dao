@@ -72,15 +72,13 @@ describe("delegateVotingPower", function () {
       .connect(roles.user1)
       .depositAndStake(
         roles.user1.address,
-        user1Stake,
-        roles.user1.address
+        user1Stake
       );
     await api3Pool
       .connect(roles.user2)
       .depositAndStake(
         roles.user2.address,
-        user2Stake,
-        roles.user2.address
+        user2Stake
       );
   });
   context("Delegate address is not zero", function () {
@@ -228,15 +226,13 @@ describe("undelegateVotingPower", function () {
       .connect(roles.user1)
       .depositAndStake(
         roles.user1.address,
-        user1Stake,
-        roles.user1.address
+        user1Stake
       );
     await api3Pool
       .connect(roles.user2)
       .depositAndStake(
         roles.user2.address,
-        user2Stake,
-        roles.user2.address
+        user2Stake
       );
   });
   context("User has delegated before", function () {

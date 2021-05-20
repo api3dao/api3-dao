@@ -138,7 +138,7 @@ describe("depositAndStake", function () {
       await expect(
         api3Pool
           .connect(roles.user1)
-          .depositAndStake(roles.user1.address, user1Stake, roles.user1.address)
+          .depositAndStake(roles.user1.address, user1Stake)
       )
         .to.emit(api3Pool, "Staked")
         .withArgs(
@@ -154,7 +154,7 @@ describe("depositAndStake", function () {
       await expect(
         api3Pool
           .connect(roles.randomPerson)
-          .depositAndStake(roles.user1.address, user1Stake, roles.user1.address)
+          .depositAndStake(roles.user1.address, user1Stake)
       ).to.be.revertedWith("API3DAO.StakeUtils: It is only possible to stake to yourself");
     });
   });
@@ -173,7 +173,7 @@ describe("scheduleUnstake", function () {
         .approve(api3Pool.address, user1Stake);
       await api3Pool
         .connect(roles.user1)
-        .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
+        .depositAndStake(roles.user1.address, user1Stake);
       const currentBlock = await ethers.provider.getBlock(
         await ethers.provider.getBlockNumber()
       );
@@ -217,8 +217,7 @@ describe("unstake", function () {
               .connect(roles.user1)
               .depositAndStake(
                 roles.user1.address,
-                user1Stake,
-                roles.user1.address
+                user1Stake
               );
             // Have the user delegate
             await api3Pool
@@ -281,8 +280,7 @@ describe("unstake", function () {
               .connect(roles.user1)
               .depositAndStake(
                 roles.user1.address,
-                user1Stake,
-                roles.user1.address
+                user1Stake
               );
             // Schedule unstake
             await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake);
@@ -328,8 +326,7 @@ describe("unstake", function () {
             .connect(roles.user1)
             .depositAndStake(
               roles.user1.address,
-              user1Stake,
-              roles.user1.address
+              user1Stake
             );
           // Schedule unstake
           await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake);
@@ -401,8 +398,7 @@ describe("unstake", function () {
           .connect(roles.user1)
           .depositAndStake(
             roles.user1.address,
-            user1Stake,
-            roles.user1.address
+            user1Stake
           );
         // Schedule unstake
         await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake);
@@ -439,8 +435,7 @@ describe("unstake", function () {
           .connect(roles.user1)
           .depositAndStake(
             roles.user1.address,
-            user1Stake,
-            roles.user1.address
+            user1Stake
           );
         // Schedule unstake
         await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake);
@@ -467,7 +462,7 @@ describe("unstakeAndWithdraw", function () {
     await api3Token.connect(roles.user1).approve(api3Pool.address, user1Stake);
     await api3Pool
       .connect(roles.user1)
-      .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
+      .depositAndStake(roles.user1.address, user1Stake);
     // Schedule unstake
     const user1Unstake = user1Stake.div(ethers.BigNumber.from(2));
     await api3Pool.connect(roles.user1).scheduleUnstake(user1Unstake);

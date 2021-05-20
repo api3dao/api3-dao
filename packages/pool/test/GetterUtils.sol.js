@@ -172,7 +172,7 @@ describe("userReceivedDelegationAt", function () {
           .approve(api3Pool.address, amount, { gasLimit: 500000 });
         await api3Pool
           .connect(randomWallet)
-          .depositAndStake(randomWallet.address, amount, randomWallet.address, {
+          .depositAndStake(randomWallet.address, amount, {
             gasLimit: 500000,
           });
         await api3Pool
@@ -207,7 +207,6 @@ describe("getDelegateAt", function () {
       .depositAndStake(
         roles.user1.address,
         amount,
-        roles.user1.address,
         { gasLimit: 500000 }
       );
 
@@ -270,8 +269,7 @@ describe("getUserLocked", function () {
             .connect(roles.user1)
             .depositAndStake(
               roles.user1.address,
-              user1Stake.div(2),
-              roles.user1.address
+              user1Stake.div(2)
             );
           const genesisEpoch = await api3Pool.genesisEpoch();
           const userRewards = [];
@@ -295,8 +293,7 @@ describe("getUserLocked", function () {
                 .connect(roles.user1)
                 .depositAndStake(
                   roles.user1.address,
-                  user1Stake.div(1000),
-                  roles.user1.address
+                  user1Stake.div(1000)
                 );
             } else {
               userRewards.push(ethers.BigNumber.from(0));
@@ -350,8 +347,7 @@ describe("getUserLocked", function () {
           .connect(roles.user1)
           .depositAndStake(
             roles.user1.address,
-            user1Stake.div(2),
-            roles.user1.address
+            user1Stake.div(2)
           );
         const genesisEpoch = await api3Pool.genesisEpoch();
         const userRewards = [];
@@ -375,8 +371,7 @@ describe("getUserLocked", function () {
               .connect(roles.user1)
               .depositAndStake(
                 roles.user1.address,
-                user1Stake.div(1000),
-                roles.user1.address
+                user1Stake.div(1000)
               );
           } else {
             userRewards.push(ethers.BigNumber.from(0));

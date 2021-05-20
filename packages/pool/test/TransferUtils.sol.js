@@ -68,7 +68,7 @@ describe("withdraw", function () {
         .approve(api3Pool.address, user1Stake);
       await api3Pool
         .connect(roles.user1)
-        .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
+        .depositAndStake(roles.user1.address, user1Stake);
       // Fast forward 100 epochs to have some rewards paid out and unlocked
       const genesisEpoch = await api3Pool.genesisEpoch();
       for (let i = 0; i < 100; i++) {
@@ -112,7 +112,7 @@ describe("withdraw", function () {
         .approve(api3Pool.address, user1Stake);
       await api3Pool
         .connect(roles.user1)
-        .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
+        .depositAndStake(roles.user1.address, user1Stake);
       await expect(
         api3Pool
           .connect(roles.user1)
