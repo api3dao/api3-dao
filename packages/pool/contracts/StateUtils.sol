@@ -276,9 +276,8 @@ contract StateUtils is IStateUtils {
         onlyAgentApp()
     {
         require(
-            _stakeTarget <= HUNDRED_PERCENT
-                && _stakeTarget >= 0,
-            ERROR_PERCENTAGE);
+            _stakeTarget <= HUNDRED_PERCENT,
+            ERROR_VALUE);
         uint256 oldStakeTarget = stakeTarget;
         stakeTarget = _stakeTarget;
         emit SetStakeTarget(
