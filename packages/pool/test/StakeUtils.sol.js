@@ -120,7 +120,7 @@ describe("stake", function () {
       const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
       await expect(
         api3Pool.connect(roles.user1).stake(user1Stake)
-      ).to.be.revertedWith("API3DAO.StakeUtils: USER DONT HAVE ENOUGH TOKENS TO STAKE/UNSTAKE THE PROVIDED AMOUNT");
+      ).to.be.revertedWith("API3DAO.StakeUtils: User don't have enough token to stake/unstake the provided amount");
     });
   });
 });
@@ -155,7 +155,7 @@ describe("depositAndStake", function () {
         api3Pool
           .connect(roles.randomPerson)
           .depositAndStake(roles.user1.address, user1Stake, roles.user1.address)
-      ).to.be.revertedWith("API3DAO.StakeUtils: IT IS ONLY POSSIBLE TO STAKE TO YOURSELF");
+      ).to.be.revertedWith("API3DAO.StakeUtils: It is only possible to stake to yourself");
     });
   });
 });
@@ -190,7 +190,7 @@ describe("scheduleUnstake", function () {
     it("reverts", async function () {
       await expect(
         api3Pool.connect(roles.user1).scheduleUnstake(ethers.BigNumber.from(1))
-      ).to.be.revertedWith("API3DAO.StakeUtils: USER DONT HAVE ENOUGH TOKENS TO STAKE/UNSTAKE THE PROVIDED AMOUNT");
+      ).to.be.revertedWith("API3DAO.StakeUtils: User don't have enough token to stake/unstake the provided amount");
     });
   });
 });
@@ -415,7 +415,7 @@ describe("unstake", function () {
         // Attempt to unstake
         await expect(
           api3Pool.connect(roles.user1).unstake()
-        ).to.be.revertedWith("API3DAO.StakeUtils: USER IS ALLOWED TO UNSTAKE NO LONGER THEN A WEEK FROM SCHEDULED TIME");
+        ).to.be.revertedWith("API3DAO.StakeUtils: User is allowed to unstake no longer then a week from scheduled time");
       });
     });
   });
@@ -447,7 +447,7 @@ describe("unstake", function () {
         // Attempt to unstake
         await expect(
           api3Pool.connect(roles.user1).unstake()
-        ).to.be.revertedWith("API3DAO.StakeUtils: USER IS ALLOWED TO UNSTAKE NO LONGER THEN A WEEK FROM SCHEDULED TIME");
+        ).to.be.revertedWith("API3DAO.StakeUtils: User is allowed to unstake no longer then a week from scheduled time");
       });
     }
   );

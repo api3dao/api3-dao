@@ -349,7 +349,7 @@ describe("setStakeTarget", function () {
           api3Pool
             .connect(roles.agentAppSecondary)
             .setStakeTarget(newStakeTarget)
-        ).to.be.revertedWith("API3DAO.StateUtils: PERCENTAGE SHOULD BE BETWEEN 0 AND 100");
+        ).to.be.revertedWith("API3DAO.StateUtils: Percentage should be between 0 and 100");
       });
     });
   });
@@ -409,7 +409,7 @@ describe("setMaxApr", function () {
         const newMaxApr = minApr.sub(ethers.BigNumber.from(123));
         await expect(
           api3Pool.connect(roles.agentAppSecondary).setMaxApr(newMaxApr)
-        ).to.be.revertedWith("API3DAO.StateUtils: MAX APR SHOULD BE BIGGER THEN MIN APR");
+        ).to.be.revertedWith("API3DAO.StateUtils: Max APR should be bigger than min apr");
       });
     });
   });
@@ -469,7 +469,7 @@ describe("setMinApr", function () {
         const newMinApr = maxApr.add(ethers.BigNumber.from(123));
         await expect(
           api3Pool.connect(roles.agentAppSecondary).setMinApr(newMinApr)
-        ).to.be.revertedWith("API3DAO.StateUtils: MAX APR SHOULD BE BIGGER THEN MIN APR");
+        ).to.be.revertedWith("API3DAO.StateUtils: Max APR should be bigger than min apr");
       });
     });
   });
@@ -535,7 +535,7 @@ describe("setUnstakeWaitPeriod", function () {
             api3Pool
               .connect(roles.agentAppPrimary)
               .setUnstakeWaitPeriod(newUnstakeWaitPeriod)
-          ).to.be.revertedWith("API3DAO.StateUtils: SHOULD WAIT FOR TIME BIGGER THEN EPOCH_LENGTH TO UNSTAKE");
+          ).to.be.revertedWith("API3DAO.StateUtils: Should wait for time bigger than EPOCH_LENGTH to unstake");
         });
       }
     );
@@ -645,7 +645,7 @@ describe("setProposalVotingPowerThreshold", function () {
             api3Pool
               .connect(roles.agentAppPrimary)
               .setProposalVotingPowerThreshold(newProposalVotingPowerThreshold)
-          ).to.be.revertedWith("API3DAO.StateUtils: THRESHOLD SHOULD BE LOWER THEN 10%");
+          ).to.be.revertedWith("API3DAO.StateUtils: Threshold should be lower then 10%");
         });
       }
     );

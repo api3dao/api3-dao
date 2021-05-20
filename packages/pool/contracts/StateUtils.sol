@@ -52,10 +52,10 @@ contract StateUtils is IStateUtils {
     /// Hardcoded as 52 epochs, which corresponds to a year.
     uint256 public constant REWARD_VESTING_PERIOD = 52;
 
-    string internal constant ERROR_PERCENTAGE = "API3DAO.StateUtils: PERCENTAGE SHOULD BE BETWEEN 0 AND 100";
-    string internal constant ERROR_APR = "API3DAO.StateUtils: MAX APR SHOULD BE BIGGER THEN MIN APR";
-    string internal constant ERROR_UNSTAKE_PERIOD = "API3DAO.StateUtils: SHOULD WAIT FOR TIME BIGGER THEN EPOCH_LENGTH TO UNSTAKE";
-    string internal constant ERROR_PROPOSAL_THRESHOLD = "API3DAO.StateUtils: THRESHOLD SHOULD BE LOWER THEN 10%";
+    string internal constant ERROR_PERCENTAGE = "API3DAO.StateUtils: Percentage should be between 0 and 100";
+    string internal constant ERROR_APR = "API3DAO.StateUtils: Max APR should be bigger than min apr";
+    string internal constant ERROR_UNSTAKE_PERIOD = "API3DAO.StateUtils: Should wait for time bigger than EPOCH_LENGTH to unstake";
+    string internal constant ERROR_PROPOSAL_THRESHOLD = "API3DAO.StateUtils: Threshold should be lower then 10%";
     string internal constant ERROR_ZERO_ADDRESS = "API3DAO.StateUtils: Addresses should not be 0x00";
     string internal constant ERROR_ONLY_AGENT = "API3DAO.StateUtils: Only Agent app is allowed to execute this function";
     string internal constant ERROR_ONLY_PRIMARY_AGENT = "API3DAO.StateUtils: Only primary Agent app is allowed to execute this function";

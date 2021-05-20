@@ -147,7 +147,7 @@ describe("depositWithVesting", function () {
             releaseStart,
             releaseEnd
           )
-      ).to.be.revertedWith("API3DAO.TimelockUtils: USER SHOULDN'T HAVE TIMELOCKED TOKENS");
+      ).to.be.revertedWith("API3DAO.TimelockUtils: User shouldn't have timelocked tokens");
     });
   });
 });
@@ -271,7 +271,7 @@ describe("updateTimelockStatus", function () {
               roles.user1.address,
               roles.mockTimelockManager.address
             )
-        ).to.be.revertedWith("API3DAO.TimelockUtils: LOCKED AMOUNT SHOULD BE GREATER THEN 0");
+        ).to.be.revertedWith("API3DAO.TimelockUtils: Locked amount should be greater than 0");
       });
     });
   });
@@ -305,7 +305,7 @@ describe("updateTimelockStatus", function () {
             roles.user1.address,
             roles.mockTimelockManager.address
           )
-      ).to.be.revertedWith("API3DAO.TimelockUtils: CANNOT UPDATE STATUS BEFORE releaseStart");
+      ).to.be.revertedWith("API3DAO.TimelockUtils: Cannot update status before releaseStart");
     });
   });
 });

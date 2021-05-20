@@ -146,3 +146,4 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
 
 
 });
+

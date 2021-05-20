@@ -11,9 +11,9 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
 
     string private constant INVALID_TIME_OR_AMOUNT =
     "API3DAO.TimelockUtils: AMOUNT SHOULD BE GREATER THEN 0 AND releaseEnd > releaseStart";
-    string private constant ERROR_LOCKED_TOKENS = "API3DAO.TimelockUtils: USER SHOULDN'T HAVE TIMELOCKED TOKENS";
-    string private constant ERROR_BEFORE_RELEASE = "API3DAO.TimelockUtils: CANNOT UPDATE STATUS BEFORE releaseStart";
-    string private constant ERROR_ZERO_AMOUNT = "API3DAO.TimelockUtils: LOCKED AMOUNT SHOULD BE GREATER THEN 0";
+    string private constant ERROR_LOCKED_TOKENS = "API3DAO.TimelockUtils: User shouldn't have timelocked tokens";
+    string private constant ERROR_BEFORE_RELEASE = "API3DAO.TimelockUtils: Cannot update status before releaseStart";
+    string private constant ERROR_ZERO_AMOUNT = "API3DAO.TimelockUtils: Locked amount should be greater than 0";
 
     struct Timelock
     {
