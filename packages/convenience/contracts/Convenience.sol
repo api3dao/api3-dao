@@ -93,11 +93,11 @@ contract Convenience is Ownable  {
         }
         delegate = api3Pool.userDelegate(userAddress);
         (
-            , //
-            , //
-            , //
-            , //
-            , //
+            , // unstaked
+            , // vesting
+            , // unstakeShares
+            , // unstakeAmount
+            , // unstakeScheduledFor
             mostRecentProposalTimestamp,
             mostRecentVoteTimestamp,
             mostRecentDelegationTimestamp,
@@ -152,16 +152,16 @@ contract Convenience is Ownable  {
             }
             voteId[i] = api3Voting.votesLength() - 1 - start - i;
             (
-                , //
-                , //
+                , // open
+                , // executed
                 startDate[i],
-                , //
+                , // snapshotBlock
                 supportRequired[i],
                 minAcceptQuorum[i],
                 yea[i],
                 nay[i],
                 votingPower[i],
-                // 
+                // script
                 ) = api3Voting.getVote(voteId[i]);
             metadata[i] = api3Voting.getVoteMetadata(voteId[i]);
         }
@@ -214,15 +214,15 @@ contract Convenience is Ownable  {
             }
             uint64 snapshotBlock;
             (
-                , //
+                , // open
                 executed[i],
-                , //
+                , // startDate
                 snapshotBlock,
-                , //
-                , //
-                , //
-                , //
-                , //
+                , // supportRequired
+                , // minAcceptQuorum
+                , // yea
+                , // nay
+                , // votingPower
                 script[i]
                 ) = api3Voting.getVote(api3Voting.votesLength() - 1 - start - i);
             voteId[i] = api3Voting.votesLength() - 1 - start - i;
