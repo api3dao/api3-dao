@@ -269,8 +269,7 @@ describe("unstake", function () {
             .connect(roles.user1)
             .depositAndStake(
               roles.user1.address,
-              user1Stake,
-              roles.user1.address
+              user1Stake
             );
           // Schedule unstake
           await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake);
