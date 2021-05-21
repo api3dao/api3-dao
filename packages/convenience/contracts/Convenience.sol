@@ -65,7 +65,8 @@ contract Convenience is Ownable  {
             uint256 userLocked,
             uint256 userVesting,
             uint256 userUnstakeScheduledFor,
-            uint256 userUnstakeAmount // add shares
+            uint256 userUnstakeAmount,
+            uint256 userUnstakeShares
         )
     {
         apr = api3Pool.currentApr();
@@ -76,7 +77,7 @@ contract Convenience is Ownable  {
         (
             userUnstaked,
             userVesting,
-            , // unstakeShares
+            userUnstakeShares,
             userUnstakeAmount,
             userUnstakeScheduledFor,
             , // mostRecentProposalTimestamp
