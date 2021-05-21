@@ -25,7 +25,7 @@ contract Convenience is Ownable  {
         erc20Addresses = _erc20Addresses;
     }
 
-    function getTreasuries()
+    function getTreasuriesAndDelegationData(address userAddress)
         external
         view
         returns (
@@ -33,7 +33,12 @@ contract Convenience is Ownable  {
           string[] memory symbols,
           uint8[] memory decimals,
           uint256[] memory balancesOfPrimaryAgent,
-          uint256[] memory balancesOfSecondaryAgent
+          uint256[] memory balancesOfSecondaryAgent,
+          address delegate,
+          uint256 mostRecentProposalTimestamp,
+          uint256 mostRecentVoteTimestamp,
+          uint256 mostRecentDelegationTimestamp,
+          uint256 mostRecentUndelegationTimestamp
         )
     {
         names = new string[](erc20Addresses.length);
@@ -50,6 +55,18 @@ contract Convenience is Ownable  {
             balancesOfPrimaryAgent[i] = erc20.balanceOf(api3Pool.agentAppPrimary());
             balancesOfSecondaryAgent[i] = erc20.balanceOf(api3Pool.agentAppSecondary());
         }
+        delegate = api3Pool.userDelegate(userAddress);
+        (
+            , //
+            , //
+            , //
+            , //
+            , //
+            mostRecentProposalTimestamp,
+            mostRecentVoteTimestamp,
+            mostRecentDelegationTimestamp,
+            mostRecentUndelegationTimestamp
+            ) = api3Pool.getUser(userAddress);
     }
 
     function getDashboardData(address userAddress)
