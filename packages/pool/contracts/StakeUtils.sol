@@ -6,6 +6,15 @@ import "./interfaces/IStakeUtils.sol";
 
 /// @title Contract that implements staking functionality
 abstract contract StakeUtils is TransferUtils, IStakeUtils {
+
+
+    string private constant ERROR_NOT_ENOUGH_FUNDS = "API3DAO.StakeUtils: User don't have enough token to stake/unstake the provided amount";
+    string private constant ERROR_NOT_ENOUGH_SHARES = "API3DAO.StakeUtils: User don't have enough pool shares to unstake the provided amount";
+    string private constant ERROR_UNSTAKE_TIMING = "API3DAO.StakeUtils: Scheduled unstake has not matured yet";
+    string private constant ERROR_STAKING_ADDRESS = "API3DAO.StakeUtils: It is only possible to stake to yourself";
+    string private constant ERROR_ALREADY_SCHEDULED = "API3DAO.StakeUtils: User has already scheduled an unstake";
+    string private constant ERROR_NO_SCHEDULED = "API3DAO.StakeUtils: User has no scheduled unstake to execute";
+
     /// @notice Called to stake tokens to receive pools in the share
     /// @param amount Amount of tokens to stake
     function stake(uint256 amount)
@@ -14,7 +23,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     {
         payReward();
         User storage user = users[msg.sender];
-        require(user.unstaked >= amount, ERROR_VALUE);
+        require(user.unstaked >= amount, ERROR_NOT_ENOUGH_FUNDS);
         user.unstaked = user.unstaked - amount;
         uint256 totalSharesNow = totalShares();
         uint256 sharesToMint = totalSharesNow * amount / totalStake;
@@ -23,7 +32,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             fromBlock: block.number,
             value: userSharesNow + sharesToMint
             }));
-        uint256 totalSharesAfter = totalSharesNow + sharesToMint; 
+        uint256 totalSharesAfter = totalSharesNow + sharesToMint;
         updateTotalShares(totalSharesAfter);
         totalStake = totalStake + amount;
         updateDelegatedVotingPower(msg.sender, sharesToMint, true);
@@ -48,7 +57,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         external
         override
     {
-        require(userAddress == msg.sender, ERROR_UNAUTHORIZED);
+        require(userAddress == msg.sender, ERROR_STAKING_ADDRESS);
         deposit(source, amount, userAddress);
         stake(amount);
     }
@@ -76,10 +85,10 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         uint256 userSharesNow = userShares(msg.sender);
         require(
             userSharesNow >= shares,
-            ERROR_VALUE
+            ERROR_NOT_ENOUGH_SHARES
             );
         User storage user = users[msg.sender];
-        require(user.unstakeScheduledFor == 0, ERROR_UNAUTHORIZED);
+        require(user.unstakeScheduledFor == 0, ERROR_ALREADY_SCHEDULED);
         uint256 amount = shares * totalStake / totalShares();
         user.unstakeScheduledFor = block.timestamp + unstakeWaitPeriod;
         user.unstakeAmount = amount;
@@ -109,8 +118,8 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     {
         payReward();
         User storage user = users[userAddress];
-        require(user.unstakeScheduledFor != 0, ERROR_UNAUTHORIZED);
-        require(user.unstakeScheduledFor < block.timestamp, ERROR_UNAUTHORIZED);
+        require(user.unstakeScheduledFor != 0, ERROR_NO_SCHEDULED);
+        require(user.unstakeScheduledFor < block.timestamp, ERROR_UNSTAKE_TIMING);
 
         uint256 totalShares = totalShares();
         uint256 unstakeAmountAtSchedulingTime = user.unstakeAmount;

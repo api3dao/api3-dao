@@ -53,11 +53,16 @@ contract StateUtils is IStateUtils {
     /// Hardcoded as 52 epochs, which corresponds to a year.
     uint256 public constant REWARD_VESTING_PERIOD = 52;
 
-    string internal constant ERROR_VALUE = "Invalid value";
-    string internal constant ERROR_ADDRESS = "Invalid address";
-    string internal constant ERROR_UNAUTHORIZED = "Unauthorized";
-    string internal constant ERROR_FREQUENCY = "Try again a week later";
-    string internal constant ERROR_DELEGATE = "Cannot delegate to the same address";
+    string internal constant ERROR_PERCENTAGE = "API3DAO.StateUtils: Percentage should be between 0 and 100";
+    string internal constant ERROR_APR = "API3DAO.StateUtils: Max APR should be bigger than min apr";
+    string internal constant ERROR_UNSTAKE_PERIOD = "API3DAO.StateUtils: Should wait for time bigger than EPOCH_LENGTH to unstake";
+    string internal constant ERROR_PROPOSAL_THRESHOLD = "API3DAO.StateUtils: Threshold should be lower then 10%";
+    string internal constant ERROR_ZERO_ADDRESS = "API3DAO.StateUtils: Addresses should not be 0x00";
+    string internal constant ERROR_ONLY_AGENT = "API3DAO.StateUtils: Only Agent app is allowed to execute this function";
+    string internal constant ERROR_ONLY_PRIMARY_AGENT = "API3DAO.StateUtils: Only primary Agent app is allowed to execute this function";
+    string internal constant ERROR_ONLY_VOTING = "API3DAO.StateUtils: Only Voting app is allowed to execute this function";
+    string internal constant ERROR_FREQUENCY = "API3DAO.StateUtils: Try again a week later";
+    string internal constant ERROR_DELEGATE = "API3DAO.StateUtils: Cannot delegate to the same address";
 
     // All percentage values are represented by multiplying by 1e16
     uint256 internal constant HUNDRED_PERCENT = 1e18;
@@ -168,14 +173,14 @@ contract StateUtils is IStateUtils {
     modifier onlyAgentApp() {
         require(
             msg.sender == agentAppPrimary || msg.sender == agentAppSecondary,
-            ERROR_UNAUTHORIZED
+            ERROR_ONLY_AGENT
             );
         _;
     }
 
     /// @dev Reverts if the caller is not the primary API3 DAO Agent
     modifier onlyAgentAppPrimary() {
-        require(msg.sender == agentAppPrimary, ERROR_UNAUTHORIZED);
+        require(msg.sender == agentAppPrimary, ERROR_ONLY_PRIMARY_AGENT);
         _;
     }
 
@@ -183,7 +188,7 @@ contract StateUtils is IStateUtils {
     modifier onlyVotingApp() {
         require(
             msg.sender == votingAppPrimary || msg.sender == votingAppSecondary,
-            ERROR_UNAUTHORIZED
+            ERROR_ONLY_VOTING
             );
         _;
     }
@@ -220,14 +225,14 @@ contract StateUtils is IStateUtils {
     {
         require(
             agentAppPrimary == address(0) || msg.sender == agentAppPrimary,
-            ERROR_UNAUTHORIZED
+            ERROR_ONLY_AGENT
             );
         require(
             _agentAppPrimary != address(0)
                 && _agentAppSecondary  != address(0)
                 && _votingAppPrimary  != address(0)
                 && _votingAppSecondary  != address(0),
-            ERROR_ADDRESS
+            ERROR_ZERO_ADDRESS
             );
         agentAppPrimary = _agentAppPrimary;
         agentAppSecondary = _agentAppSecondary;
@@ -272,9 +277,8 @@ contract StateUtils is IStateUtils {
         onlyAgentApp()
     {
         require(
-            _stakeTarget <= HUNDRED_PERCENT
-                && _stakeTarget >= 0,
-            ERROR_VALUE);
+            _stakeTarget <= HUNDRED_PERCENT,
+            ERROR_PERCENTAGE);
         uint256 oldStakeTarget = stakeTarget;
         stakeTarget = _stakeTarget;
         emit SetStakeTarget(
@@ -290,7 +294,7 @@ contract StateUtils is IStateUtils {
         override
         onlyAgentApp()
     {
-        require(_maxApr >= minApr, ERROR_VALUE);
+        require(_maxApr >= minApr, ERROR_APR);
         uint256 oldMaxApr = maxApr;
         maxApr = _maxApr;
         emit SetMaxApr(
@@ -306,7 +310,7 @@ contract StateUtils is IStateUtils {
         override
         onlyAgentApp()
     {
-        require(_minApr <= maxApr, ERROR_VALUE);
+        require(_minApr <= maxApr, ERROR_APR);
         uint256 oldMinApr = minApr;
         minApr = _minApr;
         emit SetMinApr(
@@ -329,7 +333,7 @@ contract StateUtils is IStateUtils {
         override
         onlyAgentAppPrimary()
     {
-        require(_unstakeWaitPeriod >= EPOCH_LENGTH, ERROR_VALUE);
+        require(_unstakeWaitPeriod >= EPOCH_LENGTH, ERROR_UNSTAKE_PERIOD);
         uint256 oldUnstakeWaitPeriod = unstakeWaitPeriod;
         unstakeWaitPeriod = _unstakeWaitPeriod;
         emit SetUnstakeWaitPeriod(
@@ -371,7 +375,7 @@ contract StateUtils is IStateUtils {
         require(
             _proposalVotingPowerThreshold >= ONE_PERCENT / 10
                 && _proposalVotingPowerThreshold <= 10 * ONE_PERCENT,
-            ERROR_VALUE);
+            ERROR_PROPOSAL_THRESHOLD);
         uint256 oldProposalVotingPowerThreshold = proposalVotingPowerThreshold;
         proposalVotingPowerThreshold = _proposalVotingPowerThreshold;
         emit SetProposalVotingPowerThreshold(

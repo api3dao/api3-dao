@@ -120,7 +120,7 @@ describe("stake", function () {
       const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
       await expect(
         api3Pool.connect(roles.user1).stake(user1Stake)
-      ).to.be.revertedWith("Invalid value");
+      ).to.be.revertedWith("API3DAO.StakeUtils: User don't have enough token to stake/unstake the provided amount");
     });
   });
 });
@@ -155,7 +155,7 @@ describe("depositAndStake", function () {
         api3Pool
           .connect(roles.randomPerson)
           .depositAndStake(roles.user1.address, user1Stake, roles.user1.address)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.StakeUtils: It is only possible to stake to yourself");
     });
   });
 });
@@ -196,7 +196,7 @@ describe("scheduleUnstake", function () {
     it("reverts", async function () {
       await expect(
         api3Pool.connect(roles.user1).scheduleUnstake(ethers.BigNumber.from(1))
-      ).to.be.revertedWith("Invalid value");
+      ).to.be.revertedWith("API3DAO.StakeUtils: User don't have enough pool shares to unstake the provided amount");
     });
   });
 });
@@ -394,7 +394,7 @@ describe("unstake", function () {
         await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake);
         // Attempt to unstake
         await expect(api3Pool.unstake(roles.user1.address)).to.be.revertedWith(
-          "Unauthorized"
+          "API3DAO.StakeUtils: Scheduled unstake has not matured yet"
         );
       });
     }

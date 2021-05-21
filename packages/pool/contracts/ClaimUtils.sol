@@ -6,9 +6,14 @@ import "./interfaces/IClaimUtils.sol";
 
 /// @title Contract that implements the insurance claim payout functionality
 abstract contract ClaimUtils is StakeUtils, IClaimUtils {
+
+
+    string private constant ERROR_CLAIM_AMOUNT = "API3DAO.ClaimUtils: Total stake should be bigger then claim amount";
+    string private constant ERROR_CLAIM_MANAGER = "API3DAO.ClaimUtils: Only claim manager is allowed to perform this action";
+
     /// @dev Reverts if the caller is not a claims manager
     modifier onlyClaimsManager() {
-        require(claimsManagerStatus[msg.sender], ERROR_UNAUTHORIZED);
+        require(claimsManagerStatus[msg.sender], ERROR_CLAIM_MANAGER);
         _;
     }
 
@@ -31,7 +36,7 @@ abstract contract ClaimUtils is StakeUtils, IClaimUtils {
     {
         payReward();
         // totalStake should not go lower than 1
-        require(totalStake > amount, ERROR_VALUE);
+        require(totalStake > amount, ERROR_CLAIM_AMOUNT);
         totalStake = totalStake - amount;
         api3Token.transfer(recipient, amount);
         emit PaidOutClaim(
