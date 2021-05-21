@@ -58,6 +58,7 @@ contract Api3Voting is IForwarder, AragonApp {
 
     // We are mimicing an array, we use a mapping instead to make app upgrade more graceful
     mapping (uint256 => Vote) internal votes;
+    mapping (uint256 => string) internal voteMetadata;
     uint256 public votesLength;
 
     event StartVote(uint256 indexed voteId, address indexed creator, string metadata);
@@ -244,6 +245,15 @@ contract Api3Voting is IForwarder, AragonApp {
         script = vote_.executionScript;
     }
 
+    function getVoteMetadata(uint256 _voteId)
+        external
+        view
+        voteExists(_voteId)
+        returns (string metadata)
+    {
+        metadata = voteMetadata[_voteId];
+    }
+
     function getVoterState(uint256 _voteId, address _voter) public view voteExists(_voteId) returns (VoterState) {
         return votes[_voteId].voters[_voter];
     }
@@ -279,6 +289,7 @@ contract Api3Voting is IForwarder, AragonApp {
         vote_.minAcceptQuorumPct = minAcceptQuorumPct;
         vote_.votingPower = votingPower;
         vote_.executionScript = _executionScript;
+        voteMetadata[voteId] = _metadata;
 
         emit StartVote(voteId, msg.sender, _metadata);
 

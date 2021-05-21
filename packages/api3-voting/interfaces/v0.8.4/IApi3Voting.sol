@@ -22,4 +22,9 @@ interface IApi3Voting {
             uint256 votingPower,
             bytes memory script
         );
+
+    function getVoteMetadata(uint256 _voteId)
+        external
+        view
+        returns (string memory metadata);
 }
