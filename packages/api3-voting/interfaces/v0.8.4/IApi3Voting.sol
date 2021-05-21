@@ -34,4 +34,9 @@ interface IApi3Voting {
         external
         view
         returns (VoterState);
+
+    function minAcceptQuorumPct()
+        external
+        view
+        returns (uint64);
 }

@@ -123,7 +123,8 @@ contract Convenience is Ownable  {
             uint256[] memory yea,
             uint256[] memory nay,
             uint256[] memory votingPower,
-            string[] memory metadata
+            string[] memory metadata,
+            uint64 minAcceptQuorumPct
         )
     {
         IApi3Voting api3Voting;
@@ -139,6 +140,7 @@ contract Convenience is Ownable  {
         {
             revert("Invalid voting app type");
         }
+        minAcceptQuorumPct = api3Voting.minAcceptQuorumPct();
         voteId = new uint256[](limit);
         startDate = new uint64[](limit);
         supportRequired = new uint64[](limit);
