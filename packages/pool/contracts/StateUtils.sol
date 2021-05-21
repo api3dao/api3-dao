@@ -363,7 +363,7 @@ contract StateUtils is IStateUtils {
     /// Only the primary Agent can do this because it is a critical operation.
     /// @dev Proposal voting power is limited between 0.1% and 10%. 0.1% is to
     /// ensure that no more than 1000 proposals can be made within an epoch
-    /// (see `userReceivedDelegationAt()`) and any value above 10% is certainly
+    /// (see `getReceivedDelegationAt()`) and any value above 10% is certainly
     /// an error.
     /// @param _proposalVotingPowerThreshold Voting power threshold for
     /// proposals
