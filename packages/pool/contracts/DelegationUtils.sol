@@ -14,6 +14,8 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
     "API3DAO.DelegationUtils: This address un/delegated less than a week before";
     string internal constant ERROR_ACTIVE_RECENTLY =
     "API3DAO.DelegationUtils: This address voted or made a proposal less than a week before";
+    string internal constant ERROR_NOT_DELEGATED =
+    "API3DAO.DelegationUtils: This address has not delegated";
 
     /// @notice Called by the user to delegate voting power
     /// @param delegate User address the voting power will be delegated to
@@ -22,8 +24,8 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         override
     {
         payReward();
-        // Delegating users have cannot use their voting power, so we are
-        // verifying that the delegate is not currently delegating. However,
+        // Delegating users cannot use their voting power, so we verify that
+        // the delegate is not currently delegating. However,
         // the delegate may delegate after they have been delegated to.
         require(
             delegate != address(0)
@@ -40,7 +42,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
                 ERROR_DELEGATED_RECENTLY
             );
         // Do not allow the user to delegate if they have voted or made a proposal
-        // recently
+        // in the last epoch to prevent double voting
         require(
             user.mostRecentProposalTimestamp <= block.timestamp - EPOCH_LENGTH
                 && user.mostRecentVoteTimestamp <= block.timestamp - EPOCH_LENGTH,
@@ -53,11 +55,15 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         require(userDelegate != delegate, ERROR_DELEGATE);
 
         if (userDelegate != address(0)) {
-            // Need to revoke previous delegation
+            // Revoke previous delegation
             updateCheckpointArray(
                 users[userDelegate].delegatedTo,
                 userReceivedDelegation(userDelegate) - userShares
                 );
+            emit Undelegated(
+                msg.sender,
+                userDelegate
+            );
         }
         // Assign the new delegation
         User storage _delegate = users[delegate];
@@ -84,9 +90,11 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         payReward();
         User storage user = users[msg.sender];
         address userDelegate = userDelegate(msg.sender);
+        require(userDelegate != address(0), ERROR_NOT_DELEGATED);
+        // Do not allow frequent delegation updates as that can be used to spam
+        // proposals
         require(
-            userDelegate != address(0)
-                && user.mostRecentDelegationTimestamp <= block.timestamp - EPOCH_LENGTH
+            user.mostRecentDelegationTimestamp <= block.timestamp - EPOCH_LENGTH
                 && user.mostRecentUndelegationTimestamp <= block.timestamp - EPOCH_LENGTH,
             ERROR_DELEGATED_RECENTLY
             );
@@ -110,18 +118,20 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
 
     /// @notice Called internally when the user shares are updated to update
     /// the delegated voting power
-    /// @dev User shares only get updated while staking, scheduling unstake
-    /// or unstaking
+    /// @dev User shares only get updated while staking or scheduling unstaking
+    /// @param userAddress Address of the user whose delegated voting power
+    /// will be updated
     /// @param shares Amount of shares that will be added/removed
     /// @param delta Whether the shares will be added/removed (add for `true`,
     /// and vice versa)
     function updateDelegatedVotingPower(
+        address userAddress,
         uint256 shares,
         bool delta
         )
         internal
     {
-        address userDelegate = userDelegate(msg.sender);
+        address userDelegate = userDelegate(userAddress);
         if (userDelegate == address(0)) {
             return;
         }

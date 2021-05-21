@@ -151,7 +151,9 @@ describe("userSharesAtWithBinarySearch", function () {
 describe("userReceivedDelegationAt", function () {
     it("gets user's received delegation at the block", async function () {
       const genesisEpoch = await api3Pool.genesisEpoch();
-      const amount = ethers.BigNumber.from("10" + "000" + "000" + "000" + "000" + "000");
+      const amount = ethers.BigNumber.from(
+        "10" + "000" + "000" + "000" + "000" + "000"
+      );
       const delegationBlocks = [];
       const noDelegations = 20;
       for (let i = 0; i < noDelegations; i++) {
@@ -195,7 +197,9 @@ describe("userReceivedDelegationAt", function () {
 
 describe("getDelegateAt", function () {
   it("gets delegate at", async function () {
-    const amount = ethers.BigNumber.from("10" + "000" + "000" + "000" + "000" + "000");
+    const amount = ethers.BigNumber.from(
+      "10" + "000" + "000" + "000" + "000" + "000"
+    );
     await api3Token
       .connect(roles.deployer)
       .transfer(roles.user1.address, amount);
@@ -204,11 +208,9 @@ describe("getDelegateAt", function () {
       .approve(api3Pool.address, amount, { gasLimit: 500000 });
     await api3Pool
       .connect(roles.user1)
-      .depositAndStake(
-        roles.user1.address,
-        amount,
-        { gasLimit: 500000 }
-      );
+      .depositAndStake(roles.user1.address, amount, {
+        gasLimit: 500000,
+      });
 
     const firstBlockNumber = await ethers.provider.getBlockNumber();
     await api3Pool
