@@ -6,6 +6,12 @@ import "./interfaces/ITransferUtils.sol";
 
 /// @title Contract that implements token transfer functionality
 abstract contract TransferUtils is DelegationUtils, ITransferUtils {
+
+    string private constant WRONG_TOTAL_FUNDS =
+    "API3DAO.TransferUtils: User total funds should be bigger then locked and amount to withdraw";
+    string private constant AMOUNT_TOO_BIG =
+    "API3DAO.TransferUtils: Withdrawal amount should be less or equal to the unstaked tokens";
+
     /// @notice Called to deposit tokens for a user by using `transferFrom()`
     /// @dev This method is used by `TimelockManager.sol`
     /// @param source Token transfer source
@@ -46,9 +52,9 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         // Check if the user has `amount` unlocked tokens to withdraw
         uint256 lockedAndVesting = userLocked + user.vesting;
         uint256 userTotalFunds = user.unstaked + userStake(msg.sender);
-        require(userTotalFunds >= lockedAndVesting + amount, ERROR_VALUE);
+        require(userTotalFunds >= lockedAndVesting + amount, WRONG_TOTAL_FUNDS);
         // Carry on with the withdrawal
-        require(user.unstaked >= amount, ERROR_VALUE);
+        require(user.unstaked >= amount, AMOUNT_TOO_BIG);
         user.unstaked = user.unstaked - amount;
         api3Token.transfer(destination, amount);
         emit Withdrawn(msg.sender,

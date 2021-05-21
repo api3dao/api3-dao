@@ -8,6 +8,13 @@ import "./interfaces/ITimelockUtils.sol";
 /// @dev TimelockManager contracts interface with this contract to transfer
 /// API3 tokens that are locked under a vesting schedule.
 abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
+
+    string private constant INVALID_TIME_OR_AMOUNT =
+    "API3DAO.TimelockUtils: AMOUNT SHOULD BE GREATER THEN 0 AND releaseEnd > releaseStart";
+    string private constant ERROR_LOCKED_TOKENS = "API3DAO.TimelockUtils: User shouldn't have timelocked tokens";
+    string private constant ERROR_BEFORE_RELEASE = "API3DAO.TimelockUtils: Cannot update status before releaseStart";
+    string private constant ERROR_ZERO_AMOUNT = "API3DAO.TimelockUtils: Locked amount should be greater than 0";
+
     struct Timelock
     {
         uint256 totalAmount;
@@ -16,7 +23,7 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         uint256 releaseEnd;
     }
 
-    /// @notice Maps user addresses to TimelockManager contract addresses to 
+    /// @notice Maps user addresses to TimelockManager contract addresses to
     /// timelocks
     /// @dev This implies that a user cannot have multiple timelocks
     /// transferrerd from the same TimelockManager contract. This is
@@ -42,11 +49,11 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         external
         override
     {
-        require(userToDepositorToTimelock[userAddress][msg.sender].remainingAmount == 0, ERROR_UNAUTHORIZED);
+        require(userToDepositorToTimelock[userAddress][msg.sender].remainingAmount == 0, ERROR_LOCKED_TOKENS);
         require(
             releaseEnd > releaseStart
                 && amount != 0,
-            ERROR_VALUE
+            INVALID_TIME_OR_AMOUNT
             );
         users[userAddress].unstaked = users[userAddress].unstaked + amount;
         users[userAddress].vesting = users[userAddress].vesting + amount;
@@ -78,8 +85,8 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         override
     {
         Timelock storage timelock = userToDepositorToTimelock[userAddress][timelockManagerAddress];
-        require(block.timestamp > timelock.releaseStart, ERROR_UNAUTHORIZED);
-        require(timelock.remainingAmount > 0, ERROR_UNAUTHORIZED);
+        require(block.timestamp > timelock.releaseStart, ERROR_BEFORE_RELEASE);
+        require(timelock.remainingAmount > 0, ERROR_ZERO_AMOUNT);
         uint256 totalUnlocked;
         if (block.timestamp >= timelock.releaseEnd)
         {

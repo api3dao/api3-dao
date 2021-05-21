@@ -81,11 +81,11 @@ describe("withdraw", function () {
       // Schedule unstake and execute
       await api3Pool
         .connect(roles.user1)
-        .scheduleUnstake(await api3Pool.userStake(roles.user1.address));
+        .scheduleUnstake(await api3Pool.userShares(roles.user1.address));
       await ethers.provider.send("evm_setNextBlockTimestamp", [
         genesisEpoch.add(102).mul(EPOCH_LENGTH).toNumber(),
       ]);
-      await api3Pool.connect(roles.user1).unstake();
+      await api3Pool.unstake(roles.user1.address);
       const userBefore = await api3Pool.users(roles.user1.address);
       const unlocked = userBefore.unstaked.sub(
         await api3Pool.callStatic.getUserLocked(roles.user1.address)
@@ -117,7 +117,8 @@ describe("withdraw", function () {
         api3Pool
           .connect(roles.user1)
           .withdraw(roles.user1.address, ethers.BigNumber.from(1))
-      ).to.be.revertedWith("Invalid value");
+      ).to.be.revertedWith(
+        "API3DAO.TransferUtils: Withdrawal amount should be less or equal to the unstaked tokens");
     });
   });
   context("User does not have enough funds", function () {
@@ -126,7 +127,7 @@ describe("withdraw", function () {
         api3Pool
           .connect(roles.user1)
           .withdraw(roles.user1.address, ethers.BigNumber.from(1))
-      ).to.be.revertedWith("Invalid value");
+      ).to.be.revertedWith("API3DAO.TransferUtils: User total funds should be bigger then locked and amount to withdraw");
     });
   });
 });

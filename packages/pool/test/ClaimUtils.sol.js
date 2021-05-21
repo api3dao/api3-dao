@@ -99,7 +99,7 @@ describe("payOutClaim", function () {
           api3Pool
             .connect(roles.claimsManager)
             .payOutClaim(roles.claimsManager.address, ethers.BigNumber.from(1))
-        ).to.be.revertedWith("Invalid value");
+        ).to.be.revertedWith("API3DAO.ClaimUtils: Total stake should be bigger then claim amount");
       });
     });
   });
@@ -109,7 +109,7 @@ describe("payOutClaim", function () {
         api3Pool
           .connect(roles.randomPerson)
           .payOutClaim(roles.randomPerson.address, ethers.BigNumber.from(1))
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("API3DAO.ClaimUtils: Only claim manager is allowed to perform this action");
     });
   });
 });

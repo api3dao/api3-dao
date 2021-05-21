@@ -7,7 +7,8 @@
   "scripts": {
     "prepublishOnly": "npm run compile && npm run abi:extract -- --no-compile",
     "abi:extract": "truffle-extract --output abi/ --keys abi",
-    "compile": "truffle compile --all",
+    "compile": "node --stack-size=4096 node_modules/.bin/truffle compile --all",
+    "compile:original": "truffle compile --all",
     "lint": "solium --dir ./contracts",
     "test": "npm run prepublishOnly && cd ../pool && npm run build && cp ./artifacts/contracts/Api3Pool.sol/Api3Pool.json ../dao/build/contracts/Api3Pool.json && cd ../dao  && npm run test:ganache",
     "test:ganache": "./node_modules/@aragon/templates-shared/scripts/test-ganache.sh",
