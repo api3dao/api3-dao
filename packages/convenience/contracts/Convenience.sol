@@ -32,6 +32,7 @@ contract Convenience is Ownable  {
             uint256 apr,
             uint256 api3Supply,
             uint256 totalStake,
+            uint256 totalShares,
             uint256 stakeTarget,
             uint256 userStaked,
             uint256 userUnstaked,
@@ -45,6 +46,7 @@ contract Convenience is Ownable  {
         apr = api3Pool.currentApr();
         api3Supply = IERC20Metadata(address(api3Pool.api3Token())).totalSupply();
         totalStake = api3Pool.totalStake();
+        totalShares = api3Pool.totalSupply();
         stakeTarget = api3Pool.stakeTarget();
         userStaked = api3Pool.userStake(userAddress);
         (
