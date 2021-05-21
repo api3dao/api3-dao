@@ -106,7 +106,7 @@ contract Convenience is Ownable  {
     }
 
     /// @dev Indexes from last, i.e., start=0, limit=5 returns the last 5 votes
-    function getGovernanceData(
+    function getGovernanceData1(
         VotingAppType votingAppType,
         uint256 start,
         uint256 limit
@@ -115,13 +115,13 @@ contract Convenience is Ownable  {
         view
         returns (
             uint256[] memory voteId,
-            bool[] memory open,
             uint64[] memory startDate,
             uint64[] memory supportRequired,
             uint64[] memory minAcceptQuorum,
             uint256[] memory yea,
             uint256[] memory nay,
-            uint256[] memory votingPower
+            uint256[] memory votingPower,
+            string[] memory metadata
         )
     {
         IApi3Voting api3Voting;
@@ -138,22 +138,21 @@ contract Convenience is Ownable  {
             revert("Invalid voting app type");
         }
         voteId = new uint256[](limit);
-        open = new bool[](limit);
         startDate = new uint64[](limit);
         supportRequired = new uint64[](limit);
         minAcceptQuorum = new uint64[](limit);
         yea = new uint256[](limit);
         nay = new uint256[](limit);
         votingPower = new uint256[](limit);
-
         for (uint256 i = 0; i < limit; i++)
         {
             if (api3Voting.votesLength() < 1 + start + i)
             {
                 break;
             }
+            voteId[i] = api3Voting.votesLength() - 1 - start - i;
             (
-                open[i],
+                , //
                 , //
                 startDate[i],
                 , //
@@ -163,8 +162,74 @@ contract Convenience is Ownable  {
                 nay[i],
                 votingPower[i],
                 // 
+                ) = api3Voting.getVote(voteId[i]);
+            metadata[i] = api3Voting.getVoteMetadata(voteId[i]);
+        }
+    }
+
+    /// @dev Indexes from last, i.e., start=0, limit=5 returns the last 5 votes
+    function getGovernanceData2(
+        VotingAppType votingAppType,
+        address userAddress,
+        uint256 start,
+        uint256 limit
+        )
+        external
+        view
+        returns (
+            uint256[] memory voteId,
+            bool[] memory executed,
+            bytes[] memory script,
+            string[] memory metadata,
+            IApi3Voting.VoterState[] memory voterState,
+            address[] memory delegateAt,
+            IApi3Voting.VoterState[] memory delegateState
+        )
+    {
+        IApi3Voting api3Voting;
+        if (votingAppType == VotingAppType.Primary)
+        {
+            api3Voting = IApi3Voting(api3Pool.votingAppPrimary());
+        }
+        else if (votingAppType == VotingAppType.Secondary)
+        {
+            api3Voting = IApi3Voting(api3Pool.votingAppSecondary());
+        }
+        else
+        {
+            revert("Invalid voting app type");
+        }
+        voteId = new uint256[](limit);
+        executed = new bool[](limit);
+        script = new bytes[](limit);
+        metadata = new string[](limit);
+        voterState = new IApi3Voting.VoterState[](limit);
+        delegateAt = new address[](limit);
+        delegateState = new IApi3Voting.VoterState[](limit);
+        for (uint256 i = 0; i < limit; i++)
+        {
+            if (api3Voting.votesLength() < 1 + start + i)
+            {
+                break;
+            }
+            uint64 snapshotBlock;
+            (
+                , //
+                executed[i],
+                , //
+                snapshotBlock,
+                , //
+                , //
+                , //
+                , //
+                , //
+                script[i]
                 ) = api3Voting.getVote(api3Voting.votesLength() - 1 - start - i);
             voteId[i] = api3Voting.votesLength() - 1 - start - i;
+            metadata[i] = api3Voting.getVoteMetadata(voteId[i]);
+            delegateAt[i] = api3Pool.userDelegateAt(userAddress, snapshotBlock);
+            voterState[i] = api3Voting.getVoterState(voteId[i], userAddress);
+            delegateState[i] = api3Voting.getVoterState(voteId[i], delegateAt[i]);
         }
     }
 }

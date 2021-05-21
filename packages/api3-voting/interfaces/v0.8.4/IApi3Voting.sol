@@ -2,6 +2,8 @@
 pragma solidity 0.8.4;
 
 interface IApi3Voting {
+     enum VoterState { Absent, Yea, Nay }
+
     function votesLength()
         external
         view
@@ -27,4 +29,9 @@ interface IApi3Voting {
         external
         view
         returns (string memory metadata);
+
+    function getVoterState(uint256 _voteId, address _voter)
+        external
+        view
+        returns (VoterState);
 }
