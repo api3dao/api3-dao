@@ -25,6 +25,42 @@ contract Convenience is Ownable  {
         erc20Addresses = _erc20Addresses;
     }
 
+    function getDashboardData(address userAddress)
+        external
+        view
+        returns (
+            uint256 apr,
+            uint256 api3Supply,
+            uint256 totalStake,
+            uint256 stakeTarget,
+            uint256 userStaked,
+            uint256 userUnstaked,
+            uint256 userLocked,
+            uint256 userVesting,
+            uint256 userUnstakeScheduledFor,
+            uint256 userUnstakeAmount,
+            uint256 userUnstakeShares
+        )
+    {
+        apr = api3Pool.currentApr();
+        api3Supply = IERC20Metadata(address(api3Pool.api3Token())).totalSupply();
+        totalStake = api3Pool.totalStake();
+        stakeTarget = api3Pool.stakeTarget();
+        userStaked = api3Pool.userStake(userAddress);
+        (
+            userUnstaked,
+            userVesting,
+            userUnstakeShares,
+            userUnstakeAmount,
+            userUnstakeScheduledFor,
+            , // mostRecentProposalTimestamp
+            , // mostRecentVoteTimestamp
+            , // mostRecentDelegationTimestamp
+             // mostRecentUndelegationTimestamp
+            ) = api3Pool.getUser(userAddress);
+        userLocked = api3Pool.getUserLocked(userAddress);
+    }
+
     function getTreasuriesAndDelegationData(address userAddress)
         external
         view
@@ -67,42 +103,6 @@ contract Convenience is Ownable  {
             mostRecentDelegationTimestamp,
             mostRecentUndelegationTimestamp
             ) = api3Pool.getUser(userAddress);
-    }
-
-    function getDashboardData(address userAddress)
-        external
-        view
-        returns (
-            uint256 apr,
-            uint256 api3Supply,
-            uint256 totalStake,
-            uint256 stakeTarget,
-            uint256 userStaked,
-            uint256 userUnstaked,
-            uint256 userLocked,
-            uint256 userVesting,
-            uint256 userUnstakeScheduledFor,
-            uint256 userUnstakeAmount,
-            uint256 userUnstakeShares
-        )
-    {
-        apr = api3Pool.currentApr();
-        api3Supply = IERC20Metadata(address(api3Pool.api3Token())).totalSupply();
-        totalStake = api3Pool.totalStake();
-        stakeTarget = api3Pool.stakeTarget();
-        userStaked = api3Pool.userStake(userAddress);
-        (
-            userUnstaked,
-            userVesting,
-            userUnstakeShares,
-            userUnstakeAmount,
-            userUnstakeScheduledFor,
-            , // mostRecentProposalTimestamp
-            , // mostRecentVoteTimestamp
-            , // mostRecentDelegationTimestamp
-             // mostRecentUndelegationTimestamp
-            ) = api3Pool.getUser(userAddress);
-        userLocked = api3Pool.getUserLocked(userAddress);
     }
 
     /// @dev Indexes from last, i.e., start=0, limit=5 returns the last 5 votes
