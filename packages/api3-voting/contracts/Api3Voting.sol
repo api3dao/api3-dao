@@ -254,7 +254,7 @@ contract Api3Voting is IForwarder, AragonApp {
         internal
         returns (uint256 voteId)
     {
-        (, , , , uint256 mostRecentProposalTimestamp, , , uint256 mostRecentUndelegationTimestamp) = api3Pool.getUser(msg.sender);
+        (, , , , , uint256 mostRecentProposalTimestamp, , , uint256 mostRecentUndelegationTimestamp) = api3Pool.getUser(msg.sender);
         require(mostRecentProposalTimestamp.add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_PROPOSAL_COOLDOWN");
         require(mostRecentUndelegationTimestamp.add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_UNDELEGATION_COOLDOWN");
         api3Pool.updateMostRecentProposalTimestamp(msg.sender);
@@ -294,7 +294,7 @@ contract Api3Voting is IForwarder, AragonApp {
         bool _executesIfDecided
     ) internal
     {
-        (, , , , , , , uint256 mostRecentUndelegationTimestamp) = api3Pool.getUser(msg.sender);
+        (, , , , , , , , uint256 mostRecentUndelegationTimestamp) = api3Pool.getUser(msg.sender);
         require(mostRecentUndelegationTimestamp.add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_UNDELEGATION_COOLDOWN");
         api3Pool.updateMostRecentVoteTimestamp(msg.sender);
         Vote storage vote_ = votes[_voteId];

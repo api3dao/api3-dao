@@ -289,6 +289,21 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         }
     }
 
+    /// @notice Called to get the details of a user
+    /// @param userAddress User address
+    /// @return unstaked Amount of unstaked API3 tokens
+    /// @return vesting Amount of API3 tokens locked by vesting
+    /// @return unstakeShares Shares scheduled to unstake
+    /// @return unstakeAmount Amount scheduled to unstake
+    /// @return unstakeScheduledFor Time unstaking is scheduled for
+    /// @return mostRecentProposalTimestamp Time when the user made their most
+    /// recent proposal
+    /// @return mostRecentVoteTimestamp Time when the user cast their most
+    /// recent vote
+    /// @return mostRecentDelegationTimestamp Time when the user made their
+    /// most recent delegation
+    /// @return mostRecentUndelegationTimestamp Time when the user made their
+    /// most recent undelegation
     function getUser(address userAddress)
         external
         view
@@ -296,8 +311,9 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         returns(
             uint256 unstaked,
             uint256 vesting,
-            uint256 unstakeScheduledFor,
+            uint256 unstakeShares,
             uint256 unstakeAmount,
+            uint256 unstakeScheduledFor,
             uint256 mostRecentProposalTimestamp,
             uint256 mostRecentVoteTimestamp,
             uint256 mostRecentDelegationTimestamp,
@@ -307,8 +323,9 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         User storage user = users[userAddress];
         unstaked = user.unstaked;
         vesting = user.vesting;
-        unstakeScheduledFor = user.unstakeScheduledFor;
+        unstakeShares = user.unstakeShares;
         unstakeAmount = user.unstakeAmount;
+        unstakeScheduledFor = user.unstakeScheduledFor;
         mostRecentProposalTimestamp = user.mostRecentProposalTimestamp;
         mostRecentVoteTimestamp = user.mostRecentVoteTimestamp;
         mostRecentDelegationTimestamp = user.mostRecentDelegationTimestamp;

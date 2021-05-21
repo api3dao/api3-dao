@@ -90,8 +90,9 @@ interface IGetterUtils is IStateUtils {
         returns(
             uint256 unstaked,
             uint256 vesting,
-            uint256 unstakeScheduledFor,
+            uint256 unstakeShares,
             uint256 unstakeAmount,
+            uint256 unstakeScheduledFor,
             uint256 mostRecentProposalTimestamp,
             uint256 mostRecentVoteTimestamp,
             uint256 mostRecentDelegationTimestamp,
