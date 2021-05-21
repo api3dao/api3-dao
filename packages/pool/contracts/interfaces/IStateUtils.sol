@@ -97,44 +97,4 @@ interface IStateUtils {
 
     function updateMostRecentVoteTimestamp(address userAddress)
         external;
-
-    function api3Token()
-        external
-        view
-        returns(address);
-
-    function votingAppPrimary()
-        external
-        view
-        returns(address);
-  
-    function votingAppSecondary()
-        external
-        view
-        returns(address);
-
-    function agentAppPrimary()
-        external
-        view
-        returns(address);
-  
-    function agentAppSecondary()
-        external
-        view
-        returns(address);
-
-    function currentApr()
-        external
-        view
-        returns(uint256);
-
-    function totalStake()
-        external
-        view
-        returns(uint256);
-
-    function stakeTarget()
-        external
-        view
-        returns(uint256);
 }

@@ -1,22 +1,21 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@api3-dao/pool/contracts/interfaces/IApi3Pool.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "@api3-dao/pool/contracts/Api3Pool.sol";
 import "@api3-dao/api3-voting/interfaces/v0.8.4/IApi3Voting.sol";
 
 /// @title Convenience contract used to make batch view calls to DAO contracts
 contract Convenience is Ownable  {
     enum VotingAppType { Primary, Secondary }
 
-    IApi3Pool public api3Pool;
+    Api3Pool public api3Pool;
     address[] public erc20Addresses;
 
     constructor(address api3PoolAddress)
-        public
     {
-        api3Pool = IApi3Pool(api3PoolAddress);
+        api3Pool = Api3Pool(api3PoolAddress);
     }
 
     function setErc20Addresses(address[] calldata _erc20Addresses)
@@ -44,7 +43,7 @@ contract Convenience is Ownable  {
         balancesOfSecondaryAgent = new uint256[](erc20Addresses.length);
         for (uint256 i = 0; i < erc20Addresses.length; i++)
         {
-            ERC20 erc20 = ERC20(erc20Addresses[i]);
+            IERC20Metadata erc20 = IERC20Metadata(erc20Addresses[i]);
             names[i] = erc20.name();
             symbols[i] = erc20.symbol();
             decimals[i] = erc20.decimals();
@@ -70,15 +69,16 @@ contract Convenience is Ownable  {
         )
     {
         apr = api3Pool.currentApr();
-        api3Supply = ERC20(api3Pool.api3Token()).totalSupply();
+        api3Supply = IERC20Metadata(address(api3Pool.api3Token())).totalSupply();
         totalStake = api3Pool.totalStake();
         stakeTarget = api3Pool.stakeTarget();
         userStaked = api3Pool.userStake(userAddress);
         (
             userUnstaked,
             userVesting,
-            userUnstakeScheduledFor,
+            , // unstakeShares
             userUnstakeAmount,
+            userUnstakeScheduledFor,
             , // mostRecentProposalTimestamp
             , // mostRecentVoteTimestamp
             , // mostRecentDelegationTimestamp
