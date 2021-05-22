@@ -238,7 +238,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// @notice Called to get the current delegate of the user
     /// @param userAddress User address
     /// @return Current delegate of the user
-    function userDelegate(address userAddress)
+    function getUserDelegate(address userAddress)
         public
         view
         override
