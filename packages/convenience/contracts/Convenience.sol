@@ -18,6 +18,11 @@ contract Convenience is Ownable  {
         api3Pool = Api3Pool(api3PoolAddress);
     }
 
+    /// @notice Called by the owner to update the addresses of the contract
+    /// addresses of the ERC20 tokens that will be displayed in the treasury
+    /// @dev The owner privileges here do not pose a serious security risk, the
+    /// worst that can happen is that the treasury display will malfunction
+    /// @param _erc20Addresses ERC20 addresses
     function setErc20Addresses(address[] calldata _erc20Addresses)
         external
         onlyOwner()
@@ -25,7 +30,9 @@ contract Convenience is Ownable  {
         erc20Addresses = _erc20Addresses;
     }
 
-    function getDashboardData(address userAddress)
+    /// @notice Used by the DAO dashboard client to retrieve user staking data
+    /// @param userAddress User address
+    function getUserStakingData(address userAddress)
         external
         view
         returns (
@@ -63,7 +70,10 @@ contract Convenience is Ownable  {
         userLocked = api3Pool.getUserLocked(userAddress);
     }
 
-    function getTreasuriesAndDelegationData(address userAddress)
+    /// @notice Used by the DAO dashboard client to retrieve the treasury and
+    /// user delegation data
+    /// @param userAddress User address
+    function getTreasuryAndUserDelegationData(address userAddress)
         external
         view
         returns (
@@ -107,8 +117,10 @@ contract Convenience is Ownable  {
             ) = api3Pool.getUser(userAddress);
     }
 
-    /// @dev start=0, limit=5 returns the first 5 votes, etc.
-    function getGovernanceData1(
+    /// @notice Used by the DAO dashboard client to retrieve general vote data
+    /// @param votingAppType Enumerated voting app type (primary or secondary)
+    /// @param voteIds Array of vote IDs for which data will be retrieved
+    function getGeneralVoteData(
         VotingAppType votingAppType,
         uint256[] calldata voteIds
         )
@@ -159,8 +171,10 @@ contract Convenience is Ownable  {
         }
     }
 
-    /// @dev start=0, limit=5 returns the first 5 votes, etc.
-    function getGovernanceData2(
+    /// @notice Used by the DAO dashboard client to retrieve user vote data
+    /// @param votingAppType Enumerated voting app type (primary or secondary)
+    /// @param voteIds Array of vote IDs for which data will be retrieved
+    function getUserVoteData(
         VotingAppType votingAppType,
         address userAddress,
         uint256[] calldata voteIds
@@ -214,7 +228,10 @@ contract Convenience is Ownable  {
         }
     }
 
-
+    /// @notice Used by the DAO dashboard client to retrieve the IDs of the
+    /// votes that are currently open
+    /// @param votingAppType Enumerated voting app type (primary or secondary)
+    /// @return voteIds Array of vote IDs for which data will be retrieved
     function getOpenVoteIds(VotingAppType votingAppType)
         external
         view
