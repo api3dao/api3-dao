@@ -120,8 +120,7 @@ contract Convenience is Ownable  {
             uint64[] memory minAcceptQuorum,
             uint256[] memory yea,
             uint256[] memory nay,
-            uint256[] memory votingPower,
-            uint64 minAcceptQuorumPct
+            uint256[] memory votingPower
         )
     {
         IApi3Voting api3Voting;
@@ -143,7 +142,6 @@ contract Convenience is Ownable  {
         yea = new uint256[](voteIds.length);
         nay = new uint256[](voteIds.length);
         votingPower = new uint256[](voteIds.length);
-        minAcceptQuorumPct = api3Voting.minAcceptQuorumPct();
         for (uint256 i = 0; i < voteIds.length; i++)
         {
             (
