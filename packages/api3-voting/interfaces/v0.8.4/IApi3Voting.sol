@@ -25,11 +25,6 @@ interface IApi3Voting {
             bytes memory script
         );
 
-    function getVoteMetadata(uint256 _voteId)
-        external
-        view
-        returns (string memory metadata);
-
     function getVoterState(uint256 _voteId, address _voter)
         external
         view

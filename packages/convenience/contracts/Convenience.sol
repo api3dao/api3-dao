@@ -123,7 +123,6 @@ contract Convenience is Ownable  {
             uint256[] memory yea,
             uint256[] memory nay,
             uint256[] memory votingPower,
-            string[] memory metadata,
             uint64 minAcceptQuorumPct
         )
     {
@@ -167,7 +166,6 @@ contract Convenience is Ownable  {
                 votingPower[i],
                 // script
                 ) = api3Voting.getVote(voteId[i]);
-            metadata[i] = api3Voting.getVoteMetadata(voteId[i]);
         }
     }
 
@@ -184,7 +182,6 @@ contract Convenience is Ownable  {
             uint256[] memory voteId,
             bool[] memory executed,
             bytes[] memory script,
-            string[] memory metadata,
             IApi3Voting.VoterState[] memory voterState,
             address[] memory delegateAt,
             IApi3Voting.VoterState[] memory delegateState
@@ -206,7 +203,6 @@ contract Convenience is Ownable  {
         voteId = new uint256[](limit);
         executed = new bool[](limit);
         script = new bytes[](limit);
-        metadata = new string[](limit);
         voterState = new IApi3Voting.VoterState[](limit);
         delegateAt = new address[](limit);
         delegateState = new IApi3Voting.VoterState[](limit);
@@ -230,7 +226,6 @@ contract Convenience is Ownable  {
                 script[i]
                 ) = api3Voting.getVote(api3Voting.votesLength() - 1 - start - i);
             voteId[i] = api3Voting.votesLength() - 1 - start - i;
-            metadata[i] = api3Voting.getVoteMetadata(voteId[i]);
             delegateAt[i] = api3Pool.userDelegateAt(userAddress, snapshotBlock);
             voterState[i] = api3Voting.getVoterState(voteId[i], userAddress);
             delegateState[i] = api3Voting.getVoterState(voteId[i], delegateAt[i]);
