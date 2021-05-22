@@ -48,17 +48,14 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     /// caller
     /// @param source Token transfer source
     /// @param amount Amount to be deposited and staked
-    /// @param userAddress User that the tokens will be staked for
     function depositAndStake(
         address source,
-        uint256 amount,
-        address userAddress
+        uint256 amount
         )
         external
         override
     {
-        require(userAddress == msg.sender, ERROR_STAKING_ADDRESS);
-        deposit(source, amount, userAddress);
+        deposit(source, amount, msg.sender);
         stake(amount);
     }
 

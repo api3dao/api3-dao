@@ -60,8 +60,7 @@ describe("payOutClaim", function () {
           .connect(roles.user1)
           .depositAndStake(
             roles.user1.address,
-            user1Stake,
-            roles.user1.address
+            user1Stake
           );
         // Pay out claim
         const claimAmount = ethers.utils.parseEther("5" + "000" + "000");
