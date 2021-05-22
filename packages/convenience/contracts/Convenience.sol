@@ -268,8 +268,8 @@ contract Convenience is Ownable  {
             (
                 bool open,
                 , // executed
-                uint64 startDate,
-                , //snapshotBlock
+                , // startDate
+                , // snapshotBlock
                 , // supportRequired
                 , // minAcceptQuorum
                 , // yea
