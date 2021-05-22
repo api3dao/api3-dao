@@ -41,7 +41,7 @@ contract Convenience is Ownable  {
             uint256 userUnstakeScheduledFor,
             uint256 userUnstakeAmount,
             uint256 userUnstakeShares
-        )
+            )
     {
         apr = api3Pool.currentApr();
         api3Supply = IERC20Metadata(address(api3Pool.api3Token())).totalSupply();
@@ -67,17 +67,17 @@ contract Convenience is Ownable  {
         external
         view
         returns (
-          string[] memory names,
-          string[] memory symbols,
-          uint8[] memory decimals,
-          uint256[] memory balancesOfPrimaryAgent,
-          uint256[] memory balancesOfSecondaryAgent,
-          address delegate,
-          uint256 mostRecentProposalTimestamp,
-          uint256 mostRecentVoteTimestamp,
-          uint256 mostRecentDelegationTimestamp,
-          uint256 mostRecentUndelegationTimestamp
-        )
+            string[] memory names,
+            string[] memory symbols,
+            uint8[] memory decimals,
+            uint256[] memory balancesOfPrimaryAgent,
+            uint256[] memory balancesOfSecondaryAgent,
+            address delegate,
+            uint256 mostRecentProposalTimestamp,
+            uint256 mostRecentVoteTimestamp,
+            uint256 mostRecentDelegationTimestamp,
+            uint256 mostRecentUndelegationTimestamp
+            )
     {
         names = new string[](erc20Addresses.length);
         symbols = new string[](erc20Addresses.length);
@@ -121,7 +121,7 @@ contract Convenience is Ownable  {
             uint256[] memory yea,
             uint256[] memory nay,
             uint256[] memory votingPower
-        )
+            )
     {
         IApi3Voting api3Voting;
         if (votingAppType == VotingAppType.Primary)
@@ -173,7 +173,7 @@ contract Convenience is Ownable  {
             IApi3Voting.VoterState[] memory voterState,
             address[] memory delegateAt,
             IApi3Voting.VoterState[] memory delegateState
-        )
+            )
     {
         IApi3Voting api3Voting;
         if (votingAppType == VotingAppType.Primary)
