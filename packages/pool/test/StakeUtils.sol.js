@@ -120,7 +120,9 @@ describe("stake", function () {
       const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
       await expect(
         api3Pool.connect(roles.user1).stake(user1Stake)
-      ).to.be.revertedWith("API3DAO.StakeUtils: User don't have enough token to stake/unstake the provided amount");
+      ).to.be.revertedWith(
+        "API3DAO.StakeUtils: User don't have enough token to stake/unstake the provided amount"
+      );
     });
   });
 });
@@ -186,7 +188,9 @@ describe("scheduleUnstake", function () {
     it("reverts", async function () {
       await expect(
         api3Pool.connect(roles.user1).scheduleUnstake(ethers.BigNumber.from(1))
-      ).to.be.revertedWith("API3DAO.StakeUtils: User don't have enough pool shares to unstake the provided amount");
+      ).to.be.revertedWith(
+        "API3DAO.StakeUtils: User don't have enough pool shares to unstake the provided amount"
+      );
     });
   });
 });
@@ -210,10 +214,7 @@ describe("unstake", function () {
             .approve(api3Pool.address, user1Stake);
           await api3Pool
             .connect(roles.user1)
-            .depositAndStake(
-              roles.user1.address,
-              user1Stake
-            );
+            .depositAndStake(roles.user1.address, user1Stake);
           // Have the user delegate
           await api3Pool
             .connect(roles.user1)
@@ -267,10 +268,7 @@ describe("unstake", function () {
             .approve(api3Pool.address, user1Stake);
           await api3Pool
             .connect(roles.user1)
-            .depositAndStake(
-              roles.user1.address,
-              user1Stake
-            );
+            .depositAndStake(roles.user1.address, user1Stake);
           // Schedule unstake
           await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake);
           // Fast forward time to one epoch into the future
@@ -307,10 +305,7 @@ describe("unstake", function () {
           .approve(api3Pool.address, user1Stake);
         await api3Pool
           .connect(roles.user1)
-          .depositAndStake(
-            roles.user1.address,
-            user1Stake
-          );
+          .depositAndStake(roles.user1.address, user1Stake);
         // Schedule unstake
         await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake);
         // Set the DAO Agent
@@ -372,10 +367,7 @@ describe("unstake", function () {
           .approve(api3Pool.address, user1Stake);
         await api3Pool
           .connect(roles.user1)
-          .depositAndStake(
-            roles.user1.address,
-            user1Stake
-          );
+          .depositAndStake(roles.user1.address, user1Stake);
         // Schedule unstake
         await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake);
         // Attempt to unstake

@@ -58,10 +58,7 @@ describe("payOutClaim", function () {
           .approve(api3Pool.address, user1Stake);
         await api3Pool
           .connect(roles.user1)
-          .depositAndStake(
-            roles.user1.address,
-            user1Stake
-          );
+          .depositAndStake(roles.user1.address, user1Stake);
         // Pay out claim
         const claimAmount = ethers.utils.parseEther("5" + "000" + "000");
         await expect(
@@ -98,7 +95,9 @@ describe("payOutClaim", function () {
           api3Pool
             .connect(roles.claimsManager)
             .payOutClaim(roles.claimsManager.address, ethers.BigNumber.from(1))
-        ).to.be.revertedWith("API3DAO.ClaimUtils: Total stake should be bigger then claim amount");
+        ).to.be.revertedWith(
+          "API3DAO.ClaimUtils: Total stake should be bigger then claim amount"
+        );
       });
     });
   });
@@ -108,7 +107,9 @@ describe("payOutClaim", function () {
         api3Pool
           .connect(roles.randomPerson)
           .payOutClaim(roles.randomPerson.address, ethers.BigNumber.from(1))
-      ).to.be.revertedWith("API3DAO.ClaimUtils: Only claim manager is allowed to perform this action");
+      ).to.be.revertedWith(
+        "API3DAO.ClaimUtils: Only claim manager is allowed to perform this action"
+      );
     });
   });
 });

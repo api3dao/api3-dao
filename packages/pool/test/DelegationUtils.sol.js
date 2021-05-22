@@ -74,44 +74,42 @@ describe("delegateVotingPower", function () {
           "User has not updated their delegation status less than reward epoch ago",
           function () {
             context("User did not have the same delegate", function () {
-
-
-                  it("delegates voting power", async function () {
-                    // Have user 1 delegate to someone else first
-                    await api3Pool
-                      .connect(roles.user1)
-                      .delegateVotingPower(roles.randomPerson.address);
-                    expect(
-                      await api3Pool.balanceOf(roles.user1.address)
-                    ).to.equal(ethers.BigNumber.from(0));
-                    expect(
-                      await api3Pool.balanceOf(roles.randomPerson.address)
-                    ).to.equal(user1Stake);
-                    // Fast forward time
-                    await ethers.provider.send("evm_increaseTime", [
-                      EPOCH_LENGTH.toNumber(),
-                    ]);
-                    // ... then have user 1 delegate to user 2
-                    await expect(
-                      api3Pool
-                        .connect(roles.user1)
-                        .delegateVotingPower(roles.user2.address)
-                    )
-                      .to.emit(api3Pool, "Delegated")
-                      .withArgs(roles.user1.address, roles.user2.address);
-                    expect(
-                      await api3Pool.balanceOf(roles.user1.address)
-                    ).to.equal(ethers.BigNumber.from(0));
-                    expect(
-                      await api3Pool.balanceOf(roles.user2.address)
-                    ).to.equal(user2Stake.add(user1Stake));
-                    expect(
-                      await api3Pool.userReceivedDelegation(roles.user2.address)
-                    ).to.equal(user1Stake);
-                    expect(
-                      await api3Pool.getUserDelegate(roles.user1.address)
-                    ).to.equal(roles.user2.address);
-                  });
+              it("delegates voting power", async function () {
+                // Have user 1 delegate to someone else first
+                await api3Pool
+                  .connect(roles.user1)
+                  .delegateVotingPower(roles.randomPerson.address);
+                expect(await api3Pool.balanceOf(roles.user1.address)).to.equal(
+                  ethers.BigNumber.from(0)
+                );
+                expect(
+                  await api3Pool.balanceOf(roles.randomPerson.address)
+                ).to.equal(user1Stake);
+                // Fast forward time
+                await ethers.provider.send("evm_increaseTime", [
+                  EPOCH_LENGTH.toNumber(),
+                ]);
+                // ... then have user 1 delegate to user 2
+                await expect(
+                  api3Pool
+                    .connect(roles.user1)
+                    .delegateVotingPower(roles.user2.address)
+                )
+                  .to.emit(api3Pool, "Delegated")
+                  .withArgs(roles.user1.address, roles.user2.address);
+                expect(await api3Pool.balanceOf(roles.user1.address)).to.equal(
+                  ethers.BigNumber.from(0)
+                );
+                expect(await api3Pool.balanceOf(roles.user2.address)).to.equal(
+                  user2Stake.add(user1Stake)
+                );
+                expect(
+                  await api3Pool.userReceivedDelegation(roles.user2.address)
+                ).to.equal(user1Stake);
+                expect(
+                  await api3Pool.getUserDelegate(roles.user1.address)
+                ).to.equal(roles.user2.address);
+              });
             });
             context("User had the same delegate", function () {
               it("reverts", async function () {
@@ -128,7 +126,9 @@ describe("delegateVotingPower", function () {
                   api3Pool
                     .connect(roles.user1)
                     .delegateVotingPower(roles.user2.address)
-                ).to.be.revertedWith("API3DAO.StateUtils: Cannot delegate to the same address");
+                ).to.be.revertedWith(
+                  "API3DAO.StateUtils: Cannot delegate to the same address"
+                );
 
                 expect(await api3Pool.balanceOf(roles.user1.address)).to.equal(
                   ethers.BigNumber.from(0)
@@ -153,7 +153,9 @@ describe("delegateVotingPower", function () {
                 api3Pool
                   .connect(roles.user1)
                   .delegateVotingPower(roles.user2.address)
-              ).to.be.revertedWith("API3DAO.DelegationUtils: This address un/delegated less than a week before");
+              ).to.be.revertedWith(
+                "API3DAO.DelegationUtils: This address un/delegated less than a week before"
+              );
             });
           }
         );
@@ -169,7 +171,9 @@ describe("delegateVotingPower", function () {
             api3Pool
               .connect(roles.user1)
               .delegateVotingPower(roles.user2.address)
-          ).to.be.revertedWith("API3DAO.DelegationUtils: Cannot delegate to yourself or zero address and if you've already delegated");
+          ).to.be.revertedWith(
+            "API3DAO.DelegationUtils: Cannot delegate to yourself or zero address and if you've already delegated"
+          );
         });
       });
     });
@@ -177,7 +181,9 @@ describe("delegateVotingPower", function () {
       it("reverts", async function () {
         await expect(
           api3Pool.connect(roles.user1).delegateVotingPower(roles.user1.address)
-        ).to.be.revertedWith("API3DAO.DelegationUtils: Cannot delegate to yourself or zero address and if you've already delegated");
+        ).to.be.revertedWith(
+          "API3DAO.DelegationUtils: Cannot delegate to yourself or zero address and if you've already delegated"
+        );
       });
     });
   });
@@ -187,7 +193,9 @@ describe("delegateVotingPower", function () {
         api3Pool
           .connect(roles.user1)
           .delegateVotingPower(ethers.constants.AddressZero)
-      ).to.be.revertedWith("API3DAO.DelegationUtils: Cannot delegate to yourself or zero address and if you've already delegated");
+      ).to.be.revertedWith(
+        "API3DAO.DelegationUtils: Cannot delegate to yourself or zero address and if you've already delegated"
+      );
     });
   });
 });
@@ -253,7 +261,9 @@ describe("undelegateVotingPower", function () {
           // Attempt to have user 1 undelegate without waiting
           await expect(
             api3Pool.connect(roles.user1).undelegateVotingPower()
-          ).to.be.revertedWith("API3DAO.DelegationUtils: This address un/delegated less than a week before");
+          ).to.be.revertedWith(
+            "API3DAO.DelegationUtils: This address un/delegated less than a week before"
+          );
         });
       }
     );
@@ -262,7 +272,9 @@ describe("undelegateVotingPower", function () {
     it("reverts", async function () {
       await expect(
         api3Pool.connect(roles.user1).undelegateVotingPower()
-      ).to.be.revertedWith("API3DAO.DelegationUtils: This address has not delegated");
+      ).to.be.revertedWith(
+        "API3DAO.DelegationUtils: This address has not delegated"
+      );
     });
   });
 });

@@ -118,7 +118,8 @@ describe("withdraw", function () {
           .connect(roles.user1)
           .withdraw(roles.user1.address, ethers.BigNumber.from(1))
       ).to.be.revertedWith(
-        "API3DAO.TransferUtils: Withdrawal amount should be less or equal to the unstaked tokens");
+        "API3DAO.TransferUtils: Withdrawal amount should be less or equal to the unstaked tokens"
+      );
     });
   });
   context("User does not have enough funds", function () {
@@ -127,7 +128,9 @@ describe("withdraw", function () {
         api3Pool
           .connect(roles.user1)
           .withdraw(roles.user1.address, ethers.BigNumber.from(1))
-      ).to.be.revertedWith("API3DAO.TransferUtils: User total funds should be bigger then locked and amount to withdraw");
+      ).to.be.revertedWith(
+        "API3DAO.TransferUtils: User total funds should be bigger then locked and amount to withdraw"
+      );
     });
   });
 });
