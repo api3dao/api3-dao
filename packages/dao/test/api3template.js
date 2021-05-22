@@ -30,11 +30,9 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
 
   const SUPPORT_1 = 80e16;
   const ACCEPTANCE_1 = 40e16;
-  const VOTING_DURATION_1 = 60 * 60 * 24 * 7;
 
   const SUPPORT_2 = 50e16;
   const ACCEPTANCE_2 = 20e16;
-  const VOTING_DURATION_2 = 60 * 60 * 24 * 7;
 
   before("fetch bare template", async () => {
     api3Template = Api3Template.at(await getTemplateAddress());
@@ -45,8 +43,8 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
     receipt1 = await api3Template.newInstance(
       "api3template_test",
       api3Pool.address,
-      [SUPPORT_1, ACCEPTANCE_1, VOTING_DURATION_1],
-      [SUPPORT_2, ACCEPTANCE_2, VOTING_DURATION_2],
+      [SUPPORT_1, ACCEPTANCE_1],
+      [SUPPORT_2, ACCEPTANCE_2],
       { from: deployer }
     );
 
@@ -92,7 +90,7 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
     );
 
     assert.isTrue(await votingMain.hasInitialized(), "voting not initialized");
-    assert.equal((await votingMain.voteTime()).toString(), VOTING_DURATION_1);
+    assert.equal((await votingMain.voteTime()).toString(), (7 * 24 * 60 * 60).toString());
     assert.equal((await votingMain.supportRequiredPct()).toString(), SUPPORT_1);
     assert.equal(
       (await votingMain.minAcceptQuorumPct()).toString(),
@@ -105,7 +103,7 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
     );
     assert.equal(
       (await votingSecondary.voteTime()).toString(),
-      VOTING_DURATION_2
+      (7 * 24 * 60 * 60).toString()
     );
     assert.equal(
       (await votingSecondary.supportRequiredPct()).toString(),
