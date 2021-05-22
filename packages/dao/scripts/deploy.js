@@ -15,11 +15,9 @@ const Convenience = artifacts.require("Convenience");
 
 const SUPPORT_1 = 50e16;
 const ACCEPTANCE_1 = 50e16;
-const VOTING_DURATION_1 = 7 * 24 * 60 * 60;
 
 const SUPPORT_2 = 50e16;
 const ACCEPTANCE_2 = 15e16;
-const VOTING_DURATION_2 = 7 * 24 * 60 * 60;
 
 module.exports = async (callback) => {
   try {
@@ -50,8 +48,8 @@ module.exports = async (callback) => {
     const tx = await template.newInstance(
       TEMPLATE_NAME,
       api3Pool.address,
-      [SUPPORT_1, ACCEPTANCE_1, VOTING_DURATION_1],
-      [SUPPORT_2, ACCEPTANCE_2, VOTING_DURATION_2]
+      [SUPPORT_1, ACCEPTANCE_1],
+      [SUPPORT_2, ACCEPTANCE_2]
     );
     const mainVoting = getEventArgument(tx, "Api3DaoDeployed", "mainVoting");
     const secondaryVoting = getEventArgument(
