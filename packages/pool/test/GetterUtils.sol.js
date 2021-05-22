@@ -148,7 +148,7 @@ describe("userSharesAtWithBinarySearch", function () {
   });
 });
 
-describe("userReceivedDelegationAt", function () {
+describe("getReceivedDelegationAt", function () {
     it("gets user's received delegation at the block", async function () {
       const genesisEpoch = await api3Pool.genesisEpoch();
       const amount = ethers.BigNumber.from(
@@ -186,7 +186,7 @@ describe("userReceivedDelegationAt", function () {
       }
       for (let i = 0; i < noDelegations; i++) {
         expect(
-          await api3Pool.userReceivedDelegationAt(
+          await api3Pool.getReceivedDelegationAt(
             roles.user1.address,
             delegationBlocks[i]
           )
@@ -231,20 +231,20 @@ describe("getDelegateAt", function () {
     // Fast forward time
     await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH.toNumber()]);
     // Check delegates
-    expect(await api3Pool.userDelegateAt(roles.user1.address, 0)).to.equal(
+    expect(await api3Pool.getUserDelegateAt(roles.user1.address, 0)).to.equal(
       roles.user2.address
     );
     expect(
-      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber)
+      await api3Pool.getUserDelegateAt(roles.user1.address, firstBlockNumber)
     ).to.equal(roles.user2.address);
     expect(
-      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber + 1)
+      await api3Pool.getUserDelegateAt(roles.user1.address, firstBlockNumber + 1)
     ).to.equal(roles.randomPerson.address);
     expect(
-      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber + 2)
+      await api3Pool.getUserDelegateAt(roles.user1.address, firstBlockNumber + 2)
     ).to.equal(roles.randomPerson.address);
     expect(
-      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber + 3)
+      await api3Pool.getUserDelegateAt(roles.user1.address, firstBlockNumber + 3)
     ).to.equal(roles.user2.address);
   });
 });
