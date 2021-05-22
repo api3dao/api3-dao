@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "license": "GPL-3.0-or-later",
   "scripts": {
-    "compile": "buidler compile --force",
+    "compile": "buidler compile --force && cd ../pool && npm run build && cp ./artifacts/contracts/Api3Pool.sol/Api3Pool.json ../api3-voting/artifacts/Api3Pool.json  && cd ../api3-voting",
     "devchain": "buidler node",
     "diff": "mkdir -p diff && git diff --no-index ./node_modules/@aragon/apps-voting/contracts/Voting.sol ./contracts/Api3Voting.sol > ./diff/Api3Voting.sol 2>&1 | true",
     "lint": "solium --no-soliumignore --dir ./contracts",
-    "test": "cd ../pool && npm run build && cp ./artifacts/contracts/Api3Pool.sol/Api3Pool.json ../api3-voting/artifacts/Api3Pool.json  && cd ../api3-voting && buidler test",
+    "test": "npm run compile && buidler test",
     "test:gas": "REPORT_GAS=true buidler test --network localhost",
     "coverage": "cd ../pool && npm run build && cp ./artifacts/contracts/Api3Pool.sol/Api3Pool.json ../api3-voting/artifacts/Api3Pool.json  && cd ../api3-voting && buidler coverage --network coverage",
     "sync-assets": "copy-aragon-ui-assets ../dist && copyfiles -u 1 './public/**/*' ../dist",

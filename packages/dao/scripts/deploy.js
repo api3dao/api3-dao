@@ -9,6 +9,7 @@ const CONTRACT_NAME = 'Api3Template';
 const VOTE_NAME = 'Api3Voting';
 
 const Api3Pool = artifacts.require('Api3Pool');
+const Convenience = artifacts.require('Convenience');
 
 const SUPPORT_1 = 50e16;
 const ACCEPTANCE_1 = 50e16;
@@ -24,6 +25,9 @@ module.exports = async callback => {
         console.log(network);
 
         const api3Pool = await Api3Pool.new('0x00');
+        const convenience = await Convenience.new(api3Pool.address);
+        console.log(`Pool: ${api3Pool.address}`);
+        console.log(`Convenience: ${convenience.address}`);
         const template = await deployTemplate(
             web3,
             artifacts,
