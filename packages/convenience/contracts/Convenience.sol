@@ -103,7 +103,7 @@ contract Convenience is Ownable  {
             balancesOfPrimaryAgent[i] = erc20.balanceOf(api3Pool.agentAppPrimary());
             balancesOfSecondaryAgent[i] = erc20.balanceOf(api3Pool.agentAppSecondary());
         }
-        delegate = api3Pool.userDelegate(userAddress);
+        delegate = api3Pool.getUserDelegate(userAddress);
         (
             , // unstaked
             , // vesting
@@ -222,7 +222,7 @@ contract Convenience is Ownable  {
                 , // votingPower
                 script[i]
                 ) = api3Voting.getVote(voteIds[i]);
-            delegateAt[i] = api3Pool.userDelegateAt(userAddress, snapshotBlock);
+            delegateAt[i] = api3Pool.getUserDelegateAt(userAddress, snapshotBlock);
             voterState[i] = api3Voting.getVoterState(voteIds[i], userAddress);
             delegateState[i] = api3Voting.getVoterState(voteIds[i], delegateAt[i]);
         }
