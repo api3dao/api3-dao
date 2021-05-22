@@ -110,8 +110,7 @@ contract Convenience is Ownable  {
     /// @dev start=0, limit=5 returns the first 5 votes, etc.
     function getGovernanceData1(
         VotingAppType votingAppType,
-        uint256 start,
-        uint256 limit
+        uint256[] calldata voteIds
         )
         external
         view
@@ -138,19 +137,15 @@ contract Convenience is Ownable  {
         {
             revert("Invalid voting app type");
         }
-        startDate = new uint64[](limit);
-        supportRequired = new uint64[](limit);
-        minAcceptQuorum = new uint64[](limit);
-        yea = new uint256[](limit);
-        nay = new uint256[](limit);
-        votingPower = new uint256[](limit);
+        startDate = new uint64[](voteIds.length);
+        supportRequired = new uint64[](voteIds.length);
+        minAcceptQuorum = new uint64[](voteIds.length);
+        yea = new uint256[](voteIds.length);
+        nay = new uint256[](voteIds.length);
+        votingPower = new uint256[](voteIds.length);
         minAcceptQuorumPct = api3Voting.minAcceptQuorumPct();
-        for (uint256 i = 0; i < limit; i++)
+        for (uint256 i = 0; i < voteIds.length; i++)
         {
-            if (start + i >= api3Voting.votesLength())
-            {
-                break;
-            }
             (
                 , // open
                 , // executed
@@ -162,7 +157,7 @@ contract Convenience is Ownable  {
                 nay[i],
                 votingPower[i],
                 // script
-                ) = api3Voting.getVote(start + i);
+                ) = api3Voting.getVote(voteIds[i]);
         }
     }
 
@@ -170,8 +165,7 @@ contract Convenience is Ownable  {
     function getGovernanceData2(
         VotingAppType votingAppType,
         address userAddress,
-        uint256 start,
-        uint256 limit
+        uint256[] calldata voteIds
         )
         external
         view
@@ -196,17 +190,13 @@ contract Convenience is Ownable  {
         {
             revert("Invalid voting app type");
         }
-        executed = new bool[](limit);
-        script = new bytes[](limit);
-        voterState = new IApi3Voting.VoterState[](limit);
-        delegateAt = new address[](limit);
-        delegateState = new IApi3Voting.VoterState[](limit);
-        for (uint256 i = 0; i < limit; i++)
+        executed = new bool[](voteIds.length);
+        script = new bytes[](voteIds.length);
+        voterState = new IApi3Voting.VoterState[](voteIds.length);
+        delegateAt = new address[](voteIds.length);
+        delegateState = new IApi3Voting.VoterState[](voteIds.length);
+        for (uint256 i = 0; i < voteIds.length; i++)
         {
-            if (start + i >= api3Voting.votesLength())
-            {
-                break;
-            }
             uint64 snapshotBlock;
             (
                 , // open
@@ -219,10 +209,10 @@ contract Convenience is Ownable  {
                 , // nay
                 , // votingPower
                 script[i]
-                ) = api3Voting.getVote(start + i);
+                ) = api3Voting.getVote(voteIds[i]);
             delegateAt[i] = api3Pool.userDelegateAt(userAddress, snapshotBlock);
-            voterState[i] = api3Voting.getVoterState(start + i, userAddress);
-            delegateState[i] = api3Voting.getVoterState(start + i, delegateAt[i]);
+            voterState[i] = api3Voting.getVoterState(voteIds[i], userAddress);
+            delegateState[i] = api3Voting.getVoterState(voteIds[i], delegateAt[i]);
         }
     }
 }
