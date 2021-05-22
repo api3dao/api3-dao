@@ -107,7 +107,7 @@ contract Convenience is Ownable  {
             ) = api3Pool.getUser(userAddress);
     }
 
-    /// @dev Indexes from last, i.e., start=0, limit=5 returns the last 5 votes
+    /// @dev start=0, limit=5 returns the first 5 votes, etc.
     function getGovernanceData1(
         VotingAppType votingAppType,
         uint256 start,
@@ -138,16 +138,16 @@ contract Convenience is Ownable  {
         {
             revert("Invalid voting app type");
         }
-        minAcceptQuorumPct = api3Voting.minAcceptQuorumPct();
         startDate = new uint64[](limit);
         supportRequired = new uint64[](limit);
         minAcceptQuorum = new uint64[](limit);
         yea = new uint256[](limit);
         nay = new uint256[](limit);
         votingPower = new uint256[](limit);
+        minAcceptQuorumPct = api3Voting.minAcceptQuorumPct();
         for (uint256 i = 0; i < limit; i++)
         {
-            if (api3Voting.votesLength() < 1 + start + i)
+            if (start + i >= api3Voting.votesLength())
             {
                 break;
             }
@@ -162,11 +162,11 @@ contract Convenience is Ownable  {
                 nay[i],
                 votingPower[i],
                 // script
-                ) = api3Voting.getVote(api3Voting.votesLength() - 1 - start - i);
+                ) = api3Voting.getVote(start + i);
         }
     }
 
-    /// @dev Indexes from last, i.e., start=0, limit=5 returns the last 5 votes
+    /// @dev start=0, limit=5 returns the first 5 votes, etc.
     function getGovernanceData2(
         VotingAppType votingAppType,
         address userAddress,
@@ -203,7 +203,7 @@ contract Convenience is Ownable  {
         delegateState = new IApi3Voting.VoterState[](limit);
         for (uint256 i = 0; i < limit; i++)
         {
-            if (api3Voting.votesLength() < 1 + start + i)
+            if (start + i >= api3Voting.votesLength())
             {
                 break;
             }
@@ -219,10 +219,10 @@ contract Convenience is Ownable  {
                 , // nay
                 , // votingPower
                 script[i]
-                ) = api3Voting.getVote(api3Voting.votesLength() - 1 - start - i);
+                ) = api3Voting.getVote(start + i);
             delegateAt[i] = api3Pool.userDelegateAt(userAddress, snapshotBlock);
-            voterState[i] = api3Voting.getVoterState(api3Voting.votesLength() - 1 - start - i, userAddress);
-            delegateState[i] = api3Voting.getVoterState(api3Voting.votesLength() - 1 - start - i, delegateAt[i]);
+            voterState[i] = api3Voting.getVoterState(start + i, userAddress);
+            delegateState[i] = api3Voting.getVoterState(start + i, delegateAt[i]);
         }
     }
 }
