@@ -34,4 +34,9 @@ interface IApi3Voting {
         external
         view
         returns (uint64);
+
+    function voteTime()
+        external
+        view
+        returns (uint64);
 }

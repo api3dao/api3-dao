@@ -215,4 +215,75 @@ contract Convenience is Ownable  {
             delegateState[i] = api3Voting.getVoterState(voteIds[i], delegateAt[i]);
         }
     }
+
+
+    function getOpenVoteIds(VotingAppType votingAppType)
+        external
+        view
+        returns (uint256[] memory voteIds)
+    {
+        IApi3Voting api3Voting;
+        if (votingAppType == VotingAppType.Primary)
+        {
+            api3Voting = IApi3Voting(api3Pool.votingAppPrimary());
+        }
+        else if (votingAppType == VotingAppType.Secondary)
+        {
+            api3Voting = IApi3Voting(api3Pool.votingAppSecondary());
+        }
+        else
+        {
+            revert("Invalid voting app type");
+        }
+        uint256 countOpenVote = 0;
+        for (uint256 i = api3Voting.votesLength() - 1; i >= 0; i--)
+        {
+            (
+                bool open,
+                , // executed
+                uint64 startDate,
+                , //snapshotBlock
+                , // supportRequired
+                , // minAcceptQuorum
+                , // yea
+                , // nay
+                , // votingPower
+                // script
+                ) = api3Voting.getVote(i);
+            if (open)
+            {
+                countOpenVote++;
+            }
+            if (startDate < block.timestamp - api3Voting.voteTime())
+            {
+                break;
+            }
+        }
+        voteIds = new uint256[](countOpenVote);
+        uint256 countAddedVote = 0;
+        for (uint256 i = api3Voting.votesLength() - 1; i >= 0; i--)
+        {
+            if (countOpenVote == countAddedVote)
+            {
+                break;
+            }
+            (
+                bool open,
+                , // executed
+                uint64 startDate,
+                , //snapshotBlock
+                , // supportRequired
+                , // minAcceptQuorum
+                , // yea
+                , // nay
+                , // votingPower
+                // script
+                ) = api3Voting.getVote(i);
+            if (open)
+            {
+                voteIds[countAddedVote] = i;
+                countAddedVote++;
+            }
+        }
+    }
 }
