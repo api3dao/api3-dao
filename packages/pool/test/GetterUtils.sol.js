@@ -148,7 +148,7 @@ describe("userSharesAtWithBinarySearch", function () {
   });
 });
 
-describe("userReceivedDelegationAt", function () {
+describe("getReceivedDelegationAt", function () {
     it("gets user's received delegation at the block", async function () {
       const genesisEpoch = await api3Pool.genesisEpoch();
       const amount = ethers.BigNumber.from(
@@ -174,7 +174,7 @@ describe("userReceivedDelegationAt", function () {
           .approve(api3Pool.address, amount, { gasLimit: 500000 });
         await api3Pool
           .connect(randomWallet)
-          .depositAndStake(randomWallet.address, amount, randomWallet.address, {
+          .depositAndStake(randomWallet.address, amount, {
             gasLimit: 500000,
           });
         await api3Pool
@@ -186,7 +186,7 @@ describe("userReceivedDelegationAt", function () {
       }
       for (let i = 0; i < noDelegations; i++) {
         expect(
-          await api3Pool.userReceivedDelegationAt(
+          await api3Pool.getReceivedDelegationAt(
             roles.user1.address,
             delegationBlocks[i]
           )
@@ -208,7 +208,7 @@ describe("getDelegateAt", function () {
       .approve(api3Pool.address, amount, { gasLimit: 500000 });
     await api3Pool
       .connect(roles.user1)
-      .depositAndStake(roles.user1.address, amount, roles.user1.address, {
+      .depositAndStake(roles.user1.address, amount, {
         gasLimit: 500000,
       });
 
@@ -231,20 +231,20 @@ describe("getDelegateAt", function () {
     // Fast forward time
     await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH.toNumber()]);
     // Check delegates
-    expect(await api3Pool.userDelegateAt(roles.user1.address, 0)).to.equal(
+    expect(await api3Pool.getUserDelegateAt(roles.user1.address, 0)).to.equal(
       roles.user2.address
     );
     expect(
-      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber)
+      await api3Pool.getUserDelegateAt(roles.user1.address, firstBlockNumber)
     ).to.equal(roles.user2.address);
     expect(
-      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber + 1)
+      await api3Pool.getUserDelegateAt(roles.user1.address, firstBlockNumber + 1)
     ).to.equal(roles.randomPerson.address);
     expect(
-      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber + 2)
+      await api3Pool.getUserDelegateAt(roles.user1.address, firstBlockNumber + 2)
     ).to.equal(roles.randomPerson.address);
     expect(
-      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber + 3)
+      await api3Pool.getUserDelegateAt(roles.user1.address, firstBlockNumber + 3)
     ).to.equal(roles.user2.address);
   });
 });
@@ -271,8 +271,7 @@ describe("getUserLocked", function () {
             .connect(roles.user1)
             .depositAndStake(
               roles.user1.address,
-              user1Stake.div(2),
-              roles.user1.address
+              user1Stake.div(2)
             );
           const genesisEpoch = await api3Pool.genesisEpoch();
           const userRewards = [];
@@ -296,8 +295,7 @@ describe("getUserLocked", function () {
                 .connect(roles.user1)
                 .depositAndStake(
                   roles.user1.address,
-                  user1Stake.div(1000),
-                  roles.user1.address
+                  user1Stake.div(1000)
                 );
             } else {
               userRewards.push(ethers.BigNumber.from(0));
@@ -351,8 +349,7 @@ describe("getUserLocked", function () {
           .connect(roles.user1)
           .depositAndStake(
             roles.user1.address,
-            user1Stake.div(2),
-            roles.user1.address
+            user1Stake.div(2)
           );
         const genesisEpoch = await api3Pool.genesisEpoch();
         const userRewards = [];
@@ -376,8 +373,7 @@ describe("getUserLocked", function () {
               .connect(roles.user1)
               .depositAndStake(
                 roles.user1.address,
-                user1Stake.div(1000),
-                roles.user1.address
+                user1Stake.div(1000)
               );
           } else {
             userRewards.push(ethers.BigNumber.from(0));

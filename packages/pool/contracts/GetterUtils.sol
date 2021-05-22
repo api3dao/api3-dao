@@ -9,7 +9,8 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     string private constant CHECKPOINT_NOT_FOUND = "API3DAO.GetterUtils: Value cannot be found after provided checkpoint";
 
-    /// @notice Called to get the voting power of a user at a specific block
+    /// @notice Called to get the voting power of a user at a checkpoint,
+    /// closest to the provided block
     /// @dev This method is used to implement the MiniMe interface for the
     /// Api3Voting app
     /// @param userAddress User address
@@ -25,12 +26,12 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         returns(uint256)
     {
         // Users that delegate have no voting power
-        if (userDelegateAt(userAddress, _block) != address(0))
+        if (getUserDelegateAt(userAddress, _block) != address(0))
         {
             return 0;
         }
         uint256 userSharesThen = userSharesAt(userAddress, _block);
-        uint256 delegatedToUserThen = userReceivedDelegationAt(userAddress, _block);
+        uint256 delegatedToUserThen = getReceivedDelegationAt(userAddress, _block);
         return userSharesThen + delegatedToUserThen;
     }
 
@@ -74,7 +75,8 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         return totalShares();
     }
 
-    /// @notice Called to get the pool shares of a user at a specific block
+    /// @notice Called to get the pool shares of a user at a checkpoint,
+    /// closest to the provided block
     /// @dev Starts from the most recent value in `user.shares` and searches
     /// backwards one element at a time
     /// @param userAddress User address
@@ -104,8 +106,8 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         return userSharesAt(userAddress, block.number);
     }
 
-    /// @notice Called to get the pool shares of a user at a specific block
-    /// using binary search
+    /// @notice Called to get the pool shares of a user at checkpoint,
+    /// closest to specific block using binary search
     /// @dev This method is not used by the current iteration of the DAO/pool
     /// and is implemented for future external contracts to use to get the user
     /// shares at an arbitrary block.
@@ -141,14 +143,14 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     }
 
     /// @notice Called to get the voting power delegated to a user at a
-    /// specific block
+    /// checkpoint, closest to specific block
     /// @dev `user.delegatedTo` cannot have grown more than 1000 checkpoints
     /// in the last epoch due to `proposalVotingPowerThreshold` having a lower
     /// limit of 0.1%.
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block
-    function userReceivedDelegationAt(
+    function getReceivedDelegationAt(
         address userAddress,
         uint256 _block
         )
@@ -203,10 +205,11 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        return userReceivedDelegationAt(userAddress, block.number);
+        return getReceivedDelegationAt(userAddress, block.number);
     }
 
-    /// @notice Called to get the delegate of the user at a specific block
+    /// @notice Called to get the delegate of the user at a checkpoint,
+    /// closest to specified block
     /// @dev Starts from the most recent value in `user.delegates` and
     /// searches backwards one element at a time. If `_block` is within
     /// `EPOCH_LENGTH`, this call is guaranteed to find the value among
@@ -215,7 +218,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// @param userAddress User address
     /// @param _block Block number
     /// @return Delegate of the user at the specific block
-    function userDelegateAt(
+    function getUserDelegateAt(
         address userAddress,
         uint256 _block
         )
@@ -238,13 +241,13 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// @notice Called to get the current delegate of the user
     /// @param userAddress User address
     /// @return Current delegate of the user
-    function userDelegate(address userAddress)
+    function getUserDelegate(address userAddress)
         public
         view
         override
         returns(address)
     {
-        return userDelegateAt(userAddress, block.number);
+        return getUserDelegateAt(userAddress, block.number);
     }
 
     /// @notice Called to get the current locked tokens of the user
@@ -332,8 +335,8 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         mostRecentUndelegationTimestamp = user.mostRecentUndelegationTimestamp;
     }
 
-    /// @notice Called to get the value of a checkpoint array at a specific
-    /// block
+    /// @notice Called to get the value of a checkpoint array closest to
+    /// the specific block
     /// @param checkpoints Checkpoints array
     /// @param _block Block number for which the query is being made
     /// @return Value of the checkpoint array at the block
@@ -360,8 +363,8 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         return 0;
     }
 
-    /// @notice Called to get the value of the checkpoint array at a specific
-    /// block
+    /// @notice Called to get the value of the checkpoint array  closest to the
+    /// specific block
     /// @dev Adapted from
     /// https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
     /// Allows the caller to specify the portion of the array that will be

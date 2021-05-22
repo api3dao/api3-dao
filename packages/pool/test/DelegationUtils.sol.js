@@ -62,10 +62,10 @@ describe("delegateVotingPower", function () {
     await api3Token.connect(roles.user2).approve(api3Pool.address, user2Stake);
     await api3Pool
       .connect(roles.user1)
-      .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
+      .depositAndStake(roles.user1.address, user1Stake);
     await api3Pool
       .connect(roles.user2)
-      .depositAndStake(roles.user2.address, user2Stake, roles.user2.address);
+      .depositAndStake(roles.user2.address, user2Stake);
   });
   context("Delegate address is not zero", function () {
     context("Delegate address is not caller", function () {
@@ -109,7 +109,7 @@ describe("delegateVotingPower", function () {
                       await api3Pool.userReceivedDelegation(roles.user2.address)
                     ).to.equal(user1Stake);
                     expect(
-                      await api3Pool.userDelegate(roles.user1.address)
+                      await api3Pool.getUserDelegate(roles.user1.address)
                     ).to.equal(roles.user2.address);
                   });
             });
@@ -205,10 +205,10 @@ describe("undelegateVotingPower", function () {
     await api3Token.connect(roles.user2).approve(api3Pool.address, user2Stake);
     await api3Pool
       .connect(roles.user1)
-      .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
+      .depositAndStake(roles.user1.address, user1Stake);
     await api3Pool
       .connect(roles.user2)
-      .depositAndStake(roles.user2.address, user2Stake, roles.user2.address);
+      .depositAndStake(roles.user2.address, user2Stake);
   });
   context("User has delegated before", function () {
     context(
@@ -236,7 +236,7 @@ describe("undelegateVotingPower", function () {
           expect(
             await api3Pool.userReceivedDelegation(roles.user2.address)
           ).to.equal(ethers.BigNumber.from(0));
-          expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
+          expect(await api3Pool.getUserDelegate(roles.user1.address)).to.equal(
             ethers.constants.AddressZero
           );
         });

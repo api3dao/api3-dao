@@ -26,13 +26,11 @@ contract MockApi3Staker {
         api3Token.approve(address(api3Pool), amount1 + amount2);
         api3Pool.depositAndStake(
           address(this),
-          amount1,
-          address(this)
+          amount1
           );
         api3Pool.depositAndStake(
           address(this),
-          amount2,
-          address(this)
+          amount2
           );
     }
 }
