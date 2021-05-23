@@ -18,6 +18,7 @@ beforeEach(async () => {
     claimsManager: accounts[5],
     user1: accounts[6],
     user2: accounts[7],
+    mockTimelockManager: accounts[8],
     randomPerson: accounts[9],
   };
   const api3TokenFactory = await ethers.getContractFactory(
@@ -32,7 +33,10 @@ beforeEach(async () => {
     "Api3Pool",
     roles.deployer
   );
-  api3Pool = await api3PoolFactory.deploy(api3Token.address);
+  api3Pool = await api3PoolFactory.deploy(
+    api3Token.address,
+    roles.mockTimelockManager.address
+  );
   EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
   REWARD_VESTING_PERIOD = await api3Pool.REWARD_VESTING_PERIOD();
 });

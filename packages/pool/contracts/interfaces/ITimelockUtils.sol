@@ -13,7 +13,6 @@ interface ITimelockUtils is IClaimUtils {
 
     event UpdatedTimelock(
         address indexed user,
-        address indexed timelockManagerAddress,
         uint256 remainingAmount
         );
 
@@ -26,9 +25,6 @@ interface ITimelockUtils is IClaimUtils {
         )
         external;
 
-    function updateTimelockStatus(
-        address userAddress,
-        address timelockManagerAddress
-        )
+    function updateTimelockStatus(address userAddress)
         external;
 }

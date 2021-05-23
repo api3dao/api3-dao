@@ -17,6 +17,7 @@ beforeEach(async () => {
     claimsManager: accounts[5],
     user1: accounts[6],
     user2: accounts[7],
+    mockTimelockManager: accounts[8],
     randomPerson: accounts[9],
   };
   const api3TokenFactory = await ethers.getContractFactory(
@@ -31,7 +32,10 @@ beforeEach(async () => {
     "Api3Pool",
     roles.deployer
   );
-  api3Pool = await api3PoolFactory.deploy(api3Token.address);
+  api3Pool = await api3PoolFactory.deploy(
+    api3Token.address,
+    roles.mockTimelockManager.address
+  );
   const api3VotingFactory = await ethers.getContractFactory(
     "MockApi3Voting",
     roles.deployer

@@ -5,8 +5,8 @@ import "./ClaimUtils.sol";
 import "./interfaces/ITimelockUtils.sol";
 
 /// @title Contract that implements vesting functionality
-/// @dev TimelockManager contracts interface with this contract to transfer
-/// API3 tokens that are locked under a vesting schedule.
+/// @dev The TimelockManager contract interfaces with this contract to transfer
+/// API3 tokens that are locked under a vesting schedule
 abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
     struct Timelock
     {
@@ -16,16 +16,15 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         uint256 releaseEnd;
     }
 
-    /// @notice Maps user addresses to TimelockManager contract addresses to 
-    /// timelocks
+    /// @notice Maps user addresses to timelocks
     /// @dev This implies that a user cannot have multiple timelocks
-    /// transferrerd from the same TimelockManager contract. This is
-    /// acceptable, because the TimelockManager is implemented in a way to not
-    /// allow multiple timelocks per user.
-    mapping(address => mapping(address => Timelock)) public userToDepositorToTimelock;
+    /// transferrerd from the TimelockManager contract. This is acceptable
+    /// because the TimelockManager is implemented in a way to not allow
+    /// multiple timelocks per user.
+    mapping(address => Timelock) public userToTimelock;
 
-    /// @notice Called by TimelockManager contracts to deposit tokens on behalf
-    /// of a user on a linear vesting schedule
+    /// @notice Called by the TimelockManager contract to deposit tokens on
+    /// behalf of a user on a linear vesting schedule
     /// @dev Refer to `TimelockManager.sol` to see how this is used
     /// @param source Token source
     /// @param amount Token amount
@@ -42,7 +41,8 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         external
         override
     {
-        require(userToDepositorToTimelock[userAddress][msg.sender].remainingAmount == 0, ERROR_UNAUTHORIZED);
+        require(msg.sender == timelockManager, "Caller not TimelockManager");
+        require(userToTimelock[userAddress].remainingAmount == 0, ERROR_UNAUTHORIZED);
         require(
             releaseEnd > releaseStart
                 && amount != 0,
@@ -50,7 +50,7 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
             );
         users[userAddress].unstaked = users[userAddress].unstaked + amount;
         users[userAddress].vesting = users[userAddress].vesting + amount;
-        userToDepositorToTimelock[userAddress][msg.sender] = Timelock({
+        userToTimelock[userAddress] = Timelock({
             totalAmount: amount,
             remainingAmount: amount,
             releaseStart: releaseStart,
@@ -68,16 +68,11 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
     /// @notice Called to release tokens vested by the timelock
     /// @param userAddress Address of the user whose timelock status will be
     /// updated
-    /// @param timelockManagerAddress Address of the TimelockManager that has
-    /// created the timelock
-    function updateTimelockStatus(
-        address userAddress,
-        address timelockManagerAddress
-        )
+    function updateTimelockStatus(address userAddress)
         external
         override
     {
-        Timelock storage timelock = userToDepositorToTimelock[userAddress][timelockManagerAddress];
+        Timelock storage timelock = userToTimelock[userAddress];
         require(block.timestamp > timelock.releaseStart, ERROR_UNAUTHORIZED);
         require(timelock.remainingAmount > 0, ERROR_UNAUTHORIZED);
         uint256 totalUnlocked;
@@ -96,10 +91,9 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         User storage user = users[userAddress];
         user.vesting = user.vesting - newlyUnlocked;
         uint256 newRemainingAmount = timelock.remainingAmount - newlyUnlocked;
-        userToDepositorToTimelock[userAddress][timelockManagerAddress].remainingAmount = newRemainingAmount;
+        userToTimelock[userAddress].remainingAmount = newRemainingAmount;
         emit UpdatedTimelock(
             userAddress,
-            timelockManagerAddress,
             newRemainingAmount
             );
     }
