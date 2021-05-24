@@ -207,6 +207,7 @@ contract StateUtils is IStateUtils {
         address timelockManagerAddress
         )
     {
+        require(timelockManagerAddress != address(0), "Invalid TimelockManager");
         api3Token = IApi3Token(api3TokenAddress);
         timelockManager = timelockManagerAddress;
         // Initialize the share price at 1
