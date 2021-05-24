@@ -113,15 +113,6 @@ This array will be searched linearly while calling `balanceOfAt()` to vote (for 
 In case the user bloats this array on purpose by repeatedly staking 1 (Wei) API3, they may manage to lock themselves out of voting/withdrawing.
 Since this will only happen voluntarily and will get resolved automatically simply by not staking/unstaking for a while, it is not considered as an issue.
 
-## Over-population of `user.delegatedTo` and the interaction frequency limit
-
-Each time a user is delegated to/undelegated from, their `user.delegatedTo` will be updated.
-Furthermore, if there has been a proposal made since the last update, a new element will be added to the `Checkpoint` array.
-This array will be searched linearly when the delegated user calls `balanceOfAt()` to vote (for the last week).
-A concern here is that too many interleaved proposals and delegation updates may bloat the user's `delegatedTo` array for the last week and prevent them from voting.
-To prevent this from being used as an attack vector, a transaction cannot add more than `MAX_INTERACTION_FREQUENCY` (default value = `20`) elements to a user's `delegatedTo` in a week.
-The proposal spam protection mechanisms are expected to keep the number of proposals in a week well below `20` (and if they cannot, their parameters should be updated to reduce spam further).
-
 ## Double Agent and Api3Voting apps
 
 The DAO will have two pairs of Agents and Api3Voting apps, where having an Agent app make a transaction will require a proposal to be passed with the respective Api3Voting app.

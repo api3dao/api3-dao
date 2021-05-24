@@ -4,7 +4,7 @@ const { expect } = require("chai");
 
 let roles;
 let api3Token, api3Pool, api3Voting, api3Staker;
-let EPOCH_LENGTH, REWARD_VESTING_PERIOD, MAX_INTERACTION_FREQUENCY;
+let EPOCH_LENGTH, REWARD_VESTING_PERIOD;
 
 beforeEach(async () => {
   const accounts = await ethers.getSigners();
@@ -59,7 +59,6 @@ beforeEach(async () => {
   );
   EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
   REWARD_VESTING_PERIOD = await api3Pool.REWARD_VESTING_PERIOD();
-  MAX_INTERACTION_FREQUENCY = await api3Pool.MAX_INTERACTION_FREQUENCY();
 });
 
 describe("totalSupplyOneBlockAgo", function () {
@@ -113,8 +112,9 @@ describe("userReceivedDelegationAt", function () {
   it("gets user's received delegation at the block", async function () {
     const genesisEpoch = await api3Pool.genesisEpoch();
     const amount = ethers.BigNumber.from(1000);
+    const noDelegations = 20;
     const delegationBlocks = [];
-    for (let i = 0; i < MAX_INTERACTION_FREQUENCY; i++) {
+    for (let i = 0; i < noDelegations; i++) {
       await api3Voting.newVote();
       delegationBlocks.push(await ethers.provider.getBlockNumber());
       const randomWallet = ethers.Wallet.createRandom().connect(
@@ -140,7 +140,7 @@ describe("userReceivedDelegationAt", function () {
         genesisEpoch.add(i).add(1).mul(EPOCH_LENGTH).toNumber(),
       ]);
     }
-    for (let i = 0; i < MAX_INTERACTION_FREQUENCY; i++) {
+    for (let i = 0; i < noDelegations; i++) {
       expect(
         await api3Pool.userReceivedDelegationAt(
           roles.user1.address,
