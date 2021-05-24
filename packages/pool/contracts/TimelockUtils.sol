@@ -24,6 +24,32 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
     mapping(address => Timelock) public userToTimelock;
 
     /// @notice Called by the TimelockManager contract to deposit tokens on
+    /// behalf of a user
+    /// @dev This method is only usable by `TimelockManager.sol`.
+    /// It is named as `deposit()` and not `depositByTimelockManager()` for
+    /// example because the TimelockManager is already deployed and expects the
+    /// `deposit(address,uint256,address)` interface.
+    /// @param source Token transfer source
+    /// @param amount Amount to be deposited
+    /// @param userAddress User that the tokens will be deposited for
+    function deposit(
+        address source,
+        uint256 amount,
+        address userAddress
+        )
+        external
+        override
+    {
+        require(msg.sender == timelockManager, "Caller not TimelockManager");
+        users[userAddress].unstaked = users[userAddress].unstaked + amount;
+        api3Token.transferFrom(source, address(this), amount);
+        emit DepositedByTimelockManager(
+            userAddress,
+            amount
+            );
+    }
+
+    /// @notice Called by the TimelockManager contract to deposit tokens on
     /// behalf of a user on a linear vesting schedule
     /// @dev Refer to `TimelockManager.sol` to see how this is used
     /// @param source Token source

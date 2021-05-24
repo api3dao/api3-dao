@@ -4,6 +4,11 @@ pragma solidity 0.8.2;
 import "./IClaimUtils.sol";
 
 interface ITimelockUtils is IClaimUtils {
+    event DepositedByTimelockManager(
+        address indexed user,
+        uint256 amount
+        );
+
     event DepositedVesting(
         address indexed user,
         uint256 amount,
@@ -15,6 +20,13 @@ interface ITimelockUtils is IClaimUtils {
         address indexed user,
         uint256 remainingAmount
         );
+
+    function deposit(
+        address source,
+        uint256 amount,
+        address userAddress
+        )
+        external;
 
     function depositWithVesting(
         address source,

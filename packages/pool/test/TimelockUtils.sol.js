@@ -36,6 +36,51 @@ beforeEach(async () => {
   );
 });
 
+describe("deposit", function () {
+  context("Caller is the timelock manager", function () {
+    it("deposits", async function () {
+      const timelockManagerDeposit = ethers.utils.parseEther(
+        "20" + "000" + "000"
+      );
+      await api3Token
+        .connect(roles.deployer)
+        .transfer(roles.mockTimelockManager.address, timelockManagerDeposit);
+      await api3Token
+        .connect(roles.mockTimelockManager)
+        .approve(api3Pool.address, timelockManagerDeposit);
+      await expect(
+        api3Pool
+          .connect(roles.mockTimelockManager)
+          .deposit(
+            roles.mockTimelockManager.address,
+            timelockManagerDeposit,
+            roles.user1.address
+          )
+      )
+        .to.emit(api3Pool, "DepositedByTimelockManager")
+        .withArgs(roles.user1.address, timelockManagerDeposit);
+      const user = await api3Pool.users(roles.user1.address);
+      expect(user.unstaked).to.equal(timelockManagerDeposit);
+    });
+  });
+  context("Caller is not the timelock manager", function () {
+    it("reverts", async function () {
+      const timelockManagerDeposit = ethers.utils.parseEther(
+        "20" + "000" + "000"
+      );
+      await expect(
+        api3Pool
+          .connect(roles.randomPerson)
+          .deposit(
+            roles.randomPerson.address,
+            timelockManagerDeposit,
+            roles.randomPerson.address
+          )
+      ).to.be.revertedWith("Caller not TimelockManager");
+    });
+  });
+});
+
 describe("depositWithVesting", function () {
   context("Caller is the timelock manager", function () {
     context("User does not have an active timelock", function () {

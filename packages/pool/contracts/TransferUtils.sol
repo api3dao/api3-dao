@@ -6,7 +6,7 @@ import "./interfaces/ITransferUtils.sol";
 
 /// @title Contract that implements token transfer functionality
 abstract contract TransferUtils is DelegationUtils, ITransferUtils {
-    /// @notice Called to deposit tokens for a user by using `transferFrom()`
+    /// @notice Called to deposit tokens for a user
     /// @param amount Amount to be deposited
     function deposit(uint256 amount)
         public
