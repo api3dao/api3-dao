@@ -153,29 +153,26 @@ describe("userReceivedDelegationAt", function () {
 
 describe("getDelegateAt", function () {
   it("gets delegate at", async function () {
-    await api3Voting.newVote();
-    const firstBlockNumber = await ethers.provider.getBlockNumber();
     await api3Pool
       .connect(roles.user1)
       .delegateVotingPower(roles.user2.address);
-    expect(await api3Pool.userDelegateAt(roles.user1.address, 0)).to.equal(
-      ethers.constants.AddressZero
-    );
+    const firstBlockNumber = await ethers.provider.getBlockNumber();
     // Fast forward time
     await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH.toNumber()]);
-    await api3Voting.newVote();
     await api3Pool
       .connect(roles.user1)
       .delegateVotingPower(roles.randomPerson.address);
     // Fast forward time
     await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH.toNumber()]);
-    await api3Voting.newVote();
     await api3Pool
       .connect(roles.user1)
       .delegateVotingPower(roles.user2.address);
     // Fast forward time
     await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH.toNumber()]);
     // Check delegates
+    expect(await api3Pool.userDelegateAt(roles.user1.address, 0)).to.equal(
+      ethers.constants.AddressZero
+    );
     expect(
       await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber)
     ).to.equal(roles.user2.address);
@@ -184,9 +181,6 @@ describe("getDelegateAt", function () {
     ).to.equal(roles.randomPerson.address);
     expect(
       await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber + 2)
-    ).to.equal(roles.randomPerson.address);
-    expect(
-      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber + 3)
     ).to.equal(roles.user2.address);
   });
 });

@@ -526,37 +526,4 @@ contract StateUtils is IStateUtils {
             }
         }
     }
-
-    /// @notice Called internally to update an address checkpoint array
-    /// @param addressCheckpointArray Address checkpoint array to be updated
-    /// @param _address Address to be updated with
-    function updateAddressCheckpointArray(
-        AddressCheckpoint[] storage addressCheckpointArray,
-        address _address
-        )
-        internal
-    {
-        if (addressCheckpointArray.length == 0)
-        {
-            addressCheckpointArray.push(AddressCheckpoint({
-                fromBlock: lastVoteSnapshotBlock,
-                _address: _address
-                }));
-        }
-        else
-        {
-            AddressCheckpoint storage lastElement = addressCheckpointArray[addressCheckpointArray.length - 1];
-            if (lastElement.fromBlock < lastVoteSnapshotBlock)
-            {
-                addressCheckpointArray.push(AddressCheckpoint({
-                    fromBlock: lastVoteSnapshotBlock,
-                    _address: _address
-                    }));
-            }
-            else
-            {
-                lastElement._address = _address;
-            }
-        }
-    }
 }
