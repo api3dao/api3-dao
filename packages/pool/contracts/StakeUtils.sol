@@ -40,7 +40,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         external
         override
     {
-        deposit(amount);
+        depositRegular(amount);
         stake(amount);
     }
 
@@ -126,6 +126,6 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         override
     {
         uint256 unstaked = unstake();
-        withdraw(destination, unstaked);
+        withdrawRegular(destination, unstaked);
     }
 }

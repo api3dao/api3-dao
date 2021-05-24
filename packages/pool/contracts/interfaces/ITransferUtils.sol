@@ -15,10 +15,10 @@ interface ITransferUtils is IDelegationUtils{
         uint256 amount
         );
 
-    function deposit(uint256 amount)
+    function depositRegular(uint256 amount)
         external;
 
-    function withdraw(
+    function withdrawRegular(
         address destination,
         uint256 amount
         )

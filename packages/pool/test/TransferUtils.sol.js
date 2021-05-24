@@ -46,7 +46,7 @@ describe("deposit", function () {
     await api3Token
       .connect(roles.user1)
       .approve(api3Pool.address, user1Deposit);
-    await expect(api3Pool.connect(roles.user1).deposit(user1Deposit))
+    await expect(api3Pool.connect(roles.user1).depositRegular(user1Deposit))
       .to.emit(api3Pool, "Deposited")
       .withArgs(roles.user1.address, user1Deposit);
     const user = await api3Pool.users(roles.user1.address);
@@ -92,7 +92,9 @@ describe("withdraw", function () {
         await api3Pool.callStatic.getUserLocked(roles.user1.address)
       );
       await expect(
-        api3Pool.connect(roles.user1).withdraw(roles.user1.address, unlocked)
+        api3Pool
+          .connect(roles.user1)
+          .withdrawRegular(roles.user1.address, unlocked)
       )
         .to.emit(api3Pool, "Withdrawn")
         .withArgs(roles.user1.address, roles.user1.address, unlocked);
@@ -115,7 +117,7 @@ describe("withdraw", function () {
       await expect(
         api3Pool
           .connect(roles.user1)
-          .withdraw(roles.user1.address, ethers.BigNumber.from(1))
+          .withdrawRegular(roles.user1.address, ethers.BigNumber.from(1))
       ).to.be.revertedWith("Invalid value");
     });
   });
@@ -124,7 +126,7 @@ describe("withdraw", function () {
       await expect(
         api3Pool
           .connect(roles.user1)
-          .withdraw(roles.user1.address, ethers.BigNumber.from(1))
+          .withdrawRegular(roles.user1.address, ethers.BigNumber.from(1))
       ).to.be.revertedWith("Invalid value");
     });
   });

@@ -48,7 +48,7 @@ describe("stake", function () {
         await api3Token
           .connect(roles.user1)
           .approve(api3Pool.address, user1Stake);
-        await api3Pool.connect(roles.user1).deposit(user1Stake);
+        await api3Pool.connect(roles.user1).depositRegular(user1Stake);
         // Stake the first half
         await api3Pool
           .connect(roles.user1)
@@ -104,7 +104,7 @@ describe("stake", function () {
         await api3Token
           .connect(roles.user1)
           .approve(api3Pool.address, user1Stake);
-        await api3Pool.connect(roles.user1).deposit(user1Stake);
+        await api3Pool.connect(roles.user1).depositRegular(user1Stake);
         await expect(api3Pool.connect(roles.user1).stake(user1Stake))
           .to.emit(api3Pool, "Staked")
           .withArgs(

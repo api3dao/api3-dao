@@ -6,9 +6,14 @@ import "./interfaces/ITransferUtils.sol";
 
 /// @title Contract that implements token transfer functionality
 abstract contract TransferUtils is DelegationUtils, ITransferUtils {
-    /// @notice Called to deposit tokens for a user
+    /// @notice Called by the user to deposit tokens
+    /// @dev The user should approve the pool to spend at least `amount` tokens
+    /// before calling this.
+    /// The method is named `depositRegular()` to prevent potential confusion
+    /// (for example it is difficult to differentiate overloaded functions in
+    /// JS). See `deposit()` for more context.
     /// @param amount Amount to be deposited
-    function deposit(uint256 amount)
+    function depositRegular(uint256 amount)
         public
         override
     {
@@ -21,12 +26,14 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
             );
     }
 
-    /// @notice Called to withdraw tokens
+    /// @notice Called by the user to withdraw tokens
     /// @dev The user should call `getUserLocked()` beforehand to ensure that
-    /// they have at least `amount` unlocked tokens to withdraw
+    /// they have at least `amount` unlocked tokens to withdraw.
+    /// The method is named `withdrawRegular()` to be consistent with the name
+    /// `depositRegular()`. See `depositRegular()` for more context.
     /// @param destination Token transfer destination
     /// @param amount Amount to be withdrawn
-    function withdraw(
+    function withdrawRegular(
         address destination,
         uint256 amount
         )
