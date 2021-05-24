@@ -25,11 +25,7 @@ interface IStakeUtils is ITransferUtils{
     function stake(uint256 amount)
         external;
 
-    function depositAndStake(
-        address source,
-        uint256 amount,
-        address userAddress
-        )
+    function depositAndStake(uint256 amount)
         external;
 
     function scheduleUnstake(uint256 amount)

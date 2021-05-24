@@ -87,10 +87,9 @@ describe("userSharesAt", function () {
     const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
     await api3Token
       .connect(roles.deployer)
-      .approve(api3Pool.address, user1Stake);
-    await api3Pool
-      .connect(roles.randomPerson)
-      .deposit(roles.deployer.address, user1Stake, roles.user1.address);
+      .transfer(roles.user1.address, user1Stake);
+    await api3Token.connect(roles.user1).approve(api3Pool.address, user1Stake);
+    await api3Pool.connect(roles.user1).deposit(user1Stake);
     await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
     await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
     await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
@@ -118,10 +117,9 @@ describe("userSharesAtWithBinarySearch", function () {
     const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
     await api3Token
       .connect(roles.deployer)
-      .approve(api3Pool.address, user1Stake);
-    await api3Pool
-      .connect(roles.randomPerson)
-      .deposit(roles.deployer.address, user1Stake, roles.user1.address);
+      .transfer(roles.user1.address, user1Stake);
+    await api3Token.connect(roles.user1).approve(api3Pool.address, user1Stake);
+    await api3Pool.connect(roles.user1).deposit(user1Stake);
     await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
     await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
     await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
@@ -175,11 +173,9 @@ describe("userReceivedDelegationAt", function () {
         await api3Token
           .connect(randomWallet)
           .approve(api3Pool.address, amount, { gasLimit: 500000 });
-        await api3Pool
-          .connect(randomWallet)
-          .depositAndStake(randomWallet.address, amount, randomWallet.address, {
-            gasLimit: 500000,
-          });
+        await api3Pool.connect(randomWallet).depositAndStake(amount, {
+          gasLimit: 500000,
+        });
         await api3Pool
           .connect(randomWallet)
           .delegateVotingPower(roles.user1.address, { gasLimit: 500000 });
@@ -226,12 +222,7 @@ describe("userReceivedDelegationAt", function () {
             .approve(api3Pool.address, amount, { gasLimit: 500000 });
           await api3Pool
             .connect(randomWallet)
-            .depositAndStake(
-              randomWallet.address,
-              amount,
-              randomWallet.address,
-              { gasLimit: 500000 }
-            );
+            .depositAndStake(amount, { gasLimit: 500000 });
           await api3Pool
             .connect(randomWallet)
             .delegateVotingPower(roles.user1.address, { gasLimit: 500000 });
@@ -321,11 +312,7 @@ describe("getUserLocked", function () {
             .approve(api3Pool.address, user1Stake);
           await api3Pool
             .connect(roles.user1)
-            .depositAndStake(
-              roles.user1.address,
-              user1Stake.div(2),
-              roles.user1.address
-            );
+            .depositAndStake(user1Stake.div(2));
           const genesisEpoch = await api3Pool.genesisEpoch();
           const userRewards = [];
           for (let i = 1; i < REWARD_VESTING_PERIOD.mul(2); i++) {
@@ -346,11 +333,7 @@ describe("getUserLocked", function () {
               // Stake some more
               await api3Pool
                 .connect(roles.user1)
-                .depositAndStake(
-                  roles.user1.address,
-                  user1Stake.div(1000),
-                  roles.user1.address
-                );
+                .depositAndStake(user1Stake.div(1000));
             } else {
               userRewards.push(ethers.BigNumber.from(0));
             }
@@ -399,13 +382,7 @@ describe("getUserLocked", function () {
         await api3Token
           .connect(roles.user1)
           .approve(api3Pool.address, user1Stake);
-        await api3Pool
-          .connect(roles.user1)
-          .depositAndStake(
-            roles.user1.address,
-            user1Stake.div(2),
-            roles.user1.address
-          );
+        await api3Pool.connect(roles.user1).depositAndStake(user1Stake.div(2));
         const genesisEpoch = await api3Pool.genesisEpoch();
         const userRewards = [];
         for (let i = 1; i < REWARD_VESTING_PERIOD.div(2); i++) {
@@ -426,11 +403,7 @@ describe("getUserLocked", function () {
             // Stake some more
             await api3Pool
               .connect(roles.user1)
-              .depositAndStake(
-                roles.user1.address,
-                user1Stake.div(1000),
-                roles.user1.address
-              );
+              .depositAndStake(user1Stake.div(1000));
           } else {
             userRewards.push(ethers.BigNumber.from(0));
           }

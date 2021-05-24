@@ -44,10 +44,11 @@ describe("stake", function () {
         const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
         await api3Token
           .connect(roles.deployer)
+          .transfer(roles.user1.address, user1Stake);
+        await api3Token
+          .connect(roles.user1)
           .approve(api3Pool.address, user1Stake);
-        await api3Pool
-          .connect(roles.randomPerson)
-          .deposit(roles.deployer.address, user1Stake, roles.user1.address);
+        await api3Pool.connect(roles.user1).deposit(user1Stake);
         // Stake the first half
         await api3Pool
           .connect(roles.user1)
@@ -99,10 +100,11 @@ describe("stake", function () {
         const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
         await api3Token
           .connect(roles.deployer)
+          .transfer(roles.user1.address, user1Stake);
+        await api3Token
+          .connect(roles.user1)
           .approve(api3Pool.address, user1Stake);
-        await api3Pool
-          .connect(roles.randomPerson)
-          .deposit(roles.deployer.address, user1Stake, roles.user1.address);
+        await api3Pool.connect(roles.user1).deposit(user1Stake);
         await expect(api3Pool.connect(roles.user1).stake(user1Stake))
           .to.emit(api3Pool, "Staked")
           .withArgs(
@@ -130,37 +132,19 @@ describe("stake", function () {
 });
 
 describe("depositAndStake", function () {
-  context("Caller is the beneficiary", function () {
-    it("deposits and stakes", async function () {
-      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
-      await api3Token
-        .connect(roles.deployer)
-        .transfer(roles.user1.address, user1Stake);
-      await api3Token
-        .connect(roles.user1)
-        .approve(api3Pool.address, user1Stake);
-      await expect(
-        api3Pool
-          .connect(roles.user1)
-          .depositAndStake(roles.user1.address, user1Stake, roles.user1.address)
-      )
-        .to.emit(api3Pool, "Staked")
-        .withArgs(
-          roles.user1.address,
-          user1Stake,
-          user1Stake.add(ethers.BigNumber.from(1))
-        );
-    });
-  });
-  context("Caller is not the beneficiary", function () {
-    it("reverts", async function () {
-      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
-      await expect(
-        api3Pool
-          .connect(roles.randomPerson)
-          .depositAndStake(roles.user1.address, user1Stake, roles.user1.address)
-      ).to.be.revertedWith("Unauthorized");
-    });
+  it("deposits and stakes", async function () {
+    const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+    await api3Token
+      .connect(roles.deployer)
+      .transfer(roles.user1.address, user1Stake);
+    await api3Token.connect(roles.user1).approve(api3Pool.address, user1Stake);
+    await expect(api3Pool.connect(roles.user1).depositAndStake(user1Stake))
+      .to.emit(api3Pool, "Staked")
+      .withArgs(
+        roles.user1.address,
+        user1Stake,
+        user1Stake.add(ethers.BigNumber.from(1))
+      );
   });
 });
 
@@ -175,9 +159,7 @@ describe("scheduleUnstake", function () {
       await api3Token
         .connect(roles.user1)
         .approve(api3Pool.address, user1Stake);
-      await api3Pool
-        .connect(roles.user1)
-        .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
+      await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
       const currentBlock = await ethers.provider.getBlock(
         await ethers.provider.getBlockNumber()
       );
@@ -217,13 +199,7 @@ describe("unstake", function () {
             await api3Token
               .connect(roles.user1)
               .approve(api3Pool.address, user1Stake);
-            await api3Pool
-              .connect(roles.user1)
-              .depositAndStake(
-                roles.user1.address,
-                user1Stake,
-                roles.user1.address
-              );
+            await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
             // Have the user delegate
             await api3Pool
               .connect(roles.user1)
@@ -281,13 +257,7 @@ describe("unstake", function () {
             await api3Token
               .connect(roles.user1)
               .approve(api3Pool.address, user1Stake);
-            await api3Pool
-              .connect(roles.user1)
-              .depositAndStake(
-                roles.user1.address,
-                user1Stake,
-                roles.user1.address
-              );
+            await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
             // Schedule unstake
             await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake);
             // Fast forward time to one epoch into the future
@@ -328,13 +298,7 @@ describe("unstake", function () {
           await api3Token
             .connect(roles.user1)
             .approve(api3Pool.address, user1Stake);
-          await api3Pool
-            .connect(roles.user1)
-            .depositAndStake(
-              roles.user1.address,
-              user1Stake,
-              roles.user1.address
-            );
+          await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
           // Schedule unstake
           await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake);
           // Set the DAO Agent
@@ -401,13 +365,7 @@ describe("unstake", function () {
         await api3Token
           .connect(roles.user1)
           .approve(api3Pool.address, user1Stake);
-        await api3Pool
-          .connect(roles.user1)
-          .depositAndStake(
-            roles.user1.address,
-            user1Stake,
-            roles.user1.address
-          );
+        await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
         // Schedule unstake
         await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake);
         // Fast forward time to one epoch into the future
@@ -439,13 +397,7 @@ describe("unstake", function () {
         await api3Token
           .connect(roles.user1)
           .approve(api3Pool.address, user1Stake);
-        await api3Pool
-          .connect(roles.user1)
-          .depositAndStake(
-            roles.user1.address,
-            user1Stake,
-            roles.user1.address
-          );
+        await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
         // Schedule unstake
         await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake);
         // Attempt to unstake
@@ -469,9 +421,7 @@ describe("unstakeAndWithdraw", function () {
       .connect(roles.deployer)
       .transfer(roles.user1.address, user1Stake);
     await api3Token.connect(roles.user1).approve(api3Pool.address, user1Stake);
-    await api3Pool
-      .connect(roles.user1)
-      .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
+    await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
     // Schedule unstake
     const user1Unstake = user1Stake.div(ethers.BigNumber.from(2));
     await api3Pool.connect(roles.user1).scheduleUnstake(user1Unstake);

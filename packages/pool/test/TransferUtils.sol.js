@@ -42,12 +42,11 @@ describe("deposit", function () {
     const user1Deposit = ethers.utils.parseEther("20" + "000" + "000");
     await api3Token
       .connect(roles.deployer)
+      .transfer(roles.user1.address, user1Deposit);
+    await api3Token
+      .connect(roles.user1)
       .approve(api3Pool.address, user1Deposit);
-    await expect(
-      api3Pool
-        .connect(roles.randomPerson)
-        .deposit(roles.deployer.address, user1Deposit, roles.user1.address)
-    )
+    await expect(api3Pool.connect(roles.user1).deposit(user1Deposit))
       .to.emit(api3Pool, "Deposited")
       .withArgs(roles.user1.address, user1Deposit);
     const user = await api3Pool.users(roles.user1.address);
@@ -70,9 +69,7 @@ describe("withdraw", function () {
       await api3Token
         .connect(roles.user1)
         .approve(api3Pool.address, user1Stake);
-      await api3Pool
-        .connect(roles.user1)
-        .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
+      await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
       // Fast forward 100 epochs to have some rewards paid out and unlocked
       const genesisEpoch = await api3Pool.genesisEpoch();
       for (let i = 0; i < 100; i++) {
@@ -114,9 +111,7 @@ describe("withdraw", function () {
       await api3Token
         .connect(roles.user1)
         .approve(api3Pool.address, user1Stake);
-      await api3Pool
-        .connect(roles.user1)
-        .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
+      await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
       await expect(
         api3Pool
           .connect(roles.user1)

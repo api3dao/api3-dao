@@ -24,15 +24,7 @@ contract MockApi3Staker {
         external
     {
         api3Token.approve(address(api3Pool), amount1 + amount2);
-        api3Pool.depositAndStake(
-          address(this),
-          amount1,
-          address(this)
-          );
-        api3Pool.depositAndStake(
-          address(this),
-          amount2,
-          address(this)
-          );
+        api3Pool.depositAndStake(amount1);
+        api3Pool.depositAndStake(amount2);
     }
 }

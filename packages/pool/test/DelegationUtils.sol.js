@@ -84,18 +84,10 @@ describe("delegateVotingPower", function () {
                       .approve(api3Pool.address, user2Stake);
                     await api3Pool
                       .connect(roles.user1)
-                      .depositAndStake(
-                        roles.user1.address,
-                        user1Stake,
-                        roles.user1.address
-                      );
+                      .depositAndStake(user1Stake);
                     await api3Pool
                       .connect(roles.user2)
-                      .depositAndStake(
-                        roles.user2.address,
-                        user2Stake,
-                        roles.user2.address
-                      );
+                      .depositAndStake(user2Stake);
                     // Have user 1 delegate to someone else first
                     await api3Pool
                       .connect(roles.user1)
@@ -156,12 +148,7 @@ describe("delegateVotingPower", function () {
                         });
                       await api3Pool
                         .connect(randomWallet)
-                        .depositAndStake(
-                          randomWallet.address,
-                          amount,
-                          randomWallet.address,
-                          { gasLimit: 500000 }
-                        );
+                        .depositAndStake(amount, { gasLimit: 500000 });
                       await api3Pool
                         .connect(randomWallet)
                         .delegateVotingPower(roles.user1.address, {
@@ -185,12 +172,7 @@ describe("delegateVotingPower", function () {
                       .approve(api3Pool.address, amount, { gasLimit: 500000 });
                     await api3Pool
                       .connect(randomWallet)
-                      .depositAndStake(
-                        randomWallet.address,
-                        amount,
-                        randomWallet.address,
-                        { gasLimit: 500000 }
-                      );
+                      .depositAndStake(amount, { gasLimit: 500000 });
                     await expect(
                       api3Pool
                         .connect(randomWallet)
@@ -223,20 +205,8 @@ describe("delegateVotingPower", function () {
                 await api3Token
                   .connect(roles.user2)
                   .approve(api3Pool.address, user2Stake);
-                await api3Pool
-                  .connect(roles.user1)
-                  .depositAndStake(
-                    roles.user1.address,
-                    user1Stake,
-                    roles.user1.address
-                  );
-                await api3Pool
-                  .connect(roles.user2)
-                  .depositAndStake(
-                    roles.user2.address,
-                    user2Stake,
-                    roles.user2.address
-                  );
+                await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+                await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
                 // Have user 1 delegate to user 2
                 await api3Pool
                   .connect(roles.user1)
@@ -335,20 +305,8 @@ describe("undelegateVotingPower", function () {
           await api3Token
             .connect(roles.user2)
             .approve(api3Pool.address, user2Stake);
-          await api3Pool
-            .connect(roles.user1)
-            .depositAndStake(
-              roles.user1.address,
-              user1Stake,
-              roles.user1.address
-            );
-          await api3Pool
-            .connect(roles.user2)
-            .depositAndStake(
-              roles.user2.address,
-              user2Stake,
-              roles.user2.address
-            );
+          await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+          await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
           // Have user 1 delegate to user 2 first
           await api3Pool
             .connect(roles.user1)

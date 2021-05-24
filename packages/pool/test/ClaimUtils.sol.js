@@ -60,13 +60,7 @@ describe("payOutClaim", function () {
         await api3Token
           .connect(roles.user1)
           .approve(api3Pool.address, user1Stake);
-        await api3Pool
-          .connect(roles.user1)
-          .depositAndStake(
-            roles.user1.address,
-            user1Stake,
-            roles.user1.address
-          );
+        await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
         // Pay out claim
         const claimAmount = ethers.utils.parseEther("5" + "000" + "000");
         await expect(

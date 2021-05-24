@@ -7,23 +7,16 @@ import "./interfaces/ITransferUtils.sol";
 /// @title Contract that implements token transfer functionality
 abstract contract TransferUtils is DelegationUtils, ITransferUtils {
     /// @notice Called to deposit tokens for a user by using `transferFrom()`
-    /// @dev This method is used by `TimelockManager.sol`
-    /// @param source Token transfer source
     /// @param amount Amount to be deposited
-    /// @param userAddress User that the tokens will be deposited for
-    function deposit(
-        address source,
-        uint256 amount,
-        address userAddress
-        )
+    function deposit(uint256 amount)
         public
         override
     {
         payReward();
-        users[userAddress].unstaked = users[userAddress].unstaked + amount;
-        api3Token.transferFrom(source, address(this), amount);
+        users[msg.sender].unstaked = users[msg.sender].unstaked + amount;
+        api3Token.transferFrom(msg.sender, address(this), amount);
         emit Deposited(
-            userAddress,
+            msg.sender,
             amount
             );
     }

@@ -35,21 +35,12 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     }
 
     /// @notice Convenience method to deposit and stake in a single transaction
-    /// @dev Due to the `deposit()` interface, `userAddress` can only be the
-    /// caller
-    /// @param source Token transfer source
     /// @param amount Amount to be deposited and staked
-    /// @param userAddress User that the tokens will be staked for
-    function depositAndStake(
-        address source,
-        uint256 amount,
-        address userAddress
-        )
+    function depositAndStake(uint256 amount)
         external
         override
     {
-        require(userAddress == msg.sender, ERROR_UNAUTHORIZED);
-        deposit(source, amount, userAddress);
+        deposit(amount);
         stake(amount);
     }
 
