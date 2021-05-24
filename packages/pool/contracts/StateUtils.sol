@@ -33,6 +33,14 @@ contract StateUtils is IStateUtils {
         uint256 unstakeAmount;
     }
 
+    struct LockedCalculationState {
+        uint256 initialIndEpoch;
+        uint256 initialUserSharesLength;
+        uint256 nextIndEpoch;
+        uint256 nextIndUserShares;
+        uint256 locked;
+    }
+
     /// @notice Length of the epoch in which the staking reward is paid out
     /// once. It is hardcoded as 7 days in seconds.
     /// @dev In addition to regulating reward payments, this variable is used
@@ -104,6 +112,7 @@ contract StateUtils is IStateUtils {
 
     /// @notice User records
     mapping(address => User) public users;
+    mapping(address => LockedCalculationState) internal userToLockedCalculationState;
 
     /// @notice Total number of tokens staked at the pool
     uint256 public totalStake;

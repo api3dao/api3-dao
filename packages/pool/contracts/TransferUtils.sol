@@ -41,8 +41,126 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         override
     {
         payReward();
-        User storage user = users[msg.sender];
         uint256 userLocked = getUserLocked(msg.sender);
+        withdraw(destination, amount, userLocked);
+    }
+
+    /// @notice Called to calculate the locked tokens of a user by making
+    /// multiple transactions
+    /// @dev If the user updates their `user.shares` by staking/unstaking too
+    /// frequently (50+/week) in the last `REWARD_VESTING_PERIOD`, the
+    /// `getUserLocked()` call gas cost may exceed the block gas limit. In that
+    /// case, the user may call this method multiple times to have their locked
+    /// tokens calculated.
+    /// @param userAddress User address
+    /// @param noEpochsPerIteration Number of epochs per iteration
+    /// @return finished Calculation has finished in this call
+    function calculateUserLockedIteratively(
+        address userAddress,
+        uint256 noEpochsPerIteration
+        )
+        external
+        override
+        returns (bool finished)
+    {
+        require(noEpochsPerIteration > 0, "Iteration window invalid");
+        payReward();
+        Checkpoint[] storage _userShares = users[userAddress].shares;
+        uint256 userSharesLength = _userShares.length;
+        require(userSharesLength != 0, "User never had shares");
+        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
+        LockedCalculationState storage state = userToLockedCalculationState[userAddress];
+        // Reset the state if the epoch has passed or the user has updated
+        // their staking status
+        if (
+            state.initialIndEpoch != currentEpoch
+                || state.initialUserSharesLength != userSharesLength
+            )
+        {
+            state.initialIndEpoch = currentEpoch;
+            state.initialUserSharesLength = userSharesLength;
+            state.nextIndEpoch = currentEpoch;
+            state.nextIndUserShares = userSharesLength - 1;
+            state.locked = 0;
+        }
+        uint256 indEpoch = state.nextIndEpoch;
+        uint256 indUserShares = state.nextIndUserShares;
+        uint256 locked = state.locked;
+        uint256 oldestLockedEpoch = currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
+            ? currentEpoch - REWARD_VESTING_PERIOD + 1
+            : genesisEpoch + 1;
+        for (; indEpoch >= oldestLockedEpoch; indEpoch--)
+        {
+            if (state.nextIndEpoch >= indEpoch + noEpochsPerIteration)
+            {
+                state.nextIndEpoch = indEpoch;
+                state.nextIndUserShares = indUserShares;
+                state.locked = locked;
+                emit CalculatingUserLocked(
+                    userAddress,
+                    indEpoch,
+                    oldestLockedEpoch
+                    );
+                return false;
+            }
+            Reward storage lockedReward = epochIndexToReward[indEpoch];
+            if (lockedReward.atBlock != 0)
+            {
+                for (; indUserShares >= 0; indUserShares--)
+                {
+                    Checkpoint storage userShare = _userShares[indUserShares];
+                    if (userShare.fromBlock <= lockedReward.atBlock)
+                    {
+                        locked += lockedReward.amount * userShare.value / lockedReward.totalSharesThen;
+                        break;
+                    }
+                }
+            }
+        }
+        state.nextIndEpoch = indEpoch;
+        state.nextIndUserShares = indUserShares;
+        state.locked = locked;
+        emit CalculatedUserLocked(userAddress, locked);
+        return true;
+    }
+
+    /// @notice Called by the user to withdraw after their locked token amount
+    /// is calculated with repeated calls to `calculateUserLockedIteratively()`
+    /// @dev Only use `calculateUserLockedIteratively()` and this method if
+    /// `withdrawRegular()` hits block gas limit
+    /// @param destination Token transfer destination
+    /// @param amount Amount to be withdrawn
+    function withdrawWithPrecalculatedLocked(
+        address destination,
+        uint256 amount
+        )
+        external
+        override
+    {
+        payReward();
+        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
+        LockedCalculationState storage state = userToLockedCalculationState[msg.sender];
+        require(
+            state.initialIndEpoch == currentEpoch 
+                && state.initialUserSharesLength == users[msg.sender].shares.length,
+            "Locked amount not precalculated"
+            );
+        withdraw(destination, amount, state.locked);
+    }
+
+    /// @notice Called internally after the amount of locked tokens of the user
+    /// is determined
+    /// @param destination Token transfer destination
+    /// @param amount Amount to be withdrawn
+    /// @param userLocked Amount of locked tokens of the user
+    function withdraw(
+        address destination,
+        uint256 amount,
+        uint256 userLocked
+        )
+        private
+    {
+        User storage user = users[msg.sender];
         // Check if the user has `amount` unlocked tokens to withdraw
         uint256 lockedAndVesting = userLocked + user.vesting;
         uint256 userTotalFunds = user.unstaked + userStake(msg.sender);
@@ -51,7 +169,8 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         require(user.unstaked >= amount, ERROR_VALUE);
         user.unstaked = user.unstaked - amount;
         api3Token.transfer(destination, amount);
-        emit Withdrawn(msg.sender,
+        emit Withdrawn(
+            msg.sender,
             destination,
             amount
             );
