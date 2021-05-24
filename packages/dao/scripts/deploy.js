@@ -6,11 +6,13 @@ const { getNetworkName } = require("@aragon/templates-shared/lib/network")(
 const deployTemplate = require("@aragon/templates-shared/scripts/deploy-template");
 const { getEventArgument } = require("@aragon/test-helpers/events");
 
-const TEMPLATE_NAME = "api3-template";
+// https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+const DAO_ID = `api3-template-${Math.random().toString(36).substring(7)}`;
 const CONTRACT_NAME = "Api3Template";
 const VOTE_NAME = "Api3Voting";
 
 const Api3Pool = artifacts.require("Api3Pool");
+const Api3Token = artifacts.require("Api3Token");
 const Convenience = artifacts.require("Convenience");
 
 const SUPPORT_1 = 50e16;
@@ -19,21 +21,50 @@ const ACCEPTANCE_1 = 50e16;
 const SUPPORT_2 = 50e16;
 const ACCEPTANCE_2 = 15e16;
 
+/**
+ * Returns the address of the deployer
+ */
+const getDeployer = async () => {
+  // eslint-disable-next-line no-undef
+  const [deployer] = await new Promise((resolve, reject) => {
+    web3.eth.getAccounts((err, accounts) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(accounts);
+    });
+  });
+
+  return deployer;
+};
+
+/**
+ * This script is used to deploy contracts DAO contracts for dashboard application.
+ * For more information about how to use this script see: https://github.com/api3dao/api3-dao/issues/217
+ *
+ * NOTE: When making changes to this script consult the changes with DAO dashboard developers
+ * as they (implicitely) depend on this script.
+ */
 module.exports = async (callback) => {
   try {
     const network = await getNetworkName();
-    console.log(network);
 
-    const api3Pool = await Api3Pool.new("0x00");
+    if (network === "mainnet") {
+      // TODO: We should use specific DAO_ID and do NOT create new token and pool instance
+      throw new Error("This script is not yet ready for mainnet deployment!");
+    }
+
+    const deployer = await getDeployer();
+
+    const api3Token = await Api3Token.new(deployer, deployer);
+    const api3Pool = await Api3Pool.new(api3Token.address);
     const convenience = await Convenience.new(api3Pool.address);
-    console.log(`Pool: ${api3Pool.address}`);
-    console.log(`Convenience: ${convenience.address}`);
     const template = await deployTemplate(
       web3,
       artifacts,
       network === "rinkeby" || network === "mainnet" || network === "ropsten"
-        ? TEMPLATE_NAME + ".open"
-        : TEMPLATE_NAME,
+        ? DAO_ID + ".open"
+        : DAO_ID,
       CONTRACT_NAME,
       [
         { name: "agent", contractName: "Agent" },
@@ -46,7 +77,7 @@ module.exports = async (callback) => {
       ]
     );
     const tx = await template.newInstance(
-      TEMPLATE_NAME,
+      DAO_ID,
       api3Pool.address,
       [SUPPORT_1, ACCEPTANCE_1],
       [SUPPORT_2, ACCEPTANCE_2]
@@ -63,36 +94,44 @@ module.exports = async (callback) => {
       "Api3DaoDeployed",
       "secondaryAgent"
     );
-    console.log("Dao: " + getEventArgument(tx, "SetupDao", "dao").toString());
-    console.log("Main Voting: " + mainVoting.toString());
-    console.log("Secondary Voting: " + secondaryVoting.toString());
-    console.log("Main Agent: " + mainAgent.toString());
-    console.log("Secondary Agent: " + secondaryAgent.toString());
     const set_tx = await api3Pool.setDaoApps(
       mainAgent,
       secondaryAgent,
       mainVoting,
       secondaryVoting
     );
-    console.log(
-      "Voting Primary Agent: " +
-        getEventArgument(set_tx, "SetDaoApps", "votingAppPrimary").toString()
-    );
-    console.log(
-      "Voting Secondary Agent: " +
-        getEventArgument(set_tx, "SetDaoApps", "votingAppSecondary").toString()
-    );
-    console.log(
-      "Dao Primary Agent: " +
-        getEventArgument(set_tx, "SetDaoApps", "agentAppPrimary").toString()
-    );
-    console.log(
-      "Dao Secondary Agent: " +
-        getEventArgument(set_tx, "SetDaoApps", "agentAppSecondary").toString()
-    );
+
+    const deployedAddresses = {
+      api3Token: api3Token.address,
+      api3Pool: api3Pool.address,
+      convenience: convenience.address,
+      votingAppPrimary: getEventArgument(
+        set_tx,
+        "SetDaoApps",
+        "votingAppPrimary"
+      ).toString(),
+      votingAppSecondary: getEventArgument(
+        set_tx,
+        "SetDaoApps",
+        "votingAppSecondary"
+      ).toString(),
+      agentAppPrimary: getEventArgument(
+        set_tx,
+        "SetDaoApps",
+        "agentAppPrimary"
+      ).toString(),
+      agentAppSecondary: getEventArgument(
+        set_tx,
+        "SetDaoApps",
+        "agentAppSecondary"
+      ).toString(),
+    };
+
+    console.log("\nDEPLOYED ADDRESSES:");
+    console.log(JSON.stringify(deployedAddresses, null, 2));
   } catch (error) {
     callback(error);
   }
+
   callback();
 };
-//

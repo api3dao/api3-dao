@@ -17,6 +17,18 @@
       "wsRPC": "wss://rinkeby.infura.io/ws/v3/4c9049736af84c46ad0972910df0476a",
       "rpc": "https://rinkeby.infura.io/v3/4c9049736af84c46ad0972910df0476a",
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D"
+    },
+    "ropsten": {
+      "apm": {
+        "ipfs": {
+          "gateway": "https://ipfs.eth.aragon.network/ipfs"
+        }
+      },
+      "network": "ropsten",
+      "appName": "api3voting.open.aragonpm.eth",
+      "wsRPC": "wss://ropsten.infura.io/ws/v3/4c9049736af84c46ad0972910df0476a",
+      "rpc": "https://ropsten.infura.io/v3/4c9049736af84c46ad0972910df0476a",
+      "registry": "0x6afe2cacee211ea9179992f89dc61ff25c61e923"
     }
   },
   "roles": [
