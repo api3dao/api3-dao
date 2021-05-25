@@ -240,8 +240,22 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         if (_block < checkpoints[0].fromBlock)
             return 0;
 
+        // Limit the search to the last 1024 elements if the value being
+        // searched falls within that window
+        uint min;
+        if (
+            checkpoints.length > 1024
+                && checkpoints[checkpoints.length - 1024].fromBlock < _block
+            )
+        {
+            min = checkpoints.length - 1024;
+        }
+        else
+        {
+            min = 0;
+        }
+
         // Binary search of the value in the array
-        uint min = 0;
         uint max = checkpoints.length - 1;
         while (max > min) {
             uint mid = (max + min + 1) / 2;
@@ -278,8 +292,22 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         if (_block < checkpoints[0].fromBlock)
             return address(0);
 
+        // Limit the search to the last 1024 elements if the value being
+        // searched falls within that window
+        uint min;
+        if (
+            checkpoints.length > 1024
+                && checkpoints[checkpoints.length - 1024].fromBlock < _block
+            )
+        {
+            min = checkpoints.length - 1024;
+        }
+        else
+        {
+            min = 0;
+        }
+
         // Binary search of the value in the array
-        uint min = 0;
         uint max = checkpoints.length - 1;
         while (max > min) {
             uint mid = (max + min + 1) / 2;

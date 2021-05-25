@@ -82,29 +82,60 @@ describe("totalSupplyOneBlockAgo", function () {
 });
 
 describe("userSharesAt", function () {
-  it("gets user shares at", async function () {
-    const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
-    await api3Token
-      .connect(roles.deployer)
-      .transfer(roles.user1.address, user1Stake);
-    await api3Token.connect(roles.user1).approve(api3Pool.address, user1Stake);
-    await api3Pool.connect(roles.user1).depositRegular(user1Stake);
-    await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
-    await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
-    await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
-    const currentBlockNumber = await ethers.provider.getBlockNumber();
-    expect(
-      await api3Pool.userSharesAt(roles.user1.address, currentBlockNumber)
-    ).to.equal(ethers.BigNumber.from(3));
-    expect(
-      await api3Pool.userSharesAt(roles.user1.address, currentBlockNumber - 1)
-    ).to.equal(ethers.BigNumber.from(2));
-    expect(
-      await api3Pool.userSharesAt(roles.user1.address, currentBlockNumber - 2)
-    ).to.equal(ethers.BigNumber.from(1));
-    expect(
-      await api3Pool.userSharesAt(roles.user1.address, currentBlockNumber - 3)
-    ).to.equal(ethers.BigNumber.from(0));
+  context("User shares checkpoint array is not longer than 1024", function () {
+    it("gets user shares at", async function () {
+      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+      await api3Token
+        .connect(roles.deployer)
+        .transfer(roles.user1.address, user1Stake);
+      await api3Token
+        .connect(roles.user1)
+        .approve(api3Pool.address, user1Stake);
+      await api3Pool.connect(roles.user1).depositRegular(user1Stake);
+      await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
+      await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
+      await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
+      const currentBlockNumber = await ethers.provider.getBlockNumber();
+      expect(
+        await api3Pool.userSharesAt(roles.user1.address, currentBlockNumber)
+      ).to.equal(ethers.BigNumber.from(3));
+      expect(
+        await api3Pool.userSharesAt(roles.user1.address, currentBlockNumber - 1)
+      ).to.equal(ethers.BigNumber.from(2));
+      expect(
+        await api3Pool.userSharesAt(roles.user1.address, currentBlockNumber - 2)
+      ).to.equal(ethers.BigNumber.from(1));
+      expect(
+        await api3Pool.userSharesAt(roles.user1.address, currentBlockNumber - 3)
+      ).to.equal(ethers.BigNumber.from(0));
+    });
+  });
+  context("User shares checkpoint array is longer than 1024", function () {
+    it("gets user shares at", async function () {
+      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+      await api3Token
+        .connect(roles.deployer)
+        .transfer(roles.user1.address, user1Stake);
+      await api3Token
+        .connect(roles.user1)
+        .approve(api3Pool.address, user1Stake);
+      await api3Pool.connect(roles.user1).depositRegular(user1Stake);
+      const initialBlockNumber = await ethers.provider.getBlockNumber();
+      for (let i = 0; i < 1030; i++) {
+        await api3Pool.connect(roles.user1).stake(ethers.BigNumber.from(1));
+      }
+      expect(await api3Pool.userSharesAt(roles.user1.address, 0)).to.equal(
+        ethers.BigNumber.from(0)
+      );
+      for (let i = 0; i < 10; i++) {
+        expect(
+          await api3Pool.userSharesAt(
+            roles.user1.address,
+            initialBlockNumber + i
+          )
+        ).to.equal(ethers.BigNumber.from(i));
+      }
+    });
   });
 });
 
@@ -152,36 +183,89 @@ describe("userReceivedDelegationAt", function () {
 });
 
 describe("getDelegateAt", function () {
-  it("gets delegate at", async function () {
-    await api3Pool
-      .connect(roles.user1)
-      .delegateVotingPower(roles.user2.address);
-    const firstBlockNumber = await ethers.provider.getBlockNumber();
-    // Fast forward time
-    await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH.toNumber()]);
-    await api3Pool
-      .connect(roles.user1)
-      .delegateVotingPower(roles.randomPerson.address);
-    // Fast forward time
-    await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH.toNumber()]);
-    await api3Pool
-      .connect(roles.user1)
-      .delegateVotingPower(roles.user2.address);
-    // Fast forward time
-    await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH.toNumber()]);
-    // Check delegates
-    expect(await api3Pool.userDelegateAt(roles.user1.address, 0)).to.equal(
-      ethers.constants.AddressZero
-    );
-    expect(
-      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber)
-    ).to.equal(roles.user2.address);
-    expect(
-      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber + 1)
-    ).to.equal(roles.randomPerson.address);
-    expect(
-      await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber + 2)
-    ).to.equal(roles.user2.address);
+  context(
+    "User delegates checkpoint array is not longer than 1024",
+    function () {
+      it("gets delegate at", async function () {
+        await api3Pool
+          .connect(roles.user1)
+          .delegateVotingPower(roles.user2.address);
+        const firstBlockNumber = await ethers.provider.getBlockNumber();
+        // Fast forward time
+        await ethers.provider.send("evm_increaseTime", [
+          EPOCH_LENGTH.toNumber(),
+        ]);
+        await api3Pool
+          .connect(roles.user1)
+          .delegateVotingPower(roles.randomPerson.address);
+        // Fast forward time
+        await ethers.provider.send("evm_increaseTime", [
+          EPOCH_LENGTH.toNumber(),
+        ]);
+        await api3Pool
+          .connect(roles.user1)
+          .delegateVotingPower(roles.user2.address);
+        // Fast forward time
+        await ethers.provider.send("evm_increaseTime", [
+          EPOCH_LENGTH.toNumber(),
+        ]);
+        // Check delegates
+        expect(await api3Pool.userDelegateAt(roles.user1.address, 0)).to.equal(
+          ethers.constants.AddressZero
+        );
+        expect(
+          await api3Pool.userDelegateAt(roles.user1.address, firstBlockNumber)
+        ).to.equal(roles.user2.address);
+        expect(
+          await api3Pool.userDelegateAt(
+            roles.user1.address,
+            firstBlockNumber + 1
+          )
+        ).to.equal(roles.randomPerson.address);
+        expect(
+          await api3Pool.userDelegateAt(
+            roles.user1.address,
+            firstBlockNumber + 2
+          )
+        ).to.equal(roles.user2.address);
+      });
+    }
+  );
+  context("User delegates checkpoint array is longer than 1024", function () {
+    it("gets delegate at", async function () {
+      const initialBlockNumber = await ethers.provider.getBlockNumber();
+      for (let i = 0; i < 1030 / 2; i++) {
+        await api3Pool
+          .connect(roles.user1)
+          .delegateVotingPower(roles.user2.address);
+        await ethers.provider.send("evm_increaseTime", [
+          EPOCH_LENGTH.toNumber(),
+        ]);
+        await api3Pool
+          .connect(roles.user1)
+          .delegateVotingPower(roles.randomPerson.address);
+        await ethers.provider.send("evm_increaseTime", [
+          EPOCH_LENGTH.toNumber(),
+        ]);
+      }
+      expect(await api3Pool.userDelegateAt(roles.user1.address, 0)).to.equal(
+        ethers.constants.AddressZero
+      );
+      for (let i = 0; i < 10 / 2; i++) {
+        expect(
+          await api3Pool.userDelegateAt(
+            roles.user1.address,
+            initialBlockNumber + i * 2 + 1
+          )
+        ).to.equal(roles.user2.address);
+        expect(
+          await api3Pool.userDelegateAt(
+            roles.user1.address,
+            initialBlockNumber + i * 2 + 2
+          )
+        ).to.equal(roles.randomPerson.address);
+      }
+    });
   });
 });
 
