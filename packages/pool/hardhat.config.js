@@ -15,6 +15,9 @@ module.exports = {
     outputFile: "gas_report",
     noColors: true,
   },
+  mocha: {
+    timeout: 60000
+  },
   networks: {
     mainnet: {
       url: credentials.mainnet.providerUrl || "",
