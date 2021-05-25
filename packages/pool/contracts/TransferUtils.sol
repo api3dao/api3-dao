@@ -70,15 +70,10 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         require(userSharesLength != 0, "User never had shares");
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
         LockedCalculationState storage state = userToLockedCalculationState[userAddress];
-        // Reset the state if the epoch has passed or the user has updated
-        // their staking status
-        if (
-            state.initialIndEpoch != currentEpoch
-                || state.initialUserSharesLength != userSharesLength
-            )
+        // Reset the state if there was no calculation made in this epoch
+        if (state.initialIndEpoch != currentEpoch)
         {
             state.initialIndEpoch = currentEpoch;
-            state.initialUserSharesLength = userSharesLength;
             state.nextIndEpoch = currentEpoch;
             state.nextIndUserShares = userSharesLength - 1;
             state.locked = 0;
@@ -140,11 +135,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         payReward();
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
         LockedCalculationState storage state = userToLockedCalculationState[msg.sender];
-        require(
-            state.initialIndEpoch == currentEpoch 
-                && state.initialUserSharesLength == users[msg.sender].shares.length,
-            "Locked amount not precalculated"
-            );
+        require(state.initialIndEpoch == currentEpoch, "Locked amount not precalculated");
         withdraw(destination, amount, state.locked);
     }
 
