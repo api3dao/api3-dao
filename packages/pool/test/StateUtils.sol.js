@@ -664,7 +664,7 @@ describe("setAprUpdateCoefficient", function () {
 describe("setProposalVotingPowerThreshold", function () {
   context("Caller is primary DAO Agent", function () {
     context(
-      "Proposal voting power threshold to be set is smaller than or equal to 10,000,000",
+      "Proposal voting power threshold to be set is between 100,000 (0.1%) and 10,000,000 (10%)",
       function () {
         it("sets proposal voting power threshold", async function () {
           await api3Pool
@@ -676,27 +676,47 @@ describe("setProposalVotingPowerThreshold", function () {
               roles.votingAppSecondary.address
             );
           const oldProposalVotingPowerThreshold = await api3Pool.proposalVotingPowerThreshold();
-          const newProposalVotingPowerThreshold = ethers.BigNumber.from(
-            "1" + "000" + "000"
+          const firstNewProposalVotingPowerThreshold = ethers.BigNumber.from(
+            "10" + "000" + "000"
           );
           await expect(
             api3Pool
               .connect(roles.agentAppPrimary)
-              .setProposalVotingPowerThreshold(newProposalVotingPowerThreshold)
+              .setProposalVotingPowerThreshold(
+                firstNewProposalVotingPowerThreshold
+              )
           )
             .to.emit(api3Pool, "SetProposalVotingPowerThreshold")
             .withArgs(
               oldProposalVotingPowerThreshold,
-              newProposalVotingPowerThreshold
+              firstNewProposalVotingPowerThreshold
             );
           expect(await api3Pool.proposalVotingPowerThreshold()).to.equal(
-            newProposalVotingPowerThreshold
+            firstNewProposalVotingPowerThreshold
+          );
+          const secondNewProposalVotingPowerThreshold = ethers.BigNumber.from(
+            "100" + "000"
+          );
+          await expect(
+            api3Pool
+              .connect(roles.agentAppPrimary)
+              .setProposalVotingPowerThreshold(
+                secondNewProposalVotingPowerThreshold
+              )
+          )
+            .to.emit(api3Pool, "SetProposalVotingPowerThreshold")
+            .withArgs(
+              firstNewProposalVotingPowerThreshold,
+              secondNewProposalVotingPowerThreshold
+            );
+          expect(await api3Pool.proposalVotingPowerThreshold()).to.equal(
+            secondNewProposalVotingPowerThreshold
           );
         });
       }
     );
     context(
-      "Proposal voting power threshold to be set is larger than 10,000,000",
+      "Proposal voting power threshold to be set is not between 100,000 (0.1%) and 10,000,000 (10%)",
       function () {
         it("reverts", async function () {
           await api3Pool
@@ -707,13 +727,25 @@ describe("setProposalVotingPowerThreshold", function () {
               roles.votingAppPrimary.address,
               roles.votingAppSecondary.address
             );
-          const newProposalVotingPowerThreshold = ethers.BigNumber.from(
-            "50" + "000" + "000"
-          );
+          const firstNewProposalVotingPowerThreshold = ethers.BigNumber.from(
+            "10" + "000" + "000"
+          ).add(ethers.BigNumber.from(1));
           await expect(
             api3Pool
               .connect(roles.agentAppPrimary)
-              .setProposalVotingPowerThreshold(newProposalVotingPowerThreshold)
+              .setProposalVotingPowerThreshold(
+                firstNewProposalVotingPowerThreshold
+              )
+          ).to.be.revertedWith("Invalid value");
+          const secondNewProposalVotingPowerThreshold = ethers.BigNumber.from(
+            "100" + "000"
+          ).sub(ethers.BigNumber.from(1));
+          await expect(
+            api3Pool
+              .connect(roles.agentAppPrimary)
+              .setProposalVotingPowerThreshold(
+                secondNewProposalVotingPowerThreshold
+              )
           ).to.be.revertedWith("Invalid value");
         });
       }

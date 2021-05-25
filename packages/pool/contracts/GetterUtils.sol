@@ -113,6 +113,15 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the voting power delegated to a user at a
     /// specific block
+    /// @dev Since the minimum `proposalVotingPowerThreshold` is 0.1%, if the
+    /// the voting apps are Api3Voting.sol (which should be the case) there can
+    /// be at most 100/0.1=1000 proposals made in the last `EPOCH_LENGTH`.
+    /// `user.delegatedTo` checkpoints get overwritten if a new proposal was
+    /// not made since the last update and `getValueAtWithBinarySearch()`
+    /// limits the search to the last 1024 elements if possible, which means
+    /// that while calling this method, if `_block` is within the current
+    /// `EPOCH_LENGTH` (i.e., if the call is for an open vote), the method will
+    /// have a deterministic upper boundary for the gas cost.
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block

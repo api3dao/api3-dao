@@ -379,7 +379,8 @@ contract StateUtils is IStateUtils {
         onlyAgentAppPrimary()
     {
         require(
-            _proposalVotingPowerThreshold <= 10 * ONE_PERCENT,
+            _proposalVotingPowerThreshold >= ONE_PERCENT / 10
+                && _proposalVotingPowerThreshold <= 10 * ONE_PERCENT,
             ERROR_VALUE);
         uint256 oldProposalVotingPowerThreshold = proposalVotingPowerThreshold;
         proposalVotingPowerThreshold = _proposalVotingPowerThreshold;
