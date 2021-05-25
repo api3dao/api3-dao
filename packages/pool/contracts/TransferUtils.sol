@@ -75,11 +75,9 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         {
             state.initialIndEpoch = currentEpoch;
             state.nextIndEpoch = currentEpoch;
-            state.nextIndUserShares = userSharesLength - 1;
             state.locked = 0;
         }
         uint256 indEpoch = state.nextIndEpoch;
-        uint256 indUserShares = state.nextIndUserShares;
         uint256 locked = state.locked;
         uint256 oldestLockedEpoch = currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
             ? currentEpoch - REWARD_VESTING_PERIOD + 1
@@ -89,7 +87,6 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
             if (state.nextIndEpoch >= indEpoch + noEpochsPerIteration)
             {
                 state.nextIndEpoch = indEpoch;
-                state.nextIndUserShares = indUserShares;
                 state.locked = locked;
                 emit CalculatingUserLocked(
                     userAddress,
@@ -101,19 +98,11 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
             Reward storage lockedReward = epochIndexToReward[indEpoch];
             if (lockedReward.atBlock != 0)
             {
-                for (; indUserShares >= 0; indUserShares--)
-                {
-                    Checkpoint storage userShare = _userShares[indUserShares];
-                    if (userShare.fromBlock <= lockedReward.atBlock)
-                    {
-                        locked += lockedReward.amount * userShare.value / lockedReward.totalSharesThen;
-                        break;
-                    }
-                }
+                uint256 userSharesThen = getValueAtWithBinarySearch(_userShares, lockedReward.atBlock);
+                locked = locked + (lockedReward.amount * userSharesThen / lockedReward.totalSharesThen);
             }
         }
         state.nextIndEpoch = indEpoch;
-        state.nextIndUserShares = indUserShares;
         state.locked = locked;
         emit CalculatedUserLocked(userAddress, locked);
         return true;
@@ -122,7 +111,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
     /// @notice Called by the user to withdraw after their locked token amount
     /// is calculated with repeated calls to `calculateUserLockedIteratively()`
     /// @dev Only use `calculateUserLockedIteratively()` and this method if
-    /// `withdrawRegular()` hits block gas limit
+    /// `withdrawRegular()` hits the block gas limit
     /// @param destination Token transfer destination
     /// @param amount Amount to be withdrawn
     function withdrawWithPrecalculatedLocked(

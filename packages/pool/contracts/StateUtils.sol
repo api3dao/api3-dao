@@ -36,7 +36,6 @@ contract StateUtils is IStateUtils {
     struct LockedCalculationState {
         uint256 initialIndEpoch;
         uint256 nextIndEpoch;
-        uint256 nextIndUserShares;
         uint256 locked;
     }
 

@@ -227,7 +227,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         Checkpoint[] storage checkpoints,
         uint256 _block
         )
-        private
+        internal
         view
         returns(uint256)
     {
