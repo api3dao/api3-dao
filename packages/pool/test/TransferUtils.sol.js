@@ -133,7 +133,7 @@ describe("withdrawRegular", function () {
   });
 });
 
-describe("calculateUserLockedIteratively", function () {
+describe("precalculateUserLocked", function () {
   context("Iteration window is not zero", function () {
     context("User has staked at some point", function () {
       context("Call does not finish the calculation", function () {
@@ -167,7 +167,7 @@ describe("calculateUserLockedIteratively", function () {
             await expect(
               api3Pool
                 .connect(roles.user1)
-                .calculateUserLockedIteratively(
+                .precalculateUserLocked(
                   roles.user1.address,
                   ethers.BigNumber.from(
                     noEpochsToCalculateLockedForAtEachIteration
@@ -193,7 +193,7 @@ describe("calculateUserLockedIteratively", function () {
           await expect(
             api3Pool
               .connect(roles.user1)
-              .calculateUserLockedIteratively(
+              .precalculateUserLocked(
                 roles.user1.address,
                 ethers.BigNumber.from(
                   noEpochsToCalculateLockedForAtEachIteration
@@ -210,7 +210,7 @@ describe("calculateUserLockedIteratively", function () {
         await expect(
           api3Pool
             .connect(roles.user1)
-            .calculateUserLockedIteratively(
+            .precalculateUserLocked(
               roles.user1.address,
               ethers.BigNumber.from(10)
             )
@@ -223,7 +223,7 @@ describe("calculateUserLockedIteratively", function () {
       await expect(
         api3Pool
           .connect(roles.user1)
-          .calculateUserLockedIteratively(
+          .precalculateUserLocked(
             roles.user1.address,
             ethers.BigNumber.from(0)
           )
@@ -232,7 +232,7 @@ describe("calculateUserLockedIteratively", function () {
   });
 });
 
-describe("withdrawWithPrecalculatedLocked", function () {
+describe("withdrawPrecalculated", function () {
   context("Locked amount is precalculated", function () {
     it("withdraws", async function () {
       // Authorize pool contract to mint tokens
@@ -268,14 +268,14 @@ describe("withdrawWithPrecalculatedLocked", function () {
       await api3Pool.connect(roles.user1).unstake();
       await api3Pool
         .connect(roles.user1)
-        .calculateUserLockedIteratively(
+        .precalculateUserLocked(
           roles.user1.address,
           ethers.BigNumber.from(100)
         );
       await expect(
         api3Pool
           .connect(roles.user1)
-          .withdrawWithPrecalculatedLocked(roles.user1.address, user1Stake)
+          .withdrawPrecalculated(roles.user1.address, user1Stake)
       )
         .to.emit(api3Pool, "Withdrawn")
         .withArgs(roles.user1.address, roles.user1.address, user1Stake);
@@ -286,7 +286,7 @@ describe("withdrawWithPrecalculatedLocked", function () {
       await expect(
         api3Pool
           .connect(roles.user1)
-          .withdrawWithPrecalculatedLocked(
+          .withdrawPrecalculated(
             roles.user1.address,
             ethers.BigNumber.from(1)
           )

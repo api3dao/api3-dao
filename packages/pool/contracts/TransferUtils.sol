@@ -55,7 +55,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
     /// @param userAddress User address
     /// @param noEpochsPerIteration Number of epochs per iteration
     /// @return finished Calculation has finished in this call
-    function calculateUserLockedIteratively(
+    function precalculateUserLocked(
         address userAddress,
         uint256 noEpochsPerIteration
         )
@@ -109,12 +109,12 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
     }
 
     /// @notice Called by the user to withdraw after their locked token amount
-    /// is calculated with repeated calls to `calculateUserLockedIteratively()`
-    /// @dev Only use `calculateUserLockedIteratively()` and this method if
+    /// is calculated with repeated calls to `precalculateUserLocked()`
+    /// @dev Only use `precalculateUserLocked()` and this method if
     /// `withdrawRegular()` hits the block gas limit
     /// @param destination Token transfer destination
     /// @param amount Amount to be withdrawn
-    function withdrawWithPrecalculatedLocked(
+    function withdrawPrecalculated(
         address destination,
         uint256 amount
         )

@@ -35,14 +35,14 @@ interface ITransferUtils is IDelegationUtils{
         )
         external;
 
-    function calculateUserLockedIteratively(
+    function precalculateUserLocked(
         address userAddress,
         uint256 noEpochsPerIteration
         )
         external
         returns (bool finished);
 
-    function withdrawWithPrecalculatedLocked(
+    function withdrawPrecalculated(
         address destination,
         uint256 amount
         )
