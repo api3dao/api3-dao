@@ -146,7 +146,7 @@ describe("userReceivedDelegationAt", function () {
     const noDelegations = 20;
     const delegationBlocks = [];
     for (let i = 0; i < noDelegations; i++) {
-      await api3Voting.newVote();
+      await api3Voting.newVote(roles.user1.address);
       delegationBlocks.push(await ethers.provider.getBlockNumber());
       const randomWallet = ethers.Wallet.createRandom().connect(
         ethers.provider
@@ -397,4 +397,77 @@ describe("getUserLocked", function () {
       });
     }
   );
+});
+
+describe("getUser", function () {
+  it("gets user", async function () {
+    const userDeposit = ethers.utils.parseEther("20" + "000" + "000");
+    const userVesting = ethers.utils.parseEther("5" + "000" + "000");
+    const userStaked = ethers.utils.parseEther("5" + "000" + "000");
+    const userUnstaked = userDeposit.add(userVesting).sub(userStaked);
+    const userScheduledToUnstake = ethers.utils.parseEther("1" + "000" + "000");
+    // Deposit and stake some tokens
+    await api3Token
+      .connect(roles.deployer)
+      .transfer(roles.user1.address, userDeposit);
+    await api3Token.connect(roles.user1).approve(api3Pool.address, userDeposit);
+    await api3Pool.connect(roles.user1).depositRegular(userDeposit);
+    await api3Pool.connect(roles.user1).stake(userStaked);
+    // Vest some tokens
+    await api3Token
+      .connect(roles.deployer)
+      .transfer(roles.mockTimelockManager.address, userVesting);
+    await api3Token
+      .connect(roles.mockTimelockManager)
+      .approve(api3Pool.address, userVesting);
+    await api3Pool
+      .connect(roles.mockTimelockManager)
+      .depositWithVesting(
+        roles.mockTimelockManager.address,
+        userVesting,
+        roles.user1.address,
+        1,
+        2
+      );
+    // Have user1 schedule an unstake
+    const unstakeScheduleBlock = await ethers.provider.getBlock(
+      await ethers.provider.getBlockNumber()
+    );
+    const unstakeScheduledFor = ethers.BigNumber.from(
+      unstakeScheduleBlock.timestamp
+    )
+      .add(EPOCH_LENGTH)
+      .add(ethers.BigNumber.from(1));
+    await api3Pool.connect(roles.user1).scheduleUnstake(userScheduledToUnstake);
+    // Have user1 make a proposal
+    const proposalBlock = await ethers.provider.getBlock(
+      await ethers.provider.getBlockNumber()
+    );
+    await ethers.provider.send("evm_setNextBlockTimestamp", [
+      proposalBlock.timestamp + 100,
+    ]);
+    await api3Voting.newVote(roles.user1.address);
+    // Have user1 delegate
+    const delegationBlock = await ethers.provider.getBlock(
+      await ethers.provider.getBlockNumber()
+    );
+    await ethers.provider.send("evm_setNextBlockTimestamp", [
+      delegationBlock.timestamp + 100,
+    ]);
+    await api3Pool
+      .connect(roles.user1)
+      .delegateVotingPower(roles.randomPerson.address);
+    // Check values
+    const user = await api3Pool.getUser(roles.user1.address);
+    expect(user.unstaked).to.equal(userUnstaked);
+    expect(user.vesting).to.equal(userVesting);
+    expect(user.lastDelegationUpdateTimestamp).to.equal(
+      delegationBlock.timestamp + 100
+    );
+    expect(user.unstakeScheduledFor).to.equal(unstakeScheduledFor);
+    expect(user.unstakeAmount).to.equal(userScheduledToUnstake);
+    expect(user.mostRecentProposalTimestamp).to.equal(
+      proposalBlock.timestamp + 100
+    );
+  });
 });

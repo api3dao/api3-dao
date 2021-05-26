@@ -16,7 +16,7 @@ module.exports = {
     noColors: true,
   },
   mocha: {
-    timeout: 60000
+    timeout: 60000,
   },
   networks: {
     mainnet: {

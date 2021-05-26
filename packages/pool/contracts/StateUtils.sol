@@ -31,6 +31,7 @@ contract StateUtils is IStateUtils {
         uint256 lastDelegationUpdateTimestamp;
         uint256 unstakeScheduledFor;
         uint256 unstakeAmount;
+        uint256 mostRecentProposalTimestamp;
     }
 
     struct LockedCalculationState {
@@ -434,6 +435,22 @@ contract StateUtils is IStateUtils {
         emit UpdatedLastVoteSnapshotBlock(
             msg.sender,
             snapshotBlock,
+            block.timestamp
+            );
+    }
+
+    /// @notice Called by a DAO Api3Voting app at proposal creation-time to
+    /// update the timestamp of the user's most recent proposal
+    /// @param userAddress User address
+    function updateMostRecentProposalTimestamp(address userAddress)
+        external
+        override
+        onlyVotingApp()
+    {
+        users[userAddress].mostRecentProposalTimestamp = block.timestamp;
+        emit UpdatedMostRecentProposalTimestamp(
+            msg.sender,
+            userAddress,
             block.timestamp
             );
     }
