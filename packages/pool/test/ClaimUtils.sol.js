@@ -41,7 +41,7 @@ describe("payOutClaim", function () {
       it("pays out claim", async function () {
         // Set the DAO Agent
         await api3Pool
-          .connect(roles.randomPerson)
+          .connect(roles.deployer)
           .setDaoApps(
             roles.agentAppPrimary.address,
             roles.agentAppSecondary.address,
@@ -82,7 +82,7 @@ describe("payOutClaim", function () {
       it("reverts", async function () {
         // Set the DAO Agent
         await api3Pool
-          .connect(roles.randomPerson)
+          .connect(roles.deployer)
           .setDaoApps(
             roles.agentAppPrimary.address,
             roles.agentAppSecondary.address,

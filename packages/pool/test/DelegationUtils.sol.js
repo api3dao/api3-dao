@@ -40,7 +40,7 @@ beforeEach(async () => {
   );
   api3Voting = await api3VotingFactory.deploy(api3Pool.address);
   await api3Pool
-    .connect(roles.randomPerson)
+    .connect(roles.deployer)
     .setDaoApps(
       roles.agentAppPrimary.address,
       roles.agentAppSecondary.address,

@@ -169,6 +169,8 @@ contract StateUtils is IStateUtils {
     /// parameters) at a URL
     mapping(address => mapping(address => mapping(uint256 => string))) public userAddressToVotingAppToProposalIndexToSpecsUrl;
 
+    address private deployer;
+
     // Snapshot block number of the last vote created at one of the DAO
     // Api3Voting apps
     uint256 private lastVoteSnapshotBlock;
@@ -210,6 +212,7 @@ contract StateUtils is IStateUtils {
         )
     {
         require(timelockManagerAddress != address(0), "Invalid TimelockManager");
+        deployer = msg.sender;
         api3Token = IApi3Token(api3TokenAddress);
         timelockManager = timelockManagerAddress;
         // Initialize the share price at 1
@@ -239,7 +242,8 @@ contract StateUtils is IStateUtils {
         override
     {
         require(
-            agentAppPrimary == address(0) || msg.sender == agentAppPrimary,
+            (agentAppPrimary == address(0) && msg.sender == deployer)
+                || msg.sender == agentAppPrimary,
             ERROR_UNAUTHORIZED
             );
         require(

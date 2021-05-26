@@ -200,7 +200,7 @@ describe("payReward", function () {
         it("sets APR to minimum and pays reward", async function () {
           // Set the stake target to zero
           await api3Pool
-            .connect(roles.randomPerson)
+            .connect(roles.deployer)
             .setDaoApps(
               roles.agentAppPrimary.address,
               roles.agentAppSecondary.address,

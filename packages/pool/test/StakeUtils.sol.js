@@ -303,7 +303,7 @@ describe("unstake", function () {
           await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake);
           // Set the DAO Agent
           await api3Pool
-            .connect(roles.randomPerson)
+            .connect(roles.deployer)
             .setDaoApps(
               roles.agentAppPrimary.address,
               roles.agentAppSecondary.address,
