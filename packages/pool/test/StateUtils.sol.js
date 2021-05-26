@@ -46,11 +46,6 @@ describe("constructor", function () {
       expect(await api3Pool.REWARD_VESTING_PERIOD()).to.equal(
         ethers.BigNumber.from(52)
       );
-      // Max interaction frequency is 20
-      expect(await api3Pool.MAX_INTERACTION_FREQUENCY()).to.equal(
-        ethers.BigNumber.from(20)
-      );
-
       // App addresses are not set
       expect(await api3Pool.agentAppPrimary()).to.equal(
         ethers.constants.AddressZero

@@ -15,10 +15,34 @@ interface ITransferUtils is IDelegationUtils{
         uint256 amount
         );
 
+    event CalculatingUserLocked(
+        address indexed user,
+        uint256 nextIndEpoch,
+        uint256 oldestLockedEpoch
+        );
+
+    event CalculatedUserLocked(
+        address indexed user,
+        uint256 amount
+        );
+
     function depositRegular(uint256 amount)
         external;
 
     function withdrawRegular(
+        address destination,
+        uint256 amount
+        )
+        external;
+
+    function precalculateUserLocked(
+        address userAddress,
+        uint256 noEpochsPerIteration
+        )
+        external
+        returns (bool finished);
+
+    function withdrawPrecalculated(
         address destination,
         uint256 amount
         )

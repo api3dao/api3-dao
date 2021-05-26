@@ -72,8 +72,6 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     }
 
     /// @notice Called to get the pool shares of a user at a specific block
-    /// @dev Starts from the most recent value in `user.shares` and searches
-    /// backwards one element at a time
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Pool shares of the user at the block
@@ -86,7 +84,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        return getValueAt(users[userAddress].shares, _block, 0);
+        return getValueAtWithBinarySearch(users[userAddress].shares, _block);
     }
 
     /// @notice Called to get the current pool shares of a user
@@ -99,49 +97,6 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         returns(uint256)
     {
         return userSharesAt(userAddress, block.number);
-    }
-
-    /// @notice Called to get the pool shares of a user at a specific block
-    /// using binary search
-    /// @dev From 
-    /// https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
-    /// This method is not used by the current iteration of the DAO/pool and is
-    /// implemented for future external contracts to use to get the user shares
-    /// at an arbitrary block.
-    /// @param userAddress User address
-    /// @param _block Block number for which the query is being made for
-    /// @return Pool shares of the user at the block
-    function userSharesAtWithBinarySearch(
-        address userAddress,
-        uint256 _block
-        )
-        external
-        view
-        override
-        returns(uint256)
-    {
-        Checkpoint[] storage checkpoints = users[userAddress].shares;
-        if (checkpoints.length == 0)
-            return 0;
-
-        // Shortcut for the actual value
-        if (_block >= checkpoints[checkpoints.length -1].fromBlock)
-            return checkpoints[checkpoints.length - 1].value;
-        if (_block < checkpoints[0].fromBlock)
-            return 0;
-
-        // Binary search of the value in the array
-        uint min = 0;
-        uint max = checkpoints.length - 1;
-        while (max > min) {
-            uint mid = (max + min + 1) / 2;
-            if (checkpoints[mid].fromBlock <= _block) {
-                min = mid;
-            } else {
-                max = mid - 1;
-            }
-        }
-        return checkpoints[min].value;
     }
 
     /// @notice Called to get the current staked tokens of the user
@@ -158,11 +113,6 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the voting power delegated to a user at a
     /// specific block
-    /// @dev Starts from the most recent value in `user.delegatedTo` and
-    /// searches backwards one element at a time. If `_block` is within
-    /// `EPOCH_LENGTH`, this call is guaranteed to find the value among
-    /// the last `MAX_INTERACTION_FREQUENCY` elements, which is why it only
-    /// searches through them. 
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block
@@ -175,11 +125,10 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        Checkpoint[] storage delegatedTo = users[userAddress].delegatedTo;
-        uint256 minimumCheckpointIndex = delegatedTo.length > MAX_INTERACTION_FREQUENCY
-            ? delegatedTo.length - MAX_INTERACTION_FREQUENCY
-            : 0;
-        return getValueAt(delegatedTo, _block, minimumCheckpointIndex);
+        return getValueAtWithBinarySearch(
+            users[userAddress].delegatedTo,
+            _block
+            );
     }
 
     /// @notice Called to get the current voting power delegated to a user
@@ -195,11 +144,6 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     }
 
     /// @notice Called to get the delegate of the user at a specific block
-    /// @dev Starts from the most recent value in `user.delegates` and
-    /// searches backwards one element at a time. If `_block` is within
-    /// `EPOCH_LENGTH`, this call is guaranteed to find the value among
-    /// the last 2 elements because a user cannot update delegate more
-    /// frequently than once an `EPOCH_LENGTH`.
     /// @param userAddress User address
     /// @param _block Block number
     /// @return Delegate of the user at the specific block
@@ -212,15 +156,10 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(address)
     {
-        AddressCheckpoint[] storage delegates = users[userAddress].delegates;
-        for (uint256 i = delegates.length; i > 0; i--)
-        {
-            if (delegates[i - 1].fromBlock <= _block)
-            {
-                return delegates[i - 1]._address;
-            }
-        }
-        return address(0);
+        return getAddressAtWithBinarySearch(
+            users[userAddress].delegates,
+            _block
+            );
     }
 
     /// @notice Called to get the current delegate of the user
@@ -278,30 +217,78 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     }
 
     /// @notice Called to get the value of a checkpoint array at a specific
-    /// block
+    /// block using binary search
+    /// @dev Adapted from 
+    /// https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
     /// @param checkpoints Checkpoints array
     /// @param _block Block number for which the query is being made
     /// @return Value of the checkpoint array at the block
-    function getValueAt(
+    function getValueAtWithBinarySearch(
         Checkpoint[] storage checkpoints,
-        uint256 _block,
-        uint256 minimumCheckpointIndex
+        uint256 _block
         )
         internal
         view
         returns(uint256)
     {
-        uint256 i = checkpoints.length;
-        for (; i > minimumCheckpointIndex; i--)
-        {
-            if (checkpoints[i - 1].fromBlock <= _block)
-            {
-                return checkpoints[i - 1].value;
+        if (checkpoints.length == 0)
+            return 0;
+
+        // Shortcut for the actual value
+        if (_block >= checkpoints[checkpoints.length -1].fromBlock)
+            return checkpoints[checkpoints.length - 1].value;
+        if (_block < checkpoints[0].fromBlock)
+            return 0;
+
+        // Binary search of the value in the array
+        uint min = 0;
+        uint max = checkpoints.length - 1;
+        while (max > min) {
+            uint mid = (max + min + 1) / 2;
+            if (checkpoints[mid].fromBlock <= _block) {
+                min = mid;
+            } else {
+                max = mid - 1;
             }
         }
-        // Revert if the value being searched for comes before
-        // `minimumCheckpointIndex`
-        require(i == 0, ERROR_VALUE);
-        return 0;
+        return checkpoints[min].value;
+    }
+
+    /// @notice Called to get the value of an address-checkpoint array at a
+    /// specific block using binary search
+    /// @dev Adapted from 
+    /// https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
+    /// @param checkpoints Address-checkpoint array
+    /// @param _block Block number for which the query is being made
+    /// @return Value of the address-checkpoint array at the block
+    function getAddressAtWithBinarySearch(
+        AddressCheckpoint[] storage checkpoints,
+        uint256 _block
+        )
+        private
+        view
+        returns(address)
+    {
+        if (checkpoints.length == 0)
+            return address(0);
+
+        // Shortcut for the actual value
+        if (_block >= checkpoints[checkpoints.length -1].fromBlock)
+            return checkpoints[checkpoints.length - 1]._address;
+        if (_block < checkpoints[0].fromBlock)
+            return address(0);
+
+        // Binary search of the value in the array
+        uint min = 0;
+        uint max = checkpoints.length - 1;
+        while (max > min) {
+            uint mid = (max + min + 1) / 2;
+            if (checkpoints[mid].fromBlock <= _block) {
+                min = mid;
+            } else {
+                max = mid - 1;
+            }
+        }
+        return checkpoints[min]._address;
     }
 }

@@ -33,6 +33,12 @@ contract StateUtils is IStateUtils {
         uint256 unstakeAmount;
     }
 
+    struct LockedCalculationState {
+        uint256 initialIndEpoch;
+        uint256 nextIndEpoch;
+        uint256 locked;
+    }
+
     /// @notice Length of the epoch in which the staking reward is paid out
     /// once. It is hardcoded as 7 days in seconds.
     /// @dev In addition to regulating reward payments, this variable is used
@@ -43,29 +49,15 @@ contract StateUtils is IStateUtils {
     /// before `EPOCH_LENGTH` has passed
     /// (3) After a user updates their delegation status, they have to wait
     /// `EPOCH_LENGTH` before updating it again
-    /// (4) A user's `delegatedTo` or `delegates` checkpoint arrays can be
-    /// extended up to `MAX_INTERACTION_FREQUENCY` in an `EPOCH_LENGTH`
     uint256 public constant EPOCH_LENGTH = 7 * 24 * 60 * 60;
 
     /// @notice Number of epochs before the staking rewards get unlocked.
     /// Hardcoded as 52 epochs, which corresponds to a year.
     uint256 public constant REWARD_VESTING_PERIOD = 52;
 
-    /// @notice Maximum number of additions interactions can make to a specific
-    /// user's `delegatedTo` and `delegates` in an EPOCH_LENGTH before it
-    /// starts to revert
-    /// @dev Note that interactions overwrite checkpoints rather than adding a
-    /// new element to the arrays unless a new proposal is made between them.
-    /// This means that at least `MAX_INTERACTION_FREQUENCY` proposals need
-    /// to be made for this mechanism to prevent further interactions, which is
-    /// not likely to happen in practice due to the proposal spam protection
-    /// mechanisms.
-    uint256 public constant MAX_INTERACTION_FREQUENCY = 20;
-
     string internal constant ERROR_VALUE = "Invalid value";
     string internal constant ERROR_ADDRESS = "Invalid address";
     string internal constant ERROR_UNAUTHORIZED = "Unauthorized";
-    string internal constant ERROR_FREQUENCY = "Try again a week later";
     string internal constant ERROR_DELEGATE = "Cannot delegate to the same address";
 
     // All percentage values are represented by multiplying by 1e6
@@ -118,6 +110,7 @@ contract StateUtils is IStateUtils {
 
     /// @notice User records
     mapping(address => User) public users;
+    mapping(address => LockedCalculationState) internal userToLockedCalculationState;
 
     /// @notice Total number of tokens staked at the pool
     uint256 public totalStake;
@@ -178,7 +171,6 @@ contract StateUtils is IStateUtils {
     // Snapshot block number of the last vote created at one of the DAO
     // Api3Voting apps
     uint256 private lastVoteSnapshotBlock;
-    mapping(uint256 => uint256) private snapshotBlockToTimestamp;
 
     // We keep checkpoints for two most recent blocks at which totalShares has
     // been updated. Note that the indices do not indicate chronological
@@ -432,7 +424,6 @@ contract StateUtils is IStateUtils {
             ERROR_UNAUTHORIZED
             );
         lastVoteSnapshotBlock = snapshotBlock;
-        snapshotBlockToTimestamp[snapshotBlock] = block.timestamp;
         emit UpdatedLastVoteSnapshotBlock(
             msg.sender,
             snapshotBlock,
@@ -528,14 +519,6 @@ contract StateUtils is IStateUtils {
         }
         else
         {
-            if (checkpointArray.length + 1 >= MAX_INTERACTION_FREQUENCY)
-            {
-                uint256 interactionTimestampMaxInteractionFrequencyAgo = snapshotBlockToTimestamp[checkpointArray[checkpointArray.length + 1 - MAX_INTERACTION_FREQUENCY].fromBlock];
-                require(
-                    block.timestamp - interactionTimestampMaxInteractionFrequencyAgo > EPOCH_LENGTH,
-                    ERROR_FREQUENCY
-                    );
-            }
             Checkpoint storage lastElement = checkpointArray[checkpointArray.length - 1];
             if (lastElement.fromBlock < lastVoteSnapshotBlock)
             {
@@ -547,39 +530,6 @@ contract StateUtils is IStateUtils {
             else
             {
                 lastElement.value = value;
-            }
-        }
-    }
-
-    /// @notice Called internally to update an address checkpoint array
-    /// @param addressCheckpointArray Address checkpoint array to be updated
-    /// @param _address Address to be updated with
-    function updateAddressCheckpointArray(
-        AddressCheckpoint[] storage addressCheckpointArray,
-        address _address
-        )
-        internal
-    {
-        if (addressCheckpointArray.length == 0)
-        {
-            addressCheckpointArray.push(AddressCheckpoint({
-                fromBlock: lastVoteSnapshotBlock,
-                _address: _address
-                }));
-        }
-        else
-        {
-            AddressCheckpoint storage lastElement = addressCheckpointArray[addressCheckpointArray.length - 1];
-            if (lastElement.fromBlock < lastVoteSnapshotBlock)
-            {
-                addressCheckpointArray.push(AddressCheckpoint({
-                    fromBlock: lastVoteSnapshotBlock,
-                    _address: _address
-                    }));
-            }
-            else
-            {
-                lastElement._address = _address;
             }
         }
     }

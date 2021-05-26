@@ -49,10 +49,10 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             userReceivedDelegation(delegate) + userShares
             );
         // Record the new delegate for the user
-        updateAddressCheckpointArray(
-            user.delegates,
-            delegate
-            );
+        user.delegates.push(AddressCheckpoint({
+            fromBlock: block.number,
+            _address: delegate
+            }));
         emit Delegated(
             msg.sender,
             delegate
@@ -79,10 +79,10 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             delegate.delegatedTo,
             userReceivedDelegation(userDelegate) - userShares
             );
-        updateAddressCheckpointArray(
-            user.delegates,
-            address(0)
-            );
+        user.delegates.push(AddressCheckpoint({
+            fromBlock: block.number,
+            _address: address(0)
+            }));
         user.lastDelegationUpdateTimestamp = block.timestamp;
         emit Undelegated(
             msg.sender,
