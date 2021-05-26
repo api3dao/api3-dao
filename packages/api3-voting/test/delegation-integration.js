@@ -17,7 +17,7 @@ const VOTER_STATE = ['ABSENT', 'YEA', 'NAY'].reduce((state, key, index) => {
 
 
 contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, nonVoter]) => {
-    let pool, votingBase, voting, token, executionTarget;
+    let pool, votingBase, voting, token, executionTarget, voteId;
     let CREATE_VOTES_ROLE, MODIFY_SUPPORT_ROLE, MODIFY_QUORUM_ROLE, ERROR_ADDRESS, ERROR_ANAUTHORISED;
 
     const NOW = 1;
@@ -86,11 +86,12 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             const neededSupport = pct16(60);
             const minimumAcceptanceQuorum = pct16(20);
             await voting.initialize(pool.address, neededSupport, minimumAcceptanceQuorum);
-            const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
+            voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
             await voting.vote(voteId, true, false, { from: voter2 });
             const result = await voting.getVote(voteId);
             expect(BigInt(result.yea)).to.equal(BigInt(balance1) + BigInt(balance2) + BigInt(balance3));
         });
+
 
         it('delegate after already delegated', async () => {
             await expectRevert(
@@ -110,18 +111,28 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             const latest = Number(await time.latest());
             await time.increaseTo(latest+Number(time.duration.weeks(1)));
             await pool.undelegateVotingPower({from: voter1});
-            const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
+            voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
             await voting.vote(voteId, true, false, { from: voter2 });
             const result = await voting.getVote(voteId);
             expect(BigInt(result.yea)).to.equal(BigInt(balance2) + BigInt(balance3));
         });
 
-        it('delegate delegated', async () => {
+        it('cannot propose vote after undelegating', async () => {
+          await expectRevert(voting.newVote(encodeCallScript([]), '', { from: voter1 }),
+            "API3_HIT_UNDELEGATION_COOLDOWN")
+        });
+
+      it('cannot vote after undelegating', async () => {
+        await expectRevert(voting.vote(voteId, true, false, { from: voter1 }),
+          "API3_HIT_UNDELEGATION_COOLDOWN")
+      });
+
+      it('delegate delegated', async () => {
             let latest = Number(await time.latest());
             await time.increaseTo(latest+Number(time.duration.weeks(2)));
             await pool.delegateVotingPower(voter2, {from: voter1});
             await pool.delegateVotingPower(voter3, {from: voter2});
-            const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
+            voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
             const result = await voting.getVote(voteId);
             expect(BigInt(result.yea)).to.equal(BigInt(balance2) + BigInt(balance3));
         });
