@@ -75,6 +75,9 @@ contract StateUtils is IStateUtils {
     /// @notice API3 token contract
     IApi3Token public api3Token;
 
+    /// @notice TimelockManager contract
+    address public timelockManager;
+
     /// @notice Address of the primary Agent app of the API3 DAO
     /// @dev Primary Agent can be operated through the primary Api3Voting app.
     /// The primary Api3Voting app requires a higher quorum, and the primary
@@ -199,9 +202,14 @@ contract StateUtils is IStateUtils {
     }
 
     /// @param api3TokenAddress API3 token contract address
-    constructor(address api3TokenAddress)
+    constructor(
+        address api3TokenAddress,
+        address timelockManagerAddress
+        )
     {
+        require(timelockManagerAddress != address(0), "Invalid TimelockManager");
         api3Token = IApi3Token(api3TokenAddress);
+        timelockManager = timelockManagerAddress;
         // Initialize the share price at 1
         updateTotalShares(1);
         totalStake = 1;

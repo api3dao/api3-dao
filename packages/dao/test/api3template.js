@@ -15,6 +15,8 @@ const Api3Template = artifacts.require('Api3Template');
 const Api3Pool = artifacts.require('Api3Pool');
 const Agent = artifacts.require('Agent');
 
+const MOCK_TIMELOCKMANAGER_ADDRESS = "0x0000000000000000000000000000000000000001";
+
 contract('Api3Template', ([_, deployer, tokenAddress, authorized]) => { // eslint-disable-line no-unused-vars
   let api3Template, dao, acl, receipt1, api3Pool;
 
@@ -32,7 +34,7 @@ contract('Api3Template', ([_, deployer, tokenAddress, authorized]) => { // eslin
   });
 
   before('create bare entity', async () => {
-    api3Pool = await Api3Pool.new(tokenAddress);
+    api3Pool = await Api3Pool.new(tokenAddress, MOCK_TIMELOCKMANAGER_ADDRESS);
     receipt1 = await api3Template.newInstance('api3template', (api3Pool.address), [SUPPORT_1, ACCEPTANCE_1, VOTING_DURATION_1], [SUPPORT_2, ACCEPTANCE_2, VOTING_DURATION_2], { from: deployer });
 
     dao = Kernel.at(getEventArgument(receipt1, 'DeployDao', 'dao'));

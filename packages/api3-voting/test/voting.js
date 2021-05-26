@@ -15,6 +15,7 @@ const VOTER_STATE = ['ABSENT', 'YEA', 'NAY'].reduce((state, key, index) => {
   state[key] = index;
   return state;
 }, {});
+const MOCK_TIMELOCKMANAGER_ADDRESS = "0x0000000000000000000000000000000000000001";
 
 
 contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder51, nonHolder]) => {
@@ -47,7 +48,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
 
     beforeEach(async () => {
       token = await Api3TokenMock.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true); // empty parameters minime
-      api3Pool = await Api3Pool.new(token.address);
+      api3Pool = await Api3Pool.new(token.address, MOCK_TIMELOCKMANAGER_ADDRESS);
       await api3Pool.setDaoApps(voting.address, voting.address, voting.address, voting.address);
 
       await voting.initialize(api3Pool.address, neededSupport, minimumAcceptanceQuorum, votingDuration);
@@ -106,7 +107,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
 
       beforeEach(async () => {
         token = await Api3TokenMock.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', decimals, 'n', true); // empty parameters minime
-        api3Pool = await Api3Pool.new(token.address);
+        api3Pool = await Api3Pool.new(token.address, MOCK_TIMELOCKMANAGER_ADDRESS);
         await api3Pool.setDaoApps(voting.address, voting.address, voting.address, voting.address);
 
         await token.generateTokens(holder20, bigExp(20, decimals));
@@ -117,15 +118,15 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
 
         // holder 51 deposit and stake
         await token.approve(api3Pool.address, bigExp(51, decimals), {from:holder51});
-        await api3Pool.depositAndStake(holder51, bigExp(51, decimals), holder51, {from:holder51});
+        await api3Pool.depositAndStake(bigExp(51, decimals), {from:holder51});
 
         // holder 29
         await token.approve(api3Pool.address, bigExp(29, decimals), {from:holder29});
-        await api3Pool.depositAndStake(holder29, bigExp(29, decimals), holder29, {from:holder29});
+        await api3Pool.depositAndStake(bigExp(29, decimals), {from:holder29});
 
         // holder 20
         await token.approve(api3Pool.address, bigExp(20, decimals), {from:holder20});
-        await api3Pool.depositAndStake(holder20, bigExp(20, decimals), holder20, {from:holder20});
+        await api3Pool.depositAndStake(bigExp(20, decimals), {from:holder20});
 
         executionTarget = await ExecutionTarget.new()
       });

@@ -14,6 +14,7 @@ beforeEach(async () => {
     claimsManager: accounts[5],
     user1: accounts[6],
     user2: accounts[7],
+    mockTimelockManager: accounts[8],
     randomPerson: accounts[9],
   };
   const api3TokenFactory = await ethers.getContractFactory(
@@ -28,7 +29,10 @@ beforeEach(async () => {
     "Api3Pool",
     roles.deployer
   );
-  api3Pool = await api3PoolFactory.deploy(api3Token.address);
+  api3Pool = await api3PoolFactory.deploy(
+    api3Token.address,
+    roles.mockTimelockManager.address
+  );
 });
 
 describe("payOutClaim", function () {
@@ -56,13 +60,7 @@ describe("payOutClaim", function () {
         await api3Token
           .connect(roles.user1)
           .approve(api3Pool.address, user1Stake);
-        await api3Pool
-          .connect(roles.user1)
-          .depositAndStake(
-            roles.user1.address,
-            user1Stake,
-            roles.user1.address
-          );
+        await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
         // Pay out claim
         const claimAmount = ethers.utils.parseEther("5" + "000" + "000");
         await expect(

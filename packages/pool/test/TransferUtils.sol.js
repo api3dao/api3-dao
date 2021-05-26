@@ -15,6 +15,7 @@ beforeEach(async () => {
     claimsManager: accounts[5],
     user1: accounts[6],
     user2: accounts[7],
+    mockTimelockManager: accounts[8],
     randomPerson: accounts[9],
   };
   const api3TokenFactory = await ethers.getContractFactory(
@@ -29,7 +30,10 @@ beforeEach(async () => {
     "Api3Pool",
     roles.deployer
   );
-  api3Pool = await api3PoolFactory.deploy(api3Token.address);
+  api3Pool = await api3PoolFactory.deploy(
+    api3Token.address,
+    roles.mockTimelockManager.address
+  );
   EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
 });
 
@@ -38,12 +42,11 @@ describe("deposit", function () {
     const user1Deposit = ethers.utils.parseEther("20" + "000" + "000");
     await api3Token
       .connect(roles.deployer)
+      .transfer(roles.user1.address, user1Deposit);
+    await api3Token
+      .connect(roles.user1)
       .approve(api3Pool.address, user1Deposit);
-    await expect(
-      api3Pool
-        .connect(roles.randomPerson)
-        .deposit(roles.deployer.address, user1Deposit, roles.user1.address)
-    )
+    await expect(api3Pool.connect(roles.user1).depositRegular(user1Deposit))
       .to.emit(api3Pool, "Deposited")
       .withArgs(roles.user1.address, user1Deposit);
     const user = await api3Pool.users(roles.user1.address);
@@ -66,9 +69,7 @@ describe("withdraw", function () {
       await api3Token
         .connect(roles.user1)
         .approve(api3Pool.address, user1Stake);
-      await api3Pool
-        .connect(roles.user1)
-        .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
+      await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
       // Fast forward 100 epochs to have some rewards paid out and unlocked
       const genesisEpoch = await api3Pool.genesisEpoch();
       for (let i = 0; i < 100; i++) {
@@ -91,7 +92,9 @@ describe("withdraw", function () {
         await api3Pool.callStatic.getUserLocked(roles.user1.address)
       );
       await expect(
-        api3Pool.connect(roles.user1).withdraw(roles.user1.address, unlocked)
+        api3Pool
+          .connect(roles.user1)
+          .withdrawRegular(roles.user1.address, unlocked)
       )
         .to.emit(api3Pool, "Withdrawn")
         .withArgs(roles.user1.address, roles.user1.address, unlocked);
@@ -110,13 +113,11 @@ describe("withdraw", function () {
       await api3Token
         .connect(roles.user1)
         .approve(api3Pool.address, user1Stake);
-      await api3Pool
-        .connect(roles.user1)
-        .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
+      await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
       await expect(
         api3Pool
           .connect(roles.user1)
-          .withdraw(roles.user1.address, ethers.BigNumber.from(1))
+          .withdrawRegular(roles.user1.address, ethers.BigNumber.from(1))
       ).to.be.revertedWith("Invalid value");
     });
   });
@@ -125,7 +126,7 @@ describe("withdraw", function () {
       await expect(
         api3Pool
           .connect(roles.user1)
-          .withdraw(roles.user1.address, ethers.BigNumber.from(1))
+          .withdrawRegular(roles.user1.address, ethers.BigNumber.from(1))
       ).to.be.revertedWith("Invalid value");
     });
   });

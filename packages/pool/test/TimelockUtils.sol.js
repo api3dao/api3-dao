@@ -30,54 +30,125 @@ beforeEach(async () => {
     "Api3Pool",
     roles.deployer
   );
-  api3Pool = await api3PoolFactory.deploy(api3Token.address);
+  api3Pool = await api3PoolFactory.deploy(
+    api3Token.address,
+    roles.mockTimelockManager.address
+  );
+});
+
+describe("deposit", function () {
+  context("Caller is the timelock manager", function () {
+    it("deposits", async function () {
+      const timelockManagerDeposit = ethers.utils.parseEther(
+        "20" + "000" + "000"
+      );
+      await api3Token
+        .connect(roles.deployer)
+        .transfer(roles.mockTimelockManager.address, timelockManagerDeposit);
+      await api3Token
+        .connect(roles.mockTimelockManager)
+        .approve(api3Pool.address, timelockManagerDeposit);
+      await expect(
+        api3Pool
+          .connect(roles.mockTimelockManager)
+          .deposit(
+            roles.mockTimelockManager.address,
+            timelockManagerDeposit,
+            roles.user1.address
+          )
+      )
+        .to.emit(api3Pool, "DepositedByTimelockManager")
+        .withArgs(roles.user1.address, timelockManagerDeposit);
+      const user = await api3Pool.users(roles.user1.address);
+      expect(user.unstaked).to.equal(timelockManagerDeposit);
+    });
+  });
+  context("Caller is not the timelock manager", function () {
+    it("reverts", async function () {
+      const timelockManagerDeposit = ethers.utils.parseEther(
+        "20" + "000" + "000"
+      );
+      await expect(
+        api3Pool
+          .connect(roles.randomPerson)
+          .deposit(
+            roles.randomPerson.address,
+            timelockManagerDeposit,
+            roles.randomPerson.address
+          )
+      ).to.be.revertedWith("Caller not TimelockManager");
+    });
+  });
 });
 
 describe("depositWithVesting", function () {
-  context("User has not received from this timelock manager", function () {
-    context("Release end is later than release start", function () {
-      context("Amount is not zero", function () {
-        it("deposits with vesting", async function () {
-          const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
-          await api3Token
-            .connect(roles.deployer)
-            .transfer(roles.mockTimelockManager.address, depositAmount);
-          const currentBlock = await ethers.provider.getBlock(
-            await ethers.provider.getBlockNumber()
-          );
-          const releaseStart = currentBlock.timestamp - 100;
-          const releaseEnd = currentBlock.timestamp + 100;
-          await api3Token
-            .connect(roles.mockTimelockManager)
-            .approve(api3Pool.address, depositAmount);
-          await expect(
-            api3Pool
+  context("Caller is the timelock manager", function () {
+    context("User does not have an active timelock", function () {
+      context("Release end is later than release start", function () {
+        context("Amount is not zero", function () {
+          it("deposits with vesting", async function () {
+            const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
+            await api3Token
+              .connect(roles.deployer)
+              .transfer(roles.mockTimelockManager.address, depositAmount);
+            const currentBlock = await ethers.provider.getBlock(
+              await ethers.provider.getBlockNumber()
+            );
+            const releaseStart = currentBlock.timestamp - 100;
+            const releaseEnd = currentBlock.timestamp + 100;
+            await api3Token
               .connect(roles.mockTimelockManager)
-              .depositWithVesting(
-                roles.mockTimelockManager.address,
-                depositAmount,
+              .approve(api3Pool.address, depositAmount);
+            await expect(
+              api3Pool
+                .connect(roles.mockTimelockManager)
+                .depositWithVesting(
+                  roles.mockTimelockManager.address,
+                  depositAmount,
+                  roles.user1.address,
+                  releaseStart,
+                  releaseEnd
+                )
+            )
+              .to.emit(api3Pool, "DepositedVesting")
+              .withArgs(
                 roles.user1.address,
+                depositAmount,
                 releaseStart,
                 releaseEnd
-              )
-          )
-            .to.emit(api3Pool, "DepositedVesting")
-            .withArgs(
-              roles.user1.address,
-              depositAmount,
-              releaseStart,
-              releaseEnd
+              );
+          });
+        });
+        context("Amount is zero", function () {
+          it("reverts", async function () {
+            const depositAmount = ethers.BigNumber.from(0);
+            const currentBlock = await ethers.provider.getBlock(
+              await ethers.provider.getBlockNumber()
             );
+            const releaseStart = currentBlock.timestamp - 100;
+            const releaseEnd = currentBlock.timestamp + 100;
+            await expect(
+              api3Pool
+                .connect(roles.mockTimelockManager)
+                .depositWithVesting(
+                  roles.mockTimelockManager.address,
+                  depositAmount,
+                  roles.user1.address,
+                  releaseStart,
+                  releaseEnd
+                )
+            ).to.be.revertedWith("Invalid value");
+          });
         });
       });
-      context("Amount is zero", function () {
+      context("Release end is not later than release start", function () {
         it("reverts", async function () {
-          const depositAmount = ethers.BigNumber.from(0);
+          const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
           const currentBlock = await ethers.provider.getBlock(
             await ethers.provider.getBlockNumber()
           );
-          const releaseStart = currentBlock.timestamp - 100;
-          const releaseEnd = currentBlock.timestamp + 100;
+          const releaseStart = currentBlock.timestamp + 100;
+          const releaseEnd = currentBlock.timestamp - 100;
           await expect(
             api3Pool
               .connect(roles.mockTimelockManager)
@@ -92,14 +163,29 @@ describe("depositWithVesting", function () {
         });
       });
     });
-    context("Release end is not later than release start", function () {
+    context("User has an active timelock", function () {
       it("reverts", async function () {
         const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
+        await api3Token
+          .connect(roles.deployer)
+          .transfer(roles.mockTimelockManager.address, depositAmount);
         const currentBlock = await ethers.provider.getBlock(
           await ethers.provider.getBlockNumber()
         );
-        const releaseStart = currentBlock.timestamp + 100;
-        const releaseEnd = currentBlock.timestamp - 100;
+        const releaseStart = currentBlock.timestamp - 100;
+        const releaseEnd = currentBlock.timestamp + 100;
+        await api3Token
+          .connect(roles.mockTimelockManager)
+          .approve(api3Pool.address, depositAmount);
+        await api3Pool
+          .connect(roles.mockTimelockManager)
+          .depositWithVesting(
+            roles.mockTimelockManager.address,
+            depositAmount,
+            roles.user1.address,
+            releaseStart,
+            releaseEnd
+          );
         await expect(
           api3Pool
             .connect(roles.mockTimelockManager)
@@ -110,11 +196,11 @@ describe("depositWithVesting", function () {
               releaseStart,
               releaseEnd
             )
-        ).to.be.revertedWith("Invalid value");
+        ).to.be.revertedWith("Unauthorized");
       });
     });
   });
-  context("User has received from this timelock manager before", function () {
+  context("Caller is not the timelock manager", function () {
     it("reverts", async function () {
       const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
       await api3Token
@@ -128,18 +214,9 @@ describe("depositWithVesting", function () {
       await api3Token
         .connect(roles.mockTimelockManager)
         .approve(api3Pool.address, depositAmount);
-      await api3Pool
-        .connect(roles.mockTimelockManager)
-        .depositWithVesting(
-          roles.mockTimelockManager.address,
-          depositAmount,
-          roles.user1.address,
-          releaseStart,
-          releaseEnd
-        );
       await expect(
         api3Pool
-          .connect(roles.mockTimelockManager)
+          .connect(roles.randomPerson)
           .depositWithVesting(
             roles.mockTimelockManager.address,
             depositAmount,
@@ -147,7 +224,7 @@ describe("depositWithVesting", function () {
             releaseStart,
             releaseEnd
           )
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Caller not TimelockManager");
     });
   });
 });
@@ -181,17 +258,10 @@ describe("updateTimelockStatus", function () {
           await expect(
             api3Pool
               .connect(roles.randomPerson)
-              .updateTimelockStatus(
-                roles.user1.address,
-                roles.mockTimelockManager.address
-              )
+              .updateTimelockStatus(roles.user1.address)
           )
             .to.emit(api3Pool, "UpdatedTimelock")
-            .withArgs(
-              roles.user1.address,
-              roles.mockTimelockManager.address,
-              ethers.BigNumber.from(0)
-            );
+            .withArgs(roles.user1.address, ethers.BigNumber.from(0));
         });
       });
       context("It is not past release end", function () {
@@ -221,17 +291,10 @@ describe("updateTimelockStatus", function () {
           await expect(
             api3Pool
               .connect(roles.randomPerson)
-              .updateTimelockStatus(
-                roles.user1.address,
-                roles.mockTimelockManager.address
-              )
+              .updateTimelockStatus(roles.user1.address)
           )
             .to.emit(api3Pool, "UpdatedTimelock")
-            .withArgs(
-              roles.user1.address,
-              roles.mockTimelockManager.address,
-              depositAmount.div(2)
-            );
+            .withArgs(roles.user1.address, depositAmount.div(2));
         });
       });
     });
@@ -260,17 +323,11 @@ describe("updateTimelockStatus", function () {
           );
         await api3Pool
           .connect(roles.randomPerson)
-          .updateTimelockStatus(
-            roles.user1.address,
-            roles.mockTimelockManager.address
-          );
+          .updateTimelockStatus(roles.user1.address);
         await expect(
           api3Pool
             .connect(roles.randomPerson)
-            .updateTimelockStatus(
-              roles.user1.address,
-              roles.mockTimelockManager.address
-            )
+            .updateTimelockStatus(roles.user1.address)
         ).to.be.revertedWith("Unauthorized");
       });
     });
@@ -301,10 +358,7 @@ describe("updateTimelockStatus", function () {
       await expect(
         api3Pool
           .connect(roles.randomPerson)
-          .updateTimelockStatus(
-            roles.user1.address,
-            roles.mockTimelockManager.address
-          )
+          .updateTimelockStatus(roles.user1.address)
       ).to.be.revertedWith("Unauthorized");
     });
   });

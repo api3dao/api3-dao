@@ -18,6 +18,7 @@ beforeEach(async () => {
     claimsManager: accounts[5],
     user1: accounts[6],
     user2: accounts[7],
+    mockTimelockManager: accounts[8],
     randomPerson: accounts[9],
   };
   const api3TokenFactory = await ethers.getContractFactory(
@@ -32,7 +33,10 @@ beforeEach(async () => {
     "Api3Pool",
     roles.deployer
   );
-  api3Pool = await api3PoolFactory.deploy(api3Token.address);
+  api3Pool = await api3PoolFactory.deploy(
+    api3Token.address,
+    roles.mockTimelockManager.address
+  );
   EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
   REWARD_VESTING_PERIOD = await api3Pool.REWARD_VESTING_PERIOD();
 });
@@ -62,20 +66,8 @@ describe("payReward", function () {
             await api3Token
               .connect(roles.user2)
               .approve(api3Pool.address, user2Stake);
-            await api3Pool
-              .connect(roles.user1)
-              .depositAndStake(
-                roles.user1.address,
-                user1Stake,
-                roles.user1.address
-              );
-            await api3Pool
-              .connect(roles.user2)
-              .depositAndStake(
-                roles.user2.address,
-                user2Stake,
-                roles.user2.address
-              );
+            await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+            await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
             // Fast forward time to one epoch into the future
             const genesisEpoch = await api3Pool.genesisEpoch();
             let nextEpoch = genesisEpoch;
@@ -149,20 +141,8 @@ describe("payReward", function () {
             await api3Token
               .connect(roles.user2)
               .approve(api3Pool.address, user2Stake);
-            await api3Pool
-              .connect(roles.user1)
-              .depositAndStake(
-                roles.user1.address,
-                user1Stake,
-                roles.user1.address
-              );
-            await api3Pool
-              .connect(roles.user2)
-              .depositAndStake(
-                roles.user2.address,
-                user2Stake,
-                roles.user2.address
-              );
+            await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+            await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
             // Fast forward time to one epoch into the future
             const genesisEpoch = await api3Pool.genesisEpoch();
             const genesisEpochPlusOne = genesisEpoch.add(
@@ -242,13 +222,7 @@ describe("payReward", function () {
           await api3Token
             .connect(roles.user1)
             .approve(api3Pool.address, user1Stake);
-          await api3Pool
-            .connect(roles.user1)
-            .depositAndStake(
-              roles.user1.address,
-              user1Stake,
-              roles.user1.address
-            );
+          await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
           // Fast forward time to one epoch into the future
           const genesisEpoch = await api3Pool.genesisEpoch();
           const genesisEpochPlusOne = genesisEpoch.add(
@@ -299,20 +273,8 @@ describe("payReward", function () {
         await api3Token
           .connect(roles.user2)
           .approve(api3Pool.address, user2Stake);
-        await api3Pool
-          .connect(roles.user1)
-          .depositAndStake(
-            roles.user1.address,
-            user1Stake,
-            roles.user1.address
-          );
-        await api3Pool
-          .connect(roles.user2)
-          .depositAndStake(
-            roles.user2.address,
-            user2Stake,
-            roles.user2.address
-          );
+        await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+        await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
         // Fast forward time to one epoch into the future
         const genesisEpoch = await api3Pool.genesisEpoch();
         const genesisEpochPlusOne = genesisEpoch.add(ethers.BigNumber.from(1));
@@ -356,20 +318,8 @@ describe("payReward", function () {
         await api3Token
           .connect(roles.user2)
           .approve(api3Pool.address, user2Stake);
-        await api3Pool
-          .connect(roles.user1)
-          .depositAndStake(
-            roles.user1.address,
-            user1Stake,
-            roles.user1.address
-          );
-        await api3Pool
-          .connect(roles.user2)
-          .depositAndStake(
-            roles.user2.address,
-            user2Stake,
-            roles.user2.address
-          );
+        await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+        await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
         // Fast forward time to five epochs into the future
         const genesisEpoch = await api3Pool.genesisEpoch();
         const genesisEpochPlusFive = genesisEpoch.add(ethers.BigNumber.from(5));
@@ -430,20 +380,8 @@ describe("payReward", function () {
         await api3Token
           .connect(roles.user2)
           .approve(api3Pool.address, user2Stake);
-        await api3Pool
-          .connect(roles.user1)
-          .depositAndStake(
-            roles.user1.address,
-            user1Stake,
-            roles.user1.address
-          );
-        await api3Pool
-          .connect(roles.user2)
-          .depositAndStake(
-            roles.user2.address,
-            user2Stake,
-            roles.user2.address
-          );
+        await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+        await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
         // Fast forward time to five epochs into the future
         const genesisEpoch = await api3Pool.genesisEpoch();
         const genesisEpochPlusFive = genesisEpoch.add(ethers.BigNumber.from(5));
@@ -486,12 +424,8 @@ describe("payReward", function () {
       await api3Token
         .connect(roles.user2)
         .approve(api3Pool.address, user2Stake);
-      await api3Pool
-        .connect(roles.user1)
-        .depositAndStake(roles.user1.address, user1Stake, roles.user1.address);
-      await api3Pool
-        .connect(roles.user2)
-        .depositAndStake(roles.user2.address, user2Stake, roles.user2.address);
+      await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+      await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
       // Fast forward time to one epoch into the future
       const genesisEpoch = await api3Pool.genesisEpoch();
       const genesisEpochPlusOne = genesisEpoch.add(ethers.BigNumber.from(1));

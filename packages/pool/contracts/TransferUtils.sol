@@ -6,34 +6,34 @@ import "./interfaces/ITransferUtils.sol";
 
 /// @title Contract that implements token transfer functionality
 abstract contract TransferUtils is DelegationUtils, ITransferUtils {
-    /// @notice Called to deposit tokens for a user by using `transferFrom()`
-    /// @dev This method is used by `TimelockManager.sol`
-    /// @param source Token transfer source
+    /// @notice Called by the user to deposit tokens
+    /// @dev The user should approve the pool to spend at least `amount` tokens
+    /// before calling this.
+    /// The method is named `depositRegular()` to prevent potential confusion
+    /// (for example it is difficult to differentiate overloaded functions in
+    /// JS). See `deposit()` for more context.
     /// @param amount Amount to be deposited
-    /// @param userAddress User that the tokens will be deposited for
-    function deposit(
-        address source,
-        uint256 amount,
-        address userAddress
-        )
+    function depositRegular(uint256 amount)
         public
         override
     {
         payReward();
-        users[userAddress].unstaked = users[userAddress].unstaked + amount;
-        api3Token.transferFrom(source, address(this), amount);
+        users[msg.sender].unstaked = users[msg.sender].unstaked + amount;
+        api3Token.transferFrom(msg.sender, address(this), amount);
         emit Deposited(
-            userAddress,
+            msg.sender,
             amount
             );
     }
 
-    /// @notice Called to withdraw tokens
+    /// @notice Called by the user to withdraw tokens
     /// @dev The user should call `getUserLocked()` beforehand to ensure that
-    /// they have at least `amount` unlocked tokens to withdraw
+    /// they have at least `amount` unlocked tokens to withdraw.
+    /// The method is named `withdrawRegular()` to be consistent with the name
+    /// `depositRegular()`. See `depositRegular()` for more context.
     /// @param destination Token transfer destination
     /// @param amount Amount to be withdrawn
-    function withdraw(
+    function withdrawRegular(
         address destination,
         uint256 amount
         )

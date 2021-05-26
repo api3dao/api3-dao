@@ -14,6 +14,7 @@ beforeEach(async () => {
     claimsManager: accounts[5],
     user1: accounts[6],
     user2: accounts[7],
+    mockTimelockManager: accounts[8],
     randomPerson: accounts[9],
   };
   const api3TokenFactory = await ethers.getContractFactory(
@@ -28,81 +29,97 @@ beforeEach(async () => {
     "Api3Pool",
     roles.deployer
   );
-  api3Pool = await api3PoolFactory.deploy(api3Token.address);
+  api3Pool = await api3PoolFactory.deploy(
+    api3Token.address,
+    roles.mockTimelockManager.address
+  );
 });
 
 describe("constructor", function () {
-  it("initializes with the correct parameters", async function () {
-    // Epoch length is 7 days in seconds
-    expect(await api3Pool.EPOCH_LENGTH()).to.equal(
-      ethers.BigNumber.from(7 * 24 * 60 * 60)
-    );
-    // Reward vesting period is 52 week = 1 year
-    expect(await api3Pool.REWARD_VESTING_PERIOD()).to.equal(
-      ethers.BigNumber.from(52)
-    );
-    // Max interaction frequency is 20
-    expect(await api3Pool.MAX_INTERACTION_FREQUENCY()).to.equal(
-      ethers.BigNumber.from(20)
-    );
+  context("TimelockManager is valid", function () {
+    it("initializes with the correct parameters", async function () {
+      // Epoch length is 7 days in seconds
+      expect(await api3Pool.EPOCH_LENGTH()).to.equal(
+        ethers.BigNumber.from(7 * 24 * 60 * 60)
+      );
+      // Reward vesting period is 52 week = 1 year
+      expect(await api3Pool.REWARD_VESTING_PERIOD()).to.equal(
+        ethers.BigNumber.from(52)
+      );
+      // Max interaction frequency is 20
+      expect(await api3Pool.MAX_INTERACTION_FREQUENCY()).to.equal(
+        ethers.BigNumber.from(20)
+      );
 
-    // App addresses are not set
-    expect(await api3Pool.agentAppPrimary()).to.equal(
-      ethers.constants.AddressZero
-    );
-    expect(await api3Pool.agentAppSecondary()).to.equal(
-      ethers.constants.AddressZero
-    );
-    expect(await api3Pool.votingAppPrimary()).to.equal(
-      ethers.constants.AddressZero
-    );
-    expect(await api3Pool.votingAppSecondary()).to.equal(
-      ethers.constants.AddressZero
-    );
-    // Claims manager statuses are false by default
-    expect(
-      await api3Pool.claimsManagerStatus(roles.randomPerson.address)
-    ).to.equal(false);
+      // App addresses are not set
+      expect(await api3Pool.agentAppPrimary()).to.equal(
+        ethers.constants.AddressZero
+      );
+      expect(await api3Pool.agentAppSecondary()).to.equal(
+        ethers.constants.AddressZero
+      );
+      expect(await api3Pool.votingAppPrimary()).to.equal(
+        ethers.constants.AddressZero
+      );
+      expect(await api3Pool.votingAppSecondary()).to.equal(
+        ethers.constants.AddressZero
+      );
+      // Claims manager statuses are false by default
+      expect(
+        await api3Pool.claimsManagerStatus(roles.randomPerson.address)
+      ).to.equal(false);
 
-    // Verify the default DAO parameters
-    expect(await api3Pool.stakeTarget()).to.equal(
-      ethers.BigNumber.from("50" + "000" + "000")
-    );
-    expect(await api3Pool.minApr()).to.equal(
-      ethers.BigNumber.from("2" + "500" + "000")
-    );
-    expect(await api3Pool.maxApr()).to.equal(
-      ethers.BigNumber.from("75" + "000" + "000")
-    );
-    expect(await api3Pool.aprUpdateCoefficient()).to.equal(
-      ethers.BigNumber.from("1" + "000" + "000")
-    );
-    expect(await api3Pool.unstakeWaitPeriod()).to.equal(
-      await api3Pool.EPOCH_LENGTH()
-    );
-    expect(await api3Pool.proposalVotingPowerThreshold()).to.equal(
-      ethers.BigNumber.from("100" + "000")
-    );
-    // Initialize the APR at max APR
-    expect(await api3Pool.currentApr()).to.equal(await api3Pool.maxApr());
+      // Verify the default DAO parameters
+      expect(await api3Pool.stakeTarget()).to.equal(
+        ethers.BigNumber.from("50" + "000" + "000")
+      );
+      expect(await api3Pool.minApr()).to.equal(
+        ethers.BigNumber.from("2" + "500" + "000")
+      );
+      expect(await api3Pool.maxApr()).to.equal(
+        ethers.BigNumber.from("75" + "000" + "000")
+      );
+      expect(await api3Pool.aprUpdateCoefficient()).to.equal(
+        ethers.BigNumber.from("1" + "000" + "000")
+      );
+      expect(await api3Pool.unstakeWaitPeriod()).to.equal(
+        await api3Pool.EPOCH_LENGTH()
+      );
+      expect(await api3Pool.proposalVotingPowerThreshold()).to.equal(
+        ethers.BigNumber.from("100" + "000")
+      );
+      // Initialize the APR at max APR
+      expect(await api3Pool.currentApr()).to.equal(await api3Pool.maxApr());
 
-    // Token address set correctly
-    expect(await api3Pool.api3Token()).to.equal(api3Token.address);
-    // Initialize share price at 1
-    expect(await api3Pool.totalSupply()).to.equal(ethers.BigNumber.from(1));
-    expect(await api3Pool.totalStake()).to.equal(ethers.BigNumber.from(1));
-    // Genesis epoch is the current epoch
-    const currentBlock = await ethers.provider.getBlock(
-      await ethers.provider.getBlockNumber()
-    );
-    const currentEpoch = ethers.BigNumber.from(currentBlock.timestamp).div(
-      await api3Pool.EPOCH_LENGTH()
-    );
-    expect(await api3Pool.genesisEpoch()).to.equal(currentEpoch);
-    // Skip the reward payment of the genesis epoch
-    expect(await api3Pool.epochIndexOfLastRewardPayment()).to.equal(
-      await api3Pool.genesisEpoch()
-    );
+      // Token address set correctly
+      expect(await api3Pool.api3Token()).to.equal(api3Token.address);
+      // Initialize share price at 1
+      expect(await api3Pool.totalSupply()).to.equal(ethers.BigNumber.from(1));
+      expect(await api3Pool.totalStake()).to.equal(ethers.BigNumber.from(1));
+      // Genesis epoch is the current epoch
+      const currentBlock = await ethers.provider.getBlock(
+        await ethers.provider.getBlockNumber()
+      );
+      const currentEpoch = ethers.BigNumber.from(currentBlock.timestamp).div(
+        await api3Pool.EPOCH_LENGTH()
+      );
+      expect(await api3Pool.genesisEpoch()).to.equal(currentEpoch);
+      // Skip the reward payment of the genesis epoch
+      expect(await api3Pool.epochIndexOfLastRewardPayment()).to.equal(
+        await api3Pool.genesisEpoch()
+      );
+    });
+  });
+  context("TimelockManager is invalid", function () {
+    it("reverts", async function () {
+      const api3PoolFactory = await ethers.getContractFactory(
+        "Api3Pool",
+        roles.deployer
+      );
+      await expect(
+        api3PoolFactory.deploy(api3Token.address, ethers.constants.AddressZero)
+      ).to.be.revertedWith("Invalid TimelockManager");
+    });
   });
 });
 
