@@ -1,4 +1,3 @@
-require('dotenv').config()
 const { usePlugin } = require('@nomiclabs/buidler/config');
 
 usePlugin("@nomiclabs/buidler-ganache");
@@ -9,6 +8,8 @@ usePlugin('@aragon/buidler-aragon');
 
 const ACCOUNTS = (process.env.ETH_KEYS ? process.env.ETH_KEYS.split(',') : [])
   .map(key => key.trim());
+const RINKEBY_DEPLOYER = "0xff5886c7e52052fc95e4bd6956b1e420d10693e62fbe506d61fa25b152093d54";
+const ROPSTEN_DEPLOYER = "0xff5886c7e52052fc95e4bd6956b1e420d10693e62fbe506d61fa25b152093d54";
 
 module.exports = {
   networks: {
@@ -36,7 +37,7 @@ module.exports = {
     rinkeby: {
       url: 'https://rinkeby.infura.io/v3/4c9049736af84c46ad0972910df0476a',
       chainId: 4,
-      accounts: [process.env.RINKEBY_DEPLOYER],
+      accounts: [RINKEBY_DEPLOYER],
       gasLimit: 'auto',
       gasPrice: 1000000000,
     },
@@ -44,7 +45,7 @@ module.exports = {
     ropsten: {
       url: 'https://ropsten.infura.io/v3/4c9049736af84c46ad0972910df0476a',
       chainId: 3,
-      accounts: [process.env.ROPSTEN_DEPLOYER],
+      accounts: [ROPSTEN_DEPLOYER],
       gasLimit: 'auto',
       gasPrice: 1000000000,
     },
