@@ -183,6 +183,23 @@ describe("scheduleUnstake", function () {
           unstakeScheduledFor
         );
     });
+    it("Fails to schedule unstake, because aready scheduled", async function () {
+      // Have the user stake
+      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+      await api3Token
+        .connect(roles.deployer)
+        .transfer(roles.user1.address, user1Stake);
+      await api3Token
+        .connect(roles.user1)
+        .approve(api3Pool.address, user1Stake);
+      await api3Pool
+        .connect(roles.user1)
+        .depositAndStake(roles.user1.address, user1Stake);
+      // Schedule unstake
+      await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake.div(2));
+      await expect(api3Pool.connect(roles.user1).scheduleUnstake(user1Stake.div(2)))
+        .to.revertedWith("API3DAO.StakeUtils: User has already scheduled an unstake")
+    });
   });
   context("User does not have enough staked to schedule unstake", function () {
     it("reverts", async function () {
@@ -286,6 +303,34 @@ describe("unstake", function () {
             .withArgs(roles.user1.address, user1Stake);
           const user = await api3Pool.users(roles.user1.address);
           expect(user.unstaked).to.equal(user1Stake);
+        });
+        it("Fails to unstake because of the scheduledUnstake", async function () {
+          // Authorize pool contract to mint tokens
+          await api3Token
+            .connect(roles.deployer)
+            .updateMinterStatus(api3Pool.address, true);
+          // Have the user stake
+          const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+          await api3Token
+            .connect(roles.deployer)
+            .transfer(roles.user1.address, user1Stake);
+          await api3Token
+            .connect(roles.user1)
+            .approve(api3Pool.address, user1Stake);
+          await api3Pool
+            .connect(roles.user1)
+            .depositAndStake(roles.user1.address, user1Stake);
+          // Fast forward time to one epoch into the future
+          const genesisEpoch = await api3Pool.genesisEpoch();
+          const genesisEpochPlusTwo = genesisEpoch.add(
+            ethers.BigNumber.from(2)
+          );
+          await ethers.provider.send("evm_setNextBlockTimestamp", [
+            genesisEpochPlusTwo.mul(EPOCH_LENGTH).toNumber(),
+          ]);
+          // // Unstake
+          await expect(api3Pool.unstake(roles.user1.address))
+            .to.be.revertedWith("API3DAO.StakeUtils: User has no scheduled unstake to execute")
         });
       });
     });

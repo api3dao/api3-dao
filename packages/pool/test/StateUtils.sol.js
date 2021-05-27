@@ -368,6 +368,8 @@ describe("setStakeTarget", function () {
         );
       });
     });
+
+
   });
   context("Caller is not DAO Agent", function () {
     it("reverts", async function () {
@@ -770,6 +772,59 @@ describe("updateLastVoteSnapshotBlock", function () {
       ).to.be.revertedWith(
         "API3DAO.StateUtils: Only Voting app is allowed to execute this function"
       );
+    });
+  });
+});
+
+
+describe("updateMostRecentProposalTimestamp", function () {
+  context("Caller is a Voting app", function () {
+    it("updates lastVoteSnapshotBlock", async function () {
+      await api3Pool
+        .connect(roles.randomPerson)
+        .setDaoApps(
+          roles.agentAppPrimary.address,
+          roles.agentAppSecondary.address,
+          roles.votingAppPrimary.address,
+          roles.votingAppSecondary.address
+        );
+      const currentBlock = await ethers.provider.getBlock(
+        await ethers.provider.getBlockNumber()
+      );
+      const nextBlockTimestamp = currentBlock.timestamp + 100;
+      await ethers.provider.send("evm_setNextBlockTimestamp", [
+        nextBlockTimestamp,
+      ]);
+      await
+        api3Pool
+          .connect(roles.votingAppPrimary)
+          .updateMostRecentProposalTimestamp(roles.randomPerson.address);
+    });
+  });
+});
+
+describe("updateMostRecentVoteTimestamp", function () {
+  context("Caller is a Voting app", function () {
+    it("updates lastVoteSnapshotBlock", async function () {
+      await api3Pool
+        .connect(roles.randomPerson)
+        .setDaoApps(
+          roles.agentAppPrimary.address,
+          roles.agentAppSecondary.address,
+          roles.votingAppPrimary.address,
+          roles.votingAppSecondary.address
+        );
+      const currentBlock = await ethers.provider.getBlock(
+        await ethers.provider.getBlockNumber()
+      );
+      const nextBlockTimestamp = currentBlock.timestamp + 100;
+      await ethers.provider.send("evm_setNextBlockTimestamp", [
+        nextBlockTimestamp,
+      ]);
+      await
+        api3Pool
+          .connect(roles.votingAppPrimary)
+          .updateMostRecentVoteTimestamp(roles.randomPerson.address);
     });
   });
 });
