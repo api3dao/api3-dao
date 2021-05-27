@@ -298,6 +298,4 @@ describe("timelockManager tests", function () {
               params)).to.be.revertedWith("Parameters are longer than 30");
       });
     });
-
-
 });
