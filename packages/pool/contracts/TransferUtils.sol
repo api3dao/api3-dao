@@ -11,6 +11,8 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
     "API3DAO.TransferUtils: User total funds should be bigger then locked and amount to withdraw";
     string private constant AMOUNT_TOO_BIG =
     "API3DAO.TransferUtils: Withdrawal amount should be less or equal to the unstaked tokens";
+    string private constant ERROR_NOT_ENOUGH_FUNDS =
+    "API3DAO.TransferUtils: User don't have enough token to deposit the required amount";
 
     /// @notice Called to deposit tokens for a user by using `transferFrom()`
     /// @dev This method is used by `TimelockManager.sol`
@@ -27,7 +29,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
     {
         payReward();
         users[userAddress].unstaked = users[userAddress].unstaked + amount;
-        api3Token.transferFrom(source, address(this), amount);
+        require(api3Token.transferFrom(source, address(this), amount), ERROR_NOT_ENOUGH_FUNDS);
         emit Deposited(
             userAddress,
             amount
