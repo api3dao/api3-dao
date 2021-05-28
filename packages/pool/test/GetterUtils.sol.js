@@ -389,3 +389,28 @@ describe("getUserLocked", function () {
     }
   );
 });
+
+
+describe("getUser", function () {
+  context(
+    "It gets user",
+    function () {
+      context("User has not staked", function () {
+        it("returns 0", async function () {
+          const genesisEpoch = await api3Pool.genesisEpoch();
+          for (let i = 1; i < REWARD_VESTING_PERIOD.mul(2); i++) {
+            const currentEpoch = genesisEpoch.add(ethers.BigNumber.from(i));
+            await ethers.provider.send("evm_setNextBlockTimestamp", [
+              currentEpoch.mul(EPOCH_LENGTH).toNumber(),
+            ]);
+            await api3Pool.payReward();
+          }
+          const userLocked = await api3Pool.callStatic.getUser(
+            roles.randomPerson.address
+          );
+          expect(userLocked["unstaked"]).to.equal(0);
+        });
+      });
+    }
+  );
+});
