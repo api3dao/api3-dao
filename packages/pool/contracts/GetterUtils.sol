@@ -113,6 +113,15 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the voting power delegated to a user at a
     /// specific block
+    /// @dev Since the minimum `proposalVotingPowerThreshold` is 0.1%, if the
+    /// the voting apps are Api3Voting.sol (which should be the case) there can
+    /// be at most 100/0.1=1000 proposals made in the last `EPOCH_LENGTH`.
+    /// `user.delegatedTo` checkpoints get overwritten if a new proposal was
+    /// not made since the last update and `getValueAtWithBinarySearch()`
+    /// limits the search to the last 1024 elements if possible, which means
+    /// that while calling this method, if `_block` is within the current
+    /// `EPOCH_LENGTH` (i.e., if the call is for an open vote), the method will
+    /// have a deterministic upper boundary for the gas cost.
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block
@@ -216,6 +225,38 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         }
     }
 
+    /// @notice Called to get the details of a user
+    /// @param userAddress User address
+    /// @return unstaked Amount of unstaked API3 tokens
+    /// @return vesting Amount of API3 tokens locked by vesting
+    /// @return lastDelegationUpdateTimestamp Time of most recent delegation
+    /// update
+    /// @return unstakeScheduledFor Time unstaking is scheduled for
+    /// @return unstakeAmount Amount scheduled to unstake
+    /// @return mostRecentProposalTimestamp Time when the user made their most
+    /// recent proposal
+    function getUser(address userAddress)
+        external
+        view
+        override
+        returns(
+            uint256 unstaked,
+            uint256 vesting,
+            uint256 lastDelegationUpdateTimestamp,
+            uint256 unstakeScheduledFor,
+            uint256 unstakeAmount,
+            uint256 mostRecentProposalTimestamp
+            )
+    {
+        User storage user = users[userAddress];
+        unstaked = user.unstaked;
+        vesting = user.vesting;
+        lastDelegationUpdateTimestamp = user.lastDelegationUpdateTimestamp;
+        unstakeScheduledFor = user.unstakeScheduledFor;
+        unstakeAmount = user.unstakeAmount;
+        mostRecentProposalTimestamp = user.mostRecentProposalTimestamp;
+    }
+
     /// @notice Called to get the value of a checkpoint array at a specific
     /// block using binary search
     /// @dev Adapted from 
@@ -240,8 +281,22 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         if (_block < checkpoints[0].fromBlock)
             return 0;
 
+        // Limit the search to the last 1024 elements if the value being
+        // searched falls within that window
+        uint min;
+        if (
+            checkpoints.length > 1024
+                && checkpoints[checkpoints.length - 1024].fromBlock < _block
+            )
+        {
+            min = checkpoints.length - 1024;
+        }
+        else
+        {
+            min = 0;
+        }
+
         // Binary search of the value in the array
-        uint min = 0;
         uint max = checkpoints.length - 1;
         while (max > min) {
             uint mid = (max + min + 1) / 2;
@@ -278,8 +333,22 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         if (_block < checkpoints[0].fromBlock)
             return address(0);
 
+        // Limit the search to the last 1024 elements if the value being
+        // searched falls within that window
+        uint min;
+        if (
+            checkpoints.length > 1024
+                && checkpoints[checkpoints.length - 1024].fromBlock < _block
+            )
+        {
+            min = checkpoints.length - 1024;
+        }
+        else
+        {
+            min = 0;
+        }
+
         // Binary search of the value in the array
-        uint min = 0;
         uint max = checkpoints.length - 1;
         while (max > min) {
             uint mid = (max + min + 1) / 2;

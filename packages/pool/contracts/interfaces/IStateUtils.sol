@@ -57,6 +57,12 @@ interface IStateUtils {
         uint256 lastVoteSnapshotBlockUpdateTimestamp
         );
 
+    event UpdatedMostRecentProposalTimestamp(
+        address votingApp,
+        address userAddress,
+        uint256 mostRecentProposalTimestamp
+        );
+
     function setDaoApps(
         address _agentAppPrimary,
         address _agentAppSecondary,
@@ -97,5 +103,8 @@ interface IStateUtils {
         external;
 
     function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
+        external;
+
+    function updateMostRecentProposalTimestamp(address userAddress)
         external;
 }

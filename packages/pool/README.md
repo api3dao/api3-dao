@@ -106,13 +106,6 @@ API3 tokens allocated to founding members, builders and investors are timelocked
 The beneficiaries of the timelocked tokens can withdraw their tokens to this pool contract, where the vesting schedule will be continued.
 The tokens withdrawn to the pool will be able to be staked by their owners to receive voting power, staking rewards and be used as collateral.
 
-## Over-population of `user.shares`
-
-Each time a user stakes/unstakes, an additional element will be added to their `user.shares` `Checkpoint` array.
-This array will be searched linearly while calling `balanceOfAt()` to vote (for the last week) and `getUserLocked()` to withdraw (for the last year).
-In case the user bloats this array on purpose by repeatedly staking 1 (Wei) API3, they may manage to lock themselves out of voting/withdrawing.
-Since this will only happen voluntarily and will get resolved automatically simply by not staking/unstaking for a while, it is not considered as an issue.
-
 ## Double Agent and Api3Voting apps
 
 The DAO will have two pairs of Agents and Api3Voting apps, where having an Agent app make a transaction will require a proposal to be passed with the respective Api3Voting app.
@@ -120,14 +113,6 @@ The quorum requirements for the primary Api3Voting app will be high, and primary
 The quorum requirements for the secondary Api3Voting app will be low, and the secondary Agent app will be used for more day-to-day proposals (set stake target parameters, give grants).
 
 The Agent apps are authorized to update respective DAO parameters, and Api3Voting apps are authorized to mark the creation of a new proposal, which signals this contract to create a new checkpoint for the related records.
-Note that primary and secondary proposal cooldowns are kept separately, which means that a user can make two proposals in less than 7 days, as long as one is done through the primary Api3Voting app and the other is done through the secondary Api3Voting app.
-This is implemented as such to avoid unnecessary complexity.
-
-## Binary search-able `user.shares`
-
-`user.shares` at specific blocks are accessible through `userSharesAtWithBinarySearch()` by doing a binary search.
-This method is not used internally in the pool contract, but is planned to be used by future contract implementations that may require to recall how much users have staked at a specific point in time.
-Concerns about `user.shares` growing to unsearchable sizes are not within the scope of this contract's implementation as it does not depend on this method.
 
 ## Skipped rewards
 

@@ -223,10 +223,7 @@ describe("precalculateUserLocked", function () {
       await expect(
         api3Pool
           .connect(roles.user1)
-          .precalculateUserLocked(
-            roles.user1.address,
-            ethers.BigNumber.from(0)
-          )
+          .precalculateUserLocked(roles.user1.address, ethers.BigNumber.from(0))
       ).to.be.revertedWith("Iteration window invalid");
     });
   });
@@ -286,10 +283,7 @@ describe("withdrawPrecalculated", function () {
       await expect(
         api3Pool
           .connect(roles.user1)
-          .withdrawPrecalculated(
-            roles.user1.address,
-            ethers.BigNumber.from(1)
-          )
+          .withdrawPrecalculated(roles.user1.address, ethers.BigNumber.from(1))
       ).to.be.revertedWith("Locked amount not precalculated");
     });
   });
