@@ -84,7 +84,7 @@ describe("payReward", function () {
                 newApr = await api3Pool.minApr();
               }
               const rewardAmount = totalStake
-                .mul(newApr)
+                .mul(currentApr)
                 .div(REWARD_VESTING_PERIOD)
                 .div(HUNDRED_PERCENT);
               await expect(api3Pool.connect(roles.randomPerson).payReward())
@@ -150,7 +150,7 @@ describe("payReward", function () {
                 newApr = await api3Pool.maxApr();
               }
               const rewardAmount = totalStake
-                .mul(newApr)
+                .mul(currentApr)
                 .div(REWARD_VESTING_PERIOD)
                 .div(HUNDRED_PERCENT);
               await expect(api3Pool.connect(roles.randomPerson).payReward())
@@ -257,7 +257,7 @@ describe("payReward", function () {
         const currentApr = await api3Pool.currentApr();
         const newApr = currentApr.sub(aprUpdateStep);
         const rewardAmount = totalStake
-          .mul(newApr)
+          .mul(currentApr)
           .div(REWARD_VESTING_PERIOD)
           .div(HUNDRED_PERCENT);
         await expect(api3Pool.connect(roles.randomPerson).payReward())

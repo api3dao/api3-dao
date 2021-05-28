@@ -21,7 +21,6 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
         {
             if (api3Token.getMinterStatus(address(this)))
             {
-                updateCurrentApr();
                 uint256 rewardAmount = totalStake * currentApr / REWARD_VESTING_PERIOD / HUNDRED_PERCENT;
                 epochIndexToReward[currentEpoch] = Reward({
                     atBlock: block.number,
@@ -30,6 +29,7 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
                     });
                 api3Token.mint(address(this), rewardAmount);
                 totalStake = totalStake + rewardAmount;
+                updateCurrentApr();
                 emit PaidReward(
                     currentEpoch,
                     rewardAmount,
