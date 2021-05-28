@@ -50,4 +50,12 @@ interface IApi3Pool {
             uint256 mostRecentDelegationTimestamp,
             uint256 mostRecentUndelegationTimestamp
             );
+
+    function setDaoApps(
+        address _agentAppPrimary,
+        address _agentAppSecondary,
+        address _votingAppPrimary,
+        address _votingAppSecondary
+    )
+    external;
 }
