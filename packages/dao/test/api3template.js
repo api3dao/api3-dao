@@ -206,12 +206,5 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
       "RUN_SCRIPT_ROLE",
       { address: votingSecondary.address }
     );
-
-    await api3Pool.setDaoApps(
-      agentMain.address,
-      agentSecondary.address,
-      votingMain.address,
-      votingSecondary.address
-    );
   });
 });

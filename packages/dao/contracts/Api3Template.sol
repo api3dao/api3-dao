@@ -3,6 +3,7 @@ pragma solidity 0.4.24;
 
 import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 import "@api3-dao/api3-voting/contracts/Api3Voting.sol";
+import "@api3-dao/pool/contracts/interfaces/v0.4.24/IApi3Pool.sol";
 
 contract Api3Template is BaseTemplate {
 
@@ -65,6 +66,9 @@ contract Api3Template is BaseTemplate {
         );
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, mainVoting);
         _registerID(_id, dao);
+
+        IApi3Pool pool = IApi3Pool(_api3Pool);
+        pool.setDaoApps(mainAgent, secondaryAgent, mainVoting, secondaryVoting);
 
         emit Api3DaoDeployed(
             address(dao),

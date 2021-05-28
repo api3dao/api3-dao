@@ -94,37 +94,21 @@ module.exports = async (callback) => {
       "Api3DaoDeployed",
       "secondaryAgent"
     );
-    const set_tx = await api3Pool.setDaoApps(
-      mainAgent,
-      secondaryAgent,
-      mainVoting,
-      secondaryVoting
-    );
+    // const set_tx = await api3Pool.setDaoApps(
+    //   mainAgent,
+    //   secondaryAgent,
+    //   mainVoting,
+    //   secondaryVoting
+    // );
 
     const deployedAddresses = {
       api3Token: api3Token.address,
       api3Pool: api3Pool.address,
       convenience: convenience.address,
-      votingAppPrimary: getEventArgument(
-        set_tx,
-        "SetDaoApps",
-        "votingAppPrimary"
-      ).toString(),
-      votingAppSecondary: getEventArgument(
-        set_tx,
-        "SetDaoApps",
-        "votingAppSecondary"
-      ).toString(),
-      agentAppPrimary: getEventArgument(
-        set_tx,
-        "SetDaoApps",
-        "agentAppPrimary"
-      ).toString(),
-      agentAppSecondary: getEventArgument(
-        set_tx,
-        "SetDaoApps",
-        "agentAppSecondary"
-      ).toString(),
+      votingAppPrimary: mainVoting.toString(),
+      votingAppSecondary: secondaryVoting.toString(),
+      agentAppPrimary: mainAgent.toString(),
+      agentAppSecondary: secondaryAgent.toString(),
     };
 
     console.log("\nDEPLOYED ADDRESSES:");
