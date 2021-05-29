@@ -114,9 +114,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         if (delta) {
             newDelegatedTo = currentlyDelegatedTo + shares;
         } else {
-            newDelegatedTo = currentlyDelegatedTo > shares 
-                ? currentlyDelegatedTo - shares
-                : 0;
+            newDelegatedTo = currentlyDelegatedTo - shares;
         }
         updateCheckpointArray(
             delegate.delegatedTo,
