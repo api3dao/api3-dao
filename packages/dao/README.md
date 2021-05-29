@@ -13,6 +13,50 @@ If solc gives `RangeError: Maximum call stack size exceeded`, use Node v8 or the
 npm run test
 ```
 
+## Verifying the DAO deployment
+
+**This needs to be repeated with the final mainnet deployment.**
+
+1. Install aragonCLI globally (specifying the package version because the current one seems to be broken for some machines):
+```sh
+npm install -g @aragon/cli@7.0.4
+```
+
+2. Install [Frame](https://frame.sh/).
+Run it and make sure that it's connected to the correct chain.
+
+3. Inspect the DAO with the following
+```sh
+aragon dao apps <DAO kernel address> --use-frame
+```
+For example, you can use `0x825cc178f0510de72c8d3af4be69917935b3d269` on Rinkeby (**note that this may not be identical to the final version**).
+Verify that the displayed information is correct.
+
+4. Verify that the ACL (Access Control List) is configured correctly
+```sh
+aragon dao acl <DAO kernel address> --use-frame
+```
+
+5. In (3), you should have seen Api3Voting apps with the ID `0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554`.
+This is derived as `namehash("api3voting.open.aragonpm.eth")`.
+To verify, run the following script
+```sh
+npm run derive-namehash
+```
+
+6. Set your Ethereum provider RPC URL in `~/.aragon/<network>_key.json` as below (this will connect to Frame so make sure that the correct chain is selected on it)
+```json
+{
+  "rpc": "http://127.0.0.1:1248"
+}
+```
+
+7. Check the contract address using the Aragon Package Manager
+```sh
+aragon apm versions api3voting.open.aragonpm.eth --environment rinkeby
+```
+
+8. Check the contract code on Etherscan
 
 ## Permissions
 
