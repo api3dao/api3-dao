@@ -6,9 +6,11 @@ import "./interfaces/IGetterUtils.sol";
 
 /// @title Contract that implements getters
 abstract contract GetterUtils is StateUtils, IGetterUtils {
-    /// @notice Called to get the voting power of a user at a specific block
-    /// @dev This method is used to implement the MiniMe interface for the
-    /// Api3Voting app
+    /// @notice Called to get the voting power of a user for a specific vote
+    /// @dev This method is meant to be used by the API3 DAO's Api3Voting apps
+    /// to get the voting power at the snapshot block of a specific vote. If
+    /// you call this method with a `_block` value that is not a snapshot of a
+    /// vote, you may get an incorrect value.
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power of the user at the block
@@ -32,8 +34,6 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     }
 
     /// @notice Called to get the current voting power of a user
-    /// @dev This method is used to implement the MiniMe interface for the
-    /// Api3Voting app
     /// @param userAddress User address
     /// @return Current voting power of the user
     function balanceOf(address userAddress)
@@ -46,8 +46,8 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     }
 
     /// @notice Called to get the total voting power one block ago
-    /// @dev This method is used to implement the MiniMe interface for the
-    /// Api3Voting app
+    /// @dev This method is meant to be used by the API3 DAO's Api3Voting apps
+    /// to get the voting power at vote creation-time.
     /// @return Total voting power one block ago
     function totalSupplyOneBlockAgo()
         public
@@ -59,8 +59,6 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     }
 
     /// @notice Called to get the current total voting power
-    /// @dev This method is used to implement the MiniMe interface for the
-    /// Aragon Voting app
     /// @return Current total voting power
     function totalSupply()
         public
@@ -122,6 +120,10 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// that while calling this method, if `_block` is within the current
     /// `EPOCH_LENGTH` (i.e., if the call is for an open vote), the method will
     /// have a deterministic upper boundary for the gas cost.
+    /// This method is meant to be used by the API3 DAO's Api3Voting apps
+    /// to get the voting power at the snapshot block of a specific vote. If
+    /// you call this method with a `_block` value that is not a snapshot of a
+    /// vote, you may get an incorrect value.
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block
