@@ -19,7 +19,9 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
     {
         payReward();
         users[msg.sender].unstaked = users[msg.sender].unstaked + amount;
-        api3Token.transferFrom(msg.sender, address(this), amount);
+        // Should never return false because the API3 token uses the
+        // OpenZeppelin implementation
+        assert(api3Token.transferFrom(msg.sender, address(this), amount));
         emit Deposited(
             msg.sender,
             amount
@@ -148,7 +150,9 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         // Carry on with the withdrawal
         require(user.unstaked >= amount, ERROR_VALUE);
         user.unstaked = user.unstaked - amount;
-        api3Token.transfer(destination, amount);
+        // Should never return false because the API3 token uses the
+        // OpenZeppelin implementation
+        assert(api3Token.transfer(destination, amount));
         emit Withdrawn(
             msg.sender,
             destination,

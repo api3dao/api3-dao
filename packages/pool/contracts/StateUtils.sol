@@ -139,6 +139,12 @@ contract StateUtils is IStateUtils {
     /// means 1% deviation from the stake target results in 1% update in APR.
     /// This parameter is governable by the DAO.
     uint256 public aprUpdateCoefficient = 1_000_000;
+    /// @notice Maximum APR update coefficient
+    /// @dev This value represents a 1000% update in APR with 1% deviation
+    /// from the stake target. The APR update rate already saturates at this
+    /// point, and thus there is no point in allowing this parameter to be set
+    /// any larger.
+    uint256 public constant maxAprUpdateCoefficient = 1_000_000_000;
 
     /// @notice Users need to schedule an unstake and wait for
     /// `unstakeWaitPeriod` before being able to unstake. This is to prevent
@@ -302,8 +308,7 @@ contract StateUtils is IStateUtils {
         onlyAgentApp()
     {
         require(
-            _stakeTarget <= HUNDRED_PERCENT
-                && _stakeTarget >= 0,
+            _stakeTarget <= HUNDRED_PERCENT,
             ERROR_VALUE);
         uint256 oldStakeTarget = stakeTarget;
         stakeTarget = _stakeTarget;
@@ -376,7 +381,7 @@ contract StateUtils is IStateUtils {
         onlyAgentApp()
     {
         require(
-            _aprUpdateCoefficient <= 1_000_000_000
+            _aprUpdateCoefficient <= maxAprUpdateCoefficient
                 && _aprUpdateCoefficient > 0,
             ERROR_VALUE
             );

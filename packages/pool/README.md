@@ -128,3 +128,10 @@ This is not expected to happen in practice, and will not cause any issues if it 
 
 If the pool not authorized to mint API3 tokens, it continues operating without paying out any rewards.
 This is to prevent the pool from breaking in case its minting authorization is revoked due to any reason.
+
+## APR update coefficient
+
+This is the coefficient that represents how aggresively the APR will be updated to meet the stake target.
+Since this is a coefficient, it has no unit. A coefficient of 1,000,000 (which is the initial value) means 1% deviation from the stake target results in 1% update in APR.
+This parameter is governable by the DAO and is capped at the x1,000 the initial value.
+Misgovernance of this parameter may result in the rewards not being updated quickly enough or oscillatory rewards due to consistent overshoots.
