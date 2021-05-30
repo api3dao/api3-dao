@@ -211,6 +211,7 @@ contract StateUtils is IStateUtils {
         address timelockManagerAddress
         )
     {
+        require(api3TokenAddress != address(0), "Invalid Api3Token");
         require(timelockManagerAddress != address(0), "Invalid TimelockManager");
         deployer = msg.sender;
         api3Token = IApi3Token(api3TokenAddress);

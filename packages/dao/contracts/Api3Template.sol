@@ -31,6 +31,7 @@ contract Api3Template is BaseTemplate {
     public
     BaseTemplate(_daoFactory, _ens, _minimeTokenFactory, _aragonID)
     {
+        _ensureMiniMeFactoryIsValid(_minimeTokenFactory);
         _ensureAragonIdIsValid(_aragonID);
     }
 
