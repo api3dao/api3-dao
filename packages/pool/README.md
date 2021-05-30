@@ -92,6 +92,9 @@ For example, such a contract can be implemented as an integration to a dispute r
 Note that it is intended that whether the claims will be paid out gets decided by a third party, and not the API3 DAO.
 It is expected for claims manager contracts to implement mechanisms to avoid catastrophic failure, for example by putting an upper limit to the total amount of payouts they can make within a limited period of time.
 
+The pool will not have any claims managers set at initialization, as the insurance product will not be active yet.
+If/when a proposal gets made to set a claims manager contract, you are recommended to review the contract yourself and/or refer to the audit reports to understand the implications.
+
 ### Claim evasion protection
 
 Users may unstake to frontrun an insurance claim/payout to avoid being slashed.

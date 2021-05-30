@@ -272,6 +272,11 @@ contract StateUtils is IStateUtils {
     /// withdraw as many tokens as it wants from the pool to pay out insurance
     /// claims.
     /// Only the primary Agent can do this because it is a critical operation.
+    /// WARNING: A compromised contract being given claims manager status may
+    /// result in loss of staked funds. If a proposal has been made to call
+    /// this method to set a contract as a claims manager, you are recommended
+    /// to review the contract yourself and/or refer to the audit reports to
+    /// understand the implications.
     /// @param claimsManager Claims manager contract address
     /// @param status Authorization status
     function setClaimsManagerStatus(
