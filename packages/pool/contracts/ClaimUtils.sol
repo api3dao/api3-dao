@@ -33,7 +33,9 @@ abstract contract ClaimUtils is StakeUtils, IClaimUtils {
         // totalStake should not go lower than 1
         require(totalStake > amount, ERROR_VALUE);
         totalStake = totalStake - amount;
-        api3Token.transfer(recipient, amount);
+        // Should never return false because the API3 token uses the
+        // OpenZeppelin implementation
+        assert(api3Token.transfer(recipient, amount));
         emit PaidOutClaim(
             recipient,
             amount

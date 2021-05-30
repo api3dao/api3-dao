@@ -42,7 +42,9 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
     {
         require(msg.sender == timelockManager, "Caller not TimelockManager");
         users[userAddress].unstaked = users[userAddress].unstaked + amount;
-        api3Token.transferFrom(source, address(this), amount);
+        // Should never return false because the API3 token uses the
+        // OpenZeppelin implementation
+        assert(api3Token.transferFrom(source, address(this), amount));
         emit DepositedByTimelockManager(
             userAddress,
             amount
@@ -82,7 +84,9 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
             releaseStart: releaseStart,
             releaseEnd: releaseEnd
             });
-        api3Token.transferFrom(source, address(this), amount);
+        // Should never return false because the API3 token uses the
+        // OpenZeppelin implementation
+        assert(api3Token.transferFrom(source, address(this), amount));
         emit DepositedVesting(
             userAddress,
             amount,

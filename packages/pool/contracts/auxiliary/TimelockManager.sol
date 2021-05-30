@@ -94,10 +94,9 @@ contract TimelockManager is Ownable, ITimelockManager {
         permittedTimelockToBeReverted[recipient] = false;
         uint256 remaining = timelocks[recipient].remainingAmount;
         timelocks[recipient].remainingAmount = 0;
-        require(
-            api3Token.transfer(destination, remaining),
-            "API3 token transfer failed"
-            );
+        // Should never return false because the API3 token uses the
+        // OpenZeppelin implementation
+        assert(api3Token.transfer(destination, remaining));
         emit RevertedTimelock(recipient, destination, remaining);
     }
 
@@ -157,10 +156,9 @@ contract TimelockManager is Ownable, ITimelockManager {
             releaseStart: releaseStart,
             releaseEnd: releaseEnd
             });
-        require(
-            api3Token.transferFrom(source, address(this), amount),
-            "API3 token transferFrom failed"
-            );
+        // Should never return false because the API3 token uses the
+        // OpenZeppelin implementation
+        assert(api3Token.transferFrom(source, address(this), amount));
         emit TransferredAndLocked(
             source,
             recipient,
@@ -225,10 +223,9 @@ contract TimelockManager is Ownable, ITimelockManager {
             "No withdrawable tokens yet"
             );
         timelocks[recipient].remainingAmount = timelocks[recipient].remainingAmount.sub(withdrawable);
-        require(
-            api3Token.transfer(recipient, withdrawable),
-            "API3 token transfer failed"
-            );
+        // Should never return false because the API3 token uses the
+        // OpenZeppelin implementation
+        assert(api3Token.transfer(recipient, withdrawable));
         emit Withdrawn(
             recipient,
             withdrawable
