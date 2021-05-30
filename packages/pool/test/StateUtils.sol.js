@@ -64,7 +64,7 @@ describe("constructor", function () {
         expect(
           await api3Pool.claimsManagerStatus(roles.randomPerson.address)
         ).to.equal(false);
-  
+
         // Verify the default DAO parameters
         expect(await api3Pool.stakeTarget()).to.equal(
           ethers.BigNumber.from("50" + "000" + "000")
@@ -86,7 +86,7 @@ describe("constructor", function () {
         );
         // Initialize the APR at max APR
         expect(await api3Pool.currentApr()).to.equal(await api3Pool.maxApr());
-  
+
         // Token address set correctly
         expect(await api3Pool.api3Token()).to.equal(api3Token.address);
         // Initialize share price at 1
@@ -113,7 +113,10 @@ describe("constructor", function () {
           roles.deployer
         );
         await expect(
-          api3PoolFactory.deploy(api3Token.address, ethers.constants.AddressZero)
+          api3PoolFactory.deploy(
+            api3Token.address,
+            ethers.constants.AddressZero
+          )
         ).to.be.revertedWith("Invalid TimelockManager");
       });
     });
@@ -125,7 +128,10 @@ describe("constructor", function () {
         roles.deployer
       );
       await expect(
-        api3PoolFactory.deploy(ethers.constants.AddressZero, roles.mockTimelockManager.address)
+        api3PoolFactory.deploy(
+          ethers.constants.AddressZero,
+          roles.mockTimelockManager.address
+        )
       ).to.be.revertedWith("Invalid Api3Token");
     });
   });
@@ -214,17 +220,17 @@ describe("setDaoApps", function () {
     });
     context("Caller is not deployer", function () {
       it("reverts", async function () {
-      await expect(
-        api3Pool
-          .connect(roles.randomPerson)
-          .setDaoApps(
-            roles.agentAppPrimary.address,
-            roles.agentAppSecondary.address,
-            roles.votingAppPrimary.address,
-            roles.votingAppSecondary.address
-          )
-      ).to.be.revertedWith("Unauthorized");
-          });
+        await expect(
+          api3Pool
+            .connect(roles.randomPerson)
+            .setDaoApps(
+              roles.agentAppPrimary.address,
+              roles.agentAppSecondary.address,
+              roles.votingAppPrimary.address,
+              roles.votingAppSecondary.address
+            )
+        ).to.be.revertedWith("Unauthorized");
+      });
     });
   });
   context("DAO apps are set before", function () {

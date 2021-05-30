@@ -28,7 +28,8 @@
     "publish:staging": "aragon apm publish major $(npm run deploy:staging | tail -n 1) --environment staging",
     "publish:rinkeby": "aragon apm publish major $(npm run deploy:rinkeby | tail -n 1) --environment rinkeby",
     "publish:ropsten": "aragon apm publish major $(npm run deploy:ropsten | tail -n 1) --environment ropsten",
-    "publish:mainnet": "aragon apm publish major $(npm run deploy:mainnet | tail -n 1) --environment mainnet"
+    "publish:mainnet": "aragon apm publish major $(npm run deploy:mainnet | tail -n 1) --environment mainnet",
+    "derive-namehash": "node ./scripts/deriveNamehash.js"
   },
   "dependencies": {
     "@api3-dao/api3-voting": "^1.0.0",

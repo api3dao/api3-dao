@@ -13,6 +13,44 @@ If solc gives `RangeError: Maximum call stack size exceeded`, use Node v8 or the
 npm run test
 ```
 
+## Verifying the DAO deployment
+
+**This needs to be repeated with the final mainnet deployment.**
+
+1. Install aragonCLI globally (specifying the package version because latest seems to be broken for some machines):
+```sh
+npm install -g @aragon/cli@7.0.4
+```
+
+2. Install [Frame](https://frame.sh/).
+Run it and make sure that it is connected to the correct chain.
+
+3. Inspect the DAO with the following
+```sh
+aragon dao apps <DAO kernel address> --use-frame
+```
+For example, you can use `0x825cc178f0510de72c8d3af4be69917935b3d269` on Rinkeby (**note that this may not be identical to the final version**).
+Review the displayed information is correct.
+
+4. In (3), you should have seen Api3Voting apps with the ID `0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554`.
+This is derived as `namehash("api3voting.open.aragonpm.eth")`.
+To verify, run the following script
+```sh
+npm run derive-namehash
+```
+
+5. The Api3Voting apps will have a proxy address each.
+Read the contract address they are pointing at using `implementation()` (you can use Etherscan for this because the code of the proxy contract will be verified).
+Then check the source code at this implementation address using Etherscan and verify that it is identical to `Api3Voting.sol`.
+
+6. Verify that the ACL (Access Control List) is configured correctly
+```sh
+aragon dao acl <DAO kernel address> --use-frame
+```
+
+7. Check that the following values are initialized correctly
+- `api3Pool` and the voting parameters (`supportRequiredPct` and `minAcceptQuorumPct`) at the Api3Voting apps
+- `api3Token`, `timelockManager`, `agentAppPrimary`, `agentAppSecondary`, `votingAppPrimary` and `votingAppSecondary` at the pool contract
 
 ## Permissions
 
