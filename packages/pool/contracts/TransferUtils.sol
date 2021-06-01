@@ -100,7 +100,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
             Reward storage lockedReward = epochIndexToReward[indEpoch];
             if (lockedReward.atBlock != 0)
             {
-                uint256 userSharesThen = getValueAtWithBinarySearch(_userShares, lockedReward.atBlock);
+                uint256 userSharesThen = getValueAt(_userShares, lockedReward.atBlock);
                 locked = locked + (lockedReward.amount * userSharesThen / lockedReward.totalSharesThen);
             }
         }

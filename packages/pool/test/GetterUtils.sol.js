@@ -141,12 +141,10 @@ describe("userSharesAt", function () {
 
 describe("userReceivedDelegationAt", function () {
   it("gets user's received delegation at the block", async function () {
-    const genesisEpoch = await api3Pool.genesisEpoch();
     const amount = ethers.BigNumber.from(1000);
     const noDelegations = 20;
     const delegationBlocks = [];
     for (let i = 0; i < noDelegations; i++) {
-      await api3Voting.newVote(roles.user1.address);
       delegationBlocks.push(await ethers.provider.getBlockNumber());
       const randomWallet = ethers.Wallet.createRandom().connect(
         ethers.provider
@@ -167,9 +165,6 @@ describe("userReceivedDelegationAt", function () {
       await api3Pool
         .connect(randomWallet)
         .delegateVotingPower(roles.user1.address, { gasLimit: 500000 });
-      await ethers.provider.send("evm_setNextBlockTimestamp", [
-        genesisEpoch.add(i).add(1).mul(EPOCH_LENGTH).toNumber(),
-      ]);
     }
     for (let i = 0; i < noDelegations; i++) {
       expect(
@@ -177,7 +172,7 @@ describe("userReceivedDelegationAt", function () {
           roles.user1.address,
           delegationBlocks[i]
         )
-      ).to.equal(amount.mul(ethers.BigNumber.from(i + 1)));
+      ).to.equal(amount.mul(ethers.BigNumber.from(i)));
     }
   });
 });

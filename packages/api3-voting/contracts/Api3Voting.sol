@@ -269,7 +269,6 @@ contract Api3Voting is IForwarder, AragonApp {
             proposalMakerVotingPower >= votingPower.mul(api3Pool.proposalVotingPowerThreshold()).div(1e8),
             "API3_HIT_PROPOSAL_THRESHOLD"
             );
-        api3Pool.updateLastVoteSnapshotBlock(snapshotBlock);
 
         voteId = votesLength++;
 

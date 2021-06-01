@@ -6,11 +6,7 @@ import "./interfaces/IGetterUtils.sol";
 
 /// @title Contract that implements getters
 abstract contract GetterUtils is StateUtils, IGetterUtils {
-    /// @notice Called to get the voting power of a user for a specific vote
-    /// @dev This method is meant to be used by the API3 DAO's Api3Voting apps
-    /// to get the voting power at the snapshot block of a specific vote. If
-    /// you call this method with a `_block` value that is not a snapshot of a
-    /// vote, you may get an incorrect value.
+    /// @notice Called to get the voting power of a user at a specific block
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power of the user at the block
@@ -47,7 +43,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the total voting power one block ago
     /// @dev This method is meant to be used by the API3 DAO's Api3Voting apps
-    /// to get the voting power at vote creation-time.
+    /// to get the total voting power at vote creation-time
     /// @return Total voting power one block ago
     function totalSupplyOneBlockAgo()
         public
@@ -82,7 +78,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        return getValueAtWithBinarySearch(users[userAddress].shares, _block);
+        return getValueAt(users[userAddress].shares, _block);
     }
 
     /// @notice Called to get the current pool shares of a user
@@ -111,19 +107,6 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the voting power delegated to a user at a
     /// specific block
-    /// @dev Since the minimum `proposalVotingPowerThreshold` is 0.1%, if the
-    /// the voting apps are Api3Voting.sol (which should be the case) there can
-    /// be at most 100/0.1=1000 proposals made in the last `EPOCH_LENGTH`.
-    /// `user.delegatedTo` checkpoints get overwritten if a new proposal was
-    /// not made since the last update and `getValueAtWithBinarySearch()`
-    /// limits the search to the last 1024 elements if possible, which means
-    /// that while calling this method, if `_block` is within the current
-    /// `EPOCH_LENGTH` (i.e., if the call is for an open vote), the method will
-    /// have a deterministic upper boundary for the gas cost.
-    /// This method is meant to be used by the API3 DAO's Api3Voting apps
-    /// to get the voting power at the snapshot block of a specific vote. If
-    /// you call this method with a `_block` value that is not a snapshot of a
-    /// vote, you may get an incorrect value.
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block
@@ -136,7 +119,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(uint256)
     {
-        return getValueAtWithBinarySearch(
+        return getValueAt(
             users[userAddress].delegatedTo,
             _block
             );
@@ -167,7 +150,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns(address)
     {
-        return getAddressAtWithBinarySearch(
+        return getAddressAt(
             users[userAddress].delegates,
             _block
             );
@@ -266,7 +249,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// @param checkpoints Checkpoints array
     /// @param _block Block number for which the query is being made
     /// @return Value of the checkpoint array at the block
-    function getValueAtWithBinarySearch(
+    function getValueAt(
         Checkpoint[] storage checkpoints,
         uint256 _block
         )
@@ -318,7 +301,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// @param checkpoints Address-checkpoint array
     /// @param _block Block number for which the query is being made
     /// @return Value of the address-checkpoint array at the block
-    function getAddressAtWithBinarySearch(
+    function getAddressAt(
         AddressCheckpoint[] storage checkpoints,
         uint256 _block
         )

@@ -25,9 +25,6 @@ interface IApi3Pool {
         view
         returns(uint256);
 
-    function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
-        external;
-
     function updateMostRecentProposalTimestamp(address userAddress)
         external;
 
