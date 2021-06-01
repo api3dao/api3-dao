@@ -447,12 +447,12 @@ describe("getUser", function () {
       proposalBlock.timestamp + 100,
     ]);
     await api3Voting.newVote(roles.user1.address);
-    // Have user1 delegate
+    // Have user1 delegate (need to wait an epoch to delegate after voting)
     const delegationBlock = await ethers.provider.getBlock(
       await ethers.provider.getBlockNumber()
     );
     await ethers.provider.send("evm_setNextBlockTimestamp", [
-      delegationBlock.timestamp + 100,
+      delegationBlock.timestamp + 100 + EPOCH_LENGTH.toNumber(),
     ]);
     await api3Pool
       .connect(roles.user1)
@@ -462,7 +462,7 @@ describe("getUser", function () {
     expect(user.unstaked).to.equal(userUnstaked);
     expect(user.vesting).to.equal(userVesting);
     expect(user.mostRecentDelegationTimestamp).to.equal(
-      delegationBlock.timestamp + 100
+      delegationBlock.timestamp + 100 + EPOCH_LENGTH.toNumber()
     );
     expect(user.unstakeScheduledFor).to.equal(unstakeScheduledFor);
     expect(user.unstakeAmount).to.equal(userScheduledToUnstake);
