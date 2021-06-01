@@ -30,6 +30,13 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
                 && user.mostRecentUndelegationTimestamp <= block.timestamp - EPOCH_LENGTH,
             ERROR_UNAUTHORIZED
             );
+        // Do not allow the user to delegate if they have voted or made a proposal
+        // recently
+        require(
+            user.mostRecentProposalTimestamp <= block.timestamp - EPOCH_LENGTH
+                && user.mostRecentVoteTimestamp <= block.timestamp - EPOCH_LENGTH,
+            ERROR_UNAUTHORIZED
+            );
         user.mostRecentDelegationTimestamp = block.timestamp;
         uint256 userShares = userShares(msg.sender);
         address userDelegate = userDelegate(msg.sender);
