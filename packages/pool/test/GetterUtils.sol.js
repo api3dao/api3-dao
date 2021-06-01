@@ -197,7 +197,21 @@ describe("getDelegateAt", function () {
         ]);
         await api3Pool
           .connect(roles.user1)
+          .undelegateVotingPower();
+        // Fast forward time
+        await ethers.provider.send("evm_increaseTime", [
+          EPOCH_LENGTH.toNumber() + 1,
+        ]);
+        await api3Pool
+          .connect(roles.user1)
           .delegateVotingPower(roles.randomPerson.address);
+        // Fast forward time
+        await ethers.provider.send("evm_increaseTime", [
+          EPOCH_LENGTH.toNumber() + 1,
+        ]);
+        await api3Pool
+          .connect(roles.user1)
+          .undelegateVotingPower();
         // Fast forward time
         await ethers.provider.send("evm_increaseTime", [
           EPOCH_LENGTH.toNumber() + 1,
@@ -217,11 +231,23 @@ describe("getDelegateAt", function () {
             roles.user1.address,
             firstBlockNumber + 1
           )
-        ).to.equal(roles.randomPerson.address);
+        ).to.equal(ethers.constants.AddressZero);
         expect(
           await api3Pool.userDelegateAt(
             roles.user1.address,
             firstBlockNumber + 2
+          )
+        ).to.equal(roles.randomPerson.address);
+        expect(
+          await api3Pool.userDelegateAt(
+            roles.user1.address,
+            firstBlockNumber + 3
+          )
+        ).to.equal(ethers.constants.AddressZero);
+        expect(
+          await api3Pool.userDelegateAt(
+            roles.user1.address,
+            firstBlockNumber + 4
           )
         ).to.equal(roles.user2.address);
       });
@@ -239,7 +265,7 @@ describe("getDelegateAt", function () {
         ]);
         await api3Pool
           .connect(roles.user1)
-          .delegateVotingPower(roles.randomPerson.address);
+          .undelegateVotingPower();
         await ethers.provider.send("evm_increaseTime", [
           EPOCH_LENGTH.toNumber() + 1,
         ]);
@@ -259,7 +285,7 @@ describe("getDelegateAt", function () {
             roles.user1.address,
             initialBlockNumber + i * 2 + 2
           )
-        ).to.equal(roles.randomPerson.address);
+        ).to.equal(ethers.constants.AddressZero);
       }
     });
   });

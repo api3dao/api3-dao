@@ -7,6 +7,7 @@ import "./interfaces/IDelegationUtils.sol";
 /// @title Contract that implements voting power delegation
 abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
     /// @notice Called by the user to delegate voting power
+    /// @dev User has to be undelegated to call this
     /// @param delegate User address the voting power will be delegated to
     function delegateVotingPower(address delegate) 
         external
@@ -23,38 +24,28 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             ERROR_ADDRESS
             );
         User storage user = users[msg.sender];
-        // Do not allow frequent delegation updates as that can be used to spam
-        // proposals
+        // User has to be undelegated
+        require(userDelegate(msg.sender) == address(0), ERROR_UNAUTHORIZED);
+        // Frequent delegation updates are not allowed to prevent proposal spam
+        // and double voting
         require(
-            user.mostRecentDelegationTimestamp + EPOCH_LENGTH < block.timestamp
-                && user.mostRecentUndelegationTimestamp + EPOCH_LENGTH <= block.timestamp,
+            user.mostRecentUndelegationTimestamp + EPOCH_LENGTH < block.timestamp,
             ERROR_UNAUTHORIZED
             );
-        // Do not allow the user to delegate if they have voted or made a proposal
-        // recently
+        // Delegation is not allowed if the user has voted or made a proposal
+        // recently to prevent proposal spam and double voting
         require(
             user.mostRecentProposalTimestamp + EPOCH_LENGTH < block.timestamp
                 && user.mostRecentVoteTimestamp + EPOCH_LENGTH < block.timestamp,
             ERROR_UNAUTHORIZED
             );
         user.mostRecentDelegationTimestamp = block.timestamp;
-        uint256 userShares = userShares(msg.sender);
-        address userDelegate = userDelegate(msg.sender);
 
-        require(userDelegate != delegate, ERROR_DELEGATE);
-
-        if (userDelegate != address(0)) {
-            // Need to revoke previous delegation
-            updateCheckpointArray(
-                users[userDelegate].delegatedTo,
-                userReceivedDelegation(userDelegate) - userShares
-                );
-        }
         // Assign the new delegation
         User storage _delegate = users[delegate];
         updateCheckpointArray(
             _delegate.delegatedTo,
-            userReceivedDelegation(delegate) + userShares
+            userReceivedDelegation(delegate) + userShares(msg.sender)
             );
         // Record the new delegate for the user
         user.delegates.push(AddressCheckpoint({
@@ -68,6 +59,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
     }
 
     /// @notice Called by the user to undelegate voting power
+    /// @dev User has to be delegated to call this
     function undelegateVotingPower()
         external
         override
@@ -75,17 +67,22 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         payReward();
         User storage user = users[msg.sender];
         address userDelegate = userDelegate(msg.sender);
+        // User has to be delegated
         require(
-            userDelegate != address(0)
-                && user.mostRecentDelegationTimestamp + EPOCH_LENGTH < block.timestamp,
+            userDelegate != address(0),
+            ERROR_UNAUTHORIZED
+            );
+        // Frequent delegation updates are not allowed to prevent proposal spam
+        // and double voting
+        require(
+            user.mostRecentDelegationTimestamp + EPOCH_LENGTH < block.timestamp,
             ERROR_UNAUTHORIZED
             );
 
-        uint256 userShares = userShares(msg.sender);
         User storage delegate = users[userDelegate];
         updateCheckpointArray(
             delegate.delegatedTo,
-            userReceivedDelegation(userDelegate) - userShares
+            userReceivedDelegation(userDelegate) - userShares(msg.sender)
             );
         user.delegates.push(AddressCheckpoint({
             fromBlock: block.number,

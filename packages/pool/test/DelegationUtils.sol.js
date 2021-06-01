@@ -54,7 +54,7 @@ describe("delegateVotingPower", function () {
   context("Delegate address is not zero", function () {
     context("Delegate address is not caller", function () {
       context("Delegate is not delegating", function () {
-        context("User has not delegated less than an epoch ago", function () {
+        context("User is not delegating", function () {
           context(
             "User has not undelegated less than an epoch ago",
             function () {
@@ -64,130 +64,54 @@ describe("delegateVotingPower", function () {
                   context(
                     "User has not voted less than an epoch ago",
                     function () {
-                      context(
-                        "User did not have the same delegate",
-                        function () {
-                          it("delegates voting power", async function () {
-                            // Have two users stake
-                            const user1Stake = ethers.utils.parseEther(
-                              "20" + "000" + "000"
-                            );
-                            const user2Stake = ethers.utils.parseEther(
-                              "60" + "000" + "000"
-                            );
-                            await api3Token
-                              .connect(roles.deployer)
-                              .transfer(roles.user1.address, user1Stake);
-                            await api3Token
-                              .connect(roles.deployer)
-                              .transfer(roles.user2.address, user2Stake);
-                            await api3Token
-                              .connect(roles.user1)
-                              .approve(api3Pool.address, user1Stake);
-                            await api3Token
-                              .connect(roles.user2)
-                              .approve(api3Pool.address, user2Stake);
-                            await api3Pool
-                              .connect(roles.user1)
-                              .depositAndStake(user1Stake);
-                            await api3Pool
-                              .connect(roles.user2)
-                              .depositAndStake(user2Stake);
-                            // Have user 1 delegate to someone else first
-                            await api3Pool
-                              .connect(roles.user1)
-                              .delegateVotingPower(roles.randomPerson.address);
-                            expect(
-                              await api3Pool.balanceOf(roles.user1.address)
-                            ).to.equal(ethers.BigNumber.from(0));
-                            expect(
-                              await api3Pool.balanceOf(
-                                roles.randomPerson.address
-                              )
-                            ).to.equal(user1Stake);
-                            // Fast forward time
-                            await ethers.provider.send("evm_increaseTime", [
-                              EPOCH_LENGTH.toNumber() + 1,
-                            ]);
-                            // ... then have user 1 delegate to user 2
-                            await expect(
-                              api3Pool
-                                .connect(roles.user1)
-                                .delegateVotingPower(roles.user2.address)
-                            )
-                              .to.emit(api3Pool, "Delegated")
-                              .withArgs(
-                                roles.user1.address,
-                                roles.user2.address
-                              );
-                            expect(
-                              await api3Pool.balanceOf(roles.user1.address)
-                            ).to.equal(ethers.BigNumber.from(0));
-                            expect(
-                              await api3Pool.balanceOf(roles.user2.address)
-                            ).to.equal(user2Stake.add(user1Stake));
-                            expect(
-                              await api3Pool.userReceivedDelegation(
-                                roles.user2.address
-                              )
-                            ).to.equal(user1Stake);
-                            expect(
-                              await api3Pool.userDelegate(roles.user1.address)
-                            ).to.equal(roles.user2.address);
-                          });
-                        }
-                      );
-                      context("User had the same delegate", function () {
-                        it("reverts", async function () {
-                          // Have two users stake
-                          const user1Stake = ethers.utils.parseEther(
-                            "20" + "000" + "000"
-                          );
-                          const user2Stake = ethers.utils.parseEther(
-                            "60" + "000" + "000"
-                          );
-                          await api3Token
-                            .connect(roles.deployer)
-                            .transfer(roles.user1.address, user1Stake);
-                          await api3Token
-                            .connect(roles.deployer)
-                            .transfer(roles.user2.address, user2Stake);
-                          await api3Token
+                      it("delegates voting power", async function () {
+                        // Have two users stake
+                        const user1Stake = ethers.utils.parseEther(
+                          "20" + "000" + "000"
+                        );
+                        const user2Stake = ethers.utils.parseEther(
+                          "60" + "000" + "000"
+                        );
+                        await api3Token
+                          .connect(roles.deployer)
+                          .transfer(roles.user1.address, user1Stake);
+                        await api3Token
+                          .connect(roles.deployer)
+                          .transfer(roles.user2.address, user2Stake);
+                        await api3Token
+                          .connect(roles.user1)
+                          .approve(api3Pool.address, user1Stake);
+                        await api3Token
+                          .connect(roles.user2)
+                          .approve(api3Pool.address, user2Stake);
+                        await api3Pool
+                          .connect(roles.user1)
+                          .depositAndStake(user1Stake);
+                        await api3Pool
+                          .connect(roles.user2)
+                          .depositAndStake(user2Stake);
+                        // Have user 1 delegate to user 2
+                        await expect(
+                          api3Pool
                             .connect(roles.user1)
-                            .approve(api3Pool.address, user1Stake);
-                          await api3Token
-                            .connect(roles.user2)
-                            .approve(api3Pool.address, user2Stake);
-                          await api3Pool
-                            .connect(roles.user1)
-                            .depositAndStake(user1Stake);
-                          await api3Pool
-                            .connect(roles.user2)
-                            .depositAndStake(user2Stake);
-                          // Have user 1 delegate to user 2
-                          await api3Pool
-                            .connect(roles.user1)
-                            .delegateVotingPower(roles.user2.address);
-                          // Fast forward time
-                          await ethers.provider.send("evm_increaseTime", [
-                            EPOCH_LENGTH.toNumber() + 1,
-                          ]);
-                          // ... then have user 1 delegate to user 2 again
-                          await expect(
-                            api3Pool
-                              .connect(roles.user1)
-                              .delegateVotingPower(roles.user2.address)
-                          ).to.be.revertedWith(
-                            "Cannot delegate to the same address"
-                          );
-
-                          expect(
-                            await api3Pool.balanceOf(roles.user1.address)
-                          ).to.equal(ethers.BigNumber.from(0));
-                          expect(
-                            await api3Pool.balanceOf(roles.user2.address)
-                          ).to.equal(user2Stake.add(user1Stake));
-                        });
+                            .delegateVotingPower(roles.user2.address)
+                        )
+                          .to.emit(api3Pool, "Delegated")
+                          .withArgs(roles.user1.address, roles.user2.address);
+                        expect(
+                          await api3Pool.balanceOf(roles.user1.address)
+                        ).to.equal(ethers.BigNumber.from(0));
+                        expect(
+                          await api3Pool.balanceOf(roles.user2.address)
+                        ).to.equal(user2Stake.add(user1Stake));
+                        expect(
+                          await api3Pool.userReceivedDelegation(
+                            roles.user2.address
+                          )
+                        ).to.equal(user1Stake);
+                        expect(
+                          await api3Pool.userDelegate(roles.user1.address)
+                        ).to.equal(roles.user2.address);
                       });
                     }
                   );
@@ -226,6 +150,12 @@ describe("delegateVotingPower", function () {
               await api3Pool
                 .connect(roles.user1)
                 .delegateVotingPower(roles.randomPerson.address);
+              // Fast forward time
+              await ethers.provider.send("evm_increaseTime", [
+                EPOCH_LENGTH.toNumber() + 1,
+              ]);
+              // Have user 1 undelegate
+              await api3Pool.connect(roles.user1).undelegateVotingPower();
               // Attempt to have user 1 delegate to user 2 without waiting
               await expect(
                 api3Pool
@@ -235,19 +165,13 @@ describe("delegateVotingPower", function () {
             });
           });
         });
-        context("User has delegated less than an epoch ago", function () {
+        context("User is delegating", function () {
           it("reverts", async function () {
             // Have user 1 delegate to someone else first
             await api3Pool
               .connect(roles.user1)
               .delegateVotingPower(roles.randomPerson.address);
-            // Fast forward time
-            await ethers.provider.send("evm_increaseTime", [
-              EPOCH_LENGTH.toNumber() + 1,
-            ]);
-            // Have user 1 undelegate
-            await api3Pool.connect(roles.user1).undelegateVotingPower();
-            // Attempt to have user 1 delegate to user 2 without waiting
+            // Attempt to have user 1 delegate to user 2
             await expect(
               api3Pool
                 .connect(roles.user1)
