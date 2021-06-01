@@ -133,7 +133,7 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             // await pool.delegateVotingPower(voter2, {from: voter1});
             await expectRevert(
                 pool.delegateVotingPower(voter2, {from: voter1}),
-                "Cannot delegate to the same address"
+                "Unauthorized"
             );
             latest = Number(await time.latest());
             await time.increaseTo(latest+Number(time.duration.weeks(1)));
