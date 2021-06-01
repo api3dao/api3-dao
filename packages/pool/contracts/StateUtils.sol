@@ -481,6 +481,11 @@ contract StateUtils is IStateUtils {
         onlyVotingApp()
     {
         users[userAddress].mostRecentVoteTimestamp = block.timestamp;
+        emit UpdatedMostRecentVoteTimestamp(
+            msg.sender,
+            userAddress,
+            block.timestamp
+            );
     }
 
     /// @notice Called internally to update the total shares history

@@ -63,6 +63,12 @@ interface IStateUtils {
         uint256 mostRecentProposalTimestamp
         );
 
+    event UpdatedMostRecentVoteTimestamp(
+        address votingApp,
+        address userAddress,
+        uint256 mostRecentVoteTimestamp
+        );
+
     function setDaoApps(
         address _agentAppPrimary,
         address _agentAppSecondary,
