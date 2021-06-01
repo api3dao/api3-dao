@@ -256,7 +256,16 @@ contract Api3Voting is IForwarder, AragonApp {
         internal
         returns (uint256 voteId)
     {
-        (, , , , , uint256 mostRecentProposalTimestamp) = api3Pool.getUser(msg.sender);
+        (
+            , // unstaked
+            , // vesting
+            , // unstakeScheduledFor
+            , // unstakeAmount
+            uint256 mostRecentProposalTimestamp,
+            , // mostRecentVoteTimestamp
+            , // mostRecentDelegationTimestamp
+            // mostRecentUndelegationTimestamp
+            ) = api3Pool.getUser(msg.sender);
         require(mostRecentProposalTimestamp.add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_PROPOSAL_COOLDOWN");
         api3Pool.updateMostRecentProposalTimestamp(msg.sender);
 
@@ -295,6 +304,7 @@ contract Api3Voting is IForwarder, AragonApp {
         bool _executesIfDecided
     ) internal
     {
+        api3Pool.updateMostRecentVoteTimestamp(msg.sender);
         Vote storage vote_ = votes[_voteId];
 
         // This could re-enter, though we can assume the governance token is not malicious

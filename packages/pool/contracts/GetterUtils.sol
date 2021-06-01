@@ -231,12 +231,16 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// @param userAddress User address
     /// @return unstaked Amount of unstaked API3 tokens
     /// @return vesting Amount of API3 tokens locked by vesting
-    /// @return lastDelegationUpdateTimestamp Time of most recent delegation
-    /// update
     /// @return unstakeScheduledFor Time unstaking is scheduled for
     /// @return unstakeAmount Amount scheduled to unstake
     /// @return mostRecentProposalTimestamp Time when the user made their most
     /// recent proposal
+    /// @return mostRecentVoteTimestamp Time when the user cast their most
+    /// recent vote
+    /// @return mostRecentDelegationTimestamp Time when the user made their
+    /// most recent delegation
+    /// @return mostRecentUndelegationTimestamp Time when the user made their
+    /// most recent undelegation
     function getUser(address userAddress)
         external
         view
@@ -244,19 +248,23 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         returns(
             uint256 unstaked,
             uint256 vesting,
-            uint256 lastDelegationUpdateTimestamp,
             uint256 unstakeScheduledFor,
             uint256 unstakeAmount,
-            uint256 mostRecentProposalTimestamp
+            uint256 mostRecentProposalTimestamp,
+            uint256 mostRecentVoteTimestamp,
+            uint256 mostRecentDelegationTimestamp,
+            uint256 mostRecentUndelegationTimestamp
             )
     {
         User storage user = users[userAddress];
         unstaked = user.unstaked;
         vesting = user.vesting;
-        lastDelegationUpdateTimestamp = user.lastDelegationUpdateTimestamp;
         unstakeScheduledFor = user.unstakeScheduledFor;
         unstakeAmount = user.unstakeAmount;
         mostRecentProposalTimestamp = user.mostRecentProposalTimestamp;
+        mostRecentVoteTimestamp = user.mostRecentVoteTimestamp;
+        mostRecentDelegationTimestamp = user.mostRecentDelegationTimestamp;
+        mostRecentUndelegationTimestamp = user.mostRecentUndelegationTimestamp;
     }
 
     /// @notice Called to get the value of a checkpoint array at a specific

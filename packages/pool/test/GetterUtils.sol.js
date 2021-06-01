@@ -461,7 +461,7 @@ describe("getUser", function () {
     const user = await api3Pool.getUser(roles.user1.address);
     expect(user.unstaked).to.equal(userUnstaked);
     expect(user.vesting).to.equal(userVesting);
-    expect(user.lastDelegationUpdateTimestamp).to.equal(
+    expect(user.mostRecentDelegationTimestamp).to.equal(
       delegationBlock.timestamp + 100
     );
     expect(user.unstakeScheduledFor).to.equal(unstakeScheduledFor);

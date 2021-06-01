@@ -83,21 +83,30 @@ contract Api3TokenMock is MiniMeToken {
         returns(
             uint256 unstaked,
             uint256 vesting,
-            uint256 lastDelegationUpdateTimestamp,
             uint256 unstakeScheduledFor,
             uint256 unstakeAmount,
-            uint256 mostRecentProposalTimestamp
+            uint256 mostRecentProposalTimestamp,
+            uint256 mostRecentVoteTimestamp,
+            uint256 mostRecentDelegationTimestamp,
+            uint256 mostRecentUndelegationTimestamp
             )
     {
         unstaked = 0;
         vesting = 0;
-        lastDelegationUpdateTimestamp = 0;
         unstakeScheduledFor = 0;
         unstakeAmount = 0;
         mostRecentProposalTimestamp = 0;
+        mostRecentVoteTimestamp = 0;
+        mostRecentDelegationTimestamp = 0;
+        mostRecentUndelegationTimestamp = 0;
     }
 
     function updateMostRecentProposalTimestamp(address userAddress)
+        external
+    {
+    }
+
+    function updateMostRecentVoteTimestamp(address userAddress)
         external
     {
     }

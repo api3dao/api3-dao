@@ -107,4 +107,7 @@ interface IStateUtils {
 
     function updateMostRecentProposalTimestamp(address userAddress)
         external;
+
+    function updateMostRecentVoteTimestamp(address userAddress)
+        external;
 }

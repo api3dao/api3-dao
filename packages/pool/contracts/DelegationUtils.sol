@@ -26,10 +26,11 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         // Do not allow frequent delegation updates as that can be used to spam
         // proposals
         require(
-            user.lastDelegationUpdateTimestamp <= block.timestamp - EPOCH_LENGTH,
+            user.mostRecentDelegationTimestamp <= block.timestamp - EPOCH_LENGTH
+                && user.mostRecentUndelegationTimestamp <= block.timestamp - EPOCH_LENGTH,
             ERROR_UNAUTHORIZED
             );
-        user.lastDelegationUpdateTimestamp = block.timestamp;
+        user.mostRecentDelegationTimestamp = block.timestamp;
         uint256 userShares = userShares(msg.sender);
         address userDelegate = userDelegate(msg.sender);
 
@@ -69,7 +70,8 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         address userDelegate = userDelegate(msg.sender);
         require(
             userDelegate != address(0)
-                && user.lastDelegationUpdateTimestamp <= block.timestamp - EPOCH_LENGTH,
+                && user.mostRecentDelegationTimestamp <= block.timestamp - EPOCH_LENGTH
+                && user.mostRecentUndelegationTimestamp <= block.timestamp - EPOCH_LENGTH,
             ERROR_UNAUTHORIZED
             );
 
@@ -83,7 +85,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             fromBlock: block.number,
             _address: address(0)
             }));
-        user.lastDelegationUpdateTimestamp = block.timestamp;
+        user.mostRecentUndelegationTimestamp = block.timestamp;
         emit Undelegated(
             msg.sender,
             userDelegate
