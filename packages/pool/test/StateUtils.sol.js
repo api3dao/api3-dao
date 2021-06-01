@@ -951,3 +951,56 @@ describe("updateMostRecentProposalTimestamp", function () {
     });
   });
 });
+
+describe("updateMostRecentVoteTimestamp", function () {
+  context("Caller is a Voting app", function () {
+    it("updates mostRecentVoteTimestamp", async function () {
+      await api3Pool
+        .connect(roles.deployer)
+        .setDaoApps(
+          roles.agentAppPrimary.address,
+          roles.agentAppSecondary.address,
+          roles.votingAppPrimary.address,
+          roles.votingAppSecondary.address
+        );
+      const currentBlock = await ethers.provider.getBlock(
+        await ethers.provider.getBlockNumber()
+      );
+      const nextBlockTimestamp = currentBlock.timestamp + 100;
+      await ethers.provider.send("evm_setNextBlockTimestamp", [
+        nextBlockTimestamp,
+      ]);
+      await expect(
+        api3Pool
+          .connect(roles.votingAppPrimary)
+          .updateMostRecentVoteTimestamp(roles.user1.address)
+      )
+        .to.emit(api3Pool, "UpdatedMostRecentVoteTimestamp")
+        .withArgs(
+          roles.votingAppPrimary.address,
+          roles.user1.address,
+          nextBlockTimestamp
+        );
+      expect(
+        (await api3Pool.getUser(roles.user1.address)).mostRecentVoteTimestamp
+      ).to.equal(nextBlockTimestamp);
+    });
+  });
+  context("Caller is not an authorized Api3Voting app", function () {
+    it("reverts", async function () {
+      await api3Pool
+        .connect(roles.deployer)
+        .setDaoApps(
+          roles.agentAppPrimary.address,
+          roles.agentAppSecondary.address,
+          roles.votingAppPrimary.address,
+          roles.votingAppSecondary.address
+        );
+      await expect(
+        api3Pool
+          .connect(roles.randomPerson)
+          .updateMostRecentVoteTimestamp(roles.user1.address)
+      ).to.be.revertedWith("Unauthorized");
+    });
+  });
+});
