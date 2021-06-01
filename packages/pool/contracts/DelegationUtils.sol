@@ -77,8 +77,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         address userDelegate = userDelegate(msg.sender);
         require(
             userDelegate != address(0)
-                && user.mostRecentDelegationTimestamp + EPOCH_LENGTH < block.timestamp 
-                && user.mostRecentUndelegationTimestamp + EPOCH_LENGTH < block.timestamp,
+                && user.mostRecentDelegationTimestamp + EPOCH_LENGTH < block.timestamp,
             ERROR_UNAUTHORIZED
             );
 
