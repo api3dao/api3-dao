@@ -45,40 +45,20 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
     function updateCurrentApr()
         internal
     {
-        if (stakeTarget == 0) {
-            currentApr = minApr;
-            return;
-        }
         uint256 totalStakePercentage = totalStake
-             * HUNDRED_PERCENT
+            * HUNDRED_PERCENT
             / api3Token.totalSupply();
-        // Calculate what % we are off from the target
-        uint256 deltaAbsolute = totalStakePercentage < stakeTarget 
-            ? stakeTarget - totalStakePercentage
-            : totalStakePercentage - stakeTarget;
-        uint256 deltaPercentage = deltaAbsolute * HUNDRED_PERCENT / stakeTarget;
-        // Use the update coefficient to calculate what % we need to update
-        // the APR with
-        uint256 aprUpdate = deltaPercentage * aprUpdateCoefficient / ONE_PERCENT;
-
-        uint256 newApr;
-        if (totalStakePercentage < stakeTarget) {
-            newApr = currentApr * (HUNDRED_PERCENT + aprUpdate) / HUNDRED_PERCENT;
+        if (totalStakePercentage > stakeTarget) {
+            currentApr = currentApr > aprUpdateStep ? currentApr - aprUpdateStep : 0;
         }
         else {
-            newApr = HUNDRED_PERCENT > aprUpdate
-                ? currentApr * (HUNDRED_PERCENT - aprUpdate) / HUNDRED_PERCENT
-                : 0;
+            currentApr += aprUpdateStep;
         }
-
-        if (newApr < minApr) {
-            currentApr = minApr;
-        }
-        else if (newApr > maxApr) {
+        if (currentApr > maxApr) {
             currentApr = maxApr;
         }
-        else {
-            currentApr = newApr;
+        else if (currentApr < minApr) {
+            currentApr = minApr;
         }
     }
 }

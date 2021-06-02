@@ -118,7 +118,7 @@ contract StateUtils is IStateUtils {
 
     /// @notice Stake target the pool will aim to meet in percentages of the
     /// total token supply. The staking rewards increase if the total staked
-    ///  amount is below this, and vice versa.
+    /// amount is below this, and vice versa.
     /// @dev Default value is 50% of the total API3 token supply. This
     /// parameter is governable by the DAO.
     uint256 public stakeTarget = 50_000_000;
@@ -133,18 +133,9 @@ contract StateUtils is IStateUtils {
     /// @dev Default value is 75%. This parameter is governable by the DAO.
     uint256 public maxApr = 75_000_000;
 
-    /// @notice Coefficient that represents how aggresively the APR will be
-    /// updated to meet the stake target.
-    /// @dev Since this is a coefficient, it has no unit. A coefficient of 1e6
-    /// means 1% deviation from the stake target results in 1% update in APR.
-    /// This parameter is governable by the DAO.
-    uint256 public aprUpdateCoefficient = 1_000_000;
-    /// @notice Maximum APR update coefficient
-    /// @dev This value represents a 1000% update in APR with 1% deviation
-    /// from the stake target. The APR update rate already saturates at this
-    /// point, and thus there is no point in allowing this parameter to be set
-    /// any larger.
-    uint256 public constant maxAprUpdateCoefficient = 1_000_000_000;
+    /// @notice Steps in which APR will be updated in percentages
+    /// @dev Default value is 1%. This parameter is governable by the DAO.
+    uint256 public aprUpdateStep = 1_000_000;
 
     /// @notice Users need to schedule an unstake and wait for
     /// `unstakeWaitPeriod` before being able to unstake. This is to prevent
@@ -163,11 +154,10 @@ contract StateUtils is IStateUtils {
     uint256 public proposalVotingPowerThreshold = 100_000;
 
     /// @notice APR that will be paid next epoch
-    /// @dev This is initialized at maximum APR, but will reach an
-    /// equilibrium based on the stake target.
+    /// @dev This value will reach an equilibrium based on the stake target.
     /// Every epoch (week), APR/52 of the total staked tokens will be added to
     /// the pool, effectively distributing them to the stakers.
-    uint256 public currentApr = maxApr;
+    uint256 public currentApr = (maxApr + minApr) / 2;
 
     /// @notice Mapping that keeps the specs of a proposal provided by a user
     /// @dev After making a proposal through the Agent app, the user publishes
@@ -369,23 +359,19 @@ contract StateUtils is IStateUtils {
             );
     }
 
-    /// @notice Called by the DAO Agent to set the APR update coefficient
-    /// @param _aprUpdateCoefficient APR update coefficient
-    function setAprUpdateCoefficient(uint256 _aprUpdateCoefficient)
+    /// @notice Called by the DAO Agent to set the APR update steps
+    /// @dev aprUpdateStep can be 0% or 100%+
+    /// @param _aprUpdateStep APR update steps
+    function setAprUpdateStep(uint256 _aprUpdateStep)
         external
         override
         onlyAgentApp()
     {
-        require(
-            _aprUpdateCoefficient <= maxAprUpdateCoefficient
-                && _aprUpdateCoefficient > 0,
-            ERROR_VALUE
-            );
-        uint256 oldAprUpdateCoefficient = aprUpdateCoefficient;
-        aprUpdateCoefficient = _aprUpdateCoefficient;
-        emit SetAprUpdateCoefficient(
-            oldAprUpdateCoefficient,
-            aprUpdateCoefficient
+        uint256 oldAprUpdateStep = aprUpdateStep;
+        aprUpdateStep = _aprUpdateStep;
+        emit SetAprUpdateStep(
+            oldAprUpdateStep,
+            aprUpdateStep
             );
     }
 
