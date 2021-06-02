@@ -4,7 +4,7 @@ pragma solidity 0.8.2;
 import "./IStateUtils.sol";
 
 interface IGetterUtils is IStateUtils {
-    function balanceOfAt(
+    function userVotingPowerAt(
         address userAddress,
         uint256 _block
         )
@@ -12,17 +12,17 @@ interface IGetterUtils is IStateUtils {
         view
         returns(uint256);
 
-    function balanceOf(address userAddress)
+    function userVotingPower(address userAddress)
         external
         view
         returns(uint256);
 
-    function totalSupplyOneBlockAgo()
+    function totalVotingPowerOneBlockAgo()
         external
         view
         returns(uint256);
 
-    function totalSupply()
+    function totalVotingPower()
         external
         view
         returns(uint256);
@@ -71,7 +71,7 @@ interface IGetterUtils is IStateUtils {
         view
         returns(address);
 
-    function getUserLocked(address userAddress)
+    function userLocked(address userAddress)
         external
         view
         returns(uint256);

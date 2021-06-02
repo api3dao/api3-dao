@@ -84,11 +84,11 @@ describe("delegateVotingPower", function () {
                 await api3Pool
                   .connect(roles.user1)
                   .delegateVotingPower(roles.randomPerson.address);
-                expect(await api3Pool.balanceOf(roles.user1.address)).to.equal(
-                  ethers.BigNumber.from(0)
-                );
                 expect(
-                  await api3Pool.balanceOf(roles.randomPerson.address)
+                  await api3Pool.userVotingPower(roles.user1.address)
+                ).to.equal(ethers.BigNumber.from(0));
+                expect(
+                  await api3Pool.userVotingPower(roles.randomPerson.address)
                 ).to.equal(user1Stake);
                 // Fast forward time
                 await ethers.provider.send("evm_increaseTime", [
@@ -102,12 +102,12 @@ describe("delegateVotingPower", function () {
                 )
                   .to.emit(api3Pool, "Delegated")
                   .withArgs(roles.user1.address, roles.user2.address);
-                expect(await api3Pool.balanceOf(roles.user1.address)).to.equal(
-                  ethers.BigNumber.from(0)
-                );
-                expect(await api3Pool.balanceOf(roles.user2.address)).to.equal(
-                  user2Stake.add(user1Stake)
-                );
+                expect(
+                  await api3Pool.userVotingPower(roles.user1.address)
+                ).to.equal(ethers.BigNumber.from(0));
+                expect(
+                  await api3Pool.userVotingPower(roles.user2.address)
+                ).to.equal(user2Stake.add(user1Stake));
                 expect(
                   await api3Pool.userReceivedDelegation(roles.user2.address)
                 ).to.equal(user1Stake);
@@ -154,12 +154,12 @@ describe("delegateVotingPower", function () {
                     .delegateVotingPower(roles.user2.address)
                 ).to.be.revertedWith("Cannot delegate to the same address");
 
-                expect(await api3Pool.balanceOf(roles.user1.address)).to.equal(
-                  ethers.BigNumber.from(0)
-                );
-                expect(await api3Pool.balanceOf(roles.user2.address)).to.equal(
-                  user2Stake.add(user1Stake)
-                );
+                expect(
+                  await api3Pool.userVotingPower(roles.user1.address)
+                ).to.equal(ethers.BigNumber.from(0));
+                expect(
+                  await api3Pool.userVotingPower(roles.user2.address)
+                ).to.equal(user2Stake.add(user1Stake));
               });
             });
           }
@@ -251,10 +251,10 @@ describe("undelegateVotingPower", function () {
           await expect(api3Pool.connect(roles.user1).undelegateVotingPower())
             .to.emit(api3Pool, "Undelegated")
             .withArgs(roles.user1.address, roles.user2.address);
-          expect(await api3Pool.balanceOf(roles.user1.address)).to.equal(
+          expect(await api3Pool.userVotingPower(roles.user1.address)).to.equal(
             user1Stake
           );
-          expect(await api3Pool.balanceOf(roles.user2.address)).to.equal(
+          expect(await api3Pool.userVotingPower(roles.user2.address)).to.equal(
             user2Stake
           );
           expect(

@@ -262,9 +262,9 @@ contract Api3Voting is IForwarder, AragonApp {
 
         uint64 snapshotBlock = getBlockNumber64() - 1; // avoid double voting in this very block
 
-        uint256 votingPower = api3Pool.totalSupplyOneBlockAgo();
+        uint256 votingPower = api3Pool.totalVotingPowerOneBlockAgo();
         require(votingPower > 0, ERROR_NO_VOTING_POWER);
-        uint256 proposalMakerVotingPower = api3Pool.balanceOfAt(msg.sender, snapshotBlock);
+        uint256 proposalMakerVotingPower = api3Pool.userVotingPowerAt(msg.sender, snapshotBlock);
         require(
             proposalMakerVotingPower >= votingPower.mul(api3Pool.proposalVotingPowerThreshold()).div(1e8),
             "API3_HIT_PROPOSAL_THRESHOLD"
@@ -297,7 +297,7 @@ contract Api3Voting is IForwarder, AragonApp {
         Vote storage vote_ = votes[_voteId];
 
         // This could re-enter, though we can assume the governance token is not malicious
-        uint256 voterStake = api3Pool.balanceOfAt(_voter, vote_.snapshotBlock);
+        uint256 voterStake = api3Pool.userVotingPowerAt(_voter, vote_.snapshotBlock);
         VoterState state = vote_.voters[_voter];
 
         // If voter had previously voted, decrease count
@@ -374,7 +374,7 @@ contract Api3Voting is IForwarder, AragonApp {
     function _canVote(uint256 _voteId, address _voter) internal view returns (bool) {
         Vote storage vote_ = votes[_voteId];
 
-        return _isVoteOpen(vote_) && api3Pool.balanceOfAt(_voter, vote_.snapshotBlock) > 0;
+        return _isVoteOpen(vote_) && api3Pool.userVotingPowerAt(_voter, vote_.snapshotBlock) > 0;
     }
 
     function _isVoteOpen(Vote storage vote_) internal view returns (bool) {

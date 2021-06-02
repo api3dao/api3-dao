@@ -61,9 +61,9 @@ beforeEach(async () => {
   REWARD_VESTING_PERIOD = await api3Pool.REWARD_VESTING_PERIOD();
 });
 
-describe("totalSupplyOneBlockAgo", function () {
-  it("gets total supply one block ago", async function () {
-    expect(await api3Pool.totalSupplyOneBlockAgo()).to.equal(
+describe("totalVotingPowerOneBlockAgo", function () {
+  it("gets total voting power one block ago", async function () {
+    expect(await api3Pool.totalVotingPowerOneBlockAgo()).to.equal(
       ethers.BigNumber.from(1)
     );
     const stakeAmount = ethers.BigNumber.from(1000);
@@ -71,11 +71,11 @@ describe("totalSupplyOneBlockAgo", function () {
       .connect(roles.deployer)
       .transfer(api3Staker.address, stakeAmount.mul(1000));
     await api3Staker.stakeTwice(stakeAmount, stakeAmount);
-    expect(await api3Pool.totalSupplyOneBlockAgo()).to.equal(
+    expect(await api3Pool.totalVotingPowerOneBlockAgo()).to.equal(
       ethers.BigNumber.from(1)
     );
     await api3Staker.stakeTwice(stakeAmount, stakeAmount);
-    expect(await api3Pool.totalSupplyOneBlockAgo()).to.equal(
+    expect(await api3Pool.totalVotingPowerOneBlockAgo()).to.equal(
       ethers.BigNumber.from(1).add(stakeAmount).add(stakeAmount)
     );
   });
@@ -264,7 +264,7 @@ describe("getDelegateAt", function () {
   });
 });
 
-describe("getUserLocked", function () {
+describe("userLocked", function () {
   context(
     "It has been more than REWARD_VESTING_PERIOD since the genesis epoch",
     function () {
@@ -314,7 +314,7 @@ describe("getUserLocked", function () {
             .slice(-REWARD_VESTING_PERIOD)
             .reduce((a, b) => a.add(b), ethers.BigNumber.from(0));
           const error = expectedUserLocked.sub(
-            await api3Pool.getUserLocked(roles.user1.address)
+            await api3Pool.userLocked(roles.user1.address)
           );
           // Tolerate rounding errors
           expect(error).to.lt(REWARD_VESTING_PERIOD);
@@ -330,7 +330,7 @@ describe("getUserLocked", function () {
             ]);
             await api3Pool.payReward();
           }
-          const userLocked = await api3Pool.callStatic.getUserLocked(
+          const userLocked = await api3Pool.userLocked(
             roles.randomPerson.address
           );
           expect(userLocked).to.equal(0);
@@ -385,7 +385,7 @@ describe("getUserLocked", function () {
           ethers.BigNumber.from(0)
         );
         const error = expectedUserLocked.sub(
-          await api3Pool.getUserLocked(roles.user1.address)
+          await api3Pool.userLocked(roles.user1.address)
         );
         // Tolerate rounding errors
         expect(error).to.lt(REWARD_VESTING_PERIOD.div(2));

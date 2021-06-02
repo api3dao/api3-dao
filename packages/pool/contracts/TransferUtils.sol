@@ -29,7 +29,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
     }
 
     /// @notice Called by the user to withdraw tokens
-    /// @dev The user should call `getUserLocked()` beforehand to ensure that
+    /// @dev The user should call `userLocked()` beforehand to ensure that
     /// they have at least `amount` unlocked tokens to withdraw.
     /// The method is named `withdrawRegular()` to be consistent with the name
     /// `depositRegular()`. See `depositRegular()` for more context.
@@ -43,15 +43,14 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         override
     {
         payReward();
-        uint256 userLocked = getUserLocked(msg.sender);
-        withdraw(destination, amount, userLocked);
+        withdraw(destination, amount, userLocked(msg.sender));
     }
 
     /// @notice Called to calculate the locked tokens of a user by making
     /// multiple transactions
     /// @dev If the user updates their `user.shares` by staking/unstaking too
     /// frequently (50+/week) in the last `REWARD_VESTING_PERIOD`, the
-    /// `getUserLocked()` call gas cost may exceed the block gas limit. In that
+    /// `userLocked()` call gas cost may exceed the block gas limit. In that
     /// case, the user may call this method multiple times to have their locked
     /// tokens calculated.
     /// @param userAddress User address

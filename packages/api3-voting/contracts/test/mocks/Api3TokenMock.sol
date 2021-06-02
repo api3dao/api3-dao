@@ -29,16 +29,12 @@ contract Api3TokenMock is MiniMeToken {
     uint256 private mockEPOCH_LENGTH = 0;
     uint256 private mockProposalVotingPowerThreshold = 0;
 
-    function setEPOCH_LENGTH(uint256 _EPOCH_LENGTH)
-        external
+    function userVotingPowerAt(address userAddress, uint256 _block)
+        public
+        constant
+        returns (uint)
     {
-        mockEPOCH_LENGTH = _EPOCH_LENGTH;
-    }
-
-    function setProposalVotingPowerThreshold(uint256 _proposalVotingPowerThreshold)
-        external
-    {
-        mockProposalVotingPowerThreshold = _proposalVotingPowerThreshold;
+        return balanceOfAt(userAddress, _block);
     }
 
     function EPOCH_LENGTH()
@@ -57,19 +53,12 @@ contract Api3TokenMock is MiniMeToken {
         return mockProposalVotingPowerThreshold;
     }
 
-    function totalSupplyOneBlockAgo()
+    function totalVotingPowerOneBlockAgo()
         external
         view
         returns(uint256)
     {
         return totalSupplyAt(block.number - 1);
-    }
-
-    function getMinterStatus(address account)
-        external
-        returns (bool)
-    {
-        return false;
     }
 
     function getUser(address userAddress)

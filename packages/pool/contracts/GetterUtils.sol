@@ -10,57 +10,56 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power of the user at the block
-    function balanceOfAt(
+    function userVotingPowerAt(
         address userAddress,
         uint256 _block
         )
         public
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
         // Users that delegate have no voting power
         if (userDelegateAt(userAddress, _block) != address(0))
         {
             return 0;
         }
-        uint256 userSharesThen = userSharesAt(userAddress, _block);
-        uint256 delegatedToUserThen = userReceivedDelegationAt(userAddress, _block);
-        return userSharesThen + delegatedToUserThen;
+        return userSharesAt(userAddress, _block)
+            + userReceivedDelegationAt(userAddress, _block);
     }
 
     /// @notice Called to get the current voting power of a user
     /// @param userAddress User address
     /// @return Current voting power of the user
-    function balanceOf(address userAddress)
-        public
+    function userVotingPower(address userAddress)
+        external
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
-        return balanceOfAt(userAddress, block.number);
+        return userVotingPowerAt(userAddress, block.number);
     }
 
     /// @notice Called to get the total voting power one block ago
     /// @dev This method is meant to be used by the API3 DAO's Api3Voting apps
     /// to get the total voting power at vote creation-time
     /// @return Total voting power one block ago
-    function totalSupplyOneBlockAgo()
-        public
+    function totalVotingPowerOneBlockAgo()
+        external
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
         return totalSharesOneBlockAgo();
     }
 
     /// @notice Called to get the current total voting power
     /// @return Current total voting power
-    function totalSupply()
-        public
+    function totalVotingPower()
+        external
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
         return totalShares();
     }
@@ -76,7 +75,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         public
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
         return getValueAt(users[userAddress].shares, _block);
     }
@@ -88,7 +87,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         public
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
         return userSharesAt(userAddress, block.number);
     }
@@ -100,9 +99,9 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         public
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
-        return userShares(userAddress) * totalStake / totalShares();
+        return (userShares(userAddress) * totalStake) / totalShares();
     }
 
     /// @notice Called to get the voting power delegated to a user at a
@@ -117,12 +116,9 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         public
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
-        return getValueAt(
-            users[userAddress].delegatedTo,
-            _block
-            );
+        return getValueAt(users[userAddress].delegatedTo, _block);
     }
 
     /// @notice Called to get the current voting power delegated to a user
@@ -132,7 +128,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         public
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
         return userReceivedDelegationAt(userAddress, block.number);
     }
@@ -148,12 +144,9 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         public
         view
         override
-        returns(address)
+        returns (address)
     {
-        return getAddressAt(
-            users[userAddress].delegates,
-            _block
-            );
+        return getAddressAt(users[userAddress].delegates, _block);
     }
 
     /// @notice Called to get the current delegate of the user
@@ -163,7 +156,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         public
         view
         override
-        returns(address)
+        returns (address)
     {
         return userDelegateAt(userAddress, block.number);
     }
@@ -171,38 +164,36 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// @notice Called to get the current locked tokens of the user
     /// @param userAddress User address
     /// @return locked Current locked tokens of the user
-    function getUserLocked(address userAddress)
+    function userLocked(address userAddress)
         public
         view
         override
-        returns(uint256 locked)
+        returns (uint256 locked)
     {
         Checkpoint[] storage _userShares = users[userAddress].shares;
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
-        uint256 oldestLockedEpoch = currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
-            ? currentEpoch - REWARD_VESTING_PERIOD + 1
-            : genesisEpoch + 1;
+        uint256 oldestLockedEpoch =
+            currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
+                ? currentEpoch - REWARD_VESTING_PERIOD + 1
+                : genesisEpoch + 1;
 
-        if (_userShares.length == 0)
-        {
+        if (_userShares.length == 0) {
             return 0;
         }
         uint256 indUserShares = _userShares.length - 1;
         for (
-                uint256 indEpoch = currentEpoch;
-                indEpoch >= oldestLockedEpoch;
-                indEpoch--
-            )
-        {
+            uint256 indEpoch = currentEpoch;
+            indEpoch >= oldestLockedEpoch;
+            indEpoch--
+        ) {
             Reward storage lockedReward = epochIndexToReward[indEpoch];
-            if (lockedReward.atBlock != 0)
-            {
-                for (; indUserShares >= 0; indUserShares--)
-                {
+            if (lockedReward.atBlock != 0) {
+                for (; indUserShares >= 0; indUserShares--) {
                     Checkpoint storage userShare = _userShares[indUserShares];
-                    if (userShare.fromBlock <= lockedReward.atBlock)
-                    {
-                        locked += lockedReward.amount * userShare.value / lockedReward.totalSharesThen;
+                    if (userShare.fromBlock <= lockedReward.atBlock) {
+                        locked +=
+                            (lockedReward.amount * userShare.value) /
+                            lockedReward.totalSharesThen;
                         break;
                     }
                 }
@@ -224,14 +215,14 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         external
         view
         override
-        returns(
+        returns (
             uint256 unstaked,
             uint256 vesting,
             uint256 lastDelegationUpdateTimestamp,
             uint256 unstakeScheduledFor,
             uint256 unstakeAmount,
             uint256 mostRecentProposalTimestamp
-            )
+        )
     {
         User storage user = users[userAddress];
         unstaked = user.unstaked;
@@ -244,7 +235,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the value of a checkpoint array at a specific
     /// block using binary search
-    /// @dev Adapted from 
+    /// @dev Adapted from
     /// https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
     /// @param checkpoints Checkpoints array
     /// @param _block Block number for which the query is being made
@@ -255,36 +246,33 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         )
         internal
         view
-        returns(uint256)
+        returns (uint256)
     {
         if (checkpoints.length == 0)
             return 0;
 
         // Shortcut for the actual value
-        if (_block >= checkpoints[checkpoints.length -1].fromBlock)
+        if (_block >= checkpoints[checkpoints.length - 1].fromBlock)
             return checkpoints[checkpoints.length - 1].value;
         if (_block < checkpoints[0].fromBlock)
             return 0;
 
         // Limit the search to the last 1024 elements if the value being
         // searched falls within that window
-        uint min;
+        uint256 min;
         if (
-            checkpoints.length > 1024
-                && checkpoints[checkpoints.length - 1024].fromBlock < _block
-            )
-        {
+            checkpoints.length > 1024 &&
+            checkpoints[checkpoints.length - 1024].fromBlock < _block
+            ) {
             min = checkpoints.length - 1024;
-        }
-        else
-        {
+        } else {
             min = 0;
         }
 
         // Binary search of the value in the array
-        uint max = checkpoints.length - 1;
+        uint256 max = checkpoints.length - 1;
         while (max > min) {
-            uint mid = (max + min + 1) / 2;
+            uint256 mid = (max + min + 1) / 2;
             if (checkpoints[mid].fromBlock <= _block) {
                 min = mid;
             } else {
@@ -296,7 +284,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the value of an address-checkpoint array at a
     /// specific block using binary search
-    /// @dev Adapted from 
+    /// @dev Adapted from
     /// https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
     /// @param checkpoints Address-checkpoint array
     /// @param _block Block number for which the query is being made
@@ -307,36 +295,32 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         )
         private
         view
-        returns(address)
+        returns (address)
     {
         if (checkpoints.length == 0)
             return address(0);
 
         // Shortcut for the actual value
-        if (_block >= checkpoints[checkpoints.length -1].fromBlock)
+        if (_block >= checkpoints[checkpoints.length - 1].fromBlock)
             return checkpoints[checkpoints.length - 1]._address;
-        if (_block < checkpoints[0].fromBlock)
-            return address(0);
+        if (_block < checkpoints[0].fromBlock) return address(0);
 
         // Limit the search to the last 1024 elements if the value being
         // searched falls within that window
-        uint min;
+        uint256 min;
         if (
-            checkpoints.length > 1024
-                && checkpoints[checkpoints.length - 1024].fromBlock < _block
-            )
-        {
+            checkpoints.length > 1024 &&
+            checkpoints[checkpoints.length - 1024].fromBlock < _block
+        ) {
             min = checkpoints.length - 1024;
-        }
-        else
-        {
+        } else {
             min = 0;
         }
 
         // Binary search of the value in the array
-        uint max = checkpoints.length - 1;
+        uint256 max = checkpoints.length - 1;
         while (max > min) {
-            uint mid = (max + min + 1) / 2;
+            uint256 mid = (max + min + 1) / 2;
             if (checkpoints[mid].fromBlock <= _block) {
                 min = mid;
             } else {
