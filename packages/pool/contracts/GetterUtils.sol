@@ -207,11 +207,11 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// @param userAddress User address
     /// @return unstaked Amount of unstaked API3 tokens
     /// @return vesting Amount of API3 tokens locked by vesting
-    /// @return lastDelegationUpdateTimestamp Time of most recent delegation
-    /// update
-    /// @return unstakeScheduledFor Time unstaking is scheduled for
+    /// @return unstakeShares Shares revoked to unstake
     /// @return unstakeAmount Amount scheduled to unstake
-    /// @return mostRecentProposalTimestamp Time when the user made their most
+    /// @return unstakeScheduledFor Time unstaking is scheduled for
+    /// @return lastDelegationUpdateTimestamp Time of last delegation update
+    /// @return lastProposalTimestamp Time when the user made their most
     /// recent proposal
     function getUser(address userAddress)
         external
@@ -220,19 +220,21 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         returns (
             uint256 unstaked,
             uint256 vesting,
-            uint256 lastDelegationUpdateTimestamp,
-            uint256 unstakeScheduledFor,
+            uint256 unstakeShares,
             uint256 unstakeAmount,
-            uint256 mostRecentProposalTimestamp
-        )
+            uint256 unstakeScheduledFor,
+            uint256 lastDelegationUpdateTimestamp,
+            uint256 lastProposalTimestamp
+            )
     {
         User storage user = users[userAddress];
         unstaked = user.unstaked;
         vesting = user.vesting;
-        lastDelegationUpdateTimestamp = user.lastDelegationUpdateTimestamp;
-        unstakeScheduledFor = user.unstakeScheduledFor;
+        unstakeShares = user.unstakeShares;
         unstakeAmount = user.unstakeAmount;
-        mostRecentProposalTimestamp = user.mostRecentProposalTimestamp;
+        unstakeScheduledFor = user.unstakeScheduledFor;
+        lastDelegationUpdateTimestamp = user.lastDelegationUpdateTimestamp;
+        lastProposalTimestamp = user.lastProposalTimestamp;
     }
 
     /// @notice Called to get the value of a checkpoint array at a specific

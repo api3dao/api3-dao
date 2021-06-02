@@ -51,10 +51,10 @@ interface IStateUtils {
         string specsUrl
         );
 
-    event UpdatedMostRecentProposalTimestamp(
+    event UpdatedLastProposalTimestamp(
         address votingApp,
         address userAddress,
-        uint256 mostRecentProposalTimestamp
+        uint256 lastProposalTimestamp
         );
 
     function setDaoApps(
@@ -96,6 +96,6 @@ interface IStateUtils {
         )
         external;
 
-    function updateMostRecentProposalTimestamp(address userAddress)
+    function updateLastProposalTimestamp(address userAddress)
         external;
 }

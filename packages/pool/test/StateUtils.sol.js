@@ -789,9 +789,9 @@ describe("publishSpecsUrl", function () {
   });
 });
 
-describe("updateMostRecentProposalTimestamp", function () {
+describe("updateLastProposalTimestamp", function () {
   context("Caller is a Voting app", function () {
-    it("updates mostRecentProposalTimestamp", async function () {
+    it("updates lastProposalTimestamp", async function () {
       await api3Pool
         .connect(roles.deployer)
         .setDaoApps(
@@ -810,9 +810,9 @@ describe("updateMostRecentProposalTimestamp", function () {
       await expect(
         api3Pool
           .connect(roles.votingAppPrimary)
-          .updateMostRecentProposalTimestamp(roles.user1.address)
+          .updateLastProposalTimestamp(roles.user1.address)
       )
-        .to.emit(api3Pool, "UpdatedMostRecentProposalTimestamp")
+        .to.emit(api3Pool, "UpdatedLastProposalTimestamp")
         .withArgs(
           roles.votingAppPrimary.address,
           roles.user1.address,
@@ -820,7 +820,7 @@ describe("updateMostRecentProposalTimestamp", function () {
         );
       expect(
         (await api3Pool.getUser(roles.user1.address))
-          .mostRecentProposalTimestamp
+          .lastProposalTimestamp
       ).to.equal(nextBlockTimestamp);
     });
   });
@@ -837,7 +837,7 @@ describe("updateMostRecentProposalTimestamp", function () {
       await expect(
         api3Pool
           .connect(roles.randomPerson)
-          .updateMostRecentProposalTimestamp(roles.user1.address)
+          .updateLastProposalTimestamp(roles.user1.address)
       ).to.be.revertedWith("Unauthorized");
     });
   });
