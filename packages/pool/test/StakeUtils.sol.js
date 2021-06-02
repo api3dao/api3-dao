@@ -63,9 +63,9 @@ describe("stake", function () {
         expect(await api3Pool.userShares(roles.user1.address)).to.equal(
           user1Stake.div(ethers.BigNumber.from(2))
         );
-        expect(
-          await api3Pool.delegatedToUser(roles.user2.address)
-        ).to.equal(user1Stake.div(ethers.BigNumber.from(2)));
+        expect(await api3Pool.delegatedToUser(roles.user2.address)).to.equal(
+          user1Stake.div(ethers.BigNumber.from(2))
+        );
         expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
           roles.user2.address
         );
@@ -87,9 +87,9 @@ describe("stake", function () {
         expect(await api3Pool.userShares(roles.user1.address)).to.equal(
           user1Stake
         );
-        expect(
-          await api3Pool.delegatedToUser(roles.user2.address)
-        ).to.equal(user1Stake);
+        expect(await api3Pool.delegatedToUser(roles.user2.address)).to.equal(
+          user1Stake
+        );
         expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
           roles.user2.address
         );
@@ -221,7 +221,7 @@ describe("unstake", function () {
               genesisEpochPlusTwo.mul(EPOCH_LENGTH).toNumber(),
             ]);
             // Unstake
-            await api3Pool.payReward();
+            await api3Pool.mintReward();
             const totalStakeNow = await api3Pool.totalStake();
             const totalStakeAfter = totalStakeNow.sub(user1Stake);
             const expectedTotalShares = totalStakeAfter
@@ -269,7 +269,7 @@ describe("unstake", function () {
               genesisEpochPlusTwo.mul(EPOCH_LENGTH).toNumber(),
             ]);
             // Unstake
-            await api3Pool.payReward();
+            await api3Pool.mintReward();
             const totalStakeNow = await api3Pool.totalStake();
             const totalStakeAfter = totalStakeNow.sub(user1Stake);
             const expectedTotalShares = totalStakeAfter

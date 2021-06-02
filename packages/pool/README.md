@@ -119,8 +119,8 @@ The Agent apps are authorized to update respective DAO parameters, and Api3Votin
 
 ## Skipped rewards
 
-User interactions call `payReward()`, which triggers the payment for the current epoch's reward if it was not already.
-`payReward()` can also be called externally, in a stand-alone way.
+User interactions call `mintReward()`, which triggers the payment for the current epoch's reward if it was not already.
+`mintReward()` can also be called externally, in a stand-alone way.
 If no one interacts with the pool contract in a whole week, the rewards for that week will not be paid out and the reward will not be updated.
 This is not expected to happen in practice, and will not cause any issues if it does.
 

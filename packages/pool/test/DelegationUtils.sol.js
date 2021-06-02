@@ -257,9 +257,9 @@ describe("undelegateVotingPower", function () {
           expect(await api3Pool.userVotingPower(roles.user2.address)).to.equal(
             user2Stake
           );
-          expect(
-            await api3Pool.delegatedToUser(roles.user2.address)
-          ).to.equal(ethers.BigNumber.from(0));
+          expect(await api3Pool.delegatedToUser(roles.user2.address)).to.equal(
+            ethers.BigNumber.from(0)
+          );
           expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
             ethers.constants.AddressZero
           );

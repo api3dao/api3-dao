@@ -78,7 +78,7 @@ describe("withdrawRegular", function () {
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           currentEpoch.mul(EPOCH_LENGTH).toNumber(),
         ]);
-        await api3Pool.payReward();
+        await api3Pool.mintReward();
       }
       // Schedule unstake and execute
       await api3Pool
@@ -159,7 +159,7 @@ describe("precalculateUserLocked", function () {
             await ethers.provider.send("evm_setNextBlockTimestamp", [
               currentEpoch.mul(EPOCH_LENGTH).toNumber(),
             ]);
-            await api3Pool.payReward();
+            await api3Pool.mintReward();
           }
           const userLocked = await api3Pool.userLocked(roles.user1.address);
           const noEpochsToCalculateLockedForAtEachIteration = 10;
@@ -253,7 +253,7 @@ describe("withdrawPrecalculated", function () {
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           currentEpoch.mul(EPOCH_LENGTH).toNumber(),
         ]);
-        await api3Pool.payReward();
+        await api3Pool.mintReward();
       }
       // Schedule unstake and execute
       await api3Pool

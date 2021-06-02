@@ -6,11 +6,11 @@ import "./interfaces/IRewardUtils.sol";
 
 /// @title Contract that implements reward payments and locks
 abstract contract RewardUtils is GetterUtils, IRewardUtils {
-    /// @notice Called to pay the reward for the current epoch
+    /// @notice Called to mint the staking reward
     /// @dev Skips past epochs for which rewards have not been paid for.
     /// Skips the reward payment if the pool is not authorized to mint tokens.
     /// Neither of these conditions will occur in practice.
-    function payReward()
+    function mintReward()
         public
         override
     {
@@ -30,7 +30,7 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
                     });
                 api3Token.mint(address(this), rewardAmount);
                 totalStake = totalStake + rewardAmount;
-                emit PaidReward(
+                emit MintedReward(
                     currentEpoch,
                     rewardAmount,
                     currentApr

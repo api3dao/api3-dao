@@ -297,7 +297,7 @@ describe("userLocked", function () {
               const userStakeBefore = await api3Pool.userStake(
                 roles.user1.address
               );
-              await api3Pool.payReward();
+              await api3Pool.mintReward();
               const userStakeAfter = await api3Pool.userStake(
                 roles.user1.address
               );
@@ -328,7 +328,7 @@ describe("userLocked", function () {
             await ethers.provider.send("evm_setNextBlockTimestamp", [
               currentEpoch.mul(EPOCH_LENGTH).toNumber(),
             ]);
-            await api3Pool.payReward();
+            await api3Pool.mintReward();
           }
           const userLocked = await api3Pool.userLocked(
             roles.randomPerson.address
@@ -367,7 +367,7 @@ describe("userLocked", function () {
             const userStakeBefore = await api3Pool.userStake(
               roles.user1.address
             );
-            await api3Pool.payReward();
+            await api3Pool.mintReward();
             const userStakeAfter = await api3Pool.userStake(
               roles.user1.address
             );

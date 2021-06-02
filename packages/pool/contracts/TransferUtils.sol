@@ -17,7 +17,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         public
         override
     {
-        payReward();
+        mintReward();
         users[msg.sender].unstaked = users[msg.sender].unstaked + amount;
         // Should never return false because the API3 token uses the
         // OpenZeppelin implementation
@@ -42,7 +42,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         public
         override
     {
-        payReward();
+        mintReward();
         withdraw(destination, amount, userLocked(msg.sender));
     }
 
@@ -65,7 +65,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         returns (bool finished)
     {
         require(noEpochsPerIteration > 0, "Iteration window invalid");
-        payReward();
+        mintReward();
         Checkpoint[] storage _userShares = users[userAddress].shares;
         uint256 userSharesLength = _userShares.length;
         require(userSharesLength != 0, "User never had shares");
@@ -122,7 +122,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         external
         override
     {
-        payReward();
+        mintReward();
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
         LockedCalculationState storage state = userToLockedCalculationState[msg.sender];
         require(state.initialIndEpoch == currentEpoch, "Locked amount not precalculated");

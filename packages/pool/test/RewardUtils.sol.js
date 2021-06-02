@@ -41,7 +41,7 @@ beforeEach(async () => {
   REWARD_VESTING_PERIOD = await api3Pool.REWARD_VESTING_PERIOD();
 });
 
-describe("payReward", function () {
+describe("mintReward", function () {
   context("Reward for the previous epoch has not been paid", function () {
     context("Pool contract is authorized to mint tokens", function () {
       context("Stake target is not zero", function () {
@@ -102,8 +102,8 @@ describe("payReward", function () {
                 .mul(newApr)
                 .div(REWARD_VESTING_PERIOD)
                 .div(hundredPercent);
-              await expect(api3Pool.connect(roles.randomPerson).payReward())
-                .to.emit(api3Pool, "PaidReward")
+              await expect(api3Pool.connect(roles.randomPerson).mintReward())
+                .to.emit(api3Pool, "MintedReward")
                 .withArgs(nextEpoch, rewardAmount, newApr);
               expect(await api3Pool.totalStake()).to.equal(
                 totalStake.add(rewardAmount)
@@ -176,8 +176,8 @@ describe("payReward", function () {
               .mul(newApr)
               .div(REWARD_VESTING_PERIOD)
               .div(hundredPercent);
-            await expect(api3Pool.connect(roles.randomPerson).payReward())
-              .to.emit(api3Pool, "PaidReward")
+            await expect(api3Pool.connect(roles.randomPerson).mintReward())
+              .to.emit(api3Pool, "MintedReward")
               .withArgs(genesisEpochPlusOne, rewardAmount, newApr);
             expect(await api3Pool.totalStake()).to.equal(
               totalStake.add(rewardAmount)
@@ -238,8 +238,8 @@ describe("payReward", function () {
             .mul(newApr)
             .div(REWARD_VESTING_PERIOD)
             .div(hundredPercent);
-          await expect(api3Pool.connect(roles.randomPerson).payReward())
-            .to.emit(api3Pool, "PaidReward")
+          await expect(api3Pool.connect(roles.randomPerson).mintReward())
+            .to.emit(api3Pool, "MintedReward")
             .withArgs(genesisEpochPlusOne, rewardAmount, newApr);
           expect(await api3Pool.totalStake()).to.equal(
             totalStake.add(rewardAmount)
@@ -284,7 +284,7 @@ describe("payReward", function () {
         // Pay reward
         const totalStake = await api3Pool.totalStake();
         const currentApr = await api3Pool.currentApr();
-        await api3Pool.connect(roles.randomPerson).payReward();
+        await api3Pool.connect(roles.randomPerson).mintReward();
         expect(await api3Pool.totalStake()).to.equal(totalStake);
         expect(await api3Pool.epochIndexOfLastRewardPayment()).to.equal(
           genesisEpochPlusOne
@@ -348,8 +348,8 @@ describe("payReward", function () {
           .mul(newApr)
           .div(REWARD_VESTING_PERIOD)
           .div(hundredPercent);
-        await expect(api3Pool.connect(roles.randomPerson).payReward())
-          .to.emit(api3Pool, "PaidReward")
+        await expect(api3Pool.connect(roles.randomPerson).mintReward())
+          .to.emit(api3Pool, "MintedReward")
           .withArgs(genesisEpochPlusFive, rewardAmount, newApr);
         expect(await api3Pool.totalStake()).to.equal(
           totalStake.add(rewardAmount)
@@ -391,7 +391,7 @@ describe("payReward", function () {
         // Pay reward
         const totalStake = await api3Pool.totalStake();
         const currentApr = await api3Pool.currentApr();
-        await api3Pool.connect(roles.randomPerson).payReward();
+        await api3Pool.connect(roles.randomPerson).mintReward();
         expect(await api3Pool.totalStake()).to.equal(totalStake);
         expect(await api3Pool.epochIndexOfLastRewardPayment()).to.equal(
           genesisEpochPlusFive
@@ -433,12 +433,12 @@ describe("payReward", function () {
         genesisEpochPlusOne.mul(EPOCH_LENGTH).toNumber(),
       ]);
       // Pay reward
-      await api3Pool.connect(roles.randomPerson).payReward();
+      await api3Pool.connect(roles.randomPerson).mintReward();
       const totalStake = await api3Pool.totalStake();
       const epochIndexOfLastRewardPayment = await api3Pool.epochIndexOfLastRewardPayment();
       const currentApr = await api3Pool.currentApr();
       // Pay reward again
-      await api3Pool.connect(roles.randomPerson).payReward();
+      await api3Pool.connect(roles.randomPerson).mintReward();
       // Nothing should have changed
       expect(await api3Pool.totalStake()).to.equal(totalStake);
       expect(await api3Pool.epochIndexOfLastRewardPayment()).to.equal(

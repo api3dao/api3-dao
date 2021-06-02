@@ -12,7 +12,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         public
         override
     {
-        payReward();
+        mintReward();
         User storage user = users[msg.sender];
         require(user.unstaked >= amount, ERROR_VALUE);
         user.unstaked = user.unstaked - amount;
@@ -53,7 +53,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         external
         override
     {
-        payReward();
+        mintReward();
         User storage user = users[msg.sender];
         uint256 userSharesNow = userShares(msg.sender);
         uint256 userStakedNow = userSharesNow * totalStake / totalShares();
@@ -77,7 +77,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         override
         returns(uint256)
     {
-        payReward();
+        mintReward();
         User storage user = users[msg.sender];
         require(block.timestamp > user.unstakeScheduledFor, ERROR_UNAUTHORIZED);
         require(block.timestamp < user.unstakeScheduledFor + EPOCH_LENGTH, ERROR_UNAUTHORIZED);
