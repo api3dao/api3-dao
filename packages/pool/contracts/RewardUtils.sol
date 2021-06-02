@@ -21,7 +21,7 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
         {
             if (api3Token.getMinterStatus(address(this)))
             {
-                uint256 rewardAmount = totalStake * currentApr / REWARD_VESTING_PERIOD / HUNDRED_PERCENT;
+                uint256 rewardAmount = totalStake * currentApr * ONE_YEAR_IN_SECONDS / EPOCH_LENGTH / HUNDRED_PERCENT;
                 epochIndexToReward[currentEpoch] = Reward({
                     atBlock: block.number,
                     amount: rewardAmount,

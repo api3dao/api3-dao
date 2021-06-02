@@ -64,7 +64,9 @@ contract StateUtils is IStateUtils {
     // All percentage values are represented by multiplying by 1e6
     uint256 internal constant ONE_PERCENT = 1_000_000;
     uint256 internal constant HUNDRED_PERCENT = 100_000_000;
-    
+
+    uint256 internal constant ONE_YEAR_IN_SECONDS = 52 * 7 * 24 * 60 * 60;
+
     /// @notice API3 token contract
     IApi3Token public api3Token;
 
