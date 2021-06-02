@@ -39,14 +39,14 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             // Need to revoke previous delegation
             users[userDelegate].delegatedTo.push(Checkpoint({
                 fromBlock: block.number,
-                value: userReceivedDelegation(userDelegate) - userShares
+                value: delegatedToUser(userDelegate) - userShares
                 }));
         }
         // Assign the new delegation
         User storage _delegate = users[delegate];
         _delegate.delegatedTo.push(Checkpoint({
             fromBlock: block.number,
-            value: userReceivedDelegation(delegate) + userShares
+            value: delegatedToUser(delegate) + userShares
             }));
         // Record the new delegate for the user
         user.delegates.push(AddressCheckpoint({
@@ -77,7 +77,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         User storage delegate = users[userDelegate];
         delegate.delegatedTo.push(Checkpoint({
             fromBlock: block.number,
-            value: userReceivedDelegation(userDelegate) - userShares
+            value: delegatedToUser(userDelegate) - userShares
             }));
         user.delegates.push(AddressCheckpoint({
             fromBlock: block.number,
@@ -108,7 +108,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         }
 
         User storage delegate = users[userDelegate];
-        uint256 currentlyDelegatedTo = userReceivedDelegation(userDelegate);
+        uint256 currentlyDelegatedTo = delegatedToUser(userDelegate);
         uint256 newDelegatedTo;
         if (delta) {
             newDelegatedTo = currentlyDelegatedTo + shares;

@@ -19,13 +19,13 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns (uint256)
     {
-        // Users that delegate have no voting power
+        // Users that have a delegate have no voting power
         if (userDelegateAt(userAddress, _block) != address(0))
         {
             return 0;
         }
         return userSharesAt(userAddress, _block)
-            + userReceivedDelegationAt(userAddress, _block);
+            + delegatedToUserAt(userAddress, _block);
     }
 
     /// @notice Called to get the current voting power of a user
@@ -109,7 +109,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block
-    function userReceivedDelegationAt(
+    function delegatedToUserAt(
         address userAddress,
         uint256 _block
         )
@@ -124,13 +124,13 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// @notice Called to get the current voting power delegated to a user
     /// @param userAddress User address
     /// @return Current voting power delegated to the user
-    function userReceivedDelegation(address userAddress)
+    function delegatedToUser(address userAddress)
         public
         view
         override
         returns (uint256)
     {
-        return userReceivedDelegationAt(userAddress, block.number);
+        return delegatedToUserAt(userAddress, block.number);
     }
 
     /// @notice Called to get the delegate of the user at a specific block

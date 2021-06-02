@@ -139,7 +139,7 @@ describe("userSharesAt", function () {
   });
 });
 
-describe("userReceivedDelegationAt", function () {
+describe("delegatedToUserAt", function () {
   it("gets user's received delegation at the block", async function () {
     const amount = ethers.BigNumber.from(1000);
     const noDelegations = 20;
@@ -168,7 +168,7 @@ describe("userReceivedDelegationAt", function () {
     }
     for (let i = 0; i < noDelegations; i++) {
       expect(
-        await api3Pool.userReceivedDelegationAt(
+        await api3Pool.delegatedToUserAt(
           roles.user1.address,
           delegationBlocks[i]
         )

@@ -45,7 +45,7 @@ interface IGetterUtils is IStateUtils {
         view
         returns(uint256);
 
-    function userReceivedDelegationAt(
+    function delegatedToUserAt(
         address userAddress,
         uint256 _block
         )
@@ -53,7 +53,7 @@ interface IGetterUtils is IStateUtils {
         view
         returns(uint256);
 
-    function userReceivedDelegation(address userAddress)
+    function delegatedToUser(address userAddress)
         external
         view
         returns(uint256);
