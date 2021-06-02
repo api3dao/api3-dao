@@ -21,7 +21,6 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
         {
             if (api3Token.getMinterStatus(address(this)))
             {
-                updateCurrentApr();
                 uint256 rewardAmount = totalStake * currentApr / REWARD_VESTING_PERIOD / HUNDRED_PERCENT;
                 epochIndexToReward[currentEpoch] = Reward({
                     atBlock: block.number,
@@ -35,13 +34,14 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
                     rewardAmount,
                     currentApr
                     );
+                updateCurrentApr();
             }
             epochIndexOfLastRewardPayment = currentEpoch;
         }
     }
 
     /// @notice Updates the current APR
-    /// @dev Called internally before paying out the reward
+    /// @dev Called internally after paying out the reward
     function updateCurrentApr()
         internal
     {
