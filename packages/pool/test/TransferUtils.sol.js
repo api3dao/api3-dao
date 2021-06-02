@@ -83,11 +83,11 @@ describe("withdrawRegular", function () {
       // Schedule unstake and execute
       await api3Pool
         .connect(roles.user1)
-        .scheduleUnstake(await api3Pool.userStake(roles.user1.address));
+        .scheduleUnstake(await api3Pool.userShares(roles.user1.address));
       await ethers.provider.send("evm_setNextBlockTimestamp", [
         genesisEpoch.add(102).mul(EPOCH_LENGTH).toNumber(),
       ]);
-      await api3Pool.connect(roles.user1).unstake();
+      await api3Pool.connect(roles.randomPerson).unstake(roles.user1.address);
       const userBefore = await api3Pool.users(roles.user1.address);
       const unlocked = userBefore.unstaked.sub(
         await api3Pool.userLocked(roles.user1.address)
@@ -258,11 +258,11 @@ describe("withdrawPrecalculated", function () {
       // Schedule unstake and execute
       await api3Pool
         .connect(roles.user1)
-        .scheduleUnstake(await api3Pool.userStake(roles.user1.address));
+        .scheduleUnstake(await api3Pool.userShares(roles.user1.address));
       await ethers.provider.send("evm_setNextBlockTimestamp", [
         genesisEpoch.add(102).mul(EPOCH_LENGTH).toNumber(),
       ]);
-      await api3Pool.connect(roles.user1).unstake();
+      await api3Pool.connect(roles.randomPerson).unstake(roles.user1.address);
       await api3Pool
         .connect(roles.user1)
         .precalculateUserLocked(

@@ -12,14 +12,14 @@ interface IStakeUtils is ITransferUtils{
 
     event ScheduledUnstake(
         address indexed user,
+        uint256 shares,
         uint256 amount,
         uint256 scheduledFor
         );
 
     event Unstaked(
         address indexed user,
-        uint256 amount,
-        uint256 totalShares
+        uint256 amount
         );
 
     function stake(uint256 amount)
@@ -31,9 +31,9 @@ interface IStakeUtils is ITransferUtils{
     function scheduleUnstake(uint256 amount)
         external;
 
-    function unstake()
+    function unstake(address userAddress)
         external
-        returns(uint256);
+        returns (uint256);
 
     function unstakeAndWithdraw(address destination)
         external;

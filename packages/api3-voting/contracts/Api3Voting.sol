@@ -256,9 +256,17 @@ contract Api3Voting is IForwarder, AragonApp {
         internal
         returns (uint256 voteId)
     {
-        (, , , , , uint256 mostRecentProposalTimestamp) = api3Pool.getUser(msg.sender);
-        require(mostRecentProposalTimestamp.add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_PROPOSAL_COOLDOWN");
-        api3Pool.updateMostRecentProposalTimestamp(msg.sender);
+        (
+            , // unstaked
+            , // vesting
+            , // unstakeShares
+            , // unstakeAmount
+            , // unstakeScheduledFor
+            , // lastDelegationUpdateTimestamp
+            uint256 lastProposalTimestamp
+            ) = api3Pool.getUser(msg.sender);
+        require(lastProposalTimestamp.add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_PROPOSAL_COOLDOWN");
+        api3Pool.updateLastProposalTimestamp(msg.sender);
 
         uint64 snapshotBlock = getBlockNumber64() - 1; // avoid double voting in this very block
 

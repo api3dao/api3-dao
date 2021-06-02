@@ -23,15 +23,16 @@ contract StateUtils is IStateUtils {
     }
 
     struct User {
-        uint256 unstaked;
-        uint256 vesting;
         Checkpoint[] shares;
         AddressCheckpoint[] delegates;
         Checkpoint[] delegatedTo;
-        uint256 lastDelegationUpdateTimestamp;
-        uint256 unstakeScheduledFor;
+        uint256 unstaked;
+        uint256 vesting;
+        uint256 unstakeShares;
         uint256 unstakeAmount;
-        uint256 mostRecentProposalTimestamp;
+        uint256 unstakeScheduledFor;
+        uint256 lastDelegationUpdateTimestamp;
+        uint256 lastProposalTimestamp;
     }
 
     struct LockedCalculationState {
@@ -423,15 +424,15 @@ contract StateUtils is IStateUtils {
     }
 
     /// @notice Called by a DAO Api3Voting app at proposal creation-time to
-    /// update the timestamp of the user's most recent proposal
+    /// update the timestamp of the user's last proposal
     /// @param userAddress User address
-    function updateMostRecentProposalTimestamp(address userAddress)
+    function updateLastProposalTimestamp(address userAddress)
         external
         override
         onlyVotingApp()
     {
-        users[userAddress].mostRecentProposalTimestamp = block.timestamp;
-        emit UpdatedMostRecentProposalTimestamp(
+        users[userAddress].lastProposalTimestamp = block.timestamp;
+        emit UpdatedLastProposalTimestamp(
             msg.sender,
             userAddress,
             block.timestamp
