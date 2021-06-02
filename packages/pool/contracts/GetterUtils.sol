@@ -172,28 +172,30 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     {
         Checkpoint[] storage _userShares = users[userAddress].shares;
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
-        uint256 oldestLockedEpoch =
-            currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
-                ? currentEpoch - REWARD_VESTING_PERIOD + 1
-                : genesisEpoch + 1;
+        uint256 oldestLockedEpoch = currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
+            ? currentEpoch - REWARD_VESTING_PERIOD + 1
+            : genesisEpoch + 1;
 
-        if (_userShares.length == 0) {
+        if (_userShares.length == 0)
+        {
             return 0;
         }
         uint256 indUserShares = _userShares.length - 1;
         for (
-            uint256 indEpoch = currentEpoch;
-            indEpoch >= oldestLockedEpoch;
-            indEpoch--
-        ) {
+                uint256 indEpoch = currentEpoch;
+                indEpoch >= oldestLockedEpoch;
+                indEpoch--
+            )
+        {
             Reward storage lockedReward = epochIndexToReward[indEpoch];
-            if (lockedReward.atBlock != 0) {
-                for (; indUserShares >= 0; indUserShares--) {
+            if (lockedReward.atBlock != 0)
+            {
+                for (; indUserShares >= 0; indUserShares--)
+                {
                     Checkpoint storage userShare = _userShares[indUserShares];
-                    if (userShare.fromBlock <= lockedReward.atBlock) {
-                        locked +=
-                            (lockedReward.amount * userShare.value) /
-                            lockedReward.totalSharesThen;
+                    if (userShare.fromBlock <= lockedReward.atBlock)
+                    {
+                        locked += lockedReward.amount * userShare.value / lockedReward.totalSharesThen;
                         break;
                     }
                 }
@@ -252,27 +254,30 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
             return 0;
 
         // Shortcut for the actual value
-        if (_block >= checkpoints[checkpoints.length - 1].fromBlock)
+        if (_block >= checkpoints[checkpoints.length -1].fromBlock)
             return checkpoints[checkpoints.length - 1].value;
         if (_block < checkpoints[0].fromBlock)
             return 0;
 
         // Limit the search to the last 1024 elements if the value being
         // searched falls within that window
-        uint256 min;
+        uint min;
         if (
-            checkpoints.length > 1024 &&
-            checkpoints[checkpoints.length - 1024].fromBlock < _block
-            ) {
+            checkpoints.length > 1024
+                && checkpoints[checkpoints.length - 1024].fromBlock < _block
+            )
+        {
             min = checkpoints.length - 1024;
-        } else {
+        }
+        else
+        {
             min = 0;
         }
 
         // Binary search of the value in the array
-        uint256 max = checkpoints.length - 1;
+        uint max = checkpoints.length - 1;
         while (max > min) {
-            uint256 mid = (max + min + 1) / 2;
+            uint mid = (max + min + 1) / 2;
             if (checkpoints[mid].fromBlock <= _block) {
                 min = mid;
             } else {
@@ -301,26 +306,30 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
             return address(0);
 
         // Shortcut for the actual value
-        if (_block >= checkpoints[checkpoints.length - 1].fromBlock)
+        if (_block >= checkpoints[checkpoints.length -1].fromBlock)
             return checkpoints[checkpoints.length - 1]._address;
-        if (_block < checkpoints[0].fromBlock) return address(0);
+        if (_block < checkpoints[0].fromBlock)
+            return address(0);
 
         // Limit the search to the last 1024 elements if the value being
         // searched falls within that window
-        uint256 min;
+        uint min;
         if (
-            checkpoints.length > 1024 &&
-            checkpoints[checkpoints.length - 1024].fromBlock < _block
-        ) {
+            checkpoints.length > 1024
+                && checkpoints[checkpoints.length - 1024].fromBlock < _block
+            )
+        {
             min = checkpoints.length - 1024;
-        } else {
+        }
+        else
+        {
             min = 0;
         }
 
         // Binary search of the value in the array
-        uint256 max = checkpoints.length - 1;
+        uint max = checkpoints.length - 1;
         while (max > min) {
-            uint256 mid = (max + min + 1) / 2;
+            uint mid = (max + min + 1) / 2;
             if (checkpoints[mid].fromBlock <= _block) {
                 min = mid;
             } else {
