@@ -29,7 +29,7 @@ abstract contract ClaimUtils is StakeUtils, IClaimUtils {
         override
         onlyClaimsManager()
     {
-        payReward();
+        mintReward();
         // totalStake should not go lower than 1
         require(totalStake > amount, ERROR_VALUE);
         totalStake = totalStake - amount;

@@ -119,8 +119,8 @@ The Agent apps are authorized to update respective DAO parameters, and Api3Votin
 
 ## Skipped rewards
 
-User interactions call `payReward()`, which triggers the payment for the current epoch's reward if it was not already.
-`payReward()` can also be called externally, in a stand-alone way.
+User interactions call `mintReward()`, which triggers the payment for the staking reward if it was not already.
+`mintReward()` can also be called externally, in a stand-alone way.
 If no one interacts with the pool contract in a whole week, the rewards for that week will not be paid out and the reward will not be updated.
 This is not expected to happen in practice, and will not cause any issues if it does.
 
@@ -129,9 +129,7 @@ This is not expected to happen in practice, and will not cause any issues if it 
 If the pool not authorized to mint API3 tokens, it continues operating without paying out any rewards.
 This is to prevent the pool from breaking in case its minting authorization is revoked due to any reason.
 
-## APR update coefficient
+## APR update step
 
-This is the coefficient that represents how aggresively the APR will be updated to meet the stake target.
-Since this is a coefficient, it has no unit. A coefficient of 1,000,000 (which is the initial value) means 1% deviation from the stake target results in 1% update in APR.
-This parameter is governable by the DAO and is capped at the x1,000 the initial value.
-Misgovernance of this parameter may result in the rewards not being updated quickly enough or oscillatory rewards due to consistent overshoots.
+This is the parameter that represents how aggresively the APR will be updated to meet the stake target.
+Each epoch the total staked amount is below the target, APR will be increased by this value, and vice versa.

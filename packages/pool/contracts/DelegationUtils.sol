@@ -12,7 +12,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         external
         override
     {
-        payReward();
+        mintReward();
         // Delegating users have cannot use their voting power, so we are
         // verifying that the delegate is not currently delegating. However,
         // the delegate may delegate after they have been delegated to.
@@ -64,7 +64,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         external
         override
     {
-        payReward();
+        mintReward();
         User storage user = users[msg.sender];
         address userDelegate = userDelegate(msg.sender);
         require(
