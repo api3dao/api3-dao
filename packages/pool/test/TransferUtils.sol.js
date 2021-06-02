@@ -90,7 +90,7 @@ describe("withdrawRegular", function () {
       await api3Pool.connect(roles.user1).unstake();
       const userBefore = await api3Pool.users(roles.user1.address);
       const unlocked = userBefore.unstaked.sub(
-        await api3Pool.callStatic.getUserLocked(roles.user1.address)
+        await api3Pool.userLocked(roles.user1.address)
       );
       await expect(
         api3Pool
@@ -100,9 +100,9 @@ describe("withdrawRegular", function () {
         .to.emit(api3Pool, "Withdrawn")
         .withArgs(roles.user1.address, roles.user1.address, unlocked);
       const userAfter = await api3Pool.users(roles.user1.address);
-      expect(
-        await api3Pool.callStatic.getUserLocked(roles.user1.address)
-      ).to.equal(userAfter.unstaked);
+      expect(await api3Pool.userLocked(roles.user1.address)).to.equal(
+        userAfter.unstaked
+      );
     });
   });
   context("User does not have enough withdrawable funds", function () {
@@ -161,7 +161,7 @@ describe("precalculateUserLocked", function () {
             ]);
             await api3Pool.payReward();
           }
-          const userLocked = await api3Pool.getUserLocked(roles.user1.address);
+          const userLocked = await api3Pool.userLocked(roles.user1.address);
           const noEpochsToCalculateLockedForAtEachIteration = 10;
           for (let i = 0; i < 5; i++) {
             await expect(

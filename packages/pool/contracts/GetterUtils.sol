@@ -6,65 +6,60 @@ import "./interfaces/IGetterUtils.sol";
 
 /// @title Contract that implements getters
 abstract contract GetterUtils is StateUtils, IGetterUtils {
-    /// @notice Called to get the voting power of a user for a specific vote
-    /// @dev This method is meant to be used by the API3 DAO's Api3Voting apps
-    /// to get the voting power at the snapshot block of a specific vote. If
-    /// you call this method with a `_block` value that is not a snapshot of a
-    /// vote, you may get an incorrect value.
+    /// @notice Called to get the voting power of a user at a specific block
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power of the user at the block
-    function balanceOfAt(
+    function userVotingPowerAt(
         address userAddress,
         uint256 _block
         )
         public
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
-        // Users that delegate have no voting power
+        // Users that have a delegate have no voting power
         if (userDelegateAt(userAddress, _block) != address(0))
         {
             return 0;
         }
-        uint256 userSharesThen = userSharesAt(userAddress, _block);
-        uint256 delegatedToUserThen = userReceivedDelegationAt(userAddress, _block);
-        return userSharesThen + delegatedToUserThen;
+        return userSharesAt(userAddress, _block)
+            + delegatedToUserAt(userAddress, _block);
     }
 
     /// @notice Called to get the current voting power of a user
     /// @param userAddress User address
     /// @return Current voting power of the user
-    function balanceOf(address userAddress)
-        public
+    function userVotingPower(address userAddress)
+        external
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
-        return balanceOfAt(userAddress, block.number);
+        return userVotingPowerAt(userAddress, block.number);
     }
 
     /// @notice Called to get the total voting power one block ago
     /// @dev This method is meant to be used by the API3 DAO's Api3Voting apps
-    /// to get the voting power at vote creation-time.
+    /// to get the total voting power at vote creation-time
     /// @return Total voting power one block ago
-    function totalSupplyOneBlockAgo()
-        public
+    function totalVotingPowerOneBlockAgo()
+        external
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
         return totalSharesOneBlockAgo();
     }
 
     /// @notice Called to get the current total voting power
     /// @return Current total voting power
-    function totalSupply()
-        public
+    function totalVotingPower()
+        external
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
         return totalShares();
     }
@@ -80,9 +75,9 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         public
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
-        return getValueAtWithBinarySearch(users[userAddress].shares, _block);
+        return getValueAt(users[userAddress].shares, _block);
     }
 
     /// @notice Called to get the current pool shares of a user
@@ -92,7 +87,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         public
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
         return userSharesAt(userAddress, block.number);
     }
@@ -104,54 +99,38 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         public
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
-        return userShares(userAddress) * totalStake / totalShares();
+        return (userShares(userAddress) * totalStake) / totalShares();
     }
 
     /// @notice Called to get the voting power delegated to a user at a
     /// specific block
-    /// @dev Since the minimum `proposalVotingPowerThreshold` is 0.1%, if the
-    /// the voting apps are Api3Voting.sol (which should be the case) there can
-    /// be at most 100/0.1=1000 proposals made in the last `EPOCH_LENGTH`.
-    /// `user.delegatedTo` checkpoints get overwritten if a new proposal was
-    /// not made since the last update and `getValueAtWithBinarySearch()`
-    /// limits the search to the last 1024 elements if possible, which means
-    /// that while calling this method, if `_block` is within the current
-    /// `EPOCH_LENGTH` (i.e., if the call is for an open vote), the method will
-    /// have a deterministic upper boundary for the gas cost.
-    /// This method is meant to be used by the API3 DAO's Api3Voting apps
-    /// to get the voting power at the snapshot block of a specific vote. If
-    /// you call this method with a `_block` value that is not a snapshot of a
-    /// vote, you may get an incorrect value.
     /// @param userAddress User address
     /// @param _block Block number for which the query is being made for
     /// @return Voting power delegated to the user at the block
-    function userReceivedDelegationAt(
+    function delegatedToUserAt(
         address userAddress,
         uint256 _block
         )
         public
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
-        return getValueAtWithBinarySearch(
-            users[userAddress].delegatedTo,
-            _block
-            );
+        return getValueAt(users[userAddress].delegatedTo, _block);
     }
 
     /// @notice Called to get the current voting power delegated to a user
     /// @param userAddress User address
     /// @return Current voting power delegated to the user
-    function userReceivedDelegation(address userAddress)
+    function delegatedToUser(address userAddress)
         public
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
-        return userReceivedDelegationAt(userAddress, block.number);
+        return delegatedToUserAt(userAddress, block.number);
     }
 
     /// @notice Called to get the delegate of the user at a specific block
@@ -165,12 +144,9 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         public
         view
         override
-        returns(address)
+        returns (address)
     {
-        return getAddressAtWithBinarySearch(
-            users[userAddress].delegates,
-            _block
-            );
+        return getAddressAt(users[userAddress].delegates, _block);
     }
 
     /// @notice Called to get the current delegate of the user
@@ -180,7 +156,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         public
         view
         override
-        returns(address)
+        returns (address)
     {
         return userDelegateAt(userAddress, block.number);
     }
@@ -188,11 +164,11 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// @notice Called to get the current locked tokens of the user
     /// @param userAddress User address
     /// @return locked Current locked tokens of the user
-    function getUserLocked(address userAddress)
+    function userLocked(address userAddress)
         public
         view
         override
-        returns(uint256 locked)
+        returns (uint256 locked)
     {
         Checkpoint[] storage _userShares = users[userAddress].shares;
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
@@ -241,14 +217,14 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         external
         view
         override
-        returns(
+        returns (
             uint256 unstaked,
             uint256 vesting,
             uint256 lastDelegationUpdateTimestamp,
             uint256 unstakeScheduledFor,
             uint256 unstakeAmount,
             uint256 mostRecentProposalTimestamp
-            )
+        )
     {
         User storage user = users[userAddress];
         unstaked = user.unstaked;
@@ -261,18 +237,18 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the value of a checkpoint array at a specific
     /// block using binary search
-    /// @dev Adapted from 
+    /// @dev Adapted from
     /// https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
     /// @param checkpoints Checkpoints array
     /// @param _block Block number for which the query is being made
     /// @return Value of the checkpoint array at the block
-    function getValueAtWithBinarySearch(
+    function getValueAt(
         Checkpoint[] storage checkpoints,
         uint256 _block
         )
         internal
         view
-        returns(uint256)
+        returns (uint256)
     {
         if (checkpoints.length == 0)
             return 0;
@@ -313,18 +289,18 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
     /// @notice Called to get the value of an address-checkpoint array at a
     /// specific block using binary search
-    /// @dev Adapted from 
+    /// @dev Adapted from
     /// https://github.com/aragon/minime/blob/1d5251fc88eee5024ff318d95bc9f4c5de130430/contracts/MiniMeToken.sol#L431
     /// @param checkpoints Address-checkpoint array
     /// @param _block Block number for which the query is being made
     /// @return Value of the address-checkpoint array at the block
-    function getAddressAtWithBinarySearch(
+    function getAddressAt(
         AddressCheckpoint[] storage checkpoints,
         uint256 _block
         )
         private
         view
-        returns(address)
+        returns (address)
     {
         if (checkpoints.length == 0)
             return address(0);

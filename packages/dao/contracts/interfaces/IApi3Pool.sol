@@ -12,7 +12,7 @@ interface IApi3Pool {
         view
         returns(uint256);
 
-    function balanceOfAt(
+    function userVotingPowerAt(
         address userAddress,
         uint256 _block
         )

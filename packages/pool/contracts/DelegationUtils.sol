@@ -26,28 +26,28 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         // Do not allow frequent delegation updates as that can be used to spam
         // proposals
         require(
-            user.lastDelegationUpdateTimestamp <= block.timestamp - EPOCH_LENGTH,
+            user.lastDelegationUpdateTimestamp + EPOCH_LENGTH < block.timestamp,
             ERROR_UNAUTHORIZED
             );
         user.lastDelegationUpdateTimestamp = block.timestamp;
-        uint256 userShares = userShares(msg.sender);
+        
         address userDelegate = userDelegate(msg.sender);
-
         require(userDelegate != delegate, ERROR_DELEGATE);
 
+        uint256 userShares = userShares(msg.sender);
         if (userDelegate != address(0)) {
             // Need to revoke previous delegation
-            updateCheckpointArray(
-                users[userDelegate].delegatedTo,
-                userReceivedDelegation(userDelegate) - userShares
-                );
+            users[userDelegate].delegatedTo.push(Checkpoint({
+                fromBlock: block.number,
+                value: delegatedToUser(userDelegate) - userShares
+                }));
         }
         // Assign the new delegation
         User storage _delegate = users[delegate];
-        updateCheckpointArray(
-            _delegate.delegatedTo,
-            userReceivedDelegation(delegate) + userShares
-            );
+        _delegate.delegatedTo.push(Checkpoint({
+            fromBlock: block.number,
+            value: delegatedToUser(delegate) + userShares
+            }));
         // Record the new delegate for the user
         user.delegates.push(AddressCheckpoint({
             fromBlock: block.number,
@@ -69,16 +69,16 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         address userDelegate = userDelegate(msg.sender);
         require(
             userDelegate != address(0)
-                && user.lastDelegationUpdateTimestamp <= block.timestamp - EPOCH_LENGTH,
+                && user.lastDelegationUpdateTimestamp + EPOCH_LENGTH < block.timestamp,
             ERROR_UNAUTHORIZED
             );
 
         uint256 userShares = userShares(msg.sender);
         User storage delegate = users[userDelegate];
-        updateCheckpointArray(
-            delegate.delegatedTo,
-            userReceivedDelegation(userDelegate) - userShares
-            );
+        delegate.delegatedTo.push(Checkpoint({
+            fromBlock: block.number,
+            value: delegatedToUser(userDelegate) - userShares
+            }));
         user.delegates.push(AddressCheckpoint({
             fromBlock: block.number,
             _address: address(0)
@@ -108,16 +108,16 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         }
 
         User storage delegate = users[userDelegate];
-        uint256 currentlyDelegatedTo = userReceivedDelegation(userDelegate);
+        uint256 currentlyDelegatedTo = delegatedToUser(userDelegate);
         uint256 newDelegatedTo;
         if (delta) {
             newDelegatedTo = currentlyDelegatedTo + shares;
         } else {
             newDelegatedTo = currentlyDelegatedTo - shares;
         }
-        updateCheckpointArray(
-            delegate.delegatedTo,
-            newDelegatedTo
-            );
+        delegate.delegatedTo.push(Checkpoint({
+            fromBlock: block.number,
+            value: newDelegatedTo
+            }));
     }
 }

@@ -14,7 +14,6 @@ contract MockApi3Voting {
     function newVote(address userAddress)
         external
     {
-        api3Pool.updateLastVoteSnapshotBlock(block.number - 1);
         api3Pool.updateMostRecentProposalTimestamp(userAddress);
     }
 }

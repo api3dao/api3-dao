@@ -61,9 +61,9 @@ beforeEach(async () => {
   REWARD_VESTING_PERIOD = await api3Pool.REWARD_VESTING_PERIOD();
 });
 
-describe("totalSupplyOneBlockAgo", function () {
-  it("gets total supply one block ago", async function () {
-    expect(await api3Pool.totalSupplyOneBlockAgo()).to.equal(
+describe("totalVotingPowerOneBlockAgo", function () {
+  it("gets total voting power one block ago", async function () {
+    expect(await api3Pool.totalVotingPowerOneBlockAgo()).to.equal(
       ethers.BigNumber.from(1)
     );
     const stakeAmount = ethers.BigNumber.from(1000);
@@ -71,11 +71,11 @@ describe("totalSupplyOneBlockAgo", function () {
       .connect(roles.deployer)
       .transfer(api3Staker.address, stakeAmount.mul(1000));
     await api3Staker.stakeTwice(stakeAmount, stakeAmount);
-    expect(await api3Pool.totalSupplyOneBlockAgo()).to.equal(
+    expect(await api3Pool.totalVotingPowerOneBlockAgo()).to.equal(
       ethers.BigNumber.from(1)
     );
     await api3Staker.stakeTwice(stakeAmount, stakeAmount);
-    expect(await api3Pool.totalSupplyOneBlockAgo()).to.equal(
+    expect(await api3Pool.totalVotingPowerOneBlockAgo()).to.equal(
       ethers.BigNumber.from(1).add(stakeAmount).add(stakeAmount)
     );
   });
@@ -139,14 +139,12 @@ describe("userSharesAt", function () {
   });
 });
 
-describe("userReceivedDelegationAt", function () {
+describe("delegatedToUserAt", function () {
   it("gets user's received delegation at the block", async function () {
-    const genesisEpoch = await api3Pool.genesisEpoch();
     const amount = ethers.BigNumber.from(1000);
     const noDelegations = 20;
     const delegationBlocks = [];
     for (let i = 0; i < noDelegations; i++) {
-      await api3Voting.newVote(roles.user1.address);
       delegationBlocks.push(await ethers.provider.getBlockNumber());
       const randomWallet = ethers.Wallet.createRandom().connect(
         ethers.provider
@@ -167,17 +165,14 @@ describe("userReceivedDelegationAt", function () {
       await api3Pool
         .connect(randomWallet)
         .delegateVotingPower(roles.user1.address, { gasLimit: 500000 });
-      await ethers.provider.send("evm_setNextBlockTimestamp", [
-        genesisEpoch.add(i).add(1).mul(EPOCH_LENGTH).toNumber(),
-      ]);
     }
     for (let i = 0; i < noDelegations; i++) {
       expect(
-        await api3Pool.userReceivedDelegationAt(
+        await api3Pool.delegatedToUserAt(
           roles.user1.address,
           delegationBlocks[i]
         )
-      ).to.equal(amount.mul(ethers.BigNumber.from(i + 1)));
+      ).to.equal(amount.mul(ethers.BigNumber.from(i)));
     }
   });
 });
@@ -193,21 +188,21 @@ describe("getDelegateAt", function () {
         const firstBlockNumber = await ethers.provider.getBlockNumber();
         // Fast forward time
         await ethers.provider.send("evm_increaseTime", [
-          EPOCH_LENGTH.toNumber(),
+          EPOCH_LENGTH.toNumber() + 1,
         ]);
         await api3Pool
           .connect(roles.user1)
           .delegateVotingPower(roles.randomPerson.address);
         // Fast forward time
         await ethers.provider.send("evm_increaseTime", [
-          EPOCH_LENGTH.toNumber(),
+          EPOCH_LENGTH.toNumber() + 1,
         ]);
         await api3Pool
           .connect(roles.user1)
           .delegateVotingPower(roles.user2.address);
         // Fast forward time
         await ethers.provider.send("evm_increaseTime", [
-          EPOCH_LENGTH.toNumber(),
+          EPOCH_LENGTH.toNumber() + 1,
         ]);
         // Check delegates
         expect(await api3Pool.userDelegateAt(roles.user1.address, 0)).to.equal(
@@ -239,13 +234,13 @@ describe("getDelegateAt", function () {
           .connect(roles.user1)
           .delegateVotingPower(roles.user2.address);
         await ethers.provider.send("evm_increaseTime", [
-          EPOCH_LENGTH.toNumber(),
+          EPOCH_LENGTH.toNumber() + 1,
         ]);
         await api3Pool
           .connect(roles.user1)
           .delegateVotingPower(roles.randomPerson.address);
         await ethers.provider.send("evm_increaseTime", [
-          EPOCH_LENGTH.toNumber(),
+          EPOCH_LENGTH.toNumber() + 1,
         ]);
       }
       expect(await api3Pool.userDelegateAt(roles.user1.address, 0)).to.equal(
@@ -269,7 +264,7 @@ describe("getDelegateAt", function () {
   });
 });
 
-describe("getUserLocked", function () {
+describe("userLocked", function () {
   context(
     "It has been more than REWARD_VESTING_PERIOD since the genesis epoch",
     function () {
@@ -319,7 +314,7 @@ describe("getUserLocked", function () {
             .slice(-REWARD_VESTING_PERIOD)
             .reduce((a, b) => a.add(b), ethers.BigNumber.from(0));
           const error = expectedUserLocked.sub(
-            await api3Pool.getUserLocked(roles.user1.address)
+            await api3Pool.userLocked(roles.user1.address)
           );
           // Tolerate rounding errors
           expect(error).to.lt(REWARD_VESTING_PERIOD);
@@ -335,7 +330,7 @@ describe("getUserLocked", function () {
             ]);
             await api3Pool.payReward();
           }
-          const userLocked = await api3Pool.callStatic.getUserLocked(
+          const userLocked = await api3Pool.userLocked(
             roles.randomPerson.address
           );
           expect(userLocked).to.equal(0);
@@ -390,7 +385,7 @@ describe("getUserLocked", function () {
           ethers.BigNumber.from(0)
         );
         const error = expectedUserLocked.sub(
-          await api3Pool.getUserLocked(roles.user1.address)
+          await api3Pool.userLocked(roles.user1.address)
         );
         // Tolerate rounding errors
         expect(error).to.lt(REWARD_VESTING_PERIOD.div(2));

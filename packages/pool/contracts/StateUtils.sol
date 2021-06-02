@@ -177,10 +177,6 @@ contract StateUtils is IStateUtils {
 
     address private deployer;
 
-    // Snapshot block number of the last vote created at one of the DAO
-    // Api3Voting apps
-    uint256 private lastVoteSnapshotBlock;
-
     // We keep checkpoints for two most recent blocks at which totalShares has
     // been updated. Note that the indices do not indicate chronological
     // ordering.
@@ -438,22 +434,6 @@ contract StateUtils is IStateUtils {
             );
     }
 
-    /// @notice Called by a DAO Api3Voting app to update the last vote snapshot
-    /// block number
-    /// @param snapshotBlock Last vote snapshot block number
-    function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
-        external
-        override
-        onlyVotingApp()
-    {
-        lastVoteSnapshotBlock = snapshotBlock;
-        emit UpdatedLastVoteSnapshotBlock(
-            msg.sender,
-            snapshotBlock,
-            block.timestamp
-            );
-    }
-
     /// @notice Called by a DAO Api3Voting app at proposal creation-time to
     /// update the timestamp of the user's most recent proposal
     /// @param userAddress User address
@@ -537,39 +517,6 @@ contract StateUtils is IStateUtils {
         else
         {
             return totalShares();
-        }
-    }
-
-    /// @notice Called internally to update a checkpoint array
-    /// @param checkpointArray Checkpoint array to be updated
-    /// @param value Value to be updated with
-    function updateCheckpointArray(
-        Checkpoint[] storage checkpointArray,
-        uint256 value
-        )
-        internal
-    {
-        if (checkpointArray.length == 0)
-        {
-            checkpointArray.push(Checkpoint({
-                fromBlock: lastVoteSnapshotBlock,
-                value: value
-                }));
-        }
-        else
-        {
-            Checkpoint storage lastElement = checkpointArray[checkpointArray.length - 1];
-            if (lastElement.fromBlock < lastVoteSnapshotBlock)
-            {
-                checkpointArray.push(Checkpoint({
-                    fromBlock: lastVoteSnapshotBlock,
-                    value: value
-                    }));
-            }
-            else
-            {
-                lastElement.value = value;
-            }
         }
     }
 }

@@ -12,7 +12,7 @@ interface IApi3Pool {
         view
         returns(uint256);
 
-    function balanceOfAt(
+    function userVotingPowerAt(
         address userAddress,
         uint256 _block
         )
@@ -20,13 +20,10 @@ interface IApi3Pool {
         view
         returns(uint256);
 
-    function totalSupplyOneBlockAgo()
+    function totalVotingPowerOneBlockAgo()
         external
         view
         returns(uint256);
-
-    function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
-        external;
 
     function updateMostRecentProposalTimestamp(address userAddress)
         external;

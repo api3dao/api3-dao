@@ -53,8 +53,8 @@ Delegation works only one-hop, i.e., if a user has delegated their voting power 
 
 There are four mechanics that are implemented to protect against proposal spam:
 
-1. A minimum governable threshold of voting power is required to make a proposal (initial value: 0.1%)
-2. A user cannot make proposals (using the same Api3Voting app) less than 7 days apart
+1. A minimum governable threshold of voting power is required to make a proposal (minimum and initial value: 0.1%)
+2. A user cannot make proposals less than 7 days apart
 3. A user cannot update their delegation less than 7 days apart
 4. A user will have to "schedule an unstake" a governable period of time (minimum and initial value: 7 days) before being able to unstake
 

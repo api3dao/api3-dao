@@ -90,7 +90,9 @@ describe("constructor", function () {
         // Token address set correctly
         expect(await api3Pool.api3Token()).to.equal(api3Token.address);
         // Initialize share price at 1
-        expect(await api3Pool.totalSupply()).to.equal(ethers.BigNumber.from(1));
+        expect(await api3Pool.totalVotingPower()).to.equal(
+          ethers.BigNumber.from(1)
+        );
         expect(await api3Pool.totalStake()).to.equal(ethers.BigNumber.from(1));
         // Genesis epoch is the current epoch
         const currentBlock = await ethers.provider.getBlock(
@@ -830,71 +832,6 @@ describe("publishSpecsUrl", function () {
         proposalIndex
       )
     ).to.equal(specsUrl);
-  });
-});
-
-describe("updateLastVoteSnapshotBlock", function () {
-  context("Caller is a Voting app", function () {
-    it("updates lastVoteSnapshotBlock", async function () {
-      await api3Pool
-        .connect(roles.deployer)
-        .setDaoApps(
-          roles.agentAppPrimary.address,
-          roles.agentAppSecondary.address,
-          roles.votingAppPrimary.address,
-          roles.votingAppSecondary.address
-        );
-      const currentBlock = await ethers.provider.getBlock(
-        await ethers.provider.getBlockNumber()
-      );
-      const snapshotBlockNumber = currentBlock.number;
-      const nextBlockTimestamp = currentBlock.timestamp + 100;
-      await ethers.provider.send("evm_setNextBlockTimestamp", [
-        nextBlockTimestamp,
-      ]);
-      await expect(
-        api3Pool
-          .connect(roles.votingAppPrimary)
-          .updateLastVoteSnapshotBlock(snapshotBlockNumber)
-      )
-        .to.emit(api3Pool, "UpdatedLastVoteSnapshotBlock")
-        .withArgs(
-          roles.votingAppPrimary.address,
-          snapshotBlockNumber,
-          nextBlockTimestamp
-        );
-      const snapshotBlockNumber2 = currentBlock.number + 1;
-      const nextBlockTimestamp2 = currentBlock.timestamp + 200;
-      await ethers.provider.send("evm_setNextBlockTimestamp", [
-        nextBlockTimestamp2,
-      ]);
-      await expect(
-        api3Pool
-          .connect(roles.votingAppSecondary)
-          .updateLastVoteSnapshotBlock(snapshotBlockNumber2)
-      )
-        .to.emit(api3Pool, "UpdatedLastVoteSnapshotBlock")
-        .withArgs(
-          roles.votingAppSecondary.address,
-          snapshotBlockNumber2,
-          nextBlockTimestamp2
-        );
-    });
-  });
-  context("Caller is not an authorized Api3Voting app", function () {
-    it("reverts", async function () {
-      await api3Pool
-        .connect(roles.deployer)
-        .setDaoApps(
-          roles.agentAppPrimary.address,
-          roles.agentAppSecondary.address,
-          roles.votingAppPrimary.address,
-          roles.votingAppSecondary.address
-        );
-      await expect(
-        api3Pool.connect(roles.randomPerson).updateLastVoteSnapshotBlock(123)
-      ).to.be.revertedWith("Unauthorized");
-    });
   });
 });
 

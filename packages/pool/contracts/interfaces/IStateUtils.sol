@@ -51,12 +51,6 @@ interface IStateUtils {
         string specsUrl
         );
 
-    event UpdatedLastVoteSnapshotBlock(
-        address votingApp,
-        uint256 lastVoteSnapshotBlock,
-        uint256 lastVoteSnapshotBlockUpdateTimestamp
-        );
-
     event UpdatedMostRecentProposalTimestamp(
         address votingApp,
         address userAddress,
@@ -100,9 +94,6 @@ interface IStateUtils {
         uint256 proposalIndex,
         string calldata specsUrl
         )
-        external;
-
-    function updateLastVoteSnapshotBlock(uint256 snapshotBlock)
         external;
 
     function updateMostRecentProposalTimestamp(address userAddress)

@@ -64,7 +64,7 @@ describe("stake", function () {
           user1Stake.div(ethers.BigNumber.from(2))
         );
         expect(
-          await api3Pool.userReceivedDelegation(roles.user2.address)
+          await api3Pool.delegatedToUser(roles.user2.address)
         ).to.equal(user1Stake.div(ethers.BigNumber.from(2)));
         expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
           roles.user2.address
@@ -88,7 +88,7 @@ describe("stake", function () {
           user1Stake
         );
         expect(
-          await api3Pool.userReceivedDelegation(roles.user2.address)
+          await api3Pool.delegatedToUser(roles.user2.address)
         ).to.equal(user1Stake);
         expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
           roles.user2.address
@@ -205,7 +205,7 @@ describe("unstake", function () {
               .connect(roles.user1)
               .delegateVotingPower(roles.user2.address);
             expect(
-              await api3Pool.userReceivedDelegation(roles.user2.address)
+              await api3Pool.delegatedToUser(roles.user2.address)
             ).to.equal(ethers.BigNumber.from(user1Stake));
             expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
               roles.user2.address
@@ -233,7 +233,7 @@ describe("unstake", function () {
               .withArgs(roles.user1.address, user1Stake, expectedTotalShares);
             // Delegation remains
             expect(
-              await api3Pool.userReceivedDelegation(roles.user2.address)
+              await api3Pool.delegatedToUser(roles.user2.address)
             ).to.equal(await api3Pool.userShares(roles.user1.address));
             // This epoch's reward remains as being delegated
             expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
