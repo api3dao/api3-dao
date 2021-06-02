@@ -92,7 +92,7 @@ describe("delegateVotingPower", function () {
                 ).to.equal(user1Stake);
                 // Fast forward time
                 await ethers.provider.send("evm_increaseTime", [
-                  EPOCH_LENGTH.toNumber(),
+                  EPOCH_LENGTH.toNumber() + 1,
                 ]);
                 // ... then have user 1 delegate to user 2
                 await expect(
@@ -145,7 +145,7 @@ describe("delegateVotingPower", function () {
                   .delegateVotingPower(roles.user2.address);
                 // Fast forward time
                 await ethers.provider.send("evm_increaseTime", [
-                  EPOCH_LENGTH.toNumber(),
+                  EPOCH_LENGTH.toNumber() + 1,
                 ]);
                 // ... then have user 1 delegate to user 2 again
                 await expect(
@@ -245,7 +245,7 @@ describe("undelegateVotingPower", function () {
             .delegateVotingPower(roles.user2.address);
           // Fast forward time
           await ethers.provider.send("evm_increaseTime", [
-            EPOCH_LENGTH.toNumber(),
+            EPOCH_LENGTH.toNumber() + 1,
           ]);
           // Have user 1 undelegate
           await expect(api3Pool.connect(roles.user1).undelegateVotingPower())
