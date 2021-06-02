@@ -164,14 +164,21 @@ describe("scheduleUnstake", function () {
         const currentBlock = await ethers.provider.getBlock(
           await ethers.provider.getBlockNumber()
         );
-        const unstakeScheduledFor = ethers.BigNumber.from(currentBlock.timestamp)
+        const unstakeScheduledFor = ethers.BigNumber.from(
+          currentBlock.timestamp
+        )
           .add(EPOCH_LENGTH)
           .add(ethers.BigNumber.from(1));
         // Schedule unstake
         const user1Shares = await api3Pool.userShares(roles.user1.address);
         await expect(api3Pool.connect(roles.user1).scheduleUnstake(user1Shares))
           .to.emit(api3Pool, "ScheduledUnstake")
-          .withArgs(roles.user1.address, user1Shares, user1Stake, unstakeScheduledFor);
+          .withArgs(
+            roles.user1.address,
+            user1Shares,
+            user1Stake,
+            unstakeScheduledFor
+          );
       });
     });
     context("User already has a scheduled unstake", function () {
@@ -185,18 +192,14 @@ describe("scheduleUnstake", function () {
           .connect(roles.user1)
           .approve(api3Pool.address, user1Stake);
         await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
-        const currentBlock = await ethers.provider.getBlock(
-          await ethers.provider.getBlockNumber()
-        );
-        const unstakeScheduledFor = ethers.BigNumber.from(currentBlock.timestamp)
-          .add(EPOCH_LENGTH)
-          .add(ethers.BigNumber.from(1));
         // Schedule unstake for half of the shares
         const user1Shares = await api3Pool.userShares(roles.user1.address);
         await api3Pool.connect(roles.user1).scheduleUnstake(user1Shares.div(2));
         // Attempt to schedule again
         await expect(
-          api3Pool.connect(roles.user1).scheduleUnstake(ethers.BigNumber.from(1))
+          api3Pool
+            .connect(roles.user1)
+            .scheduleUnstake(ethers.BigNumber.from(1))
         ).to.be.revertedWith("Unauthorized");
       });
     });
@@ -252,7 +255,9 @@ describe("unstake", function () {
             ]);
             // Unstake
             await api3Pool.mintReward();
-            await expect(api3Pool.connect(roles.randomPerson).unstake(roles.user1.address))
+            await expect(
+              api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
+            )
               .to.emit(api3Pool, "Unstaked")
               .withArgs(roles.user1.address, user1Stake);
             // Delegation remains
@@ -295,7 +300,9 @@ describe("unstake", function () {
             ]);
             // Unstake
             await api3Pool.mintReward();
-            await expect(api3Pool.connect(roles.randomPerson).unstake(roles.user1.address))
+            await expect(
+              api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
+            )
               .to.emit(api3Pool, "Unstaked")
               .withArgs(roles.user1.address, user1Stake);
             const user = await api3Pool.users(roles.user1.address);
@@ -320,7 +327,9 @@ describe("unstake", function () {
           await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
           // Schedule unstake half of the shares
           const user1Shares = await api3Pool.userShares(roles.user1.address);
-          await api3Pool.connect(roles.user1).scheduleUnstake(user1Shares.div(2));
+          await api3Pool
+            .connect(roles.user1)
+            .scheduleUnstake(user1Shares.div(2));
           // Set the DAO Agent
           await api3Pool
             .connect(roles.deployer)
@@ -353,36 +362,40 @@ describe("unstake", function () {
           await api3Pool.mintReward();
           const user = await api3Pool.getUser(roles.user1.address);
           const unstakeShares = user.unstakeShares;
-          const actualUnstakeAmount = unstakeShares.mul(await api3Pool.totalStake()).div(await api3Pool.totalVotingPower());
-          await expect(api3Pool.connect(roles.randomPerson).unstake(roles.user1.address))
+          const actualUnstakeAmount = unstakeShares
+            .mul(await api3Pool.totalStake())
+            .div(await api3Pool.totalVotingPower());
+          await expect(
+            api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
+          )
             .to.emit(api3Pool, "Unstaked")
-            .withArgs(
-              roles.user1.address,
-              actualUnstakeAmount
-            );
+            .withArgs(roles.user1.address, actualUnstakeAmount);
         });
       });
     });
-    context("Enough time has not passed since the unstake scheduling", function () {
-      it("reverts", async function () {
-        // Have the user stake
-        const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
-        await api3Token
-          .connect(roles.deployer)
-          .transfer(roles.user1.address, user1Stake);
-        await api3Token
-          .connect(roles.user1)
-          .approve(api3Pool.address, user1Stake);
-        await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
-        // Schedule unstake
-        const user1Shares = await api3Pool.userShares(roles.user1.address);
-        await api3Pool.connect(roles.user1).scheduleUnstake(user1Shares);
-        // Attempt to unstake
-        await expect(
-          api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
-        ).to.be.revertedWith("Unauthorized");
-      });
-    });
+    context(
+      "Enough time has not passed since the unstake scheduling",
+      function () {
+        it("reverts", async function () {
+          // Have the user stake
+          const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+          await api3Token
+            .connect(roles.deployer)
+            .transfer(roles.user1.address, user1Stake);
+          await api3Token
+            .connect(roles.user1)
+            .approve(api3Pool.address, user1Stake);
+          await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+          // Schedule unstake
+          const user1Shares = await api3Pool.userShares(roles.user1.address);
+          await api3Pool.connect(roles.user1).scheduleUnstake(user1Shares);
+          // Attempt to unstake
+          await expect(
+            api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
+          ).to.be.revertedWith("Unauthorized");
+        });
+      }
+    );
   });
   context("No unstake scheduled for the user", function () {
     it("reverts", async function () {

@@ -461,8 +461,6 @@ describe("getUser", function () {
     );
     expect(user.unstakeScheduledFor).to.equal(unstakeScheduledFor);
     expect(user.unstakeAmount).to.equal(userScheduledToUnstake);
-    expect(user.lastProposalTimestamp).to.equal(
-      proposalBlock.timestamp + 100
-    );
+    expect(user.lastProposalTimestamp).to.equal(proposalBlock.timestamp + 100);
   });
 });

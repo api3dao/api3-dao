@@ -819,8 +819,7 @@ describe("updateLastProposalTimestamp", function () {
           nextBlockTimestamp
         );
       expect(
-        (await api3Pool.getUser(roles.user1.address))
-          .lastProposalTimestamp
+        (await api3Pool.getUser(roles.user1.address)).lastProposalTimestamp
       ).to.equal(nextBlockTimestamp);
     });
   });
