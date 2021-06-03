@@ -26,7 +26,7 @@ contract Api3TokenMock is MiniMeToken {
     {
     }
 
-    uint256 private mockEPOCH_LENGTH = 0;
+    uint256 public EPOCH_LENGTH = 7 * 24 * 60 * 60;
     uint256 private mockProposalVotingPowerThreshold = 0;
 
     function userVotingPowerAt(address userAddress, uint256 _block)
@@ -35,14 +35,6 @@ contract Api3TokenMock is MiniMeToken {
         returns (uint)
     {
         return balanceOfAt(userAddress, _block);
-    }
-
-    function EPOCH_LENGTH()
-        external
-        view
-        returns(uint256)
-    {
-        return mockEPOCH_LENGTH;
     }
 
     function proposalVotingPowerThreshold()

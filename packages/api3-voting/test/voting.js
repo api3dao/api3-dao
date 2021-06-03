@@ -23,7 +23,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
   let CREATE_VOTES_ROLE, MODIFY_SUPPORT_ROLE, MODIFY_QUORUM_ROLE;
 
   const NOW = 1;
-  const votingDuration = 1000;
+  const votingDuration = 7 * 24 * 60 * 60;
   const APP_ID = '0x1234123412341234123412341234123412341234123412341234123412341234';
 
   before('load roles', async () => {
@@ -51,18 +51,18 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
       api3Pool = await Api3Pool.new(token.address, MOCK_TIMELOCKMANAGER_ADDRESS);
       await api3Pool.setDaoApps(voting.address, voting.address, voting.address, voting.address);
 
-      await voting.initialize(api3Pool.address, neededSupport, minimumAcceptanceQuorum, votingDuration);
+      await voting.initialize(api3Pool.address, neededSupport, minimumAcceptanceQuorum);
       executionTarget = await ExecutionTarget.new()
     });
 
     it('fails on reinitialization', async () => {
-      await assertRevert(voting.initialize(api3Pool.address, neededSupport, minimumAcceptanceQuorum, votingDuration), ERRORS.INIT_ALREADY_INITIALIZED)
+      await assertRevert(voting.initialize(api3Pool.address, neededSupport, minimumAcceptanceQuorum), ERRORS.INIT_ALREADY_INITIALIZED)
     });
 
     it('cannot initialize base app', async () => {
       const newVoting = await Voting.new();
       assert.isTrue(await newVoting.isPetrified());
-      await assertRevert(newVoting.initialize(api3Pool.address, neededSupport, minimumAcceptanceQuorum, votingDuration), ERRORS.INIT_ALREADY_INITIALIZED)
+      await assertRevert(newVoting.initialize(api3Pool.address, neededSupport, minimumAcceptanceQuorum), ERRORS.INIT_ALREADY_INITIALIZED)
     });
 
     it('checks it is forwarder', async () => {
@@ -114,7 +114,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
         await token.generateTokens(holder29, bigExp(29, decimals));
         await token.generateTokens(holder51, bigExp(51, decimals));
 
-        await voting.initialize(api3Pool.address, neededSupport, minimumAcceptanceQuorum, votingDuration);
+        await voting.initialize(api3Pool.address, neededSupport, minimumAcceptanceQuorum);
 
         // holder 51 deposit and stake
         await token.approve(api3Pool.address, bigExp(51, decimals), {from:holder51});
@@ -327,13 +327,13 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
     it('fails if min acceptance quorum is greater than min support', async () => {
       const neededSupport = pct16(20);
       const minimumAcceptanceQuorum = pct16(50);
-      await assertRevert(voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration), ERRORS.VOTING_INIT_PCTS)
+      await assertRevert(voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum), ERRORS.VOTING_INIT_PCTS)
     });
 
     it('fails if min support is 100% or more', async () => {
       const minimumAcceptanceQuorum = pct16(20);
-      await assertRevert(voting.initialize(token.address, pct16(101), minimumAcceptanceQuorum, votingDuration), ERRORS.VOTING_INIT_SUPPORT_TOO_BIG);
-      await assertRevert(voting.initialize(token.address, pct16(100), minimumAcceptanceQuorum, votingDuration), ERRORS.VOTING_INIT_SUPPORT_TOO_BIG)
+      await assertRevert(voting.initialize(token.address, pct16(101), minimumAcceptanceQuorum), ERRORS.VOTING_INIT_SUPPORT_TOO_BIG);
+      await assertRevert(voting.initialize(token.address, pct16(100), minimumAcceptanceQuorum), ERRORS.VOTING_INIT_SUPPORT_TOO_BIG)
     })
   });
 
@@ -344,7 +344,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
     beforeEach(async() => {
       token = await Api3TokenMock.new(ZERO_ADDRESS, ZERO_ADDRESS, 0, 'n', 0, 'n', true); // empty parameters minime
 
-      await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration)
+      await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum)
     });
 
     it('fails creating a vote if token has no holder', async () => {
@@ -361,7 +361,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
 
       await token.generateTokens(holder1, 1);
 
-      await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration)
+      await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum)
     });
 
     it('new vote cannot be executed before voting', async () => {
@@ -407,7 +407,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
       await token.generateTokens(holder1, 1);
       await token.generateTokens(holder2, 2);
 
-      await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration)
+      await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum)
     });
 
     it('new vote cannot be executed before holder2 voting', async () => {
@@ -442,7 +442,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder20, holder29, holder
       await token.generateTokens(holder1, 1);
       await token.generateTokens(holder2, 1);
 
-      await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum, votingDuration)
+      await voting.initialize(token.address, neededSupport, minimumAcceptanceQuorum)
     });
 
     it('uses the correct snapshot value if tokens are minted afterwards', async () => {
