@@ -32,8 +32,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         updateDelegatedVotingPower(sharesToMint, true);
         emit Staked(
             msg.sender,
-            amount,
-            totalSharesAfter
+            amount
             );
     }
 

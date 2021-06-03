@@ -78,8 +78,7 @@ describe("stake", function () {
           .to.emit(api3Pool, "Staked")
           .withArgs(
             roles.user1.address,
-            user1Stake.div(ethers.BigNumber.from(2)),
-            user1Stake.add(ethers.BigNumber.from(1))
+            user1Stake.div(ethers.BigNumber.from(2))
           );
         expect(await api3Pool.userStake(roles.user1.address)).to.equal(
           user1Stake
@@ -107,11 +106,7 @@ describe("stake", function () {
         await api3Pool.connect(roles.user1).depositRegular(user1Stake);
         await expect(api3Pool.connect(roles.user1).stake(user1Stake))
           .to.emit(api3Pool, "Staked")
-          .withArgs(
-            roles.user1.address,
-            user1Stake,
-            user1Stake.add(ethers.BigNumber.from(1))
-          );
+          .withArgs(roles.user1.address, user1Stake);
         expect(await api3Pool.userStake(roles.user1.address)).to.equal(
           user1Stake
         );
@@ -140,11 +135,7 @@ describe("depositAndStake", function () {
     await api3Token.connect(roles.user1).approve(api3Pool.address, user1Stake);
     await expect(api3Pool.connect(roles.user1).depositAndStake(user1Stake))
       .to.emit(api3Pool, "Staked")
-      .withArgs(
-        roles.user1.address,
-        user1Stake,
-        user1Stake.add(ethers.BigNumber.from(1))
-      );
+      .withArgs(roles.user1.address, user1Stake);
   });
 });
 
