@@ -55,7 +55,7 @@ contract Api3Template is BaseTemplate {
     )
     external
     {
-        require(_api3Pool != address(0), "Invalid API3 Api3Voting Rights");
+        require(_api3Pool != address(0), "API3_INVALID_POOL_ADDRESS");
 
         _validateId(_id);
         _validateVotingSettings(_mainVotingSettings);
