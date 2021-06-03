@@ -14,7 +14,10 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     {
         mintReward();
         User storage user = users[msg.sender];
-        require(user.unstaked >= amount, ERROR_VALUE);
+        require(
+            user.unstaked >= amount,
+            "Pool: Amount exceeds unstaked"
+            );
         user.unstaked = user.unstaked - amount;
         uint256 totalSharesNow = totalShares();
         uint256 sharesToMint = totalSharesNow * amount / totalStake;
@@ -65,9 +68,15 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     {
         mintReward();
         uint256 userSharesNow = userShares(msg.sender);
-        require(userSharesNow >= shares, ERROR_VALUE);
+        require(
+            userSharesNow >= shares,
+            "Pool: Amount exceeds user shares"
+            );
         User storage user = users[msg.sender];
-        require(user.unstakeScheduledFor == 0, ERROR_UNAUTHORIZED);
+        require(
+            user.unstakeScheduledFor == 0,
+            "Pool: Unexecuted unstake exists"
+            );
         uint256 amount = (shares * totalStake) / totalShares();
         user.unstakeScheduledFor = block.timestamp + unstakeWaitPeriod;
         user.unstakeAmount = amount;
@@ -97,9 +106,14 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     {
         mintReward();
         User storage user = users[userAddress];
-        require(user.unstakeScheduledFor != 0, ERROR_UNAUTHORIZED);
-        require(user.unstakeScheduledFor < block.timestamp, ERROR_UNAUTHORIZED);
-
+        require(
+            user.unstakeScheduledFor != 0,
+            "Pool: No unstake scheduled"
+            );
+        require(
+            user.unstakeScheduledFor < block.timestamp,
+            "Pool: Unstake not mature yet"
+            );
         uint256 totalShares = totalShares();
         uint256 unstakeAmountAtSchedulingTime = user.unstakeAmount;
         uint256 unstakeAmountByShares =

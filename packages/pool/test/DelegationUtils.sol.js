@@ -130,7 +130,7 @@ describe("delegateVotingPower", function () {
                       api3Pool
                         .connect(roles.user1)
                         .delegateVotingPower(roles.user2.address)
-                    ).to.be.revertedWith("Unauthorized");
+                    ).to.be.revertedWith("Pool: Have no shares to delegate");
                   });
                 }
               );
@@ -171,7 +171,7 @@ describe("delegateVotingPower", function () {
                   api3Pool
                     .connect(roles.user1)
                     .delegateVotingPower(roles.user2.address)
-                ).to.be.revertedWith("Cannot delegate to the same address");
+                ).to.be.revertedWith("Pool: Already delegated");
 
                 expect(
                   await api3Pool.userVotingPower(roles.user1.address)
@@ -204,7 +204,7 @@ describe("delegateVotingPower", function () {
                 api3Pool
                   .connect(roles.user1)
                   .delegateVotingPower(roles.user2.address)
-              ).to.be.revertedWith("Unauthorized");
+              ).to.be.revertedWith("Pool: Updated delegate recently");
             });
           }
         );
@@ -237,7 +237,7 @@ describe("delegateVotingPower", function () {
             api3Pool
               .connect(roles.user1)
               .delegateVotingPower(roles.user2.address)
-          ).to.be.revertedWith("Invalid address");
+          ).to.be.revertedWith("Pool: Delegate is delegating");
         });
       });
     });
@@ -245,7 +245,7 @@ describe("delegateVotingPower", function () {
       it("reverts", async function () {
         await expect(
           api3Pool.connect(roles.user1).delegateVotingPower(roles.user1.address)
-        ).to.be.revertedWith("Invalid address");
+        ).to.be.revertedWith("Pool: Invalid delegate");
       });
     });
   });
@@ -255,7 +255,7 @@ describe("delegateVotingPower", function () {
         api3Pool
           .connect(roles.user1)
           .delegateVotingPower(ethers.constants.AddressZero)
-      ).to.be.revertedWith("Invalid address");
+      ).to.be.revertedWith("Pool: Invalid delegate");
     });
   });
 });
@@ -329,7 +329,7 @@ describe("undelegateVotingPower", function () {
           // Attempt to have user 1 undelegate without waiting
           await expect(
             api3Pool.connect(roles.user1).undelegateVotingPower()
-          ).to.be.revertedWith("Unauthorized");
+          ).to.be.revertedWith("Pool: Updated delegate recently");
         });
       }
     );
@@ -338,7 +338,7 @@ describe("undelegateVotingPower", function () {
     it("reverts", async function () {
       await expect(
         api3Pool.connect(roles.user1).undelegateVotingPower()
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: Not delegated");
     });
   });
 });

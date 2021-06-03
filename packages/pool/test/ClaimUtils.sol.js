@@ -97,7 +97,7 @@ describe("payOutClaim", function () {
           api3Pool
             .connect(roles.claimsManager)
             .payOutClaim(roles.claimsManager.address, ethers.BigNumber.from(1))
-        ).to.be.revertedWith("Invalid value");
+        ).to.be.revertedWith("Pool: Amount exceeds total stake");
       });
     });
   });
@@ -107,7 +107,7 @@ describe("payOutClaim", function () {
         api3Pool
           .connect(roles.randomPerson)
           .payOutClaim(roles.randomPerson.address, ethers.BigNumber.from(1))
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: Caller not claims manager");
     });
   });
 });

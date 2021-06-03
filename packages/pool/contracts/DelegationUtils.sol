@@ -13,29 +13,37 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         override
     {
         mintReward();
+        require(
+            delegate != address(0) && delegate != msg.sender,
+            "Pool: Invalid delegate"
+            );
         // Delegating users have cannot use their voting power, so we are
         // verifying that the delegate is not currently delegating. However,
         // the delegate may delegate after they have been delegated to.
         require(
-            delegate != address(0)
-                && delegate != msg.sender
-                && userDelegate(delegate) == address(0),
-            ERROR_ADDRESS
+            userDelegate(delegate) == address(0),
+            "Pool: Delegate is delegating"
             );
         User storage user = users[msg.sender];
         // Do not allow frequent delegation updates as that can be used to spam
         // proposals
         require(
             user.lastDelegationUpdateTimestamp + EPOCH_LENGTH < block.timestamp,
-            ERROR_UNAUTHORIZED
+            "Pool: Updated delegate recently"
             );
         user.lastDelegationUpdateTimestamp = block.timestamp;
         
         address previousDelegate = userDelegate(msg.sender);
-        require(previousDelegate != delegate, ERROR_DELEGATE);
+        require(
+            previousDelegate != delegate,
+            "Pool: Already delegated"
+            );
 
         uint256 userShares = userShares(msg.sender);
-        require(userShares != 0, ERROR_UNAUTHORIZED);
+        require(
+            userShares != 0,
+            "Pool: Have no shares to delegate"
+            );
         if (previousDelegate != address(0)) {
             // Need to revoke previous delegation
             users[previousDelegate].delegatedTo.push(Checkpoint({
@@ -69,9 +77,12 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         User storage user = users[msg.sender];
         address previousDelegate = userDelegate(msg.sender);
         require(
-            previousDelegate != address(0)
-                && user.lastDelegationUpdateTimestamp + EPOCH_LENGTH < block.timestamp,
-            ERROR_UNAUTHORIZED
+            previousDelegate != address(0),
+            "Pool: Not delegated"
+            );
+        require(
+            user.lastDelegationUpdateTimestamp + EPOCH_LENGTH < block.timestamp,
+            "Pool: Updated delegate recently"
             );
 
         uint256 userShares = userShares(msg.sender);

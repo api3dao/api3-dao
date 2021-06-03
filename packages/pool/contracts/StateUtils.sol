@@ -57,11 +57,6 @@ contract StateUtils is IStateUtils {
     /// Hardcoded as 52 epochs, which corresponds to a year.
     uint256 public constant REWARD_VESTING_PERIOD = 52;
 
-    string internal constant ERROR_VALUE = "Invalid value";
-    string internal constant ERROR_ADDRESS = "Invalid address";
-    string internal constant ERROR_UNAUTHORIZED = "Unauthorized";
-    string internal constant ERROR_DELEGATE = "Cannot delegate to the same address";
-
     // All percentage values are represented by multiplying by 1e6
     uint256 internal constant ONE_PERCENT = 1e18 / 100;
     uint256 internal constant HUNDRED_PERCENT = 1e18;
@@ -180,14 +175,17 @@ contract StateUtils is IStateUtils {
     modifier onlyAgentApp() {
         require(
             msg.sender == agentAppPrimary || msg.sender == agentAppSecondary,
-            ERROR_UNAUTHORIZED
+            "Pool: Caller not agent"
             );
         _;
     }
 
     /// @dev Reverts if the caller is not the primary API3 DAO Agent
     modifier onlyAgentAppPrimary() {
-        require(msg.sender == agentAppPrimary, ERROR_UNAUTHORIZED);
+        require(
+            msg.sender == agentAppPrimary,
+            "Pool: Caller not primary agent"
+            );
         _;
     }
 
@@ -195,7 +193,7 @@ contract StateUtils is IStateUtils {
     modifier onlyVotingApp() {
         require(
             msg.sender == votingAppPrimary || msg.sender == votingAppSecondary,
-            ERROR_UNAUTHORIZED
+            "Pool: Caller not voting app"
             );
         _;
     }
@@ -206,8 +204,14 @@ contract StateUtils is IStateUtils {
         address timelockManagerAddress
         )
     {
-        require(api3TokenAddress != address(0), "Invalid Api3Token");
-        require(timelockManagerAddress != address(0), "Invalid TimelockManager");
+        require(
+            api3TokenAddress != address(0),
+            "Pool: Invalid Api3Token"
+            );
+        require(
+            timelockManagerAddress != address(0),
+            "Pool: Invalid TimelockManager"
+            );
         deployer = msg.sender;
         api3Token = IApi3Token(api3TokenAddress);
         timelockManager = timelockManagerAddress;
@@ -237,17 +241,18 @@ contract StateUtils is IStateUtils {
         external
         override
     {
+        // solhint-disable-next-line reason-string
         require(
-            (agentAppPrimary == address(0) && msg.sender == deployer)
-                || msg.sender == agentAppPrimary,
-            ERROR_UNAUTHORIZED
+            msg.sender == agentAppPrimary
+                || (agentAppPrimary == address(0) && msg.sender == deployer),
+            "Pool: Caller not primary agent or deployer initializing values"
             );
         require(
             _agentAppPrimary != address(0)
                 && _agentAppSecondary  != address(0)
                 && _votingAppPrimary  != address(0)
                 && _votingAppSecondary  != address(0),
-            ERROR_ADDRESS
+            "Pool: Invalid DAO apps"
             );
         agentAppPrimary = _agentAppPrimary;
         agentAppSecondary = _agentAppSecondary;
@@ -298,7 +303,8 @@ contract StateUtils is IStateUtils {
     {
         require(
             _stakeTarget <= HUNDRED_PERCENT,
-            ERROR_VALUE);
+            "Pool: Invalid percentage value"
+            );
         uint256 oldStakeTarget = stakeTarget;
         stakeTarget = _stakeTarget;
         emit SetStakeTarget(
@@ -314,7 +320,10 @@ contract StateUtils is IStateUtils {
         override
         onlyAgentApp()
     {
-        require(_maxApr >= minApr, ERROR_VALUE);
+        require(
+            _maxApr >= minApr,
+            "Pool: Max APR smaller than min"
+            );
         uint256 oldMaxApr = maxApr;
         maxApr = _maxApr;
         emit SetMaxApr(
@@ -330,7 +339,10 @@ contract StateUtils is IStateUtils {
         override
         onlyAgentApp()
     {
-        require(_minApr <= maxApr, ERROR_VALUE);
+        require(
+            _minApr <= maxApr,
+            "Pool: Min APR larger than max"
+            );
         uint256 oldMinApr = minApr;
         minApr = _minApr;
         emit SetMinApr(
@@ -353,7 +365,10 @@ contract StateUtils is IStateUtils {
         override
         onlyAgentAppPrimary()
     {
-        require(_unstakeWaitPeriod >= EPOCH_LENGTH, ERROR_VALUE);
+        require(
+            _unstakeWaitPeriod >= EPOCH_LENGTH,
+            "Pool: Period shorter than epoch"
+            );
         uint256 oldUnstakeWaitPeriod = unstakeWaitPeriod;
         unstakeWaitPeriod = _unstakeWaitPeriod;
         emit SetUnstakeWaitPeriod(
@@ -391,7 +406,7 @@ contract StateUtils is IStateUtils {
         require(
             _proposalVotingPowerThreshold >= ONE_PERCENT / 10
                 && _proposalVotingPowerThreshold <= 10 * ONE_PERCENT,
-            ERROR_VALUE);
+            "Pool: Threshold outside limits");
         uint256 oldProposalVotingPowerThreshold = proposalVotingPowerThreshold;
         proposalVotingPowerThreshold = _proposalVotingPowerThreshold;
         emit SetProposalVotingPowerThreshold(

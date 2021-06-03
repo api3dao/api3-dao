@@ -64,11 +64,17 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         override
         returns (bool finished)
     {
-        require(noEpochsPerIteration > 0, "Iteration window invalid");
+        require(
+            noEpochsPerIteration > 0,
+            "Pool: Zero iteration window"
+            );
         mintReward();
         Checkpoint[] storage _userShares = users[userAddress].shares;
         uint256 userSharesLength = _userShares.length;
-        require(userSharesLength != 0, "User never had shares");
+        require(
+            userSharesLength != 0,
+            "Pool: User never had shares"
+            );
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
         LockedCalculationState storage state = userToLockedCalculationState[userAddress];
         // Reset the state if there was no calculation made in this epoch
@@ -125,7 +131,10 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         mintReward();
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
         LockedCalculationState storage state = userToLockedCalculationState[msg.sender];
-        require(state.initialIndEpoch == currentEpoch, "Locked amount not precalculated");
+        require(
+            state.initialIndEpoch == currentEpoch,
+            "Pool: Locked not precalculated"
+            );
         withdraw(destination, amount, state.locked);
     }
 
@@ -145,9 +154,15 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         // Check if the user has `amount` unlocked tokens to withdraw
         uint256 lockedAndVesting = userLocked + user.vesting;
         uint256 userTotalFunds = user.unstaked + userStake(msg.sender);
-        require(userTotalFunds >= lockedAndVesting + amount, ERROR_VALUE);
+        require(
+            userTotalFunds >= lockedAndVesting + amount,
+            "Pool: Not enough unlocked funds"
+            );
         // Carry on with the withdrawal
-        require(user.unstaked >= amount, ERROR_VALUE);
+        require(
+            user.unstaked >= amount,
+            "Pool: Not enough unstaked funds"
+            );
         user.unstaked = user.unstaked - amount;
         // Should never return false because the API3 token uses the
         // OpenZeppelin implementation

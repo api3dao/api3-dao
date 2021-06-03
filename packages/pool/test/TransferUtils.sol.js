@@ -119,7 +119,7 @@ describe("withdrawRegular", function () {
         api3Pool
           .connect(roles.user1)
           .withdrawRegular(roles.user1.address, ethers.BigNumber.from(1))
-      ).to.be.revertedWith("Invalid value");
+      ).to.be.revertedWith("Pool: Not enough unstaked funds");
     });
   });
   context("User does not have enough funds", function () {
@@ -128,7 +128,7 @@ describe("withdrawRegular", function () {
         api3Pool
           .connect(roles.user1)
           .withdrawRegular(roles.user1.address, ethers.BigNumber.from(1))
-      ).to.be.revertedWith("Invalid value");
+      ).to.be.revertedWith("Pool: Not enough unlocked funds");
     });
   });
 });
@@ -214,7 +214,7 @@ describe("precalculateUserLocked", function () {
               roles.user1.address,
               ethers.BigNumber.from(10)
             )
-        ).to.be.revertedWith("User never had shares");
+        ).to.be.revertedWith("Pool: User never had shares");
       });
     });
   });
@@ -224,7 +224,7 @@ describe("precalculateUserLocked", function () {
         api3Pool
           .connect(roles.user1)
           .precalculateUserLocked(roles.user1.address, ethers.BigNumber.from(0))
-      ).to.be.revertedWith("Iteration window invalid");
+      ).to.be.revertedWith("Pool: Zero iteration window");
     });
   });
 });
@@ -284,7 +284,7 @@ describe("withdrawPrecalculated", function () {
         api3Pool
           .connect(roles.user1)
           .withdrawPrecalculated(roles.user1.address, ethers.BigNumber.from(1))
-      ).to.be.revertedWith("Locked amount not precalculated");
+      ).to.be.revertedWith("Pool: Locked not precalculated");
     });
   });
 });

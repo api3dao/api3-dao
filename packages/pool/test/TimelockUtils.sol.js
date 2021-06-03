@@ -76,7 +76,7 @@ describe("deposit", function () {
             timelockManagerDeposit,
             roles.randomPerson.address
           )
-      ).to.be.revertedWith("Caller not TimelockManager");
+      ).to.be.revertedWith("Pool: Caller not TimelockManager");
     });
   });
 });
@@ -137,7 +137,7 @@ describe("depositWithVesting", function () {
                   releaseStart,
                   releaseEnd
                 )
-            ).to.be.revertedWith("Invalid value");
+            ).to.be.revertedWith("Pool: Timelock amount zero");
           });
         });
       });
@@ -159,7 +159,7 @@ describe("depositWithVesting", function () {
                 releaseStart,
                 releaseEnd
               )
-          ).to.be.revertedWith("Invalid value");
+          ).to.be.revertedWith("Pool: Timelock start after end");
         });
       });
     });
@@ -196,7 +196,7 @@ describe("depositWithVesting", function () {
               releaseStart,
               releaseEnd
             )
-        ).to.be.revertedWith("Unauthorized");
+        ).to.be.revertedWith("Pool: User has active timelock");
       });
     });
   });
@@ -224,7 +224,7 @@ describe("depositWithVesting", function () {
             releaseStart,
             releaseEnd
           )
-      ).to.be.revertedWith("Caller not TimelockManager");
+      ).to.be.revertedWith("Pool: Caller not TimelockManager");
     });
   });
 });
@@ -328,7 +328,7 @@ describe("updateTimelockStatus", function () {
           api3Pool
             .connect(roles.randomPerson)
             .updateTimelockStatus(roles.user1.address)
-        ).to.be.revertedWith("Unauthorized");
+        ).to.be.revertedWith("Pool: Timelock already released");
       });
     });
   });
@@ -359,7 +359,7 @@ describe("updateTimelockStatus", function () {
         api3Pool
           .connect(roles.randomPerson)
           .updateTimelockStatus(roles.user1.address)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: Release not started yet");
     });
   });
 });
