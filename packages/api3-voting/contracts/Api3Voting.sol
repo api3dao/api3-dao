@@ -397,7 +397,7 @@ contract Api3Voting is IForwarder, AragonApp {
             return false;
         }
 
-        uint256 computedPct = _value.mul(PCT_BASE) / _total;
+        uint256 computedPct = _value.mul(PCT_BASE).div(_total);
         return computedPct > _pct;
     }
 }
