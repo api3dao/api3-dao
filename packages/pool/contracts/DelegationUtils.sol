@@ -31,16 +31,16 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             );
         user.lastDelegationUpdateTimestamp = block.timestamp;
         
-        address userDelegate = userDelegate(msg.sender);
-        require(userDelegate != delegate, ERROR_DELEGATE);
+        address previousDelegate = userDelegate(msg.sender);
+        require(previousDelegate != delegate, ERROR_DELEGATE);
 
         uint256 userShares = userShares(msg.sender);
         require(userShares != 0, ERROR_UNAUTHORIZED);
-        if (userDelegate != address(0)) {
+        if (previousDelegate != address(0)) {
             // Need to revoke previous delegation
-            users[userDelegate].delegatedTo.push(Checkpoint({
+            users[previousDelegate].delegatedTo.push(Checkpoint({
                 fromBlock: block.number,
-                value: delegatedToUser(userDelegate) - userShares
+                value: delegatedToUser(previousDelegate) - userShares
                 }));
         }
         // Assign the new delegation
@@ -67,18 +67,18 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
     {
         mintReward();
         User storage user = users[msg.sender];
-        address userDelegate = userDelegate(msg.sender);
+        address previousDelegate = userDelegate(msg.sender);
         require(
-            userDelegate != address(0)
+            previousDelegate != address(0)
                 && user.lastDelegationUpdateTimestamp + EPOCH_LENGTH < block.timestamp,
             ERROR_UNAUTHORIZED
             );
 
         uint256 userShares = userShares(msg.sender);
-        User storage delegate = users[userDelegate];
+        User storage delegate = users[previousDelegate];
         delegate.delegatedTo.push(Checkpoint({
             fromBlock: block.number,
-            value: delegatedToUser(userDelegate) - userShares
+            value: delegatedToUser(previousDelegate) - userShares
             }));
         user.delegates.push(AddressCheckpoint({
             fromBlock: block.number,
@@ -87,7 +87,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         user.lastDelegationUpdateTimestamp = block.timestamp;
         emit Undelegated(
             msg.sender,
-            userDelegate
+            previousDelegate
             );
     }
 
@@ -103,13 +103,13 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         )
         internal
     {
-        address userDelegate = userDelegate(msg.sender);
-        if (userDelegate == address(0)) {
+        address currentDelegate = userDelegate(msg.sender);
+        if (currentDelegate == address(0)) {
             return;
         }
 
-        User storage delegate = users[userDelegate];
-        uint256 currentlyDelegatedTo = delegatedToUser(userDelegate);
+        User storage delegate = users[currentDelegate];
+        uint256 currentlyDelegatedTo = delegatedToUser(currentDelegate);
         uint256 newDelegatedTo;
         if (delta) {
             newDelegatedTo = currentlyDelegatedTo + shares;
