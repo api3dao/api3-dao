@@ -71,17 +71,15 @@ contract Api3Voting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Initialize Voting app with `_token.symbol(): string` for governance, minimum support of `@formatPct(_supportRequiredPct)`%, minimum acceptance quorum of `@formatPct(_minAcceptQuorumPct)`%, and a voting duration of `@transformTime(_voteTime)`
+    * @notice Initialize Voting app with `_token.symbol(): string` for governance, minimum support of `@formatPct(_supportRequiredPct)`%, minimum acceptance quorum of `@formatPct(_minAcceptQuorumPct)`%`
     * @param _token MiniMeToken Address that will be used as governance token
     * @param _supportRequiredPct Percentage of yeas in casted votes for a vote to succeed (expressed as a percentage of 10^18; eg. 10^16 = 1%, 10^18 = 100%)
     * @param _minAcceptQuorumPct Percentage of yeas in total possible votes for a vote to succeed (expressed as a percentage of 10^18; eg. 10^16 = 1%, 10^18 = 100%)
-    * @param _voteTime Seconds that a vote will be open for token holders to vote (unless enough yeas or nays have been cast to make an early decision)
     */
     function initialize(
         address _token,
         uint64 _supportRequiredPct,
-        uint64 _minAcceptQuorumPct,
-        uint64 _voteTime
+        uint64 _minAcceptQuorumPct
     )
         external
         onlyInit
@@ -93,9 +91,10 @@ contract Api3Voting is IForwarder, AragonApp {
 
         supportRequiredPct = _supportRequiredPct;
         minAcceptQuorumPct = _minAcceptQuorumPct;
-        voteTime = _voteTime;
         // The pool acts as the MiniMe token
         api3Pool = IApi3Pool(_token);
+        // Unlike the original Voting app, `voteTime` has to be `EPOCH_LENGTH` of the pool
+        voteTime = uint64(api3Pool.EPOCH_LENGTH());
     }
 
     /**
@@ -397,7 +396,7 @@ contract Api3Voting is IForwarder, AragonApp {
             return false;
         }
 
-        uint256 computedPct = _value.mul(PCT_BASE) / _total;
+        uint256 computedPct = _value.mul(PCT_BASE).div(_total);
         return computedPct > _pct;
     }
 }

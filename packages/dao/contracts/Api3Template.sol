@@ -44,16 +44,16 @@ contract Api3Template is BaseTemplate {
     * @dev Deploy an authoritative DAO using the API3 Staking Pool
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _api3Pool Address of the API3 staking pool, supplies voting power
-    * @param _mainVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
-    * @param _secondaryVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
+    * @param _mainVotingSettings Array of [supportRequired, minAcceptanceQuorum] to set up the voting app of the organization
+    * @param _secondaryVotingSettings Array of [supportRequired, minAcceptanceQuorum] to set up the voting app of the organization
     */
     function newInstance(
-        string memory _id,
+        string _id,
         MiniMeToken _api3Pool,
-        uint64[3] memory _mainVotingSettings,
-        uint64[3] memory _secondaryVotingSettings
+        uint64[2] _mainVotingSettings,
+        uint64[2] _secondaryVotingSettings
     )
-    public
+    external
     {
         require(_api3Pool != address(0), "Invalid API3 Api3Voting Rights");
 
@@ -83,8 +83,8 @@ contract Api3Template is BaseTemplate {
         Kernel _dao,
         ACL _acl,
         MiniMeToken _api3Pool,
-        uint64[3] memory _mainVotingSettings,
-        uint64[3] memory _secondaryVotingSettings
+        uint64[2] memory _mainVotingSettings,
+        uint64[2] memory _secondaryVotingSettings
     )
     internal
     returns (Api3Voting, Api3Voting, Agent, Agent)
@@ -125,26 +125,25 @@ contract Api3Template is BaseTemplate {
         _createApi3VotingPermissions(_acl, _secondaryVoting, _mainAgent, ANY_ENTITY, _permissionManager);
     }
 
-    function _validateVotingSettings(uint64[3] memory _votingSettings) private pure {
-        require(_votingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
+    function _validateVotingSettings(uint64[2] memory _votingSettings) private pure {
+        require(_votingSettings.length == 2, ERROR_BAD_VOTE_SETTINGS);
     }
 
     /*API3 VOTING*/
 
-    function _installApi3VotingApp(Kernel _dao, MiniMeToken _token, uint64[3] memory _votingSettings) internal returns (Api3Voting) {
-        return _installApi3VotingApp(_dao, _token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
+    function _installApi3VotingApp(Kernel _dao, MiniMeToken _token, uint64[2] memory _votingSettings) internal returns (Api3Voting) {
+        return _installApi3VotingApp(_dao, _token, _votingSettings[0], _votingSettings[1]);
     }
 
     function _installApi3VotingApp(
         Kernel _dao,
         MiniMeToken _token,
         uint64 _support,
-        uint64 _acceptance,
-        uint64 _duration
+        uint64 _acceptance
     )
     internal returns (Api3Voting)
     {
-        bytes memory initializeData = abi.encodeWithSelector(Api3Voting(0).initialize.selector, _token, _support, _acceptance, _duration);
+        bytes memory initializeData = abi.encodeWithSelector(Api3Voting(0).initialize.selector, _token, _support, _acceptance);
         return Api3Voting(_installNonDefaultApp(_dao, API3_VOTING_APP_ID, initializeData));
     }
 
