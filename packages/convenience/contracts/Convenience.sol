@@ -237,6 +237,7 @@ contract Convenience is Ownable  {
         view
         returns (uint256[] memory voteIds)
     {
+        require(api3Voting.votesLength() > 0, "There are no votes");
         IApi3Voting api3Voting;
         if (votingAppType == VotingAppType.Primary)
         {
