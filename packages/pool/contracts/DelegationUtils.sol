@@ -50,6 +50,10 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
                 fromBlock: block.number,
                 value: delegatedToUser(previousDelegate) - userShares
                 }));
+            emit Undelegated(
+                msg.sender,
+                previousDelegate
+                );
         }
         // Assign the new delegation
         User storage _delegate = users[delegate];
