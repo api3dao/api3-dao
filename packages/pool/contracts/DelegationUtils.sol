@@ -35,6 +35,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         require(userDelegate != delegate, ERROR_DELEGATE);
 
         uint256 userShares = userShares(msg.sender);
+        require(userShares != 0, ERROR_UNAUTHORIZED);
         if (userDelegate != address(0)) {
             // Need to revoke previous delegation
             users[userDelegate].delegatedTo.push(Checkpoint({

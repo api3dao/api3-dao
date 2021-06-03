@@ -182,6 +182,14 @@ describe("getDelegateAt", function () {
     "User delegates checkpoint array is not longer than 1024",
     function () {
       it("gets delegate at", async function () {
+        const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+        await api3Token
+          .connect(roles.deployer)
+          .transfer(roles.user1.address, user1Stake);
+        await api3Token
+          .connect(roles.user1)
+          .approve(api3Pool.address, user1Stake);
+        await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
         await api3Pool
           .connect(roles.user1)
           .delegateVotingPower(roles.user2.address);
@@ -228,6 +236,14 @@ describe("getDelegateAt", function () {
   );
   context("User delegates checkpoint array is longer than 1024", function () {
     it("gets delegate at", async function () {
+      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+      await api3Token
+        .connect(roles.deployer)
+        .transfer(roles.user1.address, user1Stake);
+      await api3Token
+        .connect(roles.user1)
+        .approve(api3Pool.address, user1Stake);
+      await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
       const initialBlockNumber = await ethers.provider.getBlockNumber();
       for (let i = 0; i < 1030 / 2; i++) {
         await api3Pool
