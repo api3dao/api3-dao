@@ -8,7 +8,10 @@ import "./interfaces/IClaimUtils.sol";
 abstract contract ClaimUtils is StakeUtils, IClaimUtils {
     /// @dev Reverts if the caller is not a claims manager
     modifier onlyClaimsManager() {
-        require(claimsManagerStatus[msg.sender], ERROR_UNAUTHORIZED);
+        require(
+            claimsManagerStatus[msg.sender],
+            "Pool: Caller not claims manager"
+            );
         _;
     }
 
@@ -31,7 +34,10 @@ abstract contract ClaimUtils is StakeUtils, IClaimUtils {
     {
         mintReward();
         // totalStake should not go lower than 1
-        require(totalStake > amount, ERROR_VALUE);
+        require(
+            totalStake > amount,
+            "Pool: Amount exceeds total stake"
+            );
         totalStake = totalStake - amount;
         // Should never return false because the API3 token uses the
         // OpenZeppelin implementation

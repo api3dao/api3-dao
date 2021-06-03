@@ -121,7 +121,7 @@ describe("constructor", function () {
             api3Token.address,
             ethers.constants.AddressZero
           )
-        ).to.be.revertedWith("Invalid TimelockManager");
+        ).to.be.revertedWith("Pool: Invalid TimelockManager");
       });
     });
   });
@@ -136,7 +136,7 @@ describe("constructor", function () {
           ethers.constants.AddressZero,
           roles.mockTimelockManager.address
         )
-      ).to.be.revertedWith("Invalid Api3Token");
+      ).to.be.revertedWith("Pool: Invalid Api3Token");
     });
   });
 });
@@ -188,7 +188,7 @@ describe("setDaoApps", function () {
                 roles.votingAppPrimary.address,
                 roles.votingAppSecondary.address
               )
-          ).to.be.revertedWith("Invalid address");
+          ).to.be.revertedWith("Pool: Invalid DAO apps");
           await expect(
             api3Pool
               .connect(roles.deployer)
@@ -198,7 +198,7 @@ describe("setDaoApps", function () {
                 roles.votingAppPrimary.address,
                 roles.votingAppSecondary.address
               )
-          ).to.be.revertedWith("Invalid address");
+          ).to.be.revertedWith("Pool: Invalid DAO apps");
           await expect(
             api3Pool
               .connect(roles.deployer)
@@ -208,7 +208,7 @@ describe("setDaoApps", function () {
                 ethers.constants.AddressZero,
                 roles.votingAppSecondary.address
               )
-          ).to.be.revertedWith("Invalid address");
+          ).to.be.revertedWith("Pool: Invalid DAO apps");
           await expect(
             api3Pool
               .connect(roles.deployer)
@@ -218,7 +218,7 @@ describe("setDaoApps", function () {
                 roles.votingAppPrimary.address,
                 ethers.constants.AddressZero
               )
-          ).to.be.revertedWith("Invalid address");
+          ).to.be.revertedWith("Pool: Invalid DAO apps");
         });
       });
     });
@@ -233,7 +233,9 @@ describe("setDaoApps", function () {
               roles.votingAppPrimary.address,
               roles.votingAppSecondary.address
             )
-        ).to.be.revertedWith("Unauthorized");
+        ).to.be.revertedWith(
+          "Pool: Caller not primary agent or deployer initializing values"
+        );
       });
     });
   });
@@ -302,7 +304,9 @@ describe("setDaoApps", function () {
               roles.votingAppPrimary.address,
               roles.votingAppSecondary.address
             )
-        ).to.be.revertedWith("Unauthorized");
+        ).to.be.revertedWith(
+          "Pool: Caller not primary agent or deployer initializing values"
+        );
       });
     });
   });
@@ -349,12 +353,12 @@ describe("setClaimsManagerStatus", function () {
         api3Pool
           .connect(roles.agentAppSecondary)
           .setClaimsManagerStatus(roles.claimsManager.address, false)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: Caller not primary agent");
       await expect(
         api3Pool
           .connect(roles.randomPerson)
           .setClaimsManagerStatus(roles.claimsManager.address, false)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: Caller not primary agent");
     });
   });
 });
@@ -409,7 +413,7 @@ describe("setStakeTarget", function () {
           api3Pool
             .connect(roles.agentAppSecondary)
             .setStakeTarget(newStakeTarget)
-        ).to.be.revertedWith("Invalid value");
+        ).to.be.revertedWith("Pool: Invalid percentage value");
       });
     });
   });
@@ -418,7 +422,7 @@ describe("setStakeTarget", function () {
       const newStakeTarget = ethers.BigNumber.from(123);
       await expect(
         api3Pool.connect(roles.randomPerson).setStakeTarget(newStakeTarget)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: Caller not agent");
     });
   });
 });
@@ -469,7 +473,7 @@ describe("setMaxApr", function () {
         const newMaxApr = minApr.sub(ethers.BigNumber.from(123));
         await expect(
           api3Pool.connect(roles.agentAppSecondary).setMaxApr(newMaxApr)
-        ).to.be.revertedWith("Invalid value");
+        ).to.be.revertedWith("Pool: Max APR smaller than min");
       });
     });
   });
@@ -478,7 +482,7 @@ describe("setMaxApr", function () {
       const newMaxApr = ethers.BigNumber.from(123);
       await expect(
         api3Pool.connect(roles.randomPerson).setMaxApr(newMaxApr)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: Caller not agent");
     });
   });
 });
@@ -529,7 +533,7 @@ describe("setMinApr", function () {
         const newMinApr = maxApr.add(ethers.BigNumber.from(123));
         await expect(
           api3Pool.connect(roles.agentAppSecondary).setMinApr(newMinApr)
-        ).to.be.revertedWith("Invalid value");
+        ).to.be.revertedWith("Pool: Min APR larger than max");
       });
     });
   });
@@ -538,7 +542,7 @@ describe("setMinApr", function () {
       const newMinApr = ethers.BigNumber.from(123);
       await expect(
         api3Pool.connect(roles.randomPerson).setMinApr(newMinApr)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: Caller not agent");
     });
   });
 });
@@ -595,7 +599,7 @@ describe("setUnstakeWaitPeriod", function () {
             api3Pool
               .connect(roles.agentAppPrimary)
               .setUnstakeWaitPeriod(newUnstakeWaitPeriod)
-          ).to.be.revertedWith("Invalid value");
+          ).to.be.revertedWith("Pool: Period shorter than epoch");
         });
       }
     );
@@ -607,12 +611,12 @@ describe("setUnstakeWaitPeriod", function () {
         api3Pool
           .connect(roles.agentAppSecondary)
           .setUnstakeWaitPeriod(newUnstakeWaitPeriod)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: Caller not primary agent");
       await expect(
         api3Pool
           .connect(roles.randomPerson)
           .setUnstakeWaitPeriod(newUnstakeWaitPeriod)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: Caller not primary agent");
     });
   });
 });
@@ -647,7 +651,7 @@ describe("setAprUpdateStep", function () {
         api3Pool
           .connect(roles.randomPerson)
           .setAprUpdateStep(newAprUpdateCoefficient)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: Caller not agent");
     });
   });
 });
@@ -727,7 +731,7 @@ describe("setProposalVotingPowerThreshold", function () {
               .setProposalVotingPowerThreshold(
                 firstNewProposalVotingPowerThreshold
               )
-          ).to.be.revertedWith("Invalid value");
+          ).to.be.revertedWith("Pool: Threshold outside limits");
           const secondNewProposalVotingPowerThreshold = ethers.BigNumber.from(
             `1${"0".repeat(15)}`
           ).sub(ethers.BigNumber.from(1));
@@ -737,7 +741,7 @@ describe("setProposalVotingPowerThreshold", function () {
               .setProposalVotingPowerThreshold(
                 secondNewProposalVotingPowerThreshold
               )
-          ).to.be.revertedWith("Invalid value");
+          ).to.be.revertedWith("Pool: Threshold outside limits");
         });
       }
     );
@@ -749,43 +753,13 @@ describe("setProposalVotingPowerThreshold", function () {
         api3Pool
           .connect(roles.agentAppSecondary)
           .setProposalVotingPowerThreshold(newProposalVotingPowerThreshold)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: Caller not primary agent");
       await expect(
         api3Pool
           .connect(roles.randomPerson)
           .setProposalVotingPowerThreshold(newProposalVotingPowerThreshold)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: Caller not primary agent");
     });
-  });
-});
-
-describe("publishSpecsUrl", function () {
-  it("publishes specs URL", async function () {
-    const proposalIndex = 123;
-    const specsUrl = "www.myapi.com/specs.json";
-    await expect(
-      api3Pool
-        .connect(roles.randomPerson)
-        .publishSpecsUrl(
-          roles.votingAppPrimary.address,
-          proposalIndex,
-          specsUrl
-        )
-    )
-      .to.emit(api3Pool, "PublishedSpecsUrl")
-      .withArgs(
-        roles.votingAppPrimary.address,
-        proposalIndex,
-        roles.randomPerson.address,
-        specsUrl
-      );
-    expect(
-      await api3Pool.userAddressToVotingAppToProposalIndexToSpecsUrl(
-        roles.randomPerson.address,
-        roles.votingAppPrimary.address,
-        proposalIndex
-      )
-    ).to.equal(specsUrl);
   });
 });
 
@@ -837,7 +811,7 @@ describe("updateLastProposalTimestamp", function () {
         api3Pool
           .connect(roles.randomPerson)
           .updateLastProposalTimestamp(roles.user1.address)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: Caller not voting app");
     });
   });
 });

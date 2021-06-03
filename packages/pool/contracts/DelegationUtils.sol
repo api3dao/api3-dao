@@ -13,34 +13,47 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         override
     {
         mintReward();
+        require(
+            delegate != address(0) && delegate != msg.sender,
+            "Pool: Invalid delegate"
+            );
         // Delegating users have cannot use their voting power, so we are
         // verifying that the delegate is not currently delegating. However,
         // the delegate may delegate after they have been delegated to.
         require(
-            delegate != address(0)
-                && delegate != msg.sender
-                && userDelegate(delegate) == address(0),
-            ERROR_ADDRESS
+            userDelegate(delegate) == address(0),
+            "Pool: Delegate is delegating"
             );
         User storage user = users[msg.sender];
         // Do not allow frequent delegation updates as that can be used to spam
         // proposals
         require(
             user.lastDelegationUpdateTimestamp + EPOCH_LENGTH < block.timestamp,
-            ERROR_UNAUTHORIZED
+            "Pool: Updated delegate recently"
             );
         user.lastDelegationUpdateTimestamp = block.timestamp;
         
-        address userDelegate = userDelegate(msg.sender);
-        require(userDelegate != delegate, ERROR_DELEGATE);
+        address previousDelegate = userDelegate(msg.sender);
+        require(
+            previousDelegate != delegate,
+            "Pool: Already delegated"
+            );
 
         uint256 userShares = userShares(msg.sender);
-        if (userDelegate != address(0)) {
+        require(
+            userShares != 0,
+            "Pool: Have no shares to delegate"
+            );
+        if (previousDelegate != address(0)) {
             // Need to revoke previous delegation
-            users[userDelegate].delegatedTo.push(Checkpoint({
+            users[previousDelegate].delegatedTo.push(Checkpoint({
                 fromBlock: block.number,
-                value: delegatedToUser(userDelegate) - userShares
+                value: delegatedToUser(previousDelegate) - userShares
                 }));
+            emit Undelegated(
+                msg.sender,
+                previousDelegate
+                );
         }
         // Assign the new delegation
         User storage _delegate = users[delegate];
@@ -66,18 +79,21 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
     {
         mintReward();
         User storage user = users[msg.sender];
-        address userDelegate = userDelegate(msg.sender);
+        address previousDelegate = userDelegate(msg.sender);
         require(
-            userDelegate != address(0)
-                && user.lastDelegationUpdateTimestamp + EPOCH_LENGTH < block.timestamp,
-            ERROR_UNAUTHORIZED
+            previousDelegate != address(0),
+            "Pool: Not delegated"
+            );
+        require(
+            user.lastDelegationUpdateTimestamp + EPOCH_LENGTH < block.timestamp,
+            "Pool: Updated delegate recently"
             );
 
         uint256 userShares = userShares(msg.sender);
-        User storage delegate = users[userDelegate];
+        User storage delegate = users[previousDelegate];
         delegate.delegatedTo.push(Checkpoint({
             fromBlock: block.number,
-            value: delegatedToUser(userDelegate) - userShares
+            value: delegatedToUser(previousDelegate) - userShares
             }));
         user.delegates.push(AddressCheckpoint({
             fromBlock: block.number,
@@ -86,7 +102,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         user.lastDelegationUpdateTimestamp = block.timestamp;
         emit Undelegated(
             msg.sender,
-            userDelegate
+            previousDelegate
             );
     }
 
@@ -102,13 +118,13 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         )
         internal
     {
-        address userDelegate = userDelegate(msg.sender);
-        if (userDelegate == address(0)) {
+        address currentDelegate = userDelegate(msg.sender);
+        if (currentDelegate == address(0)) {
             return;
         }
 
-        User storage delegate = users[userDelegate];
-        uint256 currentlyDelegatedTo = delegatedToUser(userDelegate);
+        User storage delegate = users[currentDelegate];
+        uint256 currentlyDelegatedTo = delegatedToUser(currentDelegate);
         uint256 newDelegatedTo;
         if (delta) {
             newDelegatedTo = currentlyDelegatedTo + shares;

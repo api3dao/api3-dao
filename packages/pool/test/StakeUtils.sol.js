@@ -78,8 +78,7 @@ describe("stake", function () {
           .to.emit(api3Pool, "Staked")
           .withArgs(
             roles.user1.address,
-            user1Stake.div(ethers.BigNumber.from(2)),
-            user1Stake.add(ethers.BigNumber.from(1))
+            user1Stake.div(ethers.BigNumber.from(2))
           );
         expect(await api3Pool.userStake(roles.user1.address)).to.equal(
           user1Stake
@@ -107,11 +106,7 @@ describe("stake", function () {
         await api3Pool.connect(roles.user1).depositRegular(user1Stake);
         await expect(api3Pool.connect(roles.user1).stake(user1Stake))
           .to.emit(api3Pool, "Staked")
-          .withArgs(
-            roles.user1.address,
-            user1Stake,
-            user1Stake.add(ethers.BigNumber.from(1))
-          );
+          .withArgs(roles.user1.address, user1Stake);
         expect(await api3Pool.userStake(roles.user1.address)).to.equal(
           user1Stake
         );
@@ -126,7 +121,7 @@ describe("stake", function () {
       const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
       await expect(
         api3Pool.connect(roles.user1).stake(user1Stake)
-      ).to.be.revertedWith("Invalid value");
+      ).to.be.revertedWith("Pool: Amount exceeds unstaked");
     });
   });
 });
@@ -140,11 +135,7 @@ describe("depositAndStake", function () {
     await api3Token.connect(roles.user1).approve(api3Pool.address, user1Stake);
     await expect(api3Pool.connect(roles.user1).depositAndStake(user1Stake))
       .to.emit(api3Pool, "Staked")
-      .withArgs(
-        roles.user1.address,
-        user1Stake,
-        user1Stake.add(ethers.BigNumber.from(1))
-      );
+      .withArgs(roles.user1.address, user1Stake);
   });
 });
 
@@ -200,7 +191,7 @@ describe("scheduleUnstake", function () {
           api3Pool
             .connect(roles.user1)
             .scheduleUnstake(ethers.BigNumber.from(1))
-        ).to.be.revertedWith("Unauthorized");
+        ).to.be.revertedWith("Pool: Unexecuted unstake exists");
       });
     });
   });
@@ -208,7 +199,7 @@ describe("scheduleUnstake", function () {
     it("reverts", async function () {
       await expect(
         api3Pool.connect(roles.user1).scheduleUnstake(ethers.BigNumber.from(1))
-      ).to.be.revertedWith("Invalid value");
+      ).to.be.revertedWith("Pool: Amount exceeds user shares");
     });
   });
 });
@@ -392,7 +383,7 @@ describe("unstake", function () {
           // Attempt to unstake
           await expect(
             api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
-          ).to.be.revertedWith("Unauthorized");
+          ).to.be.revertedWith("Pool: Unstake not mature yet");
         });
       }
     );
@@ -401,7 +392,7 @@ describe("unstake", function () {
     it("reverts", async function () {
       await expect(
         api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
-      ).to.be.revertedWith("Unauthorized");
+      ).to.be.revertedWith("Pool: No unstake scheduled");
     });
   });
 });

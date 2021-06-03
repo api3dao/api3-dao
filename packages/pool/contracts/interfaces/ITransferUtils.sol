@@ -11,7 +11,7 @@ interface ITransferUtils is IDelegationUtils{
 
     event Withdrawn(
         address indexed user,
-        address indexed destination,
+        address destination,
         uint256 amount
         );
 

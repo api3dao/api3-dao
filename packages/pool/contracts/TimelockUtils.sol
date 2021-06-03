@@ -40,7 +40,10 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         external
         override
     {
-        require(msg.sender == timelockManager, "Caller not TimelockManager");
+        require(
+            msg.sender == timelockManager,
+            "Pool: Caller not TimelockManager"
+            );
         users[userAddress].unstaked = users[userAddress].unstaked + amount;
         // Should never return false because the API3 token uses the
         // OpenZeppelin implementation
@@ -69,12 +72,21 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         external
         override
     {
-        require(msg.sender == timelockManager, "Caller not TimelockManager");
-        require(userToTimelock[userAddress].remainingAmount == 0, ERROR_UNAUTHORIZED);
         require(
-            releaseEnd > releaseStart
-                && amount != 0,
-            ERROR_VALUE
+            msg.sender == timelockManager,
+            "Pool: Caller not TimelockManager"
+            );
+        require(
+            userToTimelock[userAddress].remainingAmount == 0,
+            "Pool: User has active timelock"
+            );
+        require(
+            releaseEnd > releaseStart,
+            "Pool: Timelock start after end"
+            );
+        require(
+            amount != 0,
+            "Pool: Timelock amount zero"
             );
         users[userAddress].unstaked = users[userAddress].unstaked + amount;
         users[userAddress].vesting = users[userAddress].vesting + amount;
@@ -103,8 +115,14 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         override
     {
         Timelock storage timelock = userToTimelock[userAddress];
-        require(block.timestamp > timelock.releaseStart, ERROR_UNAUTHORIZED);
-        require(timelock.remainingAmount > 0, ERROR_UNAUTHORIZED);
+        require(
+            block.timestamp > timelock.releaseStart,
+            "Pool: Release not started yet"
+            );
+        require(
+            timelock.remainingAmount > 0,
+            "Pool: Timelock already released"
+            );
         uint256 totalUnlocked;
         if (block.timestamp >= timelock.releaseEnd)
         {
