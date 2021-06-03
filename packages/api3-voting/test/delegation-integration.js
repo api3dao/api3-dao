@@ -107,7 +107,7 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             );
         });
 
-        it('undo delegate', async () => {
+        it('undo delegate [ @skip-on-coverage ]', async () => {
             const latest = Number(await time.latest());
             await time.increaseTo(latest+Number(time.duration.weeks(1)));
             await pool.undelegateVotingPower({from: voter1});
