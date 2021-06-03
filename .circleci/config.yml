@@ -95,8 +95,8 @@ jobs:
         - attach_workspace:
             at: .
         - run:  npm run coverage:pool && npm run coverage:api3-voting
-      
-      
+
+
 
 
 
@@ -120,7 +120,7 @@ workflows:
           requires:
             - test_voting
             - test_pool
-          filters:
-            branches:
-              only: develop
+#          filters:
+#            branches:
+#              only: develop
 
