@@ -3,7 +3,7 @@ const { expect } = require("chai");
 let roles;
 let api3Token, api3Pool;
 let EPOCH_LENGTH;
-const HUNDRED_PERCENT = ethers.BigNumber.from("100" + "000" + "000");
+const HUNDRED_PERCENT = ethers.BigNumber.from(`1${"0".repeat(18)}`);
 const ONE_YEAR_IN_SECONDS = ethers.BigNumber.from(52 * 7 * 24 * 60 * 60);
 
 beforeEach(async () => {

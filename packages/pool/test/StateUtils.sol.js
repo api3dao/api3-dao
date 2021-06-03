@@ -67,22 +67,22 @@ describe("constructor", function () {
 
         // Verify the default DAO parameters
         expect(await api3Pool.stakeTarget()).to.equal(
-          ethers.BigNumber.from("50" + "000" + "000")
+          ethers.BigNumber.from(`50${"0".repeat(16)}`)
         );
         expect(await api3Pool.minApr()).to.equal(
-          ethers.BigNumber.from("2" + "500" + "000")
+          ethers.BigNumber.from(`25${"0".repeat(15)}`)
         );
         expect(await api3Pool.maxApr()).to.equal(
-          ethers.BigNumber.from("75" + "000" + "000")
+          ethers.BigNumber.from(`75${"0".repeat(16)}`)
         );
         expect(await api3Pool.aprUpdateStep()).to.equal(
-          ethers.BigNumber.from("1" + "000" + "000")
+          ethers.BigNumber.from(`1${"0".repeat(16)}`)
         );
         expect(await api3Pool.unstakeWaitPeriod()).to.equal(
           await api3Pool.EPOCH_LENGTH()
         );
         expect(await api3Pool.proposalVotingPowerThreshold()).to.equal(
-          ethers.BigNumber.from("100" + "000")
+          ethers.BigNumber.from(`1${"0".repeat(15)}`)
         );
         // Initialize the APR at (maxApr / minApr) / 2
         expect(await api3Pool.currentApr()).to.equal(
@@ -362,7 +362,7 @@ describe("setClaimsManagerStatus", function () {
 describe("setStakeTarget", function () {
   context("Caller is Agent", function () {
     context(
-      "Stake target to be set is smaller than or equal to 100,000,000",
+      "Stake target to be set is smaller than or equal to 100%",
       function () {
         it("sets stake target", async function () {
           await api3Pool
@@ -394,7 +394,7 @@ describe("setStakeTarget", function () {
         });
       }
     );
-    context("Stake target to be set is larger than 100,000,000", function () {
+    context("Stake target to be set is larger than 100%", function () {
       it("reverts", async function () {
         await api3Pool
           .connect(roles.deployer)
@@ -404,7 +404,7 @@ describe("setStakeTarget", function () {
             roles.votingAppPrimary.address,
             roles.votingAppSecondary.address
           );
-        const newStakeTarget = ethers.BigNumber.from("200" + "000" + "000");
+        const newStakeTarget = ethers.BigNumber.from(`200${"0".repeat(16)}`);
         await expect(
           api3Pool
             .connect(roles.agentAppSecondary)
@@ -655,7 +655,7 @@ describe("setAprUpdateStep", function () {
 describe("setProposalVotingPowerThreshold", function () {
   context("Caller is primary DAO Agent", function () {
     context(
-      "Proposal voting power threshold to be set is between 100,000 (0.1%) and 10,000,000 (10%)",
+      "Proposal voting power threshold to be set is between 0.1% and 10%",
       function () {
         it("sets proposal voting power threshold", async function () {
           await api3Pool
@@ -668,7 +668,7 @@ describe("setProposalVotingPowerThreshold", function () {
             );
           const oldProposalVotingPowerThreshold = await api3Pool.proposalVotingPowerThreshold();
           const firstNewProposalVotingPowerThreshold = ethers.BigNumber.from(
-            "10" + "000" + "000"
+            `10${"0".repeat(16)}`
           );
           await expect(
             api3Pool
@@ -686,7 +686,7 @@ describe("setProposalVotingPowerThreshold", function () {
             firstNewProposalVotingPowerThreshold
           );
           const secondNewProposalVotingPowerThreshold = ethers.BigNumber.from(
-            "100" + "000"
+            `1${"0".repeat(15)}`
           );
           await expect(
             api3Pool
@@ -719,7 +719,7 @@ describe("setProposalVotingPowerThreshold", function () {
               roles.votingAppSecondary.address
             );
           const firstNewProposalVotingPowerThreshold = ethers.BigNumber.from(
-            "10" + "000" + "000"
+            `10${"0".repeat(16)}`
           ).add(ethers.BigNumber.from(1));
           await expect(
             api3Pool
@@ -729,7 +729,7 @@ describe("setProposalVotingPowerThreshold", function () {
               )
           ).to.be.revertedWith("Invalid value");
           const secondNewProposalVotingPowerThreshold = ethers.BigNumber.from(
-            "100" + "000"
+            `1${"0".repeat(15)}`
           ).sub(ethers.BigNumber.from(1));
           await expect(
             api3Pool
