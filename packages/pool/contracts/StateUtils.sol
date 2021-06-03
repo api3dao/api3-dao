@@ -400,29 +400,6 @@ contract StateUtils is IStateUtils {
             );
     }
 
-    /// @notice Called by the owner of the proposal to publish the specs URL
-    /// @dev Since the owner of a proposal is known, users publishing specs for
-    /// a proposal that is not their own is not a concern
-    /// @param proposalIndex Proposal index
-    /// @param specsUrl URL that hosts the specs of the transaction that will
-    /// be made if the proposal passes
-    function publishSpecsUrl(
-        address votingApp,
-        uint256 proposalIndex,
-        string calldata specsUrl
-        )
-        external
-        override
-    {
-        userAddressToVotingAppToProposalIndexToSpecsUrl[msg.sender][votingApp][proposalIndex] = specsUrl;
-        emit PublishedSpecsUrl(
-            votingApp,
-            proposalIndex,
-            msg.sender,
-            specsUrl
-            );
-    }
-
     /// @notice Called by a DAO Api3Voting app at proposal creation-time to
     /// update the timestamp of the user's last proposal
     /// @param userAddress User address

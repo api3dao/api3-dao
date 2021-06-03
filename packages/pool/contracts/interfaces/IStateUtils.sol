@@ -89,13 +89,6 @@ interface IStateUtils {
     function setProposalVotingPowerThreshold(uint256 _proposalVotingPowerThreshold)
         external;
 
-    function publishSpecsUrl(
-        address votingApp,
-        uint256 proposalIndex,
-        string calldata specsUrl
-        )
-        external;
-
     function updateLastProposalTimestamp(address userAddress)
         external;
 }
