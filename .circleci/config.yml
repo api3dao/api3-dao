@@ -98,8 +98,6 @@ jobs:
 
 
 
-
-
 workflows:
   build_and_test:
     jobs:
@@ -120,7 +118,7 @@ workflows:
           requires:
             - test_voting
             - test_pool
-#          filters:
-#            branches:
-#              only: develop
+          filters:
+            branches:
+              only: develop
 
