@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity 0.8.2;
+pragma solidity 0.8.4;
 
 import "./auxiliary/interfaces/v0.8.2/IApi3Token.sol";
 import "./interfaces/IStateUtils.sol";
