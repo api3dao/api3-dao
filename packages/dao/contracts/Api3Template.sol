@@ -159,4 +159,3 @@ contract Api3Template is BaseTemplate {
         _acl.createPermission(_createVotesGrantee, _voting, _voting.CREATE_VOTES_ROLE(), _manager);
     }
 }
-
