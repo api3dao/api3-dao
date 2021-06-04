@@ -1,9 +1,7 @@
 {
   "name": "@api3-dao/dao",
   "version": "1.0.0",
-  "description": "Generic template for deploying and setting up a DAO with one app",
-  "author": "Aragon Association <legal@aragon.org>",
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "scripts": {
     "prepublishOnly": "npm run compile && npm run abi:extract -- --no-compile",
     "abi:extract": "truffle-extract --output abi/ --keys abi",
