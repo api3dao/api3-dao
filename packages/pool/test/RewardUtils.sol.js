@@ -338,7 +338,8 @@ describe("mintReward", function () {
       // Pay reward
       await api3Pool.connect(roles.randomPerson).mintReward();
       const totalStake = await api3Pool.totalStake();
-      const epochIndexOfLastRewardPayment = await api3Pool.epochIndexOfLastRewardPayment();
+      const epochIndexOfLastRewardPayment =
+        await api3Pool.epochIndexOfLastRewardPayment();
       const currentApr = await api3Pool.currentApr();
       // Pay reward again
       await api3Pool.connect(roles.randomPerson).mintReward();

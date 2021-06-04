@@ -670,7 +670,8 @@ describe("setProposalVotingPowerThreshold", function () {
               roles.votingAppPrimary.address,
               roles.votingAppSecondary.address
             );
-          const oldProposalVotingPowerThreshold = await api3Pool.proposalVotingPowerThreshold();
+          const oldProposalVotingPowerThreshold =
+            await api3Pool.proposalVotingPowerThreshold();
           const firstNewProposalVotingPowerThreshold = ethers.BigNumber.from(
             `10${"0".repeat(16)}`
           );
