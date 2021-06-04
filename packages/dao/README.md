@@ -60,66 +60,70 @@ _Handle apps and permissions_
 
 | App               | Permission            | Grantee              | Manager              |
 | ----------------- | --------------------- | -------------------- | -------------------- |
-| Kernel            | APP_MANAGER           | MainVoting `[SHARE]` | MainVoting `[SHARE]` |
-| ACL               | CREATE_PERMISSIONS    | MainVoting `[SHARE]` | MainVoting `[SHARE]` |
-| EVMScriptRegistry | REGISTRY_MANAGER      | MainVoting `[SHARE]` | MainVoting `[SHARE]` |
-| EVMScriptRegistry | REGISTRY_ADD_EXECUTOR | MainVoting `[SHARE]` | MainVoting `[SHARE]` |
+| Kernel            | APP_MANAGER           | PrimaryVoting `[SHARE]` | PrimaryVoting `[SHARE]` |
+| ACL               | CREATE_PERMISSIONS    | PrimaryVoting `[SHARE]` | PrimaryVoting `[SHARE]` |
+| EVMScriptRegistry | REGISTRY_MANAGER      | PrimaryVoting `[SHARE]` | PrimaryVoting `[SHARE]` |
+| EVMScriptRegistry | REGISTRY_ADD_EXECUTOR | PrimaryVoting `[SHARE]` | PrimaryVoting `[SHARE]` |
 
 
 ### Board
 
+#### Primary Voting
 
-#### Main Voting
-_Enforces important board's decisions_
+_Enforces important board decisions_
 
 | App                  | Permission     | Grantee                 | Manager              |
 | -------------------- | -------------- | ----------------------- | -------------------- |
-| MainVoting `[BOARD]` | CREATE_VOTES   | Any entity  `[BOARD]`   | MainVoting `[SHARE]` |
-| MainVoting `[BOARD]` | MODIFY_QUORUM  | MainAgent   `[BOARD]`   | MainVoting `[SHARE]` |
-| MainVoting `[BOARD]` | MODIFY_SUPPORT | MainAgent   `[BOARD]`   | MainVoting `[SHARE]` |
+| PrimaryVoting `[BOARD]` | CREATE_VOTES   | Any entity  `[BOARD]`   | PrimaryVoting `[SHARE]` |
+| PrimaryVoting `[BOARD]` | MODIFY_QUORUM  | PrimaryAgent   `[BOARD]`   | PrimaryVoting `[SHARE]` |
+| PrimaryVoting `[BOARD]` | MODIFY_SUPPORT | PrimaryAgent   `[BOARD]`   | PrimaryVoting `[SHARE]` |
 
 #### Secondary Voting
-_Enforces less important board's decisions_
+
+_Enforces less important board decisions_
 
 | App                       | Permission     | Grantee                 | Manager              |
 | ------------------------- | -------------- | ----------------------- | -------------------- |
-| SecondaryVoting `[BOARD]` | CREATE_VOTES   | Any entity  `[BOARD]`   | MainVoting `[SHARE]` |
-| SecondaryVoting `[BOARD]` | MODIFY_QUORUM  | MainAgent   `[BOARD]`   | MainVoting `[SHARE]` |
-| SecondaryVoting `[BOARD]` | MODIFY_SUPPORT | MainAgent   `[BOARD]`   | MainVoting `[SHARE]` |
+| SecondaryVoting `[BOARD]` | CREATE_VOTES   | Any entity  `[BOARD]`   | PrimaryVoting `[SHARE]` |
+| SecondaryVoting `[BOARD]` | MODIFY_QUORUM  | PrimaryAgent   `[BOARD]`   | PrimaryVoting `[SHARE]` |
+| SecondaryVoting `[BOARD]` | MODIFY_SUPPORT | PrimaryAgent   `[BOARD]`   | PrimaryVoting `[SHARE]` |
 
-#### Main Agent
-_Enforces important board's decisions_
+#### Primary Agent
+
+_Enforces important board decisions_
 
 | App       | Permission             | Grantee              | Manager              |
 | --------- | ---------------------- | -------------------- | -------------------- |
-| MainAgent | EXECUTE                | MainVoting `[SHARE]` | MainVoting `[SHARE]` |
-| MainAgent | RUN_SCRIPT             | MainVoting           | MainVoting `[SHARE]` |
-| MainAgent | REMOVE_PROTECTED_TOKEN | NULL                 | NULL                 |
-| MainAgent | SAFE_EXECUTE           | NULL                 | NULL                 |
-| MainAgent | DESIGNATE_SIGNER       | NULL                 | NULL                 |
-| MainAgent | ADD_PRESIGNED_HASH     | NULL                 | NULL                 |
-| MainAgent | ADD_PROTECTED_TOKEN    | NULL                 | NULL                 |
-| MainAgent | TRANSFER               | NULL                 | NULL                 |
+| PrimaryAgent | EXECUTE                | PrimaryVoting `[SHARE]` | PrimaryVoting `[SHARE]` |
+| PrimaryAgent | RUN_SCRIPT             | PrimaryVoting           | PrimaryVoting `[SHARE]` |
+| PrimaryAgent | REMOVE_PROTECTED_TOKEN | NULL                 | NULL                 |
+| PrimaryAgent | SAFE_EXECUTE           | NULL                 | NULL                 |
+| PrimaryAgent | DESIGNATE_SIGNER       | NULL                 | NULL                 |
+| PrimaryAgent | ADD_PRESIGNED_HASH     | NULL                 | NULL                 |
+| PrimaryAgent | ADD_PROTECTED_TOKEN    | NULL                 | NULL                 |
+| PrimaryAgent | TRANSFER               | PrimaryVoting           | PrimaryVoting           |
 
 
 #### Secondary Agent
-_Enforces less important board's decisions_
+
+_Enforces less important board decisions_
 
 | App            | Permission             | Grantee                   | Manager              |
 | -------------- | ---------------------- | ------------------------- | -------------------- |
-| SecondaryAgent | EXECUTE                | SecondaryVoting `[SHARE]` | MainVoting `[SHARE]` |
-| SecondaryAgent | RUN_SCRIPT             | SecondaryVoting           | MainVoting `[SHARE]` |
+| SecondaryAgent | EXECUTE                | SecondaryVoting `[SHARE]` | PrimaryVoting `[SHARE]` |
+| SecondaryAgent | RUN_SCRIPT             | SecondaryVoting           | PrimaryVoting `[SHARE]` |
 | SecondaryAgent | REMOVE_PROTECTED_TOKEN | NULL                      | NULL                 |
 | SecondaryAgent | SAFE_EXECUTE           | NULL                      | NULL                 |
 | SecondaryAgent | DESIGNATE_SIGNER       | NULL                      | NULL                 |
 | SecondaryAgent | ADD_PRESIGNED_HASH     | NULL                      | NULL                 |
 | SecondaryAgent | ADD_PROTECTED_TOKEN    | NULL                      | NULL                 |
-| SecondaryAgent | TRANSFER               | NULL                      | NULL                 |
+| SecondaryAgent | TRANSFER               | PrimaryVoting                | PrimaryVoting           |
 
 #### Vault and Finance
-_Handle board's vault_
 
-| App     | Permission          | Grantee          | Manager              |
-| ------- | ------------------- | ---------------- | -------------------- |
-| Vault(MainAgent)   | TRANSFER            | MainVoting       | MainVoting `[SHARE]` |
-| Vault(SecondaryAgent)   | TRANSFER            | SecondaryVoting       | SecondaryVoting `[SHARE]` |
+_Handle board vault_
+
+| App                   | Permission  | Grantee          | Manager              |
+| --------------------- | ----------- | ---------------- | -------------------- |
+| Vault(PrimaryAgent)      | TRANSFER    | PrimaryVoting       | PrimaryVoting `[SHARE]` |
+| Vault(SecondaryAgent) | TRANSFER    | SecondaryVoting  | PrimaryVoting `[SHARE]` |

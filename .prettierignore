@@ -1,9 +1,6 @@
 **/node_modules/**
 .eslintrc.js
 
-packages/ui/**
-packages/api3-voting/**
-
 **/cache/**
 **/artifacts/**
 **/coverage/**

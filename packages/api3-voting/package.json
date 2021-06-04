@@ -1,32 +1,30 @@
 {
   "name": "@api3-dao/api3-voting",
   "version": "1.0.0",
+  "license": "GPL-3.0-or-later",
   "scripts": {
     "compile": "buidler compile --force",
     "devchain": "buidler node",
     "diff": "mkdir -p diff && git diff --no-index ./node_modules/@aragon/apps-voting/contracts/Voting.sol ./contracts/Api3Voting.sol > ./diff/Api3Voting.sol 2>&1 | true",
-    "lint": "solium --no-soliumignore --dir ./contracts",
     "test": "cd ../pool && npm run build && cp ./artifacts/contracts/Api3Pool.sol/Api3Pool.json ../api3-voting/artifacts/Api3Pool.json  && cd ../api3-voting && buidler test",
     "test:gas": "REPORT_GAS=true buidler test --network localhost",
     "coverage": "buidler coverage --network coverage"
   },
-  "dependencies": {
-    "@aragon/minime": "1.0.0",
-    "@aragon/os": "4.4.0",
-    "@openzeppelin/test-helpers": "^0.5.10"
-  },
   "devDependencies": {
+    "@api3-dao/pool": "^0.1.0",
     "@aragon/apps-voting": "^2.1.0",
     "@aragon/contract-helpers-test": "^0.1.0",
-    "@nomiclabs/buidler": "^1.4.3",
+    "@aragon/minime": "1.0.0",
+    "@aragon/os": "4.4.0",
+    "@nomiclabs/buidler": "^1.4.8",
     "@nomiclabs/buidler-ganache": "^1.3.3",
     "@nomiclabs/buidler-truffle5": "^1.3.4",
     "@nomiclabs/buidler-web3": "^1.3.4",
+    "@openzeppelin/test-helpers": "^0.5.11",
     "buidler-extract": "^1.0.0",
-    "buidler-gas-reporter": "^0.1.3",
-    "chai": "^4.2.0",
-    "solidity-coverage": "^0.7.9",
-    "solium": "^1.2.5",
-    "web3": "^1.2.11"
+    "buidler-gas-reporter": "^0.1.4",
+    "chai": "^4.3.4",
+    "solidity-coverage": "^0.7.16",
+    "web3": "^1.3.6"
   }
 }

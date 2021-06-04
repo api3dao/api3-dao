@@ -1,6 +1,6 @@
 {
   "name": "api3-dao",
-  "license": "MIT",
+  "license": "Multi-license",
   "version": "0.1.0",
   "scripts": {
     "bootstrap": "npm install && lerna bootstrap",
@@ -16,19 +16,16 @@
     "ui": "yarn start:ui"
   },
   "devDependencies": {
-    "eslint": "^7.21.0",
-    "husky": "^5.1.3",
+    "eslint": "^7.27.0",
+    "husky": "^6.0.0",
     "lerna": "^4.0.0",
-    "prettier": "^2.2.1",
+    "prettier": "^2.3.0",
     "pretty-quick": "^3.1.0",
-    "solhint": "^3.3.3"
+    "solhint": "^3.3.6"
   },
   "husky": {
     "hooks": {
       "pre-commit": "npm run pretty-quick && npm run lint"
     }
-  },
-  "dependencies": {
-    "@openzeppelin/test-helpers": "^0.5.10"
   }
 }

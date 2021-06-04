@@ -14,18 +14,16 @@
     "test:gas": "REPORT_GAS=TRUE hardhat test"
   },
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.0.1",
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
-    "chai": "^4.3.3",
+    "@openzeppelin/contracts": "^3.4.1",
+    "chai": "^4.3.4",
     "ethereum-waffle": "^3.3.0",
-    "hardhat": "^2.1.1",
-    "hardhat-deploy": "^0.7.0-beta.46",
+    "hardhat": "^2.3.0",
+    "hardhat-deploy": "^0.7.10",
     "hardhat-gas-reporter": "^1.0.4",
     "solidity-coverage": "^0.7.16",
     "solium": "^1.2.5",
     "surya": "^0.4.2"
-  },
-  "dependencies": {
-    "@openzeppelin/contracts": "^3.4.1"
   }
 }
