@@ -251,7 +251,7 @@ contract Convenience is Ownable  {
             revert("Invalid voting app type");
         }
         if (api3Voting.votesLength() == 0) {
-            return uint256[];
+            return (new uint256[](1));
         }
         uint256 countOpenVote = 0;
         for (uint256 i = api3Voting.votesLength() - 1; i >= 0; i--)
