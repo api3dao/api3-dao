@@ -237,9 +237,6 @@ contract Convenience is Ownable  {
         view
         returns (uint256[] memory voteIds)
     {
-        if (api3Voting.votesLength() == 0) {
-            return ;
-        }
         IApi3Voting api3Voting;
         if (votingAppType == VotingAppType.Primary)
         {
@@ -252,6 +249,9 @@ contract Convenience is Ownable  {
         else
         {
             revert("Invalid voting app type");
+        }
+        if (api3Voting.votesLength() == 0) {
+            return;
         }
         uint256 countOpenVote = 0;
         for (uint256 i = api3Voting.votesLength() - 1; i >= 0; i--)
