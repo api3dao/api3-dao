@@ -7,9 +7,10 @@
   "scripts": {
     "prepublishOnly": "npm run compile && npm run abi:extract -- --no-compile",
     "abi:extract": "truffle-extract --output abi/ --keys abi",
-    "compile": "truffle compile --all",
+    "compile": "node --stack-size=4096 node_modules/.bin/truffle compile --all && cd ../pool && npm run build && cp ./artifacts/contracts/Api3Pool.sol/Api3Pool.json ../dao/build/contracts/Api3Pool.json && cp ./artifacts/contracts/auxiliary/Api3Token.sol/Api3Token.json ../dao/build/contracts/Api3Token.json && cd ../dao",
+    "compile:original": "truffle compile --all",
     "lint": "solium --dir ./contracts",
-    "test": "npm run prepublishOnly && cd ../pool && npm run build && cp ./artifacts/contracts/Api3Pool.sol/Api3Pool.json ../dao/build/contracts/Api3Pool.json && cd ../dao  && npm run test:ganache",
+    "test": "npm run prepublishOnly  && npm run test:ganache",
     "test:ganache": "./node_modules/@aragon/templates-shared/scripts/test-ganache.sh",
     "test:geth": "npm run docker:run && npm run docker:wait-gas && npm run deploy:devnet && truffle test --network devnet && npm run docker:stop",
     "docker:run": "cd ./node_modules/@aragon/templates-shared/; docker-compose -f docker-compose.yml up -d; RESULT=$?; cd -; $(exit $RESULT)",
@@ -33,6 +34,7 @@
   },
   "dependencies": {
     "@api3-dao/api3-voting": "^1.0.0",
+    "@api3-dao/pool": "^0.1.0",
     "@aragon/apps-shared-minime": "^1.0.0",
     "@aragon/id": "2.0.3",
     "@aragon/os": "4.3.0",

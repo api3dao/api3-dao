@@ -16,6 +16,7 @@
     "@openzeppelin/test-helpers": "^0.5.10"
   },
   "devDependencies": {
+    "@api3-dao/pool": "^0.1.0",
     "@aragon/apps-voting": "^2.1.0",
     "@aragon/contract-helpers-test": "^0.1.0",
     "@nomiclabs/buidler": "^1.4.3",
