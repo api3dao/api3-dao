@@ -111,10 +111,13 @@ contract('API3 Voting App delegation tests', ([root, voter1, voter2, voter3, non
             const latest = Number(await time.latest());
             await time.increaseTo(latest+Number(time.duration.weeks(1)));
             await pool.undelegateVotingPower({from: voter1});
-            voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
-            await voting.vote(voteId, true, false, { from: voter2 });
-            const result = await voting.getVote(voteId);
-            expect(BigInt(result.yea)).to.equal(BigInt(balance2) + BigInt(balance3));
+        });
+
+        it('undelegated vote', async () => {
+          voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: voter3}));
+          await voting.vote(voteId, true, false, { from: voter2 });
+          const result = await voting.getVote(voteId);
+          expect(BigInt(result.yea)).to.equal(BigInt(balance2) + BigInt(balance3));
         });
 
         it('cannot propose vote after undelegating', async () => {
