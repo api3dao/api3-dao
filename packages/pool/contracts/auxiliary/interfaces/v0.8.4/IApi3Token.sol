@@ -1,9 +1,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-import "./IERC20.sol";
+import "./IERC20Aux.sol";
 
-interface IApi3Token is IERC20 {
+interface IApi3Token is IERC20Aux {
     event MinterStatusUpdated(
         address indexed minterAddress,
         bool minterStatus
