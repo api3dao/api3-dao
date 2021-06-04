@@ -111,10 +111,10 @@ contract Convenience is Ownable  {
             ) = api3Pool.getUser(userAddress);
     }
 
-    /// @notice Used by the DAO dashboard client to retrieve general vote data
+    /// @notice Used by the DAO dashboard client to retrieve static vote data
     /// @param votingAppType Enumerated voting app type (primary or secondary)
     /// @param voteIds Array of vote IDs for which data will be retrieved
-    function getGeneralVoteData(
+    function getStaticVoteData(
         VotingAppType votingAppType,
         uint256[] calldata voteIds
         )
@@ -124,9 +124,8 @@ contract Convenience is Ownable  {
             uint64[] memory startDate,
             uint64[] memory supportRequired,
             uint64[] memory minAcceptQuorum,
-            uint256[] memory yea,
-            uint256[] memory nay,
-            uint256[] memory votingPower
+            uint256[] memory votingPower,
+            bytes[] memory script
             )
     {
         IApi3Voting api3Voting;
@@ -145,9 +144,8 @@ contract Convenience is Ownable  {
         startDate = new uint64[](voteIds.length);
         supportRequired = new uint64[](voteIds.length);
         minAcceptQuorum = new uint64[](voteIds.length);
-        yea = new uint256[](voteIds.length);
-        nay = new uint256[](voteIds.length);
         votingPower = new uint256[](voteIds.length);
+        script = new bytes[](voteIds.length);
         for (uint256 i = 0; i < voteIds.length; i++)
         {
             (
@@ -157,18 +155,21 @@ contract Convenience is Ownable  {
                 , // snapshotBlock
                 supportRequired[i],
                 minAcceptQuorum[i],
-                yea[i],
-                nay[i],
+                , // yea
+                , // nay
                 votingPower[i],
-                // script
+                script[i]
                 ) = api3Voting.getVote(voteIds[i]);
         }
     }
 
-    /// @notice Used by the DAO dashboard client to retrieve user vote data
+    /// @notice Used by the DAO dashboard client to retrieve dynamic vote data
+    /// @dev `delegateAt` is actually static but we already have to fetch it
+    /// to fetch the related dynamic data so we also return it in this mtehod
     /// @param votingAppType Enumerated voting app type (primary or secondary)
+    /// @param userAddress User address
     /// @param voteIds Array of vote IDs for which data will be retrieved
-    function getUserVoteData(
+    function getDynamicVoteData(
         VotingAppType votingAppType,
         address userAddress,
         uint256[] calldata voteIds
@@ -177,7 +178,8 @@ contract Convenience is Ownable  {
         view
         returns (
             bool[] memory executed,
-            bytes[] memory script,
+            uint256[] memory yea,
+            uint256[] memory nay,
             IApi3Voting.VoterState[] memory voterState,
             address[] memory delegateAt,
             IApi3Voting.VoterState[] memory delegateState
@@ -197,7 +199,8 @@ contract Convenience is Ownable  {
             revert("Invalid voting app type");
         }
         executed = new bool[](voteIds.length);
-        script = new bytes[](voteIds.length);
+        yea = new uint256[](voteIds.length);
+        nay = new uint256[](voteIds.length);
         voterState = new IApi3Voting.VoterState[](voteIds.length);
         delegateAt = new address[](voteIds.length);
         delegateState = new IApi3Voting.VoterState[](voteIds.length);
@@ -208,17 +211,23 @@ contract Convenience is Ownable  {
                 , // open
                 executed[i],
                 , // startDate
-                snapshotBlock,
+                snapshotBlock ,
                 , // supportRequired
                 , // minAcceptQuorum
-                , // yea
-                , // nay
+                yea[i],
+                nay[i],
                 , // votingPower
-                script[i]
+                // script
                 ) = api3Voting.getVote(voteIds[i]);
             delegateAt[i] = api3Pool.userDelegateAt(userAddress, snapshotBlock);
-            voterState[i] = api3Voting.getVoterState(voteIds[i], userAddress);
-            delegateState[i] = api3Voting.getVoterState(voteIds[i], delegateAt[i]);
+            if (delegateAt[i] == address(0))
+            {
+                voterState[i] = api3Voting.getVoterState(voteIds[i], userAddress);
+            }
+            else
+            {
+                delegateState[i] = api3Voting.getVoterState(voteIds[i], delegateAt[i]);
+            }
         }
     }
 
