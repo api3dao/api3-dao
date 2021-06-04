@@ -1,3 +1,4 @@
+/*global artifacts, assert, before, contract, web3*/
 const ERRORS = require("./helpers/errors");
 const {
   assertBn,
@@ -378,8 +379,7 @@ contract(
             );
             assertBn(yea, 0, "initial yea should be 0");
             assertBn(nay, 0, "initial nay should be 0");
-            // NOTE: commented out because of an extra unit in votingPower
-            // assertBn(votingPower, bigExp(100, decimals), 'voting power should be 100')
+            assertBn(votingPower, bigExp(100, decimals).add(bn(1)), 'voting power should be 100 + 1 Wei');
             assert.equal(execScript, script, "script should be correct");
             assert.equal(
               metadata,

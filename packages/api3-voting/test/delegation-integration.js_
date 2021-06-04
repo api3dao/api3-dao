@@ -1,14 +1,12 @@
+/*global artifacts, before, contract, expect*/
 const {
   pct16,
-  bn,
-  bigExp,
   getEventArgument,
   ZERO_ADDRESS,
 } = require("@aragon/contract-helpers-test");
 const {
   newDao,
   installNewApp,
-  encodeCallScript,
   ANY_ENTITY,
   EMPTY_CALLS_SCRIPT,
 } = require("@aragon/contract-helpers-test/src/aragon-os");
@@ -18,27 +16,20 @@ const Voting = artifacts.require("Api3VotingMock");
 
 const Api3TokenMock = artifacts.require("Api3TokenMock");
 const Api3Pool = artifacts.require("Api3Pool");
-const ExecutionTarget = artifacts.require("ExecutionTarget");
 
 const createdVoteId = (receipt) =>
   getEventArgument(receipt, "StartVote", "voteId");
 
-const VOTER_STATE = ["ABSENT", "YEA", "NAY"].reduce((state, key, index) => {
-  state[key] = index;
-  return state;
-}, {});
 const MOCK_TIMELOCKMANAGER_ADDRESS =
   "0x0000000000000000000000000000000000000001";
 
 contract(
   "API3 Voting App delegation tests",
-  ([root, voter1, voter2, voter3, nonVoter]) => {
-    let pool, votingBase, voting, token, executionTarget;
+  ([root, voter1, voter2, voter3]) => {
+    let pool, votingBase, voting, token;
     let CREATE_VOTES_ROLE,
       MODIFY_SUPPORT_ROLE,
-      MODIFY_QUORUM_ROLE,
-      ERROR_ADDRESS,
-      ERROR_ANAUTHORISED;
+      MODIFY_QUORUM_ROLE;
 
     const NOW = 1;
     const APP_ID =
