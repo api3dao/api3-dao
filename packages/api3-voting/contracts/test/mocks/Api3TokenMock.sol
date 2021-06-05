@@ -53,6 +53,14 @@ contract Api3TokenMock is MiniMeToken {
         return totalSupplyAt(block.number - 1);
     }
 
+    function getMinterStatus(address minterAddress)
+        external
+        view
+        returns(bool)
+    {
+        return false;
+    }
+
     function getUser(address userAddress)
         external
         view

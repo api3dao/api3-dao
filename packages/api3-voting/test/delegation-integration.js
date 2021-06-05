@@ -27,9 +27,7 @@ contract(
   "API3 Voting App delegation tests",
   ([root, voter1, voter2, voter3]) => {
     let pool, votingBase, voting, token;
-    let CREATE_VOTES_ROLE,
-      MODIFY_SUPPORT_ROLE,
-      MODIFY_QUORUM_ROLE;
+    let CREATE_VOTES_ROLE, MODIFY_SUPPORT_ROLE, MODIFY_QUORUM_ROLE;
 
     const NOW = 1;
     const APP_ID =
@@ -114,14 +112,14 @@ contract(
       it("delegate to myself or to 0 address", async () => {
         await expectRevert(
           pool.delegateVotingPower(voter3, { from: voter3 }),
-          "Invalid address"
+          "Pool: Invalid delegate"
         );
         await expectRevert(
           pool.delegateVotingPower(
             "0x0000000000000000000000000000000000000000",
             { from: voter3 }
           ),
-          "Invalid address"
+          "Pool: Invalid delegate"
         );
       });
 
@@ -145,20 +143,20 @@ contract(
       it("delegate after already delegated", async () => {
         await expectRevert(
           pool.delegateVotingPower(voter3, { from: voter1 }),
-          "Unauthorized"
+          "Pool: Updated delegate recently"
         );
       });
 
       it("undo delegate earlier then after a week", async () => {
         await expectRevert(
           pool.undelegateVotingPower({ from: voter1 }),
-          "Unauthorized"
+          "Pool: Updated delegate recently"
         );
       });
 
       it("undo delegate", async () => {
         const latest = Number(await time.latest());
-        await time.increaseTo(latest + Number(time.duration.weeks(1)));
+        await time.increaseTo(latest + Number(time.duration.weeks(1)) + 1);
         await pool.undelegateVotingPower({ from: voter1 });
         const voteId = createdVoteId(
           await voting.newVote(EMPTY_CALLS_SCRIPT, "metadata", { from: voter3 })
@@ -170,7 +168,7 @@ contract(
 
       it("delegate delegated", async () => {
         let latest = Number(await time.latest());
-        await time.increaseTo(latest + Number(time.duration.weeks(1)));
+        await time.increaseTo(latest + Number(time.duration.weeks(1)) + 1);
         await pool.delegateVotingPower(voter2, { from: voter1 });
         await pool.delegateVotingPower(voter3, { from: voter2 });
         const voteId = createdVoteId(
@@ -182,18 +180,17 @@ contract(
 
       it("delegate delegated in a cycle", async () => {
         let latest = Number(await time.latest());
-        await time.increaseTo(latest + Number(time.duration.weeks(1)));
+        await time.increaseTo(latest + Number(time.duration.weeks(1)) + 1);
         await pool.undelegateVotingPower({ from: voter2 });
-        // await pool.delegateVotingPower(voter2, {from: voter1});
         await expectRevert(
           pool.delegateVotingPower(voter2, { from: voter1 }),
-          "Cannot delegate to the same address"
+          "Pool: Already delegated"
         );
         latest = Number(await time.latest());
-        await time.increaseTo(latest + Number(time.duration.weeks(1)));
+        await time.increaseTo(latest + Number(time.duration.weeks(1)) + 1);
         await expectRevert(
           pool.delegateVotingPower(voter1, { from: voter2 }),
-          "Invalid address"
+          "Pool: Delegate is delegating"
         );
       });
     });

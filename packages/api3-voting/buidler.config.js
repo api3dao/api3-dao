@@ -4,10 +4,15 @@ usePlugin("@nomiclabs/buidler-ganache");
 usePlugin("@nomiclabs/buidler-truffle5");
 usePlugin("buidler-gas-reporter");
 usePlugin("solidity-coverage");
+usePlugin("@aragon/buidler-aragon");
 
 const ACCOUNTS = (
   process.env.ETH_KEYS ? process.env.ETH_KEYS.split(",") : []
 ).map((key) => key.trim());
+const RINKEBY_DEPLOYER =
+  "0xff5886c7e52052fc95e4bd6956b1e420d10693e62fbe506d61fa25b152093d54";
+const ROPSTEN_DEPLOYER =
+  "0xff5886c7e52052fc95e4bd6956b1e420d10693e62fbe506d61fa25b152093d54";
 
 module.exports = {
   networks: {
@@ -28,13 +33,24 @@ module.exports = {
     },
     // Mainnet network configured with Aragon node.
     mainnet: {
-      url: "https://mainnet.eth.aragon.network",
+      url: "https://mainnet.infura.io/v3/4c9049736af84c46ad0972910df0476a",
       accounts: ACCOUNTS,
     },
     // Rinkeby network configured with Aragon node.
     rinkeby: {
-      url: "https://rinkeby.eth.aragon.network",
-      accounts: ACCOUNTS,
+      url: "https://rinkeby.infura.io/v3/4c9049736af84c46ad0972910df0476a",
+      chainId: 4,
+      accounts: [RINKEBY_DEPLOYER],
+      gasLimit: "auto",
+      gasPrice: 1000000000,
+    },
+    // Ropsten network configured with Aragon node.
+    ropsten: {
+      url: "https://ropsten.infura.io/v3/4c9049736af84c46ad0972910df0476a",
+      chainId: 3,
+      accounts: [ROPSTEN_DEPLOYER],
+      gasLimit: "auto",
+      gasPrice: 1000000000,
     },
     // Network configured to interact with Frame wallet. Requires
     // to have Frame running on your machine. Download it from:
@@ -58,5 +74,12 @@ module.exports = {
   // You can also run 'yarn devchain' and on a separate terminal run 'yarn test:gas'
   gasReporter: {
     enabled: process.env.REPORT_GAS ? true : false,
+  },
+  aragon: {
+    appServePort: 8001,
+    clientServePort: 3000,
+    appBuildOutputPath: "dist/",
+    appSrcPath: "./",
+    appName: "api3voting",
   },
 };

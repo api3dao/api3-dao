@@ -1,12 +1,15 @@
 **/node_modules/**
-**/flattend_contracts/**
-
 **/cache/**
 **/artifacts/**
-**/artifacts/**
 **/build/**
+**/dist/**
 **/diff/**
 **/abi/**
+**/coverage/**
+**/.coverage_artifacts/**
+**/.coverage_cache/**
+**/.coverage_contracts/**
+**/flattened_contracts/**
 
 **/credentials.json
 **/*.flat.sol
