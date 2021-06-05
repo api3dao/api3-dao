@@ -220,9 +220,10 @@ contract(
             voting.address
           );
 
-          await token.generateTokens(holder20, bigExp(20, decimals));
-          await token.generateTokens(holder29, bigExp(29, decimals));
-          await token.generateTokens(holder51, bigExp(51, decimals));
+          await token.generateTokens(holder20, bigExp(2000, decimals));
+          await token.generateTokens(holder29, bigExp(2900, decimals));
+          await token.generateTokens(holder51, bigExp(5100, decimals));
+          await token.generateTokens(holder1, bigExp(1, decimals));
 
           await voting.initialize(
             api3Pool.address,
@@ -231,27 +232,35 @@ contract(
           );
 
           // holder 51 deposit and stake
-          await token.approve(api3Pool.address, bigExp(51, decimals), {
+          await token.approve(api3Pool.address, bigExp(5100, decimals), {
             from: holder51,
           });
-          await api3Pool.depositAndStake(bigExp(51, decimals), {
+          await api3Pool.depositAndStake(bigExp(5100, decimals), {
             from: holder51,
           });
 
           // holder 29
-          await token.approve(api3Pool.address, bigExp(29, decimals), {
+          await token.approve(api3Pool.address, bigExp(2900, decimals), {
             from: holder29,
           });
-          await api3Pool.depositAndStake(bigExp(29, decimals), {
+          await api3Pool.depositAndStake(bigExp(2900, decimals), {
             from: holder29,
           });
 
           // holder 20
-          await token.approve(api3Pool.address, bigExp(20, decimals), {
+          await token.approve(api3Pool.address, bigExp(2000, decimals), {
             from: holder20,
           });
-          await api3Pool.depositAndStake(bigExp(20, decimals), {
+          await api3Pool.depositAndStake(bigExp(2000, decimals), {
             from: holder20,
+          });
+
+          // holder 1
+          await token.approve(api3Pool.address, bigExp(1, decimals), {
+            from: holder1,
+          });
+          await api3Pool.depositAndStake(bigExp(1, decimals), {
+            from: holder1,
           });
 
           executionTarget = await ExecutionTarget.new();
@@ -325,6 +334,23 @@ contract(
           assert.equal(voteId, 0, "voting should have been created");
         });
 
+        context("vote creation limitations", () => {
+          it("cannot create more than one vote in epoch", async () => {
+            await voting.newVote(encodeCallScript([]), "", { from: holder51 });
+            await assertRevert(
+              voting.newVote(encodeCallScript([]), "", { from: holder51 }),
+              "API3_HIT_PROPOSAL_COOLDOWN"
+            );
+          });
+
+          it("cannot propose vote with voting power below threshold", async () => {
+            await assertRevert(
+              voting.newVote(encodeCallScript([]), "", { from: holder1 }),
+              "API3_HIT_PROPOSAL_THRESHOLD"
+            );
+          });
+        });
+
         context("creating vote", () => {
           let script, voteId, creator, metadata;
 
@@ -381,8 +407,8 @@ contract(
             assertBn(nay, 0, "initial nay should be 0");
             assertBn(
               votingPower,
-              bigExp(100, decimals).add(bn(1)),
-              "voting power should be 100 + 1 Wei"
+              bigExp(10001, decimals).add(bn(1)),
+              "voting power should be 10001 + 1 Wei"
             );
             assert.equal(execScript, script, "script should be correct");
             assert.equal(
@@ -451,7 +477,7 @@ contract(
 
             assertBn(
               state[7],
-              bigExp(29, decimals),
+              bigExp(2900, decimals),
               "nay vote should have been counted"
             );
             assert.equal(
@@ -469,14 +495,14 @@ contract(
 
             assertBn(
               state[6],
-              bigExp(29, decimals),
+              bigExp(2900, decimals),
               "yea vote should have been counted"
             );
             assert.equal(state[7], 0, "nay vote should have been removed");
           });
 
           it("token transfers dont affect voting", async () => {
-            await token.transfer(nonHolder, bigExp(29, decimals), {
+            await token.transfer(nonHolder, bigExp(2900, decimals), {
               from: holder29,
             });
 
@@ -485,7 +511,7 @@ contract(
 
             assertBn(
               state[6],
-              bigExp(29, decimals),
+              bigExp(2900, decimals),
               "yea vote should have been counted"
             );
             assert.equal(

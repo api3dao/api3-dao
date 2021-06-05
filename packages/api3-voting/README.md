@@ -14,13 +14,28 @@ It also implements the following additional features:
 npm run compile
 ```
 
-- Test
+- Test, get gas and coverage reports
 ```sh
 npm run test
-npm run test:gas # while running `npm run devchain` on another terminal
+npm run test:gas
+npm run test:coverage
 ```
 
 - Receive `git diff` reports comparing Api3Voting to Voting in the `diff/` directory
 ```sh
 npm run diff
 ```
+
+## Deployment 
+
+To deploy updates of the contract on the rinkeby chain please call the following command in the terminal:
+
+```shell script
+npx buidler publish minor --network rinkeby
+```
+To change the deployment address, please
+modify it in the `buidler.config.js` rinkeby config
+
+
+In case of deployment on mainnet additional configuration needs to be done, 
+the address will be needed in the `buidler.conf.js`.
