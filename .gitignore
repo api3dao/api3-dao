@@ -19,4 +19,5 @@
 .idea
 .DS_Store
 .aragon
+arapp_local.json
 yarn-error.log

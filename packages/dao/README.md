@@ -6,11 +6,68 @@ This is an API3-DAO template. It integrates two custom API3 voting apps.
 ```sh
 npm run compile
 ```
-If solc gives `RangeError: Maximum call stack size exceeded`, use Node v8 or the workaround described [here](https://ethereum.stackexchange.com/a/67173)
 
 - Test
 ```sh
 npm run test
+```
+
+## Deployment
+
+### Local
+
+Run this
+```sh
+npx ganache-cli -i 15 --gasLimit 8000000 --port 8545
+```
+
+and this on a separate terminal
+```sh
+npm run deploy:rpc
+```
+
+### Rinkeby
+
+Create a key file for Aragon
+```sh
+cd ~ && mkdir .aragon && cd .aragon && touch rinkeby_key.json
+```
+
+and add the following to the file created
+```json
+{
+  "rpc": "https://rinkeby.infura.io/v3/your_infura_id",
+  "keys": [
+    "your_private_key"
+  ]
+}
+```
+
+Go to `contracts/Api3Template.sol` and update:
+```solidity
+    // The Api3Voting app ID below is used on Rinkeby/Mainnet
+    // It is derived using `namehash("api3voting.open.aragonpm.eth")`
+    // bytes32 constant internal API3_VOTING_APP_ID = 0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554;
+
+    // The Api3Voting app ID below is used on localhost
+    // It is derived using `namehash("api3voting.aragonpm.eth")`
+    bytes32 constant internal API3_VOTING_APP_ID = 0x727a0cf100ef0e645bad5a5b920d7fb71f8fd0eaf0fa579c341a045f597526f5;
+```
+
+as
+```solidity
+    // The Api3Voting app ID below is used on Rinkeby/Mainnet
+    // It is derived using `namehash("api3voting.open.aragonpm.eth")`
+    bytes32 constant internal API3_VOTING_APP_ID = 0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554;
+
+    // The Api3Voting app ID below is used on localhost
+    // It is derived using `namehash("api3voting.aragonpm.eth")`
+    // bytes32 constant internal API3_VOTING_APP_ID = 0x727a0cf100ef0e645bad5a5b920d7fb71f8fd0eaf0fa579c341a045f597526f5;
+```
+
+and run
+```
+npm run deploy:rinkeby
 ```
 
 ## Verifying the DAO deployment

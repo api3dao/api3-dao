@@ -1,8 +1,5 @@
 /*global artifacts, web3, contract, before, assert*/
-/*eslint no-undef: "error"*/
 const { hash: namehash } = require("eth-ens-namehash");
-
-// const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { assertRole, assertMissingRole } =
   require("@aragon/templates-shared/helpers/assertRole")(web3);
 const { getEventArgument } = require("@aragon/test-helpers/events");
@@ -20,35 +17,32 @@ const Api3Template = artifacts.require("Api3Template");
 const Api3Pool = artifacts.require("Api3Pool");
 const Agent = artifacts.require("Agent");
 
-const MOCK_TIMELOCKMANAGER_ADDRESS =
-  "0x0000000000000000000000000000000000000001";
-
 contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
   // eslint-disable-line no-unused-vars
   let api3Template, dao, acl, receipt1, api3Pool;
 
-  const SUPPORT_1 = 80e16;
-  const ACCEPTANCE_1 = 40e16;
-  const VOTING_DURATION_1 = 7 * 24 * 60 * 60;
+  const SUPPORT_1 = 50e16;
+  const ACCEPTANCE_1 = 50e16;
 
   const SUPPORT_2 = 50e16;
-  const ACCEPTANCE_2 = 20e16;
-  const VOTING_DURATION_2 = 7 * 24 * 60 * 60;
+  const ACCEPTANCE_2 = 15e16;
 
   before("fetch bare template", async () => {
     api3Template = Api3Template.at(await getTemplateAddress());
   });
 
   before("create bare entity", async () => {
-    api3Pool = await Api3Pool.new(tokenAddress, MOCK_TIMELOCKMANAGER_ADDRESS);
+    // Set TimelockManager as deployer
+    api3Pool = await Api3Pool.new(tokenAddress, deployer, { from: deployer });
     receipt1 = await api3Template.newInstance(
-      "api3template",
+      "api3template_test",
       api3Pool.address,
-      [SUPPORT_1, ACCEPTANCE_1, VOTING_DURATION_1],
-      [SUPPORT_2, ACCEPTANCE_2, VOTING_DURATION_2],
+      [SUPPORT_1, ACCEPTANCE_1],
+      [SUPPORT_2, ACCEPTANCE_2],
       { from: deployer }
     );
 
+    console.log("even here");
     dao = Kernel.at(getEventArgument(receipt1, "DeployDao", "dao"));
     acl = ACL.at(await dao.acl());
 
@@ -95,7 +89,7 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
     );
     assert.equal(
       (await votingPrimary.voteTime()).toString(),
-      VOTING_DURATION_1
+      (7 * 24 * 60 * 60).toString()
     );
     assert.equal(
       (await votingPrimary.supportRequiredPct()).toString(),
@@ -112,7 +106,7 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
     );
     assert.equal(
       (await votingSecondary.voteTime()).toString(),
-      VOTING_DURATION_2
+      (7 * 24 * 60 * 60).toString()
     );
     assert.equal(
       (await votingSecondary.supportRequiredPct()).toString(),
@@ -127,7 +121,7 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
 
     assert.isTrue(
       await agentPrimary.hasInitialized(),
-      "Main agent not initialized"
+      "Primary agent not initialized"
     );
     assert.isTrue(
       await agentSecondary.hasInitialized(),
@@ -220,7 +214,8 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
       agentPrimary.address,
       agentSecondary.address,
       votingPrimary.address,
-      votingSecondary.address
+      votingSecondary.address,
+      { from: deployer }
     );
   });
 });
