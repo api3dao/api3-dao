@@ -358,7 +358,7 @@ contract(
             calldata: executionTarget.contract.methods.execute().encodeABI(),
           };
           const script = encodeCallScript([action]);
-          await voting.newVote(script, "", { from: holder51 });
+          await voting.methods['newVote(bytes,string,bool,bool)'](script, "", true, true, { from: holder51 });
           assert.equal(
             await executionTarget.counter(),
             1,
@@ -557,6 +557,11 @@ contract(
           });
 
           it("holder can vote", async () => {
+            assert.equal(
+              await voting.canVote(voteId, holder29),
+              true,
+              "holder should be able to vote"
+            );
             await voting.vote(voteId, false, true, { from: holder29 });
             const state = await voting.getVote(voteId);
             const voterState = await voting.getVoterState(voteId, holder29);
@@ -608,6 +613,11 @@ contract(
           });
 
           it("throws when non-holder votes", async () => {
+            assert.equal(
+              await voting.canVote(voteId, nonHolder),
+              false,
+              "non-holder should not be able to vote"
+            );
             await assertRevert(
               voting.vote(voteId, true, true, { from: nonHolder }),
               ERRORS.VOTING_CAN_NOT_VOTE
@@ -616,6 +626,11 @@ contract(
 
           it("throws when voting after voting closes", async () => {
             await voting.mockIncreaseTime(votingDuration + 1);
+            assert.equal(
+              await voting.canVote(voteId, holder29),
+              false,
+              "holder should not be able to vote after voting closes"
+            );
             await assertRevert(
               voting.vote(voteId, true, true, { from: holder29 }),
               ERRORS.VOTING_CAN_NOT_VOTE
