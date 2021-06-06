@@ -28,22 +28,18 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
             );
     }
 
-    /// @notice Called by the user to withdraw tokens
+    /// @notice Called by the user to withdraw tokens to their wallet
     /// @dev The user should call `userLocked()` beforehand to ensure that
     /// they have at least `amount` unlocked tokens to withdraw.
     /// The method is named `withdrawRegular()` to be consistent with the name
     /// `depositRegular()`. See `depositRegular()` for more context.
-    /// @param destination Token transfer destination
     /// @param amount Amount to be withdrawn
-    function withdrawRegular(
-        address destination,
-        uint256 amount
-        )
+    function withdrawRegular(uint256 amount)
         public
         override
     {
         mintReward();
-        withdraw(destination, amount, userLocked(msg.sender));
+        withdraw(amount, userLocked(msg.sender));
     }
 
     /// @notice Called to calculate the locked tokens of a user by making
@@ -119,12 +115,8 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
     /// is calculated with repeated calls to `precalculateUserLocked()`
     /// @dev Only use `precalculateUserLocked()` and this method if
     /// `withdrawRegular()` hits the block gas limit
-    /// @param destination Token transfer destination
     /// @param amount Amount to be withdrawn
-    function withdrawPrecalculated(
-        address destination,
-        uint256 amount
-        )
+    function withdrawPrecalculated(uint256 amount)
         external
         override
     {
@@ -135,16 +127,14 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
             state.initialIndEpoch == currentEpoch,
             "Pool: Locked not precalculated"
             );
-        withdraw(destination, amount, state.locked);
+        withdraw(amount, state.locked);
     }
 
     /// @notice Called internally after the amount of locked tokens of the user
     /// is determined
-    /// @param destination Token transfer destination
     /// @param amount Amount to be withdrawn
     /// @param userLocked Amount of locked tokens of the user
     function withdraw(
-        address destination,
         uint256 amount,
         uint256 userLocked
         )
@@ -166,10 +156,9 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         user.unstaked = user.unstaked - amount;
         // Should never return false because the API3 token uses the
         // OpenZeppelin implementation
-        assert(api3Token.transfer(destination, amount));
+        assert(api3Token.transfer(msg.sender, amount));
         emit Withdrawn(
             msg.sender,
-            destination,
             amount
             );
     }

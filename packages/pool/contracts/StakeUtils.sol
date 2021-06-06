@@ -136,16 +136,15 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         return unstakeAmount;
     }
 
-    /// @notice Convenience method to execute an unstake and withdraw in a
-    /// single transaction
+    /// @notice Convenience method to execute an unstake and withdraw to the
+    /// user's wallet in a single transaction
     /// @dev Note that withdraw may revert because the user may have less than
     /// `unstaked` tokens that are withdrawable
-    /// @param destination Token transfer destination
-    function unstakeAndWithdraw(address destination)
+    function unstakeAndWithdraw()
         external
         override
     {
         uint256 unstaked = unstake(msg.sender);
-        withdrawRegular(destination, unstaked);
+        withdrawRegular(unstaked);
     }
 }
