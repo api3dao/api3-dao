@@ -118,6 +118,7 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
     );
 
     assert.equal(await votingPrimary.api3Pool(), api3Pool.address);
+    assert.equal(await votingSecondary.api3Pool(), api3Pool.address);
 
     assert.isTrue(
       await agentPrimary.hasInitialized(),
@@ -129,10 +130,16 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
     );
     assert.equal(await agentPrimary.designatedSigner(), "0x".padEnd(42, "0"));
     assert.equal(await agentSecondary.designatedSigner(), "0x".padEnd(42, "0"));
+    await assertMissingRole(acl, agentPrimary, "REMOVE_PROTECTED_TOKEN_ROLE");
+    await assertMissingRole(acl, agentPrimary, "SAFE_EXECUTE_ROLE");
     await assertMissingRole(acl, agentPrimary, "DESIGNATE_SIGNER_ROLE");
     await assertMissingRole(acl, agentPrimary, "ADD_PRESIGNED_HASH_ROLE");
+    await assertMissingRole(acl, agentPrimary, "ADD_PROTECTED_TOKEN_ROLE");
+    await assertMissingRole(acl, agentSecondary, "REMOVE_PROTECTED_TOKEN_ROLE");
+    await assertMissingRole(acl, agentSecondary, "SAFE_EXECUTE_ROLE");
     await assertMissingRole(acl, agentSecondary, "DESIGNATE_SIGNER_ROLE");
     await assertMissingRole(acl, agentSecondary, "ADD_PRESIGNED_HASH_ROLE");
+    await assertMissingRole(acl, agentSecondary, "ADD_PROTECTED_TOKEN_ROLE");
 
     // The primary agent app can modify voting configurations
     await assertRole(
@@ -194,6 +201,13 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
       "RUN_SCRIPT_ROLE",
       { address: votingPrimary.address }
     );
+    await assertRole(
+      acl,
+      agentPrimary,
+      { address: votingPrimary.address },
+      "TRANSFER_ROLE",
+      { address: votingPrimary.address }
+    );
 
     await assertRole(
       acl,
@@ -209,13 +223,12 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
       "RUN_SCRIPT_ROLE",
       { address: votingSecondary.address }
     );
-
-    await api3Pool.setDaoApps(
-      agentPrimary.address,
-      agentSecondary.address,
-      votingPrimary.address,
-      votingSecondary.address,
-      { from: deployer }
+    await assertRole(
+      acl,
+      agentSecondary,
+      { address: votingPrimary.address },
+      "TRANSFER_ROLE",
+      { address: votingSecondary.address }
     );
   });
 });
