@@ -420,7 +420,7 @@ describe("unstakeAndWithdraw", function () {
       genesisEpochPlusTwo.mul(EPOCH_LENGTH).toNumber(),
     ]);
     // Unstake and withdraw
-    await api3Pool.connect(roles.user1).unstakeAndWithdraw(roles.user1.address);
+    await api3Pool.connect(roles.user1).unstakeAndWithdraw();
     const user = await api3Pool.users(roles.user1.address);
     expect(user.unstaked).to.equal(ethers.BigNumber.from(0));
     expect(await api3Token.balanceOf(roles.user1.address)).to.equal(

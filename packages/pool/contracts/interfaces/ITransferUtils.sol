@@ -11,7 +11,6 @@ interface ITransferUtils is IDelegationUtils{
 
     event Withdrawn(
         address indexed user,
-        address destination,
         uint256 amount
         );
 
@@ -29,10 +28,7 @@ interface ITransferUtils is IDelegationUtils{
     function depositRegular(uint256 amount)
         external;
 
-    function withdrawRegular(
-        address destination,
-        uint256 amount
-        )
+    function withdrawRegular(uint256 amount)
         external;
 
     function precalculateUserLocked(
@@ -42,9 +38,6 @@ interface ITransferUtils is IDelegationUtils{
         external
         returns (bool finished);
 
-    function withdrawPrecalculated(
-        address destination,
-        uint256 amount
-        )
+    function withdrawPrecalculated(uint256 amount)
         external;
 }

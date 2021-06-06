@@ -95,10 +95,10 @@ describe("withdrawRegular", function () {
       await expect(
         api3Pool
           .connect(roles.user1)
-          .withdrawRegular(roles.user1.address, unlocked)
+          .withdrawRegular(unlocked)
       )
         .to.emit(api3Pool, "Withdrawn")
-        .withArgs(roles.user1.address, roles.user1.address, unlocked);
+        .withArgs(roles.user1.address, unlocked);
       const userAfter = await api3Pool.users(roles.user1.address);
       expect(await api3Pool.userLocked(roles.user1.address)).to.equal(
         userAfter.unstaked
@@ -118,7 +118,7 @@ describe("withdrawRegular", function () {
       await expect(
         api3Pool
           .connect(roles.user1)
-          .withdrawRegular(roles.user1.address, ethers.BigNumber.from(1))
+          .withdrawRegular(ethers.BigNumber.from(1))
       ).to.be.revertedWith("Pool: Not enough unstaked funds");
     });
   });
@@ -127,7 +127,7 @@ describe("withdrawRegular", function () {
       await expect(
         api3Pool
           .connect(roles.user1)
-          .withdrawRegular(roles.user1.address, ethers.BigNumber.from(1))
+          .withdrawRegular(ethers.BigNumber.from(1))
       ).to.be.revertedWith("Pool: Not enough unlocked funds");
     });
   });
@@ -272,10 +272,10 @@ describe("withdrawPrecalculated", function () {
       await expect(
         api3Pool
           .connect(roles.user1)
-          .withdrawPrecalculated(roles.user1.address, user1Stake)
+          .withdrawPrecalculated(user1Stake)
       )
         .to.emit(api3Pool, "Withdrawn")
-        .withArgs(roles.user1.address, roles.user1.address, user1Stake);
+        .withArgs(roles.user1.address, user1Stake);
     });
   });
   context("Locked amount is not precalculated", function () {
@@ -283,7 +283,7 @@ describe("withdrawPrecalculated", function () {
       await expect(
         api3Pool
           .connect(roles.user1)
-          .withdrawPrecalculated(roles.user1.address, ethers.BigNumber.from(1))
+          .withdrawPrecalculated(ethers.BigNumber.from(1))
       ).to.be.revertedWith("Pool: Locked not precalculated");
     });
   });

@@ -34,6 +34,6 @@ interface IStakeUtils is ITransferUtils{
         external
         returns (uint256);
 
-    function unstakeAndWithdraw(address destination)
+    function unstakeAndWithdraw()
         external;
 }
