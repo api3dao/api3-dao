@@ -290,7 +290,8 @@ contract Api3Voting is IForwarder, AragonApp {
 
         emit StartVote(voteId, msg.sender, _metadata);
 
-        if (_castVote && _canVote(voteId, msg.sender)) {
+        // Removed _canVote() because it's gas-heavy and will always return true
+        if (_castVote/* && _canVote(voteId, msg.sender)*/) {
             _vote(voteId, true, msg.sender, _executesIfDecided);
         }
     }
