@@ -92,11 +92,7 @@ describe("withdrawRegular", function () {
       const unlocked = userBefore.unstaked.sub(
         await api3Pool.userLocked(roles.user1.address)
       );
-      await expect(
-        api3Pool
-          .connect(roles.user1)
-          .withdrawRegular(unlocked)
-      )
+      await expect(api3Pool.connect(roles.user1).withdrawRegular(unlocked))
         .to.emit(api3Pool, "Withdrawn")
         .withArgs(roles.user1.address, unlocked);
       const userAfter = await api3Pool.users(roles.user1.address);
@@ -116,18 +112,14 @@ describe("withdrawRegular", function () {
         .approve(api3Pool.address, user1Stake);
       await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
       await expect(
-        api3Pool
-          .connect(roles.user1)
-          .withdrawRegular(ethers.BigNumber.from(1))
+        api3Pool.connect(roles.user1).withdrawRegular(ethers.BigNumber.from(1))
       ).to.be.revertedWith("Pool: Not enough unstaked funds");
     });
   });
   context("User does not have enough funds", function () {
     it("reverts", async function () {
       await expect(
-        api3Pool
-          .connect(roles.user1)
-          .withdrawRegular(ethers.BigNumber.from(1))
+        api3Pool.connect(roles.user1).withdrawRegular(ethers.BigNumber.from(1))
       ).to.be.revertedWith("Pool: Not enough unlocked funds");
     });
   });
@@ -270,9 +262,7 @@ describe("withdrawPrecalculated", function () {
           ethers.BigNumber.from(100)
         );
       await expect(
-        api3Pool
-          .connect(roles.user1)
-          .withdrawPrecalculated(user1Stake)
+        api3Pool.connect(roles.user1).withdrawPrecalculated(user1Stake)
       )
         .to.emit(api3Pool, "Withdrawn")
         .withArgs(roles.user1.address, user1Stake);
