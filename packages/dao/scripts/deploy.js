@@ -1,4 +1,4 @@
-/*global artifacts, web3*/
+/*global artifacts, web3, Promise*/
 
 const { getNetworkName } = require("@aragon/templates-shared/lib/network")(
   web3
@@ -25,7 +25,6 @@ const ACCEPTANCE_2 = 15e16;
  * Returns the address of the deployer
  */
 const getDeployer = async () => {
-  // eslint-disable-next-line no-undef
   const [deployer] = await new Promise((resolve, reject) => {
     web3.eth.getAccounts((err, accounts) => {
       if (err) {

@@ -18,7 +18,6 @@ const Api3Pool = artifacts.require("Api3Pool");
 const Agent = artifacts.require("Agent");
 
 contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
-  // eslint-disable-line no-unused-vars
   let api3Template, dao, acl, receipt1, api3Pool;
 
   const SUPPORT_1 = 50e16;
@@ -42,7 +41,6 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
       { from: deployer }
     );
 
-    console.log("even here");
     dao = Kernel.at(getEventArgument(receipt1, "DeployDao", "dao"));
     acl = ACL.at(await dao.acl());
 

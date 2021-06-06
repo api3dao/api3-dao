@@ -358,7 +358,13 @@ contract(
             calldata: executionTarget.contract.methods.execute().encodeABI(),
           };
           const script = encodeCallScript([action]);
-          await voting.methods['newVote(bytes,string,bool,bool)'](script, "", true, true, { from: holder51 });
+          await voting.methods["newVote(bytes,string,bool,bool)"](
+            script,
+            "",
+            true,
+            true,
+            { from: holder51 }
+          );
           assert.equal(
             await executionTarget.counter(),
             1,
