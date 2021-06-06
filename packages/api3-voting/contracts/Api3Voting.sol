@@ -255,6 +255,7 @@ contract Api3Voting is IForwarder, AragonApp {
         internal
         returns (uint256 voteId)
     {
+        require(!api3Pool.isGenesisEpoch(), "API3_GENESIS_EPOCH");
         (
             , // unstaked
             , // vesting

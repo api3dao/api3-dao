@@ -42,4 +42,9 @@ interface IApi3Pool {
             uint256 lastDelegationUpdateTimestamp,
             uint256 lastProposalTimestamp
             );
+
+    function isGenesisEpoch()
+        external
+        view
+        returns (bool);
 }

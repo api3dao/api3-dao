@@ -46,6 +46,9 @@ contract(
 
       votingBase = await Voting.new();
       pool = await Api3Pool.new(token.address, MOCK_TIMELOCKMANAGER_ADDRESS);
+      // Wait for the Genesis epoch to pass
+      const latest = Number(await time.latest());
+      await time.increaseTo(latest + Number(time.duration.weeks(1)) + 1);
 
       // ROLES are below
       CREATE_VOTES_ROLE = await votingBase.CREATE_VOTES_ROLE();
