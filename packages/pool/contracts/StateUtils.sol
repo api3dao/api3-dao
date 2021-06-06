@@ -431,6 +431,18 @@ contract StateUtils is IStateUtils {
             );
     }
 
+    /// @notice Called to check if we are in the genesis epoch
+    /// @dev Voting apps use this to prevent proposals from being made in the
+    /// genesis epoch
+    function isGenesisEpoch()
+        external
+        view
+        override
+        returns (bool)
+    {
+        return block.timestamp / EPOCH_LENGTH == genesisEpoch;
+    }
+
     /// @notice Called internally to update the total shares history
     /// @dev `fromBlock0` and `fromBlock1` will be two different block numbers
     /// when totalShares history was last updated. If one of these

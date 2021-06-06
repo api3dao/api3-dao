@@ -816,3 +816,20 @@ describe("updateLastProposalTimestamp", function () {
     });
   });
 });
+
+describe("isGenesisEpoch", function () {
+  context("Is genesis epoch", function () {
+    it("returns true", async function () {
+      expect(await api3Pool.isGenesisEpoch()).to.equal(true);
+    });
+  });
+  context("Is not genesis epoch", function () {
+    it("returns false", async function () {
+      await ethers.provider.send("evm_increaseTime", [
+        (await api3Pool.EPOCH_LENGTH()).toNumber() + 1,
+      ]);
+      await ethers.provider.send("evm_mine");
+      expect(await api3Pool.isGenesisEpoch()).to.equal(false);
+    });
+  });
+});

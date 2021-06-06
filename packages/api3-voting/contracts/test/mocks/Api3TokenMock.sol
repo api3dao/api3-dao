@@ -81,4 +81,12 @@ contract Api3TokenMock is MiniMeToken {
         external
     {
     }
+
+    function isGenesisEpoch()
+        external
+        view
+        returns (bool)
+    {
+        return false;
+    }
 }

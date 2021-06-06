@@ -84,4 +84,9 @@ interface IStateUtils {
 
     function updateLastProposalTimestamp(address userAddress)
         external;
+
+    function isGenesisEpoch()
+        external
+        view
+        returns (bool);
 }

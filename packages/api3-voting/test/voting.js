@@ -19,9 +19,9 @@ const {
   ANY_ENTITY,
   EMPTY_CALLS_SCRIPT,
 } = require("@aragon/contract-helpers-test/src/aragon-os");
+const { time } = require("@openzeppelin/test-helpers");
 
 const Voting = artifacts.require("Api3VotingMock");
-
 const Api3TokenMock = artifacts.require("Api3TokenMock");
 const Api3Pool = artifacts.require("Api3Pool");
 const ExecutionTarget = artifacts.require("ExecutionTarget");
@@ -83,6 +83,86 @@ contract(
       );
     });
 
+    context("still in Genesis epoch", () => {
+      const neededSupport = pct16(50);
+      const minimumAcceptanceQuorum = pct16(20);
+
+      beforeEach(async () => {
+        const decimals = 0;
+        token = await Api3TokenMock.new(
+          ZERO_ADDRESS,
+          ZERO_ADDRESS,
+          0,
+          "n",
+          decimals,
+          "n",
+          true
+        ); // empty parameters minime
+        api3Pool = await Api3Pool.new(
+          token.address,
+          MOCK_TIMELOCKMANAGER_ADDRESS
+        );
+        await api3Pool.setDaoApps(
+          voting.address,
+          voting.address,
+          voting.address,
+          voting.address
+        );
+
+        await token.generateTokens(holder20, bigExp(2000, decimals));
+        await token.generateTokens(holder29, bigExp(2900, decimals));
+        await token.generateTokens(holder51, bigExp(5100, decimals));
+        await token.generateTokens(holder1, bigExp(1, decimals));
+
+        await voting.initialize(
+          api3Pool.address,
+          neededSupport,
+          minimumAcceptanceQuorum
+        );
+
+        // holder 51 deposit and stake
+        await token.approve(api3Pool.address, bigExp(5100, decimals), {
+          from: holder51,
+        });
+        await api3Pool.depositAndStake(bigExp(5100, decimals), {
+          from: holder51,
+        });
+
+        // holder 29
+        await token.approve(api3Pool.address, bigExp(2900, decimals), {
+          from: holder29,
+        });
+        await api3Pool.depositAndStake(bigExp(2900, decimals), {
+          from: holder29,
+        });
+
+        // holder 20
+        await token.approve(api3Pool.address, bigExp(2000, decimals), {
+          from: holder20,
+        });
+        await api3Pool.depositAndStake(bigExp(2000, decimals), {
+          from: holder20,
+        });
+
+        // holder 1
+        await token.approve(api3Pool.address, bigExp(1, decimals), {
+          from: holder1,
+        });
+        await api3Pool.depositAndStake(bigExp(1, decimals), {
+          from: holder1,
+        });
+
+        executionTarget = await ExecutionTarget.new();
+      });
+
+      it("new votes revert", async () => {
+        await assertRevert(
+          voting.newVote(EMPTY_CALLS_SCRIPT, "", { from: holder51 }),
+          "API3_GENESIS_EPOCH"
+        );
+      });
+    });
+
     context("normal token supply, common tests", () => {
       const neededSupport = pct16(50);
       const minimumAcceptanceQuorum = pct16(20);
@@ -101,6 +181,9 @@ contract(
           token.address,
           MOCK_TIMELOCKMANAGER_ADDRESS
         );
+        // Wait for the Genesis epoch to pass
+        const latest = Number(await time.latest());
+        await time.increaseTo(latest + Number(time.duration.weeks(1)) + 1);
         await api3Pool.setDaoApps(
           voting.address,
           voting.address,
@@ -213,6 +296,9 @@ contract(
             token.address,
             MOCK_TIMELOCKMANAGER_ADDRESS
           );
+          // Wait for the Genesis epoch to pass
+          const latest = Number(await time.latest());
+          await time.increaseTo(latest + Number(time.duration.weeks(1)) + 1);
           await api3Pool.setDaoApps(
             voting.address,
             voting.address,
@@ -272,7 +358,7 @@ contract(
             calldata: executionTarget.contract.methods.execute().encodeABI(),
           };
           const script = encodeCallScript([action]);
-          await voting.newVote(script, "", { from: holder51 });
+          await voting.methods['newVote(bytes,string,bool,bool)'](script, "", true, true, { from: holder51 });
           assert.equal(
             await executionTarget.counter(),
             1,
@@ -471,6 +557,11 @@ contract(
           });
 
           it("holder can vote", async () => {
+            assert.equal(
+              await voting.canVote(voteId, holder29),
+              true,
+              "holder should be able to vote"
+            );
             await voting.vote(voteId, false, true, { from: holder29 });
             const state = await voting.getVote(voteId);
             const voterState = await voting.getVoterState(voteId, holder29);
@@ -522,6 +613,11 @@ contract(
           });
 
           it("throws when non-holder votes", async () => {
+            assert.equal(
+              await voting.canVote(voteId, nonHolder),
+              false,
+              "non-holder should not be able to vote"
+            );
             await assertRevert(
               voting.vote(voteId, true, true, { from: nonHolder }),
               ERRORS.VOTING_CAN_NOT_VOTE
@@ -530,6 +626,11 @@ contract(
 
           it("throws when voting after voting closes", async () => {
             await voting.mockIncreaseTime(votingDuration + 1);
+            assert.equal(
+              await voting.canVote(voteId, holder29),
+              false,
+              "holder should not be able to vote after voting closes"
+            );
             await assertRevert(
               voting.vote(voteId, true, true, { from: holder29 }),
               ERRORS.VOTING_CAN_NOT_VOTE
