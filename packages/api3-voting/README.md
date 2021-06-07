@@ -43,9 +43,9 @@ With IPFS running you will be able to deploy updates of the contract on the rink
 ```shell script
 npm run publish:rinkeby
 ```
-To change the deployment address, please
+To change the deployer address, please
 modify it in the `buidler.config.js` rinkeby config
 
 
-In case of deployment on mainnet additional configuration needs to be done, 
-the address will be needed in the `buidler.conf.js`.
+In case of deployment on mainnet or any other network additional configuration needs to be done, 
+the address will be needed in the `buidler.conf.js` and `.arapp.json`.
