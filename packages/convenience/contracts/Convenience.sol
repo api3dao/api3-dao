@@ -260,7 +260,7 @@ contract Convenience is Ownable  {
                 , // nay
                 , // votingPower
                 // script
-                ) = api3Voting.getVote(i-1);
+                ) = api3Voting.getVote(i - 1);
             if (open)
             {
                 countOpenVote++;
@@ -293,10 +293,10 @@ contract Convenience is Ownable  {
                 , // nay
                 , // votingPower
                 // script
-                ) = api3Voting.getVote(i-1);
+                ) = api3Voting.getVote(i - 1);
             if (open)
             {
-                voteIds[countAddedVote] = i-1;
+                voteIds[countAddedVote] = i - 1;
                 countAddedVote++;
             }
         }
