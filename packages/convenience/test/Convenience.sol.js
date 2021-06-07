@@ -1,7 +1,7 @@
 const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 
-let mockApi3Voting, mockApi3Token, api3Pool, convenience;
+let mockApi3Voting, mockApi3Token, mockOtherToken, api3Pool, convenience;
 let roles;
 
 const VotingAppType = Object.freeze({ Primary: 0, Secondary: 1 });
@@ -32,13 +32,14 @@ beforeEach(async () => {
   mockApi3Token = await mockApi3TokenFactory.deploy("API3", "API3");
   mockOtherToken = await mockApi3TokenFactory.deploy("API-four", "API4");
 
-  api3PoolFactory = await ethers.getContractFactory("Api3Pool", roles.deployer);
+  const api3PoolFactory = await ethers.getContractFactory(
+    "Api3Pool",
+    roles.deployer
+  );
   api3Pool = await api3PoolFactory.deploy(
     mockApi3Token.address,
     roles.mockTimeLockManager.address
   );
-
-  EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
 
   await api3Pool.setDaoApps(
     mockApi3Voting.address,
@@ -96,8 +97,8 @@ beforeEach(async () => {
 });
 
 //Cast Votes in the mock contract
-castVotes = async (open) => {
-  for (i = 1; i < 6; i++) {
+async function castVotes(open) {
+  for (let i = 1; i < 6; i++) {
     await mockApi3Voting.addVote(
       open,
       true,
@@ -112,7 +113,7 @@ castVotes = async (open) => {
     );
   }
   return [4, 3, 2, 1, 0];
-};
+}
 
 describe("getUserStakingData", function () {
   context("Valid User Address", function () {
@@ -145,7 +146,9 @@ describe("getOpenVoteIds", function () {
     context("There are open votes", async function () {
       it("returns the ids of the votes that are open", async function () {
         await castVotes(true);
-        openVoteIds = await convenience.getOpenVoteIds(VotingAppType.Primary);
+        const openVoteIds = await convenience.getOpenVoteIds(
+          VotingAppType.Primary
+        );
         expect(openVoteIds.length).to.be.equal(5);
         expect(openVoteIds[0]).to.be.equal(ethers.BigNumber.from(4));
         expect(openVoteIds[1]).to.be.equal(ethers.BigNumber.from(3));
@@ -183,18 +186,18 @@ describe("getStaticVoteData", function () {
   context("Voting App type is Valid", function () {
     context("Votes are casted", function () {
       it("returns the vote data for the supplied voteIds", async function () {
-        voteIds = await castVotes(true);
-        staticVoteData = await convenience.getStaticVoteData(
+        const voteIds = await castVotes(true);
+        const staticVoteData = await convenience.getStaticVoteData(
           VotingAppType.Primary,
           voteIds
         );
-        staticVoteDataSecondary = await convenience.getStaticVoteData(
+        const staticVoteDataSecondary = await convenience.getStaticVoteData(
           VotingAppType.Secondary,
           voteIds
         );
 
         expect(staticVoteData).to.deep.equal(staticVoteDataSecondary); //using the same address
-        for (i = 1; i < 6; i++) {
+        for (let i = 1; i < 6; i++) {
           expect(staticVoteData.startDate[5 - i]).to.be.equal(
             ethers.BigNumber.from(60 * 60 * 24 * 30 + 60 * 60 * 24 * i)
           );
@@ -214,7 +217,7 @@ describe("getStaticVoteData", function () {
 
     context("Votes are not casted", function () {
       it("returns empty arrays on no voteIds", async function () {
-        staticVoteData = await convenience.getStaticVoteData(
+        const staticVoteData = await convenience.getStaticVoteData(
           VotingAppType.Primary,
           []
         );
@@ -235,7 +238,7 @@ describe("getStaticVoteData", function () {
 
   context("Voting App type is invalid", function () {
     it("reverts", async function () {
-      voteIds = await castVotes(true);
+      const voteIds = await castVotes(true);
       try {
         await convenience.getStaticVoteData(5, voteIds);
         assert.fail("The transaction should have thrown an error");
@@ -254,13 +257,13 @@ describe("getDynamicVoteData", function () {
   context("Voting App type is valid", function () {
     context("Votes are casted and user has delegated", function () {
       it("returns the the user Vote Data", async function () {
-        voteIds = await castVotes(true);
-        dynamicVoteData = await convenience.getDynamicVoteData(
+        await castVotes();
+        const dynamicVoteData = await convenience.getDynamicVoteData(
           VotingAppType.Primary,
           roles.user1.address,
           [0]
         );
-        dynamicVoteDataSecondary = await convenience.getDynamicVoteData(
+        const dynamicVoteDataSecondary = await convenience.getDynamicVoteData(
           VotingAppType.Secondary,
           roles.user1.address,
           [0]
@@ -278,13 +281,13 @@ describe("getDynamicVoteData", function () {
 
     context("Votes are casted and user has not delegated", function () {
       it("returns the the user Vote Data", async function () {
-        voteIds = await castVotes();
-        dynamicVoteData = await convenience.getDynamicVoteData(
+        await castVotes();
+        const dynamicVoteData = await convenience.getDynamicVoteData(
           VotingAppType.Primary,
           roles.user3.address,
           [0]
         );
-        dynamicVoteDataSecondary = await convenience.getDynamicVoteData(
+        const dynamicVoteDataSecondary = await convenience.getDynamicVoteData(
           VotingAppType.Secondary,
           roles.user3.address,
           [0]
@@ -303,7 +306,7 @@ describe("getDynamicVoteData", function () {
 
     context("Votes are not casted", function () {
       it("returns empty arrays on no voteIds", async function () {
-        userVoteData = await convenience.getDynamicVoteData(
+        const userVoteData = await convenience.getDynamicVoteData(
           VotingAppType.Primary,
           roles.user1.address,
           []
@@ -330,7 +333,7 @@ describe("getDynamicVoteData", function () {
 
   context("Voting App type is invalid", function () {
     it("reverts", async function () {
-      voteIds = await castVotes(true);
+      const voteIds = await castVotes(true);
       try {
         await convenience.getDynamicVoteData(5, roles.user1.address, voteIds);
         assert.fail("The transaction should have thrown an error");
