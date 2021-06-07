@@ -1,4 +1,4 @@
-const { expect, assert } = require("chai");
+const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 let mockApi3Voting, mockApi3Token, mockOtherToken, api3Pool, convenience;
@@ -63,10 +63,6 @@ beforeEach(async () => {
   // Delegate
   await api3Pool.connect(roles.user1).delegateVotingPower(roles.user2.address);
 
-  expect(await api3Pool.userStake(roles.user1.address)).to.equal(
-    user1Stake.div(ethers.BigNumber.from(2))
-  );
-
   const user3Stake = ethers.utils.parseEther("20" + "000" + "000");
   await mockApi3Token
     .connect(roles.deployer)
@@ -79,30 +75,27 @@ beforeEach(async () => {
     .connect(roles.user3)
     .stake(user3Stake.div(ethers.BigNumber.from(2)));
 
-  expect(await api3Pool.userStake(roles.user3.address)).to.equal(
-    user3Stake.div(ethers.BigNumber.from(2))
-  );
-
   const convenienceFactory = await ethers.getContractFactory(
     "Convenience",
     roles.deployer
   );
-
   convenience = await convenienceFactory.deploy(api3Pool.address);
-
   await convenience.setErc20Addresses([
     mockApi3Token.address,
     mockOtherToken.address,
   ]);
 });
 
-//Cast Votes in the mock contract
+// Cast Votes in the mock contract
 async function castVotes(open) {
-  for (let i = 1; i < 6; i++) {
+  const timestamp = (
+    await ethers.provider.getBlock(await ethers.provider.getBlockNumber())
+  ).timestamp;
+  for (let i = 0; i < 5; i++) {
     await mockApi3Voting.addVote(
       open,
       true,
-      60 * 60 * 24 * 30 + 60 * 60 * 24 * i,
+      timestamp - 7 * 24 * 60 * 60 - 30 + i * 10,
       987654,
       (50 * 10) ^ 16,
       (25 * 10) ^ 16,
@@ -112,7 +105,7 @@ async function castVotes(open) {
       "0xabcdef"
     );
   }
-  return [4, 3, 2, 1, 0];
+  return { voteIds: [4, 3, 2, 1, 0], timestamp };
 }
 
 describe("getUserStakingData", function () {
@@ -149,15 +142,11 @@ describe("getOpenVoteIds", function () {
         const openVoteIds = await convenience.getOpenVoteIds(
           VotingAppType.Primary
         );
-        expect(openVoteIds.length).to.be.equal(5);
+        expect(openVoteIds.length).to.be.equal(2);
         expect(openVoteIds[0]).to.be.equal(ethers.BigNumber.from(4));
         expect(openVoteIds[1]).to.be.equal(ethers.BigNumber.from(3));
-        expect(openVoteIds[2]).to.be.equal(ethers.BigNumber.from(2));
-        expect(openVoteIds[3]).to.be.equal(ethers.BigNumber.from(1));
-        expect(openVoteIds[4]).to.be.equal(ethers.BigNumber.from(0));
       });
     });
-
     context("There are no open votes", async function () {
       it("returns empty array", async function () {
         await castVotes(false);
@@ -186,7 +175,7 @@ describe("getStaticVoteData", function () {
   context("Voting App type is Valid", function () {
     context("Votes are casted", function () {
       it("returns the vote data for the supplied voteIds", async function () {
-        const voteIds = await castVotes(true);
+        const { voteIds, timestamp } = await castVotes(true);
         const staticVoteData = await convenience.getStaticVoteData(
           VotingAppType.Primary,
           voteIds
@@ -195,22 +184,21 @@ describe("getStaticVoteData", function () {
           VotingAppType.Secondary,
           voteIds
         );
-
         expect(staticVoteData).to.deep.equal(staticVoteDataSecondary); //using the same address
-        for (let i = 1; i < 6; i++) {
-          expect(staticVoteData.startDate[5 - i]).to.be.equal(
-            ethers.BigNumber.from(60 * 60 * 24 * 30 + 60 * 60 * 24 * i)
+        for (let i = 0; i < 5; i++) {
+          expect(staticVoteData.startDate[4 - i]).to.be.equal(
+            timestamp - 7 * 24 * 60 * 60 - 30 + i * 10
           );
-          expect(staticVoteData.supportRequired[5 - i]).to.be.equal(
+          expect(staticVoteData.supportRequired[i]).to.be.equal(
             ethers.BigNumber.from((50 * 10) ^ 16)
           );
-          expect(staticVoteData.minAcceptQuorum[5 - i]).to.be.equal(
+          expect(staticVoteData.minAcceptQuorum[i]).to.be.equal(
             ethers.BigNumber.from((25 * 10) ^ 16)
           );
-          expect(staticVoteData.votingPower[5 - i]).to.be.equal(
+          expect(staticVoteData.votingPower[i]).to.be.equal(
             ethers.BigNumber.from(10000)
           );
-          expect(staticVoteData.script[5 - i]).to.be.equal("0xabcdef");
+          expect(staticVoteData.script[i]).to.be.equal("0xabcdef");
         }
       });
     });
@@ -227,7 +215,6 @@ describe("getStaticVoteData", function () {
         expect(staticVoteData.votingPower).to.deep.equal([]);
         expect(staticVoteData.script).to.deep.equal([]);
       });
-
       it("reverts on invalid voteIds", async function () {
         await expect(
           convenience.getStaticVoteData(VotingAppType.Primary, [1, 2, 3])
@@ -235,20 +222,10 @@ describe("getStaticVoteData", function () {
       });
     });
   });
-
   context("Voting App type is invalid", function () {
     it("reverts", async function () {
-      const voteIds = await castVotes(true);
-      try {
-        await convenience.getStaticVoteData(5, voteIds);
-        assert.fail("The transaction should have thrown an error");
-      } catch (err) {
-        assert.include(
-          err.message,
-          "revert",
-          "The error message should contain 'revert'"
-        );
-      }
+      const { voteIds } = await castVotes(true);
+      await expect(convenience.getStaticVoteData(5, voteIds)).to.be.reverted;
     });
   });
 });
@@ -278,7 +255,6 @@ describe("getDynamicVoteData", function () {
         ); // The Mock Contract returns NAY on all ids except 1 and 2
       });
     });
-
     context("Votes are casted and user has not delegated", function () {
       it("returns the the user Vote Data", async function () {
         await castVotes();
@@ -292,7 +268,6 @@ describe("getDynamicVoteData", function () {
           roles.user3.address,
           [0]
         );
-
         expect(dynamicVoteData).to.deep.equal(dynamicVoteDataSecondary); //using the same address
         expect(dynamicVoteData.executed[0]).to.be.equal(true);
         expect(dynamicVoteData.yea[0]).to.be.equal("8000");
@@ -303,7 +278,6 @@ describe("getDynamicVoteData", function () {
         expect(dynamicVoteData.voterState[0]).to.be.equal(VoterStateType.NAY); // The Mock Contract returns NAY on all ids except 1 and 2
       });
     });
-
     context("Votes are not casted", function () {
       it("returns empty arrays on no voteIds", async function () {
         const userVoteData = await convenience.getDynamicVoteData(
@@ -318,7 +292,6 @@ describe("getDynamicVoteData", function () {
         expect(userVoteData.delegateAt).to.deep.equal([]);
         expect(userVoteData.delegateState).to.deep.equal([]);
       });
-
       it("reverts on invalid voteIds", async function () {
         await expect(
           convenience.getDynamicVoteData(
@@ -330,20 +303,10 @@ describe("getDynamicVoteData", function () {
       });
     });
   });
-
   context("Voting App type is invalid", function () {
     it("reverts", async function () {
-      const voteIds = await castVotes(true);
-      try {
-        await convenience.getDynamicVoteData(5, roles.user1.address, voteIds);
-        assert.fail("The transaction should have thrown an error");
-      } catch (err) {
-        assert.include(
-          err.message,
-          "revert",
-          "The error message should contain 'revert'"
-        );
-      }
+      const { voteIds } = await castVotes(true);
+      await expect(convenience.getDynamicVoteData(5, voteIds)).to.be.reverted;
     });
   });
 });

@@ -104,9 +104,9 @@ contract MockApi3Voting {
 
     function voteTime()
         external
-        view
+        pure
         returns (uint256)
     {
-        return block.timestamp - 30 days;
+        return 7 days;
     }
 }
