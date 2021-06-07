@@ -14,8 +14,8 @@
     "serve": "parcel serve index.html --out-dir ../dist/ --no-cache",
     "watch:script": "parcel watch src/script.js --out-dir ../dist/ --no-hmr",
     "watch": "npm run watch:script",
-    "publish:rinkeby": "buidler publish minor --network rinkeby",
-    "publish:ropsten": "buidler publish minor --network ropsten",
+    "publish:rinkeby": "buidler publish major --network rinkeby",
+    "publish:ropsten": "buidler publish major --network ropsten",
     "build": "npm help"
   },
   "dependencies": {
