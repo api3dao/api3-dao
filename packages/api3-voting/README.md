@@ -27,14 +27,25 @@ npm run diff
 
 - Deployment 
 
-To deploy updates of the contract on the rinkeby chain please call the following command in the terminal:
+Before the deployment and publishing the contract you should install IPFS(because of the aragon usage)
+Insructions for installation are [here](https://docs.ipfs.io/install/command-line/#official-distributions).
+
+Then move to the directory with the installed ipfs and run:
+```shell script
+ipfs init
+ipfs daemon
+```
+
+
+With IPFS running you will be able to deploy updates of the contract on the rinkeby chain. 
+ To do it please call the following command in the terminal:
 
 ```shell script
-npx buidler publish minor --network rinkeby
+npm run publish:rinkeby
 ```
-To change the deployment address, please
+To change the deployer address, please
 modify it in the `buidler.config.js` rinkeby config
 
 
-In case of deployment on mainnet additional configuration needs to be done, 
-the address will be needed in the `buidler.conf.js`.
+In case of deployment on mainnet or any other network additional configuration needs to be done, 
+the address will be needed in the `buidler.conf.js` and `.arapp.json`.
