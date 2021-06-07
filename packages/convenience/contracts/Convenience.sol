@@ -137,10 +137,6 @@ contract Convenience is Ownable  {
         {
             api3Voting = IApi3Voting(api3Pool.votingAppSecondary());
         }
-        else
-        {
-            revert("Invalid voting app type");
-        }
         startDate = new uint64[](voteIds.length);
         supportRequired = new uint64[](voteIds.length);
         minAcceptQuorum = new uint64[](voteIds.length);
@@ -194,10 +190,6 @@ contract Convenience is Ownable  {
         {
             api3Voting = IApi3Voting(api3Pool.votingAppSecondary());
         }
-        else
-        {
-            revert("Invalid voting app type");
-        }
         executed = new bool[](voteIds.length);
         yea = new uint256[](voteIds.length);
         nay = new uint256[](voteIds.length);
@@ -249,17 +241,13 @@ contract Convenience is Ownable  {
         {
             api3Voting = IApi3Voting(api3Pool.votingAppSecondary());
         }
-        else
-        {
-            revert("Invalid voting app type");
-        }
         uint256 votesLength = api3Voting.votesLength();
         if (votesLength == 0)
         {
             return new uint256[](0);
         }
         uint256 countOpenVote = 0;
-        for (uint256 i = votesLength - 1; i >= 0; i--)
+        for (uint256 i = votesLength; i > 0; i--)
         {
             (
                 bool open,
@@ -272,7 +260,7 @@ contract Convenience is Ownable  {
                 , // nay
                 , // votingPower
                 // script
-                ) = api3Voting.getVote(i);
+                ) = api3Voting.getVote(i-1);
             if (open)
             {
                 countOpenVote++;
@@ -288,7 +276,7 @@ contract Convenience is Ownable  {
         }
         voteIds = new uint256[](countOpenVote);
         uint256 countAddedVote = 0;
-        for (uint256 i = votesLength - 1; i >= 0; i--)
+        for (uint256 i = votesLength; i > 0; i--)
         {
             if (countOpenVote == countAddedVote)
             {
@@ -305,10 +293,10 @@ contract Convenience is Ownable  {
                 , // nay
                 , // votingPower
                 // script
-                ) = api3Voting.getVote(i);
+                ) = api3Voting.getVote(i-1);
             if (open)
             {
-                voteIds[countAddedVote] = i;
+                voteIds[countAddedVote] = i-1;
                 countAddedVote++;
             }
         }
