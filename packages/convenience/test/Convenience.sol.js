@@ -1,4 +1,4 @@
-const { expect,assert } = require("chai");
+const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 
 let mockApi3Voting, mockApi3Token, api3Pool, convenience;
@@ -41,7 +41,10 @@ beforeEach(async () => {
 
   api3PoolFactory = await ethers.getContractFactory("Api3Pool", roles.deployer);
 
-  api3Pool = await api3PoolFactory.deploy(mockApi3Token.address,roles.mockTimeLockManager.address);
+  api3Pool = await api3PoolFactory.deploy(
+    mockApi3Token.address,
+    roles.mockTimeLockManager.address
+  );
 
   EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
 
@@ -94,7 +97,10 @@ beforeEach(async () => {
 
   convenience = await convenienceFactory.deploy(api3Pool.address);
 
-  await convenience.setErc20Addresses([mockApi3Token.address,mockApi3Token2.address])
+  await convenience.setErc20Addresses([
+    mockApi3Token.address,
+    mockApi3Token2.address,
+  ]);
 });
 
 //Cast Votes in the mock contract
@@ -133,9 +139,8 @@ describe("getUserStakingData", function () {
 describe("getTreasuryAndUserDelegationData", function () {
   context("Valid User Address", function () {
     it("returns the user delegation data", async function () {
-      const TreasuryAndUserDelegationData = await convenience.getTreasuryAndUserDelegationData(
-        roles.user1.address
-      );
+      const TreasuryAndUserDelegationData =
+        await convenience.getTreasuryAndUserDelegationData(roles.user1.address);
       expect(TreasuryAndUserDelegationData.delegate).to.equal(
         roles.user2.address
       );
@@ -169,181 +174,181 @@ describe("getOpenVoteIds", function () {
         ).to.deep.equal([]);
       });
     });
-  })
+  });
   context("Votes are not casted", function () {
-      it("returns empty array", async function () {
-        expect(
-          await convenience.getOpenVoteIds(VotingAppType.Primary)
-        ).to.deep.equal([]);
-        expect(
-          await convenience.getOpenVoteIds(VotingAppType.Secondary)
-        ).to.deep.equal([]);
-      });
-  })
+    it("returns empty array", async function () {
+      expect(
+        await convenience.getOpenVoteIds(VotingAppType.Primary)
+      ).to.deep.equal([]);
+      expect(
+        await convenience.getOpenVoteIds(VotingAppType.Secondary)
+      ).to.deep.equal([]);
+    });
+  });
 });
 
 describe("getStaticVoteData", function () {
   context("Voting App type is Valid", function () {
     context("Votes are casted", function () {
-        it("returns the vote data for the supplied voteIds", async function () {
-          voteIds = await castVotes(true);
-          staticVoteData = await convenience.getStaticVoteData(
-            VotingAppType.Primary,
-            voteIds
-          );
-          staticVoteDataSecondary = await convenience.getStaticVoteData(
-            VotingAppType.Secondary,
-            voteIds
-          );
+      it("returns the vote data for the supplied voteIds", async function () {
+        voteIds = await castVotes(true);
+        staticVoteData = await convenience.getStaticVoteData(
+          VotingAppType.Primary,
+          voteIds
+        );
+        staticVoteDataSecondary = await convenience.getStaticVoteData(
+          VotingAppType.Secondary,
+          voteIds
+        );
 
-          expect(staticVoteData).to.deep.equal(staticVoteDataSecondary) //using the same address
-          for (i = 1; i < 6; i++) {
-            expect(staticVoteData.startDate[5 - i]).to.be.equal(
-              ethers.BigNumber.from(60 * 60 * 24 * 30 + 60 * 60 * 24 * i)
-            );
-            expect(staticVoteData.supportRequired[5 - i]).to.be.equal(
-              ethers.BigNumber.from((50 * 10) ^ 16)
-            );
-            expect(staticVoteData.minAcceptQuorum[5 - i]).to.be.equal(
-              ethers.BigNumber.from((25 * 10) ^ 16)
-            );
-            expect(staticVoteData.votingPower[5 - i]).to.be.equal(
-              ethers.BigNumber.from(10000)
-            );
-            expect(staticVoteData.script[5 - i]).to.be.equal(
-              "0xabcdef"
-            );
-          }
-        });
+        expect(staticVoteData).to.deep.equal(staticVoteDataSecondary); //using the same address
+        for (i = 1; i < 6; i++) {
+          expect(staticVoteData.startDate[5 - i]).to.be.equal(
+            ethers.BigNumber.from(60 * 60 * 24 * 30 + 60 * 60 * 24 * i)
+          );
+          expect(staticVoteData.supportRequired[5 - i]).to.be.equal(
+            ethers.BigNumber.from((50 * 10) ^ 16)
+          );
+          expect(staticVoteData.minAcceptQuorum[5 - i]).to.be.equal(
+            ethers.BigNumber.from((25 * 10) ^ 16)
+          );
+          expect(staticVoteData.votingPower[5 - i]).to.be.equal(
+            ethers.BigNumber.from(10000)
+          );
+          expect(staticVoteData.script[5 - i]).to.be.equal("0xabcdef");
+        }
+      });
+    });
+
+    context("Votes are not casted", function () {
+      it("returns empty arrays on no voteIds", async function () {
+        staticVoteData = await convenience.getStaticVoteData(
+          VotingAppType.Primary,
+          []
+        );
+        expect(staticVoteData.startDate).to.deep.equal([]);
+        expect(staticVoteData.supportRequired).to.deep.equal([]);
+        expect(staticVoteData.minAcceptQuorum).to.deep.equal([]);
+        expect(staticVoteData.votingPower).to.deep.equal([]);
+        expect(staticVoteData.script).to.deep.equal([]);
       });
 
-      context("Votes are not casted", function () {
-        it("returns empty arrays on no voteIds", async function () {
-          staticVoteData = await convenience.getStaticVoteData(
-            VotingAppType.Primary,
-            []
-          );
-          expect(staticVoteData.startDate).to.deep.equal([]);
-          expect(staticVoteData.supportRequired).to.deep.equal([]);
-          expect(staticVoteData.minAcceptQuorum).to.deep.equal([]);
-          expect(staticVoteData.votingPower).to.deep.equal([]);
-          expect(staticVoteData.script).to.deep.equal([]);
-        });
-    
-        it("reverts on invalid voteIds", async function () {
-          await expect(
-            convenience.getStaticVoteData(VotingAppType.Primary, [1, 2, 3])
-          ).to.be.revertedWith("No such vote");
-        });
+      it("reverts on invalid voteIds", async function () {
+        await expect(
+          convenience.getStaticVoteData(VotingAppType.Primary, [1, 2, 3])
+        ).to.be.revertedWith("No such vote");
       });
-  })
+    });
+  });
 
-  context("Voting App type is invalid", function() {
+  context("Voting App type is invalid", function () {
     it("reverts", async function () {
       voteIds = await castVotes(true);
       try {
-        await convenience.getStaticVoteData(
-          5,
-          voteIds
-        )
+        await convenience.getStaticVoteData(5, voteIds);
         assert.fail("The transaction should have thrown an error");
-      }
-      catch(err){
-        assert.include(err.message, "revert", "The error message should contain 'revert'");
+      } catch (err) {
+        assert.include(
+          err.message,
+          "revert",
+          "The error message should contain 'revert'"
+        );
       }
     });
-  })
+  });
 });
 
 describe("getDynamicVoteData", function () {
-  context("Voting App type is valid", function() {
+  context("Voting App type is valid", function () {
     context("Votes are casted and user has delegated", function () {
-        it("returns the the user Vote Data", async function () {
-          voteIds = await castVotes(true);
-          dynamicVoteData = await convenience.getDynamicVoteData(
+      it("returns the the user Vote Data", async function () {
+        voteIds = await castVotes(true);
+        dynamicVoteData = await convenience.getDynamicVoteData(
+          VotingAppType.Primary,
+          roles.user1.address,
+          [0]
+        );
+        dynamicVoteDataSecondary = await convenience.getDynamicVoteData(
+          VotingAppType.Secondary,
+          roles.user1.address,
+          [0]
+        );
+        expect(dynamicVoteData).to.deep.equal(dynamicVoteDataSecondary); //using the same address
+        expect(dynamicVoteData.executed[0]).to.be.equal(true);
+        expect(dynamicVoteData.yea[0]).to.be.equal("8000");
+        expect(dynamicVoteData.nay[0]).to.be.equal("1000");
+        expect(dynamicVoteData.delegateAt[0]).to.be.equal(roles.user2.address);
+        expect(dynamicVoteData.delegateState[0]).to.be.equal(
+          VoterStateType.NAY
+        ); // The Mock Contract returns NAY on all ids except 1 and 2
+      });
+    });
+
+    context("Votes are casted and user has not delegated", function () {
+      it("returns the the user Vote Data", async function () {
+        voteIds = await castVotes();
+        dynamicVoteData = await convenience.getDynamicVoteData(
+          VotingAppType.Primary,
+          roles.user3.address,
+          [0]
+        );
+        dynamicVoteDataSecondary = await convenience.getDynamicVoteData(
+          VotingAppType.Secondary,
+          roles.user3.address,
+          [0]
+        );
+
+        expect(dynamicVoteData).to.deep.equal(dynamicVoteDataSecondary); //using the same address
+        expect(dynamicVoteData.executed[0]).to.be.equal(true);
+        expect(dynamicVoteData.yea[0]).to.be.equal("8000");
+        expect(dynamicVoteData.nay[0]).to.be.equal("1000");
+        expect(dynamicVoteData.delegateAt[0]).to.be.equal(
+          ethers.constants.AddressZero
+        );
+        expect(dynamicVoteData.voterState[0]).to.be.equal(VoterStateType.NAY); // The Mock Contract returns NAY on all ids except 1 and 2
+      });
+    });
+
+    context("Votes are not casted", function () {
+      it("returns empty arrays on no voteIds", async function () {
+        userVoteData = await convenience.getDynamicVoteData(
+          VotingAppType.Primary,
+          roles.user1.address,
+          []
+        );
+        expect(userVoteData.executed).to.deep.equal([]);
+        expect(userVoteData.yea).to.deep.equal([]);
+        expect(userVoteData.nay).to.deep.equal([]);
+        expect(userVoteData.voterState).to.deep.equal([]);
+        expect(userVoteData.delegateAt).to.deep.equal([]);
+        expect(userVoteData.delegateState).to.deep.equal([]);
+      });
+
+      it("reverts on invalid voteIds", async function () {
+        await expect(
+          convenience.getDynamicVoteData(
             VotingAppType.Primary,
             roles.user1.address,
-            [0]
-          );
-          dynamicVoteDataSecondary = await convenience.getDynamicVoteData(
-            VotingAppType.Secondary,
-            roles.user1.address,
-            [0]
-          );
-          expect(dynamicVoteData).to.deep.equal(dynamicVoteDataSecondary) //using the same address
-          expect(dynamicVoteData.executed[0]).to.be.equal(true);
-          expect(dynamicVoteData.yea[0]).to.be.equal("8000");
-          expect(dynamicVoteData.nay[0]).to.be.equal("1000");
-          expect(dynamicVoteData.delegateAt[0]).to.be.equal(roles.user2.address);
-          expect(dynamicVoteData.delegateState[0]).to.be.equal(VoterStateType.NAY); // The Mock Contract returns NAY on all ids except 1 and 2
-        });
+            [1, 2, 3]
+          )
+        ).to.be.revertedWith("No such vote");
       });
+    });
+  });
 
-      context("Votes are casted and user has not delegated", function () {
-        it("returns the the user Vote Data", async function () {
-          voteIds = await castVotes();
-          dynamicVoteData = await convenience.getDynamicVoteData(
-            VotingAppType.Primary,
-            roles.user3.address,
-            [0]
-          );
-          dynamicVoteDataSecondary = await convenience.getDynamicVoteData(
-            VotingAppType.Secondary,
-            roles.user3.address,
-            [0]
-          );
-                    
-          expect(dynamicVoteData).to.deep.equal(dynamicVoteDataSecondary) //using the same address
-          expect(dynamicVoteData.executed[0]).to.be.equal(true);
-          expect(dynamicVoteData.yea[0]).to.be.equal("8000");
-          expect(dynamicVoteData.nay[0]).to.be.equal("1000");
-          expect(dynamicVoteData.delegateAt[0]).to.be.equal(ethers.constants.AddressZero);
-          expect(dynamicVoteData.voterState[0]).to.be.equal(VoterStateType.NAY); // The Mock Contract returns NAY on all ids except 1 and 2
-        });
-      });
-
-
-      context("Votes are not casted", function () {
-        it("returns empty arrays on no voteIds", async function () {
-            userVoteData = await convenience.getDynamicVoteData(
-                VotingAppType.Primary,
-                roles.user1.address,
-                []
-            )
-            expect(userVoteData.executed).to.deep.equal([]);
-            expect(userVoteData.yea).to.deep.equal([]);
-            expect(userVoteData.nay).to.deep.equal([]);
-            expect(userVoteData.voterState).to.deep.equal([]);
-            expect(userVoteData.delegateAt).to.deep.equal([]);
-            expect(userVoteData.delegateState).to.deep.equal([]);
-        })
-    
-        it("reverts on invalid voteIds", async function () {
-          await expect(
-            convenience.getDynamicVoteData(
-                VotingAppType.Primary, 
-                roles.user1.address, 
-                [1,2,3]
-            )
-          ).to.be.revertedWith("No such vote");
-        });
-      });
-  })
-
-  context("Voting App type is invalid", function() {
-        it("reverts", async function () {
-          voteIds = await castVotes(true);
-          try {
-            await convenience.getDynamicVoteData(
-              5,
-              roles.user1.address,
-              voteIds
-            )
-            assert.fail("The transaction should have thrown an error");
-          }
-          catch(err){
-            assert.include(err.message, "revert", "The error message should contain 'revert'");
-          }
-        });
-  })
+  context("Voting App type is invalid", function () {
+    it("reverts", async function () {
+      voteIds = await castVotes(true);
+      try {
+        await convenience.getDynamicVoteData(5, roles.user1.address, voteIds);
+        assert.fail("The transaction should have thrown an error");
+      } catch (err) {
+        assert.include(
+          err.message,
+          "revert",
+          "The error message should contain 'revert'"
+        );
+      }
+    });
+  });
 });

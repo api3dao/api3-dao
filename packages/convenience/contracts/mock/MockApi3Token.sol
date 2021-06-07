@@ -28,12 +28,12 @@ contract MockApi3Token is ERC20, Ownable {
         )
         public
         ERC20("API3", "API3")
-        {
-            transferOwnership(contractOwner);
-            // Initial supply is 100 million (100e6)
-            // We are using ether because the token has 18 decimals like ETH
-            _mint(mintingDestination, 100e6 ether);
-        }
+    {
+        transferOwnership(contractOwner);
+        // Initial supply is 100 million (100e6)
+        // We are using ether because the token has 18 decimals like ETH
+        _mint(mintingDestination, 100e6 ether);
+    }
 
     /// @notice The OpenZeppelin renounceOwnership() implementation is
     /// overriden to prevent ownership from being renounced accidentally.
