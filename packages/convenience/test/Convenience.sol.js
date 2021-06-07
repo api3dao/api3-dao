@@ -29,18 +29,10 @@ beforeEach(async () => {
     "MockApi3Token",
     roles.deployer
   );
-  mockApi3Token = await mockApi3TokenFactory.deploy(
-    roles.deployer.address,
-    roles.deployer.address
-  );
-
-  mockApi3Token2 = await mockApi3TokenFactory.deploy(
-    roles.deployer.address,
-    roles.deployer.address
-  );
+  mockApi3Token = await mockApi3TokenFactory.deploy("API3", "API3");
+  mockOtherToken = await mockApi3TokenFactory.deploy("API-four", "API4");
 
   api3PoolFactory = await ethers.getContractFactory("Api3Pool", roles.deployer);
-
   api3Pool = await api3PoolFactory.deploy(
     mockApi3Token.address,
     roles.mockTimeLockManager.address
@@ -99,7 +91,7 @@ beforeEach(async () => {
 
   await convenience.setErc20Addresses([
     mockApi3Token.address,
-    mockApi3Token2.address,
+    mockOtherToken.address,
   ]);
 });
 
