@@ -178,10 +178,12 @@ describe("getStaticVoteData", function () {
         const { voteIds, timestamp } = await castVotes(true);
         const staticVoteData = await convenience.getStaticVoteData(
           VotingAppType.Primary,
+          roles.user1.address,
           voteIds
         );
         const staticVoteDataSecondary = await convenience.getStaticVoteData(
           VotingAppType.Secondary,
+          roles.user1.address,
           voteIds
         );
         expect(staticVoteData).to.deep.equal(staticVoteDataSecondary); //using the same address
@@ -207,6 +209,7 @@ describe("getStaticVoteData", function () {
       it("returns empty arrays on no voteIds", async function () {
         const staticVoteData = await convenience.getStaticVoteData(
           VotingAppType.Primary,
+          roles.user1.address,
           []
         );
         expect(staticVoteData.startDate).to.deep.equal([]);
@@ -217,7 +220,7 @@ describe("getStaticVoteData", function () {
       });
       it("reverts on invalid voteIds", async function () {
         await expect(
-          convenience.getStaticVoteData(VotingAppType.Primary, [1, 2, 3])
+          convenience.getStaticVoteData(VotingAppType.Primary, roles.user1.address, [1, 2, 3])
         ).to.be.revertedWith("No such vote");
       });
     });
@@ -225,7 +228,7 @@ describe("getStaticVoteData", function () {
   context("Voting App type is invalid", function () {
     it("reverts", async function () {
       const { voteIds } = await castVotes(true);
-      await expect(convenience.getStaticVoteData(5, voteIds)).to.be.reverted;
+      await expect(convenience.getStaticVoteData(5, roles.user1.address, voteIds)).to.be.reverted;
     });
   });
 });

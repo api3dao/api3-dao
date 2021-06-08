@@ -12,10 +12,12 @@ contract Convenience is Ownable  {
 
     Api3Pool public api3Pool;
     address[] public erc20Addresses;
+    IERC20Metadata public api3Token;
 
     constructor(address api3PoolAddress)
     {
         api3Pool = Api3Pool(api3PoolAddress);
+        api3Token = IERC20Metadata(address(api3Pool.api3Token()));
     }
 
     /// @notice Called by the owner to update the addresses of the contract
@@ -41,6 +43,7 @@ contract Convenience is Ownable  {
             uint256 totalStake,
             uint256 totalShares,
             uint256 stakeTarget,
+            uint256 userApi3Balance,
             uint256 userStaked,
             uint256 userUnstaked,
             uint256 userVesting,
@@ -51,10 +54,11 @@ contract Convenience is Ownable  {
             )
     {
         apr = api3Pool.currentApr();
-        api3Supply = IERC20Metadata(address(api3Pool.api3Token())).totalSupply();
+        api3Supply = api3Token.totalSupply();
         totalStake = api3Pool.totalStake();
         totalShares = api3Pool.totalVotingPower();
         stakeTarget = api3Pool.stakeTarget();
+        userApi3Balance = api3Token.balanceOf(userAddress);
         userStaked = api3Pool.userStake(userAddress);
         (
             userUnstaked,
@@ -80,6 +84,8 @@ contract Convenience is Ownable  {
             uint8[] memory decimals,
             uint256[] memory balancesOfPrimaryAgent,
             uint256[] memory balancesOfSecondaryAgent,
+            uint256 proposalVotingPowerThreshold,
+            uint256 userVotingPower,
             address delegate,
             uint256 lastDelegationUpdateTimestamp,
             uint256 lastProposalTimestamp
@@ -99,6 +105,8 @@ contract Convenience is Ownable  {
             balancesOfPrimaryAgent[i] = erc20.balanceOf(api3Pool.agentAppPrimary());
             balancesOfSecondaryAgent[i] = erc20.balanceOf(api3Pool.agentAppSecondary());
         }
+        proposalVotingPowerThreshold = api3Pool.proposalVotingPowerThreshold();
+        userVotingPower = api3Pool.userVotingPower(userAddress);
         delegate = api3Pool.userDelegate(userAddress);   
         (
             , // unstaked
@@ -116,6 +124,7 @@ contract Convenience is Ownable  {
     /// @param voteIds Array of vote IDs for which data will be retrieved
     function getStaticVoteData(
         VotingAppType votingAppType,
+        address userAddress,
         uint256[] calldata voteIds
         )
         external
@@ -125,7 +134,8 @@ contract Convenience is Ownable  {
             uint64[] memory supportRequired,
             uint64[] memory minAcceptQuorum,
             uint256[] memory votingPower,
-            bytes[] memory script
+            bytes[] memory script,
+            uint256[] memory userVotingPowerAt
             )
     {
         IApi3Voting api3Voting;
@@ -142,13 +152,15 @@ contract Convenience is Ownable  {
         minAcceptQuorum = new uint64[](voteIds.length);
         votingPower = new uint256[](voteIds.length);
         script = new bytes[](voteIds.length);
+        userVotingPowerAt = new uint256[](voteIds.length);
         for (uint256 i = 0; i < voteIds.length; i++)
         {
+            uint64 snapshotBlock;
             (
                 , // open
                 , // executed
                 startDate[i],
-                , // snapshotBlock
+                snapshotBlock,
                 supportRequired[i],
                 minAcceptQuorum[i],
                 , // yea
@@ -156,6 +168,7 @@ contract Convenience is Ownable  {
                 votingPower[i],
                 script[i]
                 ) = api3Voting.getVote(voteIds[i]);
+            userVotingPowerAt[i] = api3Pool.userVotingPowerAt(userAddress, snapshotBlock);
         }
     }
 
