@@ -56,7 +56,7 @@ beforeEach(async () => {
     mockApi3VotingSecondary.address
   );
 
-  // Stake Tokens in the Pool
+  // Stake Tokens in the Pool Fot User 1
   const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
   await mockApi3Token
     .connect(roles.deployer)
@@ -68,9 +68,10 @@ beforeEach(async () => {
   await api3Pool
     .connect(roles.user1)
     .stake(user1Stake.div(ethers.BigNumber.from(2)));
-  // Delegate
+  // Delegate To User 2
   await api3Pool.connect(roles.user1).delegateVotingPower(roles.user2.address);
 
+  // Stake Tokens in the Pool Fot User 3
   const user3Stake = ethers.utils.parseEther("20" + "000" + "000");
   await mockApi3Token
     .connect(roles.deployer)
@@ -171,7 +172,9 @@ describe("getUserStakingData", function () {
     const api3PoolUser = await api3Pool.getUser(roles.user1.address);
 
     expect(userStakingData.apr).to.equal(await api3Pool.currentApr());
-    // expect(userStakingData.api3Supply).to.equal(await mockApi3Token.totalSupply());
+    expect(userStakingData.api3Supply).to.equal(
+      await mockApi3Token.totalSupply()
+    );
     expect(userStakingData.totalStake).to.equal(await api3Pool.totalStake());
     expect(userStakingData.totalShares).to.equal(
       await api3Pool.totalVotingPower()
