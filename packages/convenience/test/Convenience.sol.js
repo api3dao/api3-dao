@@ -56,7 +56,7 @@ beforeEach(async () => {
     mockApi3VotingSecondary.address
   );
 
-  // Stake Tokens in the Pool Fot User 1
+  // Stake Tokens in the Pool For User 1
   const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
   await mockApi3Token
     .connect(roles.deployer)
@@ -71,7 +71,7 @@ beforeEach(async () => {
   // Delegate To User 2
   await api3Pool.connect(roles.user1).delegateVotingPower(roles.user2.address);
 
-  // Stake Tokens in the Pool Fot User 3
+  // Stake Tokens in the Pool For User 3
   const user3Stake = ethers.utils.parseEther("20" + "000" + "000");
   await mockApi3Token
     .connect(roles.deployer)
@@ -156,7 +156,7 @@ describe("setErc20Addresses", function () {
     await convenience.setErc20Addresses(
       erc20Tokens.map((token) => token.address)
     );
-    for (i = 0; i < erc20Tokens.length; i++) {
+    for (let i = 0; i < erc20Tokens.length; i++) {
       expect(await convenience.erc20Addresses(i)).to.be.equal(
         erc20Tokens.map((token) => token.address)[i]
       );
@@ -261,7 +261,7 @@ describe("getTreasuryAndUserDelegationData", function () {
           );
         const api3PoolUser = await api3Pool.getUser(roles.user1.address);
 
-        for (i = 0; i < erc20Tokens.length; i++) {
+        for (let i = 0; i < erc20Tokens.length; i++) {
           expect(TreasuryAndUserDelegationData.names[i]).to.equal(
             await erc20Tokens[i].name()
           );
@@ -338,10 +338,7 @@ describe("getStaticVoteData", function () {
       });
 
       it("reverts for voteIds in Secondary Voting App", async function () {
-        const { voteIds, timestamp } = await castVotes(
-          true,
-          mockApi3VotingPrimary
-        );
+        const { voteIds } = await castVotes(true, mockApi3VotingPrimary);
         await expect(
           convenience.getStaticVoteData(
             VotingAppType.Secondary,
@@ -382,10 +379,7 @@ describe("getStaticVoteData", function () {
       });
 
       it("reverts for voteIds in Primary Voting App", async function () {
-        const { voteIds, timestamp } = await castVotes(
-          true,
-          mockApi3VotingSecondary
-        );
+        const { voteIds } = await castVotes(true, mockApi3VotingSecondary);
         await expect(
           convenience.getStaticVoteData(
             VotingAppType.Primary,
@@ -452,10 +446,7 @@ describe("getDynamicVoteData", function () {
   context("Voting App type is valid", function () {
     context("Votes are casted in the Primary Voting App", function () {
       it("reverts for voteIds in the Secondary App", async function () {
-        const { voteIds, timestamp } = await castVotes(
-          true,
-          mockApi3VotingPrimary
-        );
+        const { voteIds } = await castVotes(true, mockApi3VotingPrimary);
         await expect(
           convenience.getStaticVoteData(
             VotingAppType.Secondary,
@@ -507,10 +498,7 @@ describe("getDynamicVoteData", function () {
 
     context("Votes are casted in the Secondary Voting App", function () {
       it("reverts for voteIds in the Primary App", async function () {
-        const { voteIds, timestamp } = await castVotes(
-          true,
-          mockApi3VotingSecondary
-        );
+        const { voteIds } = await castVotes(true, mockApi3VotingSecondary);
         await expect(
           convenience.getStaticVoteData(
             VotingAppType.Primary,
@@ -621,20 +609,14 @@ describe("getOpenVoteIds", function () {
     context("Votes are casted in Primary Voting App", function () {
       context("There are open votes", async function () {
         it("returns empty array when using the Secondary Voting App", async function () {
-          const { voteIds, timestamp } = await castVotes(
-            true,
-            mockApi3VotingPrimary
-          );
+          await castVotes(true, mockApi3VotingPrimary);
           expect(
             await convenience.getOpenVoteIds(VotingAppType.Secondary)
           ).to.deep.equal([]);
         });
 
         it("returns the ids of the votes that are open", async function () {
-          const { voteIds, timestamp } = await castVotes(
-            true,
-            mockApi3VotingPrimary
-          );
+          const { timestamp } = await castVotes(true, mockApi3VotingPrimary);
 
           // Cast a last vote that is not open
           await mockApi3VotingPrimary.addVote(
@@ -670,20 +652,14 @@ describe("getOpenVoteIds", function () {
     context("Votes are casted in Secondary Voting App", function () {
       context("There are open votes", async function () {
         it("returns empty array when using the Primary Voting App", async function () {
-          const { voteIds, timestamp } = await castVotes(
-            true,
-            mockApi3VotingSecondary
-          );
+          await castVotes(true, mockApi3VotingSecondary);
           expect(
             await convenience.getOpenVoteIds(VotingAppType.Primary)
           ).to.deep.equal([]);
         });
 
         it("returns the ids of the votes that are open", async function () {
-          const { voteIds, timestamp } = await castVotes(
-            true,
-            mockApi3VotingSecondary
-          );
+          const { timestamp } = await castVotes(true, mockApi3VotingSecondary);
 
           // Cast a last vote that is not open
           await mockApi3VotingSecondary.addVote(
@@ -729,7 +705,7 @@ describe("getOpenVoteIds", function () {
 
   context("Voting app type is invalid", function () {
     it("reverts", async function () {
-      const { voteIds } = await castVotes(true, mockApi3VotingPrimary);
+      await castVotes(true, mockApi3VotingPrimary);
       await expect(convenience.getOpenVoteIds(5)).to.be.reverted;
     });
   });
