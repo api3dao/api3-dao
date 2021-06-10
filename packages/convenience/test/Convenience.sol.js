@@ -569,7 +569,7 @@ describe("getDynamicVoteData", function () {
         );
 
         const userVoteDataSecondary = await convenience.getDynamicVoteData(
-          VotingAppType.Primary,
+          VotingAppType.Secondary,
           roles.user1.address,
           []
         );
