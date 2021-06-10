@@ -143,7 +143,7 @@ contract Convenience is Ownable  {
         {
             api3Voting = IApi3Voting(api3Pool.votingAppPrimary());
         }
-        else if (votingAppType == VotingAppType.Secondary)
+        else
         {
             api3Voting = IApi3Voting(api3Pool.votingAppSecondary());
         }
@@ -199,7 +199,7 @@ contract Convenience is Ownable  {
         {
             api3Voting = IApi3Voting(api3Pool.votingAppPrimary());
         }
-        else if (votingAppType == VotingAppType.Secondary)
+        else
         {
             api3Voting = IApi3Voting(api3Pool.votingAppSecondary());
         }
@@ -250,7 +250,7 @@ contract Convenience is Ownable  {
         {
             api3Voting = IApi3Voting(api3Pool.votingAppPrimary());
         }
-        else if (votingAppType == VotingAppType.Secondary)
+        else
         {
             api3Voting = IApi3Voting(api3Pool.votingAppSecondary());
         }
