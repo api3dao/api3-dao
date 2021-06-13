@@ -22,10 +22,5 @@
     "prettier": "^2.3.0",
     "pretty-quick": "^3.1.0",
     "solhint": "^3.3.6"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run pretty-quick && npm run lint"
-    }
   }
 }

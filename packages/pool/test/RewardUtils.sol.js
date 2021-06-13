@@ -12,7 +12,6 @@ beforeEach(async () => {
     deployer: accounts[0],
     agentAppPrimary: accounts[1],
     agentAppSecondary: accounts[2],
-
     votingAppPrimary: accounts[3],
     votingAppSecondary: accounts[4],
     claimsManager: accounts[5],
