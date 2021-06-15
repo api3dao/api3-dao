@@ -43,28 +43,6 @@ and add the following to the file created
 }
 ```
 
-Go to `contracts/Api3Template.sol` and update:
-```solidity
-    // The Api3Voting app ID below is used on Rinkeby/Mainnet
-    // It is derived using `namehash("api3voting.open.aragonpm.eth")`
-    // bytes32 constant internal API3_VOTING_APP_ID = 0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554;
-
-    // The Api3Voting app ID below is used on localhost
-    // It is derived using `namehash("api3voting.aragonpm.eth")`
-    bytes32 constant internal API3_VOTING_APP_ID = 0x727a0cf100ef0e645bad5a5b920d7fb71f8fd0eaf0fa579c341a045f597526f5;
-```
-
-as
-```solidity
-    // The Api3Voting app ID below is used on Rinkeby/Mainnet
-    // It is derived using `namehash("api3voting.open.aragonpm.eth")`
-    bytes32 constant internal API3_VOTING_APP_ID = 0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554;
-
-    // The Api3Voting app ID below is used on localhost
-    // It is derived using `namehash("api3voting.aragonpm.eth")`
-    // bytes32 constant internal API3_VOTING_APP_ID = 0x727a0cf100ef0e645bad5a5b920d7fb71f8fd0eaf0fa579c341a045f597526f5;
-```
-
 and run
 ```
 npm run deploy:rinkeby
