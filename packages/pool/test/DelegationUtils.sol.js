@@ -2,7 +2,7 @@ const { expect } = require("chai");
 
 let roles;
 let api3Token, api3Pool, api3Voting;
-let EPOCH_LENGTH;
+const epochLength = 7 * 24 * 60 * 60;
 
 beforeEach(async () => {
   const accounts = await ethers.getSigners();
@@ -32,7 +32,8 @@ beforeEach(async () => {
   );
   api3Pool = await api3PoolFactory.deploy(
     api3Token.address,
-    roles.mockTimelockManager.address
+    roles.mockTimelockManager.address,
+    epochLength
   );
   const api3VotingFactory = await ethers.getContractFactory(
     "MockApi3Voting",
@@ -47,7 +48,6 @@ beforeEach(async () => {
       api3Voting.address,
       roles.votingAppSecondary.address
     );
-  EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
 });
 
 describe("delegateVotingPower", function () {
@@ -97,7 +97,7 @@ describe("delegateVotingPower", function () {
                   ).to.equal(user1Stake);
                   // Fast forward time
                   await ethers.provider.send("evm_increaseTime", [
-                    EPOCH_LENGTH.toNumber() + 1,
+                    epochLength + 1,
                   ]);
                   // ... then have user 1 delegate to user 2
                   await expect(
@@ -164,7 +164,7 @@ describe("delegateVotingPower", function () {
                   .delegateVotingPower(roles.user2.address);
                 // Fast forward time
                 await ethers.provider.send("evm_increaseTime", [
-                  EPOCH_LENGTH.toNumber() + 1,
+                  epochLength + 1,
                 ]);
                 // ... then have user 1 delegate to user 2 again
                 await expect(
@@ -289,7 +289,7 @@ describe("undelegateVotingPower", function () {
             .delegateVotingPower(roles.user2.address);
           // Fast forward time
           await ethers.provider.send("evm_increaseTime", [
-            EPOCH_LENGTH.toNumber() + 1,
+            epochLength + 1,
           ]);
           // Have user 1 undelegate
           await expect(api3Pool.connect(roles.user1).undelegateVotingPower())

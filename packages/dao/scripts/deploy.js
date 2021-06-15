@@ -1,5 +1,5 @@
 /*global artifacts, web3, Promise*/
-
+const { hash: namehash } = require("eth-ens-namehash");
 const { getNetworkName } = require("@aragon/templates-shared/lib/network")(
   web3
 );
@@ -20,6 +20,8 @@ const ACCEPTANCE_1 = 50e16;
 
 const SUPPORT_2 = 50e16;
 const ACCEPTANCE_2 = 15e16;
+
+const EPOCH_LENGTH = 7 * 24 * 60 * 60;
 
 /**
  * Returns the address of the deployer
@@ -57,7 +59,7 @@ module.exports = async (callback) => {
 
     const api3Token = await Api3Token.new(deployer, deployer);
     // Set TimelockManager as deployer
-    const api3Pool = await Api3Pool.new(api3Token.address, deployer);
+    const api3Pool = await Api3Pool.new(api3Token.address, deployer, EPOCH_LENGTH);
     const convenience = await Convenience.new(api3Pool.address);
     const template = await deployTemplate(
       web3,
@@ -76,11 +78,15 @@ module.exports = async (callback) => {
         { name: "token-manager", contractName: "TokenManager" },
       ]
     );
+    const api3VotingAppId = network === "rinkeby" || network === "mainnet" || network === "ropsten"
+        ? namehash("api3voting.open.aragonpm.eth")
+        : namehash("api3voting.aragonpm.eth");
     const tx = await template.newInstance(
       DAO_ID,
       api3Pool.address,
       [SUPPORT_1, ACCEPTANCE_1],
-      [SUPPORT_2, ACCEPTANCE_2]
+      [SUPPORT_2, ACCEPTANCE_2],
+      api3VotingAppId
     );
     const primaryVoting = getEventArgument(
       tx,

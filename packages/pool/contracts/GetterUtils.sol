@@ -171,7 +171,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         returns (uint256 locked)
     {
         Checkpoint[] storage _userShares = users[userAddress].shares;
-        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
+        uint256 currentEpoch = block.timestamp / epochLength;
         uint256 oldestLockedEpoch = currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
             ? currentEpoch - REWARD_VESTING_PERIOD + 1
             : genesisEpoch + 1;

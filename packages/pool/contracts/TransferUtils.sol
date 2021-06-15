@@ -71,7 +71,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
             userSharesLength != 0,
             "Pool: User never had shares"
             );
-        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
+        uint256 currentEpoch = block.timestamp / epochLength;
         LockedCalculationState storage state = userToLockedCalculationState[userAddress];
         // Reset the state if there was no calculation made in this epoch
         if (state.initialIndEpoch != currentEpoch)
@@ -121,7 +121,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         override
     {
         mintReward();
-        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
+        uint256 currentEpoch = block.timestamp / epochLength;
         LockedCalculationState storage state = userToLockedCalculationState[msg.sender];
         require(
             state.initialIndEpoch == currentEpoch,

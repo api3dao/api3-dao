@@ -4,7 +4,7 @@ This is a customized version of the [Aragon Voting app](https://github.com/arago
 It integrates to the API3 pool instead of a generic MiniMe token to determine voting power.
 It also implements the following additional features:
 
-- Does not allow users to create a new vote less than `EPOCH_LENGTH` (defined in the API3 pool) apart (immutably set as 1 week)
+- Does not allow users to create a new vote less than `epochLength` (defined in the API3 pool) apart (immutably set as 1 week)
 - Does not allow users that have less than `proposalVotingPowerThreshold` (defined in the API3 pool) to create a new vote (governable, initial value 0.1%)
 
 ## Instructions

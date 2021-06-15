@@ -14,14 +14,14 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
         public
         override
     {
-        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
+        uint256 currentEpoch = block.timestamp / epochLength;
         // This will be skipped in most cases because someone else will have
         // triggered the payment for this epoch
         if (epochIndexOfLastRewardPayment < currentEpoch)
         {
             if (api3Token.getMinterStatus(address(this)))
             {
-                uint256 rewardAmount = totalStake * currentApr * EPOCH_LENGTH / ONE_YEAR_IN_SECONDS / HUNDRED_PERCENT;
+                uint256 rewardAmount = totalStake * currentApr * epochLength / ONE_YEAR_IN_SECONDS / HUNDRED_PERCENT;
                 epochIndexToReward[currentEpoch] = Reward({
                     atBlock: block.number,
                     amount: rewardAmount,

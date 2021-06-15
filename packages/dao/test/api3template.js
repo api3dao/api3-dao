@@ -26,18 +26,21 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
   const SUPPORT_2 = 50e16;
   const ACCEPTANCE_2 = 15e16;
 
+  const epochLength = 7 * 24 * 60 * 60;
+
   before("fetch bare template", async () => {
     api3Template = Api3Template.at(await getTemplateAddress());
   });
 
   before("create bare entity", async () => {
     // Set TimelockManager as deployer
-    api3Pool = await Api3Pool.new(tokenAddress, deployer, { from: deployer });
+    api3Pool = await Api3Pool.new(tokenAddress, deployer, epochLength, { from: deployer });
     receipt1 = await api3Template.newInstance(
       "api3template_test",
       api3Pool.address,
       [SUPPORT_1, ACCEPTANCE_1],
       [SUPPORT_2, ACCEPTANCE_2],
+      namehash("api3voting.aragonpm.eth"),
       { from: deployer }
     );
 

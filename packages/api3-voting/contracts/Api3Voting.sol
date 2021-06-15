@@ -93,8 +93,8 @@ contract Api3Voting is IForwarder, AragonApp {
         minAcceptQuorumPct = _minAcceptQuorumPct;
         // The pool acts as the MiniMe token
         api3Pool = IApi3Pool(_token);
-        // Unlike the original Voting app, `voteTime` has to be `EPOCH_LENGTH` of the pool
-        voteTime = uint64(api3Pool.EPOCH_LENGTH());
+        // Unlike the original Voting app, `voteTime` has to be `epochLength` of the pool
+        voteTime = uint64(api3Pool.epochLength());
     }
 
     /**
@@ -265,7 +265,7 @@ contract Api3Voting is IForwarder, AragonApp {
             , // lastDelegationUpdateTimestamp
             uint256 lastProposalTimestamp
             ) = api3Pool.getUser(msg.sender);
-        require(lastProposalTimestamp.add(api3Pool.EPOCH_LENGTH()) < now, "API3_HIT_PROPOSAL_COOLDOWN");
+        require(lastProposalTimestamp.add(api3Pool.epochLength()) < now, "API3_HIT_PROPOSAL_COOLDOWN");
         api3Pool.updateLastProposalTimestamp(msg.sender);
 
         uint64 snapshotBlock = getBlockNumber64() - 1; // avoid double voting in this very block
