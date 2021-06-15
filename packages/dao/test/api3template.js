@@ -40,6 +40,7 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
       api3Pool.address,
       [SUPPORT_1, ACCEPTANCE_1],
       [SUPPORT_2, ACCEPTANCE_2],
+      namehash("api3voting.aragonpm.eth"),
       { from: deployer }
     );
 

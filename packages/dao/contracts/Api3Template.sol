@@ -11,7 +11,7 @@ contract Api3Template is BaseTemplate {
 
     // The Api3Voting app ID below is used on localhost
     // It is derived using `namehash("api3voting.aragonpm.eth")`
-    bytes32 constant internal API3_VOTING_APP_ID = 0x727a0cf100ef0e645bad5a5b920d7fb71f8fd0eaf0fa579c341a045f597526f5;
+    // bytes32 constant internal API3_VOTING_APP_ID = 0x727a0cf100ef0e645bad5a5b920d7fb71f8fd0eaf0fa579c341a045f597526f5;
 
     string constant private ERROR_BAD_VOTE_SETTINGS = "API3_DAO_BAD_VOTE_SETTINGS";
 
@@ -51,7 +51,8 @@ contract Api3Template is BaseTemplate {
         string _id,
         MiniMeToken _api3Pool,
         uint64[2] _primaryVotingSettings,
-        uint64[2] _secondaryVotingSettings
+        uint64[2] _secondaryVotingSettings,
+        bytes32 api3VotingAppId
     )
     external
     {
@@ -63,7 +64,7 @@ contract Api3Template is BaseTemplate {
 
         (Kernel dao, ACL acl) = _createDAO();
         (Api3Voting primaryVoting, Api3Voting secondaryVoting, Agent primaryAgent, Agent secondaryAgent) = _setupApps(
-            dao, acl, _api3Pool, _primaryVotingSettings,_secondaryVotingSettings
+            dao, acl, _api3Pool, _primaryVotingSettings, _secondaryVotingSettings, api3VotingAppId
         );
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, primaryVoting);
         _registerID(_id, dao);
@@ -84,15 +85,16 @@ contract Api3Template is BaseTemplate {
         ACL _acl,
         MiniMeToken _api3Pool,
         uint64[2] memory _primaryVotingSettings,
-        uint64[2] memory _secondaryVotingSettings
+        uint64[2] memory _secondaryVotingSettings,
+        bytes32 api3VotingAppId
     )
     internal
     returns (Api3Voting, Api3Voting, Agent, Agent)
     {
         Agent primaryAgent = _installDefaultAgentApp(_dao);
         Agent secondaryAgent = _installNonDefaultAgentApp(_dao);
-        Api3Voting primaryVoting = _installApi3VotingApp(_dao, _api3Pool, _primaryVotingSettings);
-        Api3Voting secondaryVoting = _installApi3VotingApp(_dao, _api3Pool, _secondaryVotingSettings);
+        Api3Voting primaryVoting = _installApi3VotingApp(_dao, _api3Pool, _primaryVotingSettings, api3VotingAppId);
+        Api3Voting secondaryVoting = _installApi3VotingApp(_dao, _api3Pool, _secondaryVotingSettings, api3VotingAppId);
 
         _setupPermissions(
             _acl,
@@ -131,20 +133,21 @@ contract Api3Template is BaseTemplate {
 
     /*API3 VOTING*/
 
-    function _installApi3VotingApp(Kernel _dao, MiniMeToken _token, uint64[2] memory _votingSettings) internal returns (Api3Voting) {
-        return _installApi3VotingApp(_dao, _token, _votingSettings[0], _votingSettings[1]);
+    function _installApi3VotingApp(Kernel _dao, MiniMeToken _token, uint64[2] memory _votingSettings, bytes32 api3VotingAppId) internal returns (Api3Voting) {
+        return _installApi3VotingApp(_dao, _token, _votingSettings[0], _votingSettings[1], api3VotingAppId);
     }
 
     function _installApi3VotingApp(
         Kernel _dao,
         MiniMeToken _token,
         uint64 _support,
-        uint64 _acceptance
+        uint64 _acceptance,
+        bytes32 api3VotingAppId
     )
     internal returns (Api3Voting)
     {
         bytes memory initializeData = abi.encodeWithSelector(Api3Voting(0).initialize.selector, _token, _support, _acceptance);
-        return Api3Voting(_installNonDefaultApp(_dao, API3_VOTING_APP_ID, initializeData));
+        return Api3Voting(_installNonDefaultApp(_dao, api3VotingAppId, initializeData));
     }
 
     function _createApi3VotingPermissions(

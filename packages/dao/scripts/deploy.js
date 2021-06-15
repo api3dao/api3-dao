@@ -1,5 +1,5 @@
 /*global artifacts, web3, Promise*/
-
+const { hash: namehash } = require("eth-ens-namehash");
 const { getNetworkName } = require("@aragon/templates-shared/lib/network")(
   web3
 );
@@ -78,11 +78,15 @@ module.exports = async (callback) => {
         { name: "token-manager", contractName: "TokenManager" },
       ]
     );
+    const api3VotingAppId = network === "rinkeby" || network === "mainnet" || network === "ropsten"
+        ? namehash("api3voting.open.aragonpm.eth")
+        : namehash("api3voting.aragonpm.eth");
     const tx = await template.newInstance(
       DAO_ID,
       api3Pool.address,
       [SUPPORT_1, ACCEPTANCE_1],
-      [SUPPORT_2, ACCEPTANCE_2]
+      [SUPPORT_2, ACCEPTANCE_2],
+      api3VotingAppId
     );
     const primaryVoting = getEventArgument(
       tx,
