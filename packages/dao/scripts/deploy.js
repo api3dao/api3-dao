@@ -21,6 +21,8 @@ const ACCEPTANCE_1 = 50e16;
 const SUPPORT_2 = 50e16;
 const ACCEPTANCE_2 = 15e16;
 
+const EPOCH_LENGTH = 7 * 24 * 60 * 60;
+
 /**
  * Returns the address of the deployer
  */
@@ -57,7 +59,7 @@ module.exports = async (callback) => {
 
     const api3Token = await Api3Token.new(deployer, deployer);
     // Set TimelockManager as deployer
-    const api3Pool = await Api3Pool.new(api3Token.address, deployer);
+    const api3Pool = await Api3Pool.new(api3Token.address, deployer, EPOCH_LENGTH);
     const convenience = await Convenience.new(api3Pool.address);
     const template = await deployTemplate(
       web3,

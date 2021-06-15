@@ -41,18 +41,6 @@ contract StateUtils is IStateUtils {
         uint256 locked;
     }
 
-    /// @notice Length of the epoch in which the staking reward is paid out
-    /// once. It is hardcoded as 7 days in seconds.
-    /// @dev In addition to regulating reward payments, this variable is used
-    /// for four additional things:
-    /// (1) Once an unstaking scheduling matures, the user has `EPOCH_LENGTH`
-    /// to execute the unstaking before it expires
-    /// (2) After a user makes a proposal, they cannot make a second one
-    /// before `EPOCH_LENGTH` has passed
-    /// (3) After a user updates their delegation status, they have to wait
-    /// `EPOCH_LENGTH` before updating it again
-    uint256 public constant EPOCH_LENGTH = 7 * 24 * 60 * 60;
-
     /// @notice Number of epochs before the staking rewards get unlocked.
     /// Hardcoded as 52 epochs, which corresponds to a year.
     uint256 public constant REWARD_VESTING_PERIOD = 52;
@@ -95,7 +83,19 @@ contract StateUtils is IStateUtils {
     /// statuses are kept as a mapping to support multiple claims managers.
     mapping(address => bool) public claimsManagerStatus;
 
-    /// @notice Epochs are indexed as `block.timestamp / EPOCH_LENGTH`.
+    /// @notice Length of the epoch in which the staking reward is paid out
+    /// once. It is hardcoded as 7 days in seconds.
+    /// @dev In addition to regulating reward payments, this variable is used
+    /// for four additional things:
+    /// (1) Once an unstaking scheduling matures, the user has `epochLength`
+    /// to execute the unstaking before it expires
+    /// (2) After a user makes a proposal, they cannot make a second one
+    /// before `epochLength` has passed
+    /// (3) After a user updates their delegation status, they have to wait
+    /// `epochLength` before updating it again
+    uint256 immutable public epochLength;
+
+    /// @notice Epochs are indexed as `block.timestamp / epochLength`.
     /// `genesisEpoch` is the index of the epoch in which the pool is deployed.
     uint256 public immutable genesisEpoch;
 
@@ -143,7 +143,7 @@ contract StateUtils is IStateUtils {
     /// @dev This parameter is governable by the DAO, and the DAO is expected
     /// to set this to a value that is large enough to allow insurance claims
     /// to be resolved.
-    uint256 public unstakeWaitPeriod = EPOCH_LENGTH;
+    uint256 public unstakeWaitPeriod;
 
     /// @notice Minimum voting power the users must have to be able to make
     /// proposals (in percentages)
@@ -199,9 +199,12 @@ contract StateUtils is IStateUtils {
     }
 
     /// @param api3TokenAddress API3 token contract address
+    /// @param timelockManagerAddress Timelock manager contract address
+    /// @param _epochLength Epoch length in seconds
     constructor(
         address api3TokenAddress,
-        address timelockManagerAddress
+        address timelockManagerAddress,
+        uint256 _epochLength
         )
     {
         require(
@@ -212,6 +215,11 @@ contract StateUtils is IStateUtils {
             timelockManagerAddress != address(0),
             "Pool: Invalid TimelockManager"
             );
+        require(
+            _epochLength != 0,
+            "Pool: Invalid epoch length"
+            );
+        epochLength = _epochLength;
         deployer = msg.sender;
         api3Token = IApi3Token(api3TokenAddress);
         timelockManager = timelockManagerAddress;
@@ -220,9 +228,11 @@ contract StateUtils is IStateUtils {
         totalStake = 1;
         // Set the current epoch as the genesis epoch and skip its reward
         // payment
-        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
+        uint256 currentEpoch = block.timestamp / _epochLength;
         genesisEpoch = currentEpoch;
         epochIndexOfLastRewardPayment = currentEpoch;
+        // Set the unstake wait period as _epochLength by default
+        unstakeWaitPeriod = _epochLength;
     }
 
     /// @notice Called after deployment to set the addresses of the DAO apps
@@ -355,7 +365,7 @@ contract StateUtils is IStateUtils {
     /// @dev This may want to be increased to provide more time for insurance
     /// claims to be resolved.
     /// Even when the insurance functionality is not implemented, the minimum
-    /// valid value is `EPOCH_LENGTH` to prevent users from unstaking,
+    /// valid value is `epochLength` to prevent users from unstaking,
     /// withdrawing and staking with another address to work around the
     /// proposal spam protection.
     /// Only the primary Agent can do this because it is a critical operation.
@@ -366,7 +376,7 @@ contract StateUtils is IStateUtils {
         onlyAgentAppPrimary()
     {
         require(
-            _unstakeWaitPeriod >= EPOCH_LENGTH,
+            _unstakeWaitPeriod >= epochLength,
             "Pool: Period shorter than epoch"
             );
         uint256 oldUnstakeWaitPeriod = unstakeWaitPeriod;
@@ -440,7 +450,7 @@ contract StateUtils is IStateUtils {
         override
         returns (bool)
     {
-        return block.timestamp / EPOCH_LENGTH == genesisEpoch;
+        return block.timestamp / epochLength == genesisEpoch;
     }
 
     /// @notice Called internally to update the total shares history

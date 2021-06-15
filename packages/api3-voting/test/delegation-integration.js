@@ -22,6 +22,7 @@ const createdVoteId = (receipt) =>
 
 const MOCK_TIMELOCKMANAGER_ADDRESS =
   "0x0000000000000000000000000000000000000001";
+const epochLength = Number(time.duration.weeks(1));
 
 contract(
   "API3 Voting App delegation tests",
@@ -45,10 +46,10 @@ contract(
       );
 
       votingBase = await Voting.new();
-      pool = await Api3Pool.new(token.address, MOCK_TIMELOCKMANAGER_ADDRESS);
+      pool = await Api3Pool.new(token.address, MOCK_TIMELOCKMANAGER_ADDRESS, epochLength);
       // Wait for the Genesis epoch to pass
       const latest = Number(await time.latest());
-      await time.increaseTo(latest + Number(time.duration.weeks(1)) + 1);
+      await time.increaseTo(latest + epochLength + 1);
 
       // ROLES are below
       CREATE_VOTES_ROLE = await votingBase.CREATE_VOTES_ROLE();
@@ -159,7 +160,7 @@ contract(
 
       it("undo delegate", async () => {
         const latest = Number(await time.latest());
-        await time.increaseTo(latest + Number(time.duration.weeks(1)) + 1);
+        await time.increaseTo(latest + epochLength + 1);
         await pool.undelegateVotingPower({ from: voter1 });
         const voteId = createdVoteId(
           await voting.newVote(EMPTY_CALLS_SCRIPT, "metadata", { from: voter3 })
@@ -171,7 +172,7 @@ contract(
 
       it("delegate delegated", async () => {
         let latest = Number(await time.latest());
-        await time.increaseTo(latest + Number(time.duration.weeks(1)) + 1);
+        await time.increaseTo(latest + epochLength + 1);
         await pool.delegateVotingPower(voter2, { from: voter1 });
         await pool.delegateVotingPower(voter3, { from: voter2 });
         const voteId = createdVoteId(
@@ -183,14 +184,14 @@ contract(
 
       it("delegate delegated in a cycle", async () => {
         let latest = Number(await time.latest());
-        await time.increaseTo(latest + Number(time.duration.weeks(1)) + 1);
+        await time.increaseTo(latest + epochLength + 1);
         await pool.undelegateVotingPower({ from: voter2 });
         await expectRevert(
           pool.delegateVotingPower(voter2, { from: voter1 }),
           "Pool: Already delegated"
         );
         latest = Number(await time.latest());
-        await time.increaseTo(latest + Number(time.duration.weeks(1)) + 1);
+        await time.increaseTo(latest + epochLength + 1);
         await expectRevert(
           pool.delegateVotingPower(voter1, { from: voter2 }),
           "Pool: Delegate is delegating"

@@ -2,7 +2,7 @@ const { expect } = require("chai");
 
 let roles;
 let api3Token, api3Pool;
-let EPOCH_LENGTH;
+const epochLength = 7 * 24 * 60 * 60;
 const HUNDRED_PERCENT = ethers.BigNumber.from(`1${"0".repeat(18)}`);
 const ONE_YEAR_IN_SECONDS = ethers.BigNumber.from(52 * 7 * 24 * 60 * 60);
 
@@ -34,9 +34,9 @@ beforeEach(async () => {
   );
   api3Pool = await api3PoolFactory.deploy(
     api3Token.address,
-    roles.mockTimelockManager.address
+    roles.mockTimelockManager.address,
+    epochLength
   );
-  EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
 });
 
 describe("mintReward", function () {
@@ -73,7 +73,7 @@ describe("mintReward", function () {
             for (let ind = 0; ind < 50; ind++) {
               nextEpoch = nextEpoch.add(ethers.BigNumber.from(1));
               await ethers.provider.send("evm_setNextBlockTimestamp", [
-                nextEpoch.mul(EPOCH_LENGTH).toNumber(),
+                nextEpoch.mul(epochLength).toNumber(),
               ]);
               // Pay reward
               const totalStake = await api3Pool.totalStake();
@@ -85,7 +85,7 @@ describe("mintReward", function () {
               }
               const rewardAmount = totalStake
                 .mul(currentApr)
-                .mul(EPOCH_LENGTH)
+                .mul(epochLength)
                 .div(ONE_YEAR_IN_SECONDS)
                 .div(HUNDRED_PERCENT);
               await expect(api3Pool.connect(roles.randomPerson).mintReward())
@@ -136,7 +136,7 @@ describe("mintReward", function () {
             for (let ind = 0; ind < 50; ind++) {
               nextEpoch = nextEpoch.add(ethers.BigNumber.from(1));
               await ethers.provider.send("evm_setNextBlockTimestamp", [
-                nextEpoch.mul(EPOCH_LENGTH).toNumber(),
+                nextEpoch.mul(epochLength).toNumber(),
               ]);
               // Pay reward
               const totalStake = await api3Pool.totalStake();
@@ -148,7 +148,7 @@ describe("mintReward", function () {
               }
               const rewardAmount = totalStake
                 .mul(currentApr)
-                .mul(EPOCH_LENGTH)
+                .mul(epochLength)
                 .div(ONE_YEAR_IN_SECONDS)
                 .div(HUNDRED_PERCENT);
               await expect(api3Pool.connect(roles.randomPerson).mintReward())
@@ -194,7 +194,7 @@ describe("mintReward", function () {
         const genesisEpoch = await api3Pool.genesisEpoch();
         const genesisEpochPlusOne = genesisEpoch.add(ethers.BigNumber.from(1));
         await ethers.provider.send("evm_setNextBlockTimestamp", [
-          genesisEpochPlusOne.mul(EPOCH_LENGTH).toNumber(),
+          genesisEpochPlusOne.mul(epochLength).toNumber(),
         ]);
         // Pay reward
         const totalStake = await api3Pool.totalStake();
@@ -239,7 +239,7 @@ describe("mintReward", function () {
         const genesisEpoch = await api3Pool.genesisEpoch();
         const genesisEpochPlusFive = genesisEpoch.add(ethers.BigNumber.from(5));
         await ethers.provider.send("evm_setNextBlockTimestamp", [
-          genesisEpochPlusFive.mul(EPOCH_LENGTH).toNumber(),
+          genesisEpochPlusFive.mul(epochLength).toNumber(),
         ]);
         // Pay reward
         const totalStake = await api3Pool.totalStake();
@@ -248,7 +248,7 @@ describe("mintReward", function () {
         const newApr = currentApr.sub(aprUpdateStep);
         const rewardAmount = totalStake
           .mul(currentApr)
-          .mul(EPOCH_LENGTH)
+          .mul(epochLength)
           .div(ONE_YEAR_IN_SECONDS)
           .div(HUNDRED_PERCENT);
         await expect(api3Pool.connect(roles.randomPerson).mintReward())
@@ -289,7 +289,7 @@ describe("mintReward", function () {
         const genesisEpoch = await api3Pool.genesisEpoch();
         const genesisEpochPlusFive = genesisEpoch.add(ethers.BigNumber.from(5));
         await ethers.provider.send("evm_setNextBlockTimestamp", [
-          genesisEpochPlusFive.mul(EPOCH_LENGTH).toNumber(),
+          genesisEpochPlusFive.mul(epochLength).toNumber(),
         ]);
         // Pay reward
         const totalStake = await api3Pool.totalStake();
@@ -333,7 +333,7 @@ describe("mintReward", function () {
       const genesisEpoch = await api3Pool.genesisEpoch();
       const genesisEpochPlusOne = genesisEpoch.add(ethers.BigNumber.from(1));
       await ethers.provider.send("evm_setNextBlockTimestamp", [
-        genesisEpochPlusOne.mul(EPOCH_LENGTH).toNumber(),
+        genesisEpochPlusOne.mul(epochLength).toNumber(),
       ]);
       // Pay reward
       await api3Pool.connect(roles.randomPerson).mintReward();
