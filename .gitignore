@@ -15,6 +15,7 @@
 **/*.flat.sol
 **/coverage.json
 **/gas_report
+*.deployment.json
 .env
 .idea
 .DS_Store

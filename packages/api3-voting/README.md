@@ -4,7 +4,7 @@ This is a customized version of the [Aragon Voting app](https://github.com/arago
 It integrates to the API3 pool instead of a generic MiniMe token to determine voting power.
 It also implements the following additional features:
 
-- Does not allow users to create a new vote less than `epochLength` (defined in the API3 pool) apart (immutably set as 1 week)
+- Does not allow users to create a new vote less than `EPOCH_LENGTH` (defined in the API3 pool) apart (immutably set as 1 week)
 - Does not allow users that have less than `proposalVotingPowerThreshold` (defined in the API3 pool) to create a new vote (governable, initial value 0.1%)
 
 ## Instructions
@@ -26,16 +26,25 @@ npm run test:coverage
 npm run diff
 ```
 
+- See the deployed versions
+```sh
+aragon apm versions api3voting.open.aragonpm.eth --environment <ropsten/rinkeby/mainnet>
+```
+
 ## Deployment 
 
-To deploy updates of the contract on the rinkeby chain please call the following command in the terminal:
+*Note: Use Node v12, the Aragon tooling is not compatible with newer versions.*
 
-```shell script
-npx buidler publish minor --network rinkeby
+- Install IPFS, initialize it and start the daemon
+```sh
+ipfs init
+ipfs daemon
 ```
-To change the deployment address, please
-modify it in the `buidler.config.js` rinkeby config
 
+- Publish updates
+```
+npx buidler publish major --network <ropsten/rinkeby/mainnet>
+```
 
-In case of deployment on mainnet additional configuration needs to be done, 
-the address will be needed in the `buidler.conf.js`.
+See the [Aragon docs](https://hack.aragon.org/docs/guides-publish) for more information.
+Modify `buidler.config.js` to update the deployer account, provider, etc.
