@@ -288,9 +288,7 @@ describe("undelegateVotingPower", function () {
             .connect(roles.user1)
             .delegateVotingPower(roles.user2.address);
           // Fast forward time
-          await ethers.provider.send("evm_increaseTime", [
-            epochLength + 1,
-          ]);
+          await ethers.provider.send("evm_increaseTime", [epochLength + 1]);
           // Have user 1 undelegate
           await expect(api3Pool.connect(roles.user1).undelegateVotingPower())
             .to.emit(api3Pool, "Undelegated")

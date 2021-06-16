@@ -46,7 +46,11 @@ contract(
       );
 
       votingBase = await Voting.new();
-      pool = await Api3Pool.new(token.address, MOCK_TIMELOCKMANAGER_ADDRESS, epochLength);
+      pool = await Api3Pool.new(
+        token.address,
+        MOCK_TIMELOCKMANAGER_ADDRESS,
+        epochLength
+      );
       // Wait for the Genesis epoch to pass
       const latest = Number(await time.latest());
       await time.increaseTo(latest + epochLength + 1);

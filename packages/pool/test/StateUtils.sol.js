@@ -67,7 +67,7 @@ describe("constructor", function () {
           expect(
             await api3Pool.claimsManagerStatus(roles.randomPerson.address)
           ).to.equal(false);
-  
+
           // Verify the default DAO parameters
           expect(await api3Pool.stakeTarget()).to.equal(
             ethers.BigNumber.from(`50${"0".repeat(16)}`)
@@ -91,21 +91,23 @@ describe("constructor", function () {
           expect(await api3Pool.currentApr()).to.equal(
             (await api3Pool.maxApr()).add(await api3Pool.minApr()).div(2)
           );
-  
+
           // Token address set correctly
           expect(await api3Pool.api3Token()).to.equal(api3Token.address);
           // Initialize share price at 1
           expect(await api3Pool.totalVotingPower()).to.equal(
             ethers.BigNumber.from(1)
           );
-          expect(await api3Pool.totalStake()).to.equal(ethers.BigNumber.from(1));
+          expect(await api3Pool.totalStake()).to.equal(
+            ethers.BigNumber.from(1)
+          );
           // Genesis epoch is the current epoch
           const currentBlock = await ethers.provider.getBlock(
             await ethers.provider.getBlockNumber()
           );
-          const currentEpoch = ethers.BigNumber.from(currentBlock.timestamp).div(
-            await api3Pool.epochLength()
-          );
+          const currentEpoch = ethers.BigNumber.from(
+            currentBlock.timestamp
+          ).div(await api3Pool.epochLength());
           expect(await api3Pool.genesisEpoch()).to.equal(currentEpoch);
           // Skip the reward payment of the genesis epoch
           expect(await api3Pool.epochIndexOfLastRewardPayment()).to.equal(
@@ -115,18 +117,18 @@ describe("constructor", function () {
       });
       context("_epochLength is invalid", function () {
         it("reverts", async function () {
-        const api3PoolFactory = await ethers.getContractFactory(
-          "Api3Pool",
-          roles.deployer
-        );
-        await expect(
-          api3PoolFactory.deploy(
-            api3Token.address,
-            roles.mockTimelockManager.address,
-            0
-          )
-        ).to.be.revertedWith("Pool: Invalid epoch length");
-          });
+          const api3PoolFactory = await ethers.getContractFactory(
+            "Api3Pool",
+            roles.deployer
+          );
+          await expect(
+            api3PoolFactory.deploy(
+              api3Token.address,
+              roles.mockTimelockManager.address,
+              0
+            )
+          ).to.be.revertedWith("Pool: Invalid epoch length");
+        });
       });
     });
     context("TimelockManager is invalid", function () {

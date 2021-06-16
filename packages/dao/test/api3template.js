@@ -34,7 +34,9 @@ contract("Api3Template", ([, deployer, tokenAddress, authorized]) => {
 
   before("create bare entity", async () => {
     // Set TimelockManager as deployer
-    api3Pool = await Api3Pool.new(tokenAddress, deployer, epochLength, { from: deployer });
+    api3Pool = await Api3Pool.new(tokenAddress, deployer, epochLength, {
+      from: deployer,
+    });
     receipt1 = await api3Template.newInstance(
       "api3template_test",
       api3Pool.address,

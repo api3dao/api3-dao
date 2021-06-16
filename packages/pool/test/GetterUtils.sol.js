@@ -196,23 +196,17 @@ describe("getDelegateAt", function () {
           .delegateVotingPower(roles.user2.address);
         const firstBlockNumber = await ethers.provider.getBlockNumber();
         // Fast forward time
-        await ethers.provider.send("evm_increaseTime", [
-          epochLength + 1,
-        ]);
+        await ethers.provider.send("evm_increaseTime", [epochLength + 1]);
         await api3Pool
           .connect(roles.user1)
           .delegateVotingPower(roles.randomPerson.address);
         // Fast forward time
-        await ethers.provider.send("evm_increaseTime", [
-          epochLength + 1,
-        ]);
+        await ethers.provider.send("evm_increaseTime", [epochLength + 1]);
         await api3Pool
           .connect(roles.user1)
           .delegateVotingPower(roles.user2.address);
         // Fast forward time
-        await ethers.provider.send("evm_increaseTime", [
-          epochLength + 1,
-        ]);
+        await ethers.provider.send("evm_increaseTime", [epochLength + 1]);
         // Check delegates
         expect(await api3Pool.userDelegateAt(roles.user1.address, 0)).to.equal(
           ethers.constants.AddressZero
@@ -250,15 +244,11 @@ describe("getDelegateAt", function () {
         await api3Pool
           .connect(roles.user1)
           .delegateVotingPower(roles.user2.address);
-        await ethers.provider.send("evm_increaseTime", [
-          epochLength + 1,
-        ]);
+        await ethers.provider.send("evm_increaseTime", [epochLength + 1]);
         await api3Pool
           .connect(roles.user1)
           .delegateVotingPower(roles.randomPerson.address);
-        await ethers.provider.send("evm_increaseTime", [
-          epochLength + 1,
-        ]);
+        await ethers.provider.send("evm_increaseTime", [epochLength + 1]);
       }
       expect(await api3Pool.userDelegateAt(roles.user1.address, 0)).to.equal(
         ethers.constants.AddressZero
