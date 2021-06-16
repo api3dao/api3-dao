@@ -180,7 +180,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         {
             return 0;
         }
-        uint256 indUserShares = _userShares.length - 1;
+        uint256 indUserShares = _userShares.length;
         for (
                 uint256 indEpoch = currentEpoch;
                 indEpoch >= oldestLockedEpoch;
@@ -190,9 +190,9 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
             Reward storage lockedReward = epochIndexToReward[indEpoch];
             if (lockedReward.atBlock != 0)
             {
-                for (; indUserShares >= 0; indUserShares--)
+                for (; indUserShares > 0; indUserShares--)
                 {
-                    Checkpoint storage userShare = _userShares[indUserShares];
+                    Checkpoint storage userShare = _userShares[indUserShares - 1];
                     if (userShare.fromBlock <= lockedReward.atBlock)
                     {
                         locked += lockedReward.amount * userShare.value / lockedReward.totalSharesThen;
