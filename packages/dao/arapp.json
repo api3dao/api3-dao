@@ -12,13 +12,13 @@
       "wsRPC": "wss://mainnet.eth.aragon.network/ws"
     },
     "rinkeby": {
-      "appName": "api3-template-129mof.open.aragonpm.eth",
+      "appName": "api3-template-rqjrt5.open.aragonpm.eth",
       "network": "rinkeby",
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
     },
     "ropsten": {
-      "appName": "api3-template-lz8q7n.open.aragonpm.eth",
+      "appName": "api3-template-wagw8.open.aragonpm.eth",
       "network": "ropsten",
       "registry": "0x6afe2cacee211ea9179992f89dc61ff25c61e923",
       "wsRPC": "wss://ropsten.eth.aragon.network/ws"
