@@ -230,61 +230,113 @@ describe("precalculateUserLocked", function () {
 });
 
 describe("withdrawPrecalculated", function () {
-  context("Locked amount is precalculated", function () {
-    it("withdraws", async function () {
-      // Authorize pool contract to mint tokens
-      await api3Token
-        .connect(roles.deployer)
-        .updateMinterStatus(api3Pool.address, true);
-      // Have the user stake
-      const user1Stake = ethers.utils.parseEther("60" + "000" + "000");
-      await api3Token
-        .connect(roles.deployer)
-        .transfer(roles.user1.address, user1Stake);
-      await api3Token
-        .connect(roles.user1)
-        .approve(api3Pool.address, user1Stake);
-      await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
-      // Fast forward 100 epochs to have some rewards paid out and unlocked
-      const noEpochsToFastForward = 100;
-      const genesisEpoch = await api3Pool.genesisEpoch();
-      for (let i = 0; i < noEpochsToFastForward; i++) {
-        const currentEpoch = genesisEpoch.add(ethers.BigNumber.from(i + 1));
-        await ethers.provider.send("evm_setNextBlockTimestamp", [
-          currentEpoch.mul(EPOCH_LENGTH).toNumber(),
-        ]);
-        await api3Pool.payReward();
-      }
-      // Schedule unstake and execute
-      await api3Pool
-        .connect(roles.user1)
-        .scheduleUnstake(await api3Pool.userStake(roles.user1.address));
-      await ethers.provider.send("evm_setNextBlockTimestamp", [
-        genesisEpoch.add(102).mul(EPOCH_LENGTH).toNumber(),
-      ]);
-      await api3Pool.connect(roles.user1).unstake();
-      await api3Pool
-        .connect(roles.user1)
-        .precalculateUserLocked(
-          roles.user1.address,
-          ethers.BigNumber.from(100)
-        );
-      await expect(
-        api3Pool
+  context("Locked amount is calculated this epoch", function () {
+    context("Calculation is complete", function () {
+      it("withdraws", async function () {
+        // Authorize pool contract to mint tokens
+        await api3Token
+          .connect(roles.deployer)
+          .updateMinterStatus(api3Pool.address, true);
+        // Have the user stake
+        const user1Stake = ethers.utils.parseEther("60" + "000" + "000");
+        await api3Token
+          .connect(roles.deployer)
+          .transfer(roles.user1.address, user1Stake);
+        await api3Token
           .connect(roles.user1)
-          .withdrawPrecalculated(roles.user1.address, user1Stake)
-      )
-        .to.emit(api3Pool, "Withdrawn")
-        .withArgs(roles.user1.address, roles.user1.address, user1Stake);
+          .approve(api3Pool.address, user1Stake);
+        await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+        // Fast forward 100 epochs to have some rewards paid out and unlocked
+        const noEpochsToFastForward = 100;
+        const genesisEpoch = await api3Pool.genesisEpoch();
+        for (let i = 0; i < noEpochsToFastForward; i++) {
+          const currentEpoch = genesisEpoch.add(ethers.BigNumber.from(i + 1));
+          await ethers.provider.send("evm_setNextBlockTimestamp", [
+            currentEpoch.mul(EPOCH_LENGTH).toNumber(),
+          ]);
+          await api3Pool.payReward();
+        }
+        // Schedule unstake and execute
+        await api3Pool
+          .connect(roles.user1)
+          .scheduleUnstake(await api3Pool.userShares(roles.user1.address));
+        await ethers.provider.send("evm_setNextBlockTimestamp", [
+          genesisEpoch.add(102).mul(EPOCH_LENGTH).toNumber(),
+        ]);
+        await api3Pool.connect(roles.user1).unstake();
+        await api3Pool
+          .connect(roles.user1)
+          .precalculateUserLocked(
+            roles.user1.address,
+            ethers.BigNumber.from(30)
+          );
+        await api3Pool
+          .connect(roles.user1)
+          .precalculateUserLocked(
+            roles.user1.address,
+            ethers.BigNumber.from(30)
+          );
+        await expect(
+          api3Pool.connect(roles.user1).withdrawPrecalculated(roles.user1.address, user1Stake)
+        )
+          .to.emit(api3Pool, "Withdrawn")
+          .withArgs(roles.user1.address, roles.user1.address, user1Stake);
+      });
+    });
+    context("Calculation is not complete", function () {
+      it("reverts", async function () {
+        // Authorize pool contract to mint tokens
+        await api3Token
+          .connect(roles.deployer)
+          .updateMinterStatus(api3Pool.address, true);
+        // Have the user stake
+        const user1Stake = ethers.utils.parseEther("60" + "000" + "000");
+        await api3Token
+          .connect(roles.deployer)
+          .transfer(roles.user1.address, user1Stake);
+        await api3Token
+          .connect(roles.user1)
+          .approve(api3Pool.address, user1Stake);
+        await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+        // Fast forward 100 epochs to have some rewards paid out and unlocked
+        const noEpochsToFastForward = 100;
+        const genesisEpoch = await api3Pool.genesisEpoch();
+        for (let i = 0; i < noEpochsToFastForward; i++) {
+          const currentEpoch = genesisEpoch.add(ethers.BigNumber.from(i + 1));
+          await ethers.provider.send("evm_setNextBlockTimestamp", [
+            currentEpoch.mul(EPOCH_LENGTH).toNumber(),
+          ]);
+          await api3Pool.payReward();
+        }
+        // Schedule unstake and execute
+        await api3Pool
+          .connect(roles.user1)
+          .scheduleUnstake(await api3Pool.userShares(roles.user1.address));
+        await ethers.provider.send("evm_setNextBlockTimestamp", [
+          genesisEpoch.add(102).mul(EPOCH_LENGTH).toNumber(),
+        ]);
+        await api3Pool.connect(roles.user1).unstake();
+        await api3Pool
+          .connect(roles.user1)
+          .precalculateUserLocked(
+            roles.user1.address,
+            ethers.BigNumber.from(30)
+          );
+        await expect(
+          api3Pool
+            .connect(roles.user1)
+            .withdrawPrecalculated(roles.user1.address, ethers.BigNumber.from(1))
+        ).to.be.revertedWith("Calculation not complete");
+      });
     });
   });
-  context("Locked amount is not precalculated", function () {
+  context("Locked amount is not calculated this epoch", function () {
     it("reverts", async function () {
       await expect(
         api3Pool
           .connect(roles.user1)
           .withdrawPrecalculated(roles.user1.address, ethers.BigNumber.from(1))
-      ).to.be.revertedWith("Locked amount not precalculated");
+      ).to.be.revertedWith("Calculation not up to date");
     });
   });
 });

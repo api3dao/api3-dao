@@ -126,7 +126,17 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         payReward();
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
         LockedCalculationState storage state = userToLockedCalculationState[msg.sender];
-        require(state.initialIndEpoch == currentEpoch, "Locked amount not precalculated");
+        require(
+            state.initialIndEpoch == currentEpoch,
+            "Calculation not up to date"
+            );
+        uint256 oldestLockedEpoch = currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
+            ? currentEpoch - REWARD_VESTING_PERIOD + 1
+            : genesisEpoch + 1;
+        require(
+            state.nextIndEpoch < oldestLockedEpoch,
+            "Calculation not complete"
+            );
         withdraw(destination, amount, state.locked);
     }
 
