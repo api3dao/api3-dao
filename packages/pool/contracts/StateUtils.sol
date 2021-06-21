@@ -56,7 +56,7 @@ contract StateUtils is IStateUtils {
     /// `EPOCH_LENGTH` of 1 week.
     uint256 public constant REWARD_VESTING_PERIOD = 52;
 
-    // All percentage values are represented by multiplying by 1e6
+    // All percentage values are represented as 1e18 = 100%
     uint256 internal constant ONE_PERCENT = 1e18 / 100;
     uint256 internal constant HUNDRED_PERCENT = 1e18;
 
@@ -76,14 +76,14 @@ contract StateUtils is IStateUtils {
 
     /// @notice Address of the primary Agent app of the API3 DAO
     /// @dev Primary Agent can be operated through the primary Api3Voting app.
-    /// The primary Api3Voting app requires a higher quorum, and the primary
-    /// Agent is more privileged.
+    /// The primary Api3Voting app requires a higher quorum by default, and the
+    /// primary Agent is more privileged.
     address public agentAppPrimary;
 
     /// @notice Address of the secondary Agent app of the API3 DAO
     /// @dev Secondary Agent can be operated through the secondary Api3Voting
-    /// app. The secondary Api3Voting app requires a lower quorum, and the primary
-    /// Agent is less privileged.
+    /// app. The secondary Api3Voting app requires a lower quorum by default,
+    /// and the primary Agent is less privileged.
     address public agentAppSecondary;
 
     /// @notice Address of the primary Api3Voting app of the API3 DAO
@@ -102,7 +102,7 @@ contract StateUtils is IStateUtils {
 
     /// @notice Records of rewards paid in each epoch
     /// @dev `.atBlock` of a past epoch's reward record being `0` means no
-    /// reward was paid for that block
+    /// reward was paid for that epoch
     mapping(uint256 => Reward) public epochIndexToReward;
 
     /// @notice Epoch index of the most recent reward
@@ -139,7 +139,8 @@ contract StateUtils is IStateUtils {
     /// `unstakeWaitPeriod` before being able to unstake. This is to prevent
     /// the stakers from frontrunning insurance claims by unstaking to evade
     /// them, or repeatedly unstake/stake to work around the proposal spam
-    /// protection.
+    /// protection. The tokens awaiting to be unstaked during this period do
+    /// not grant voting power or rewards.
     /// @dev This parameter is governable by the DAO, and the DAO is expected
     /// to set this to a value that is large enough to allow insurance claims
     /// to be resolved.
@@ -157,6 +158,8 @@ contract StateUtils is IStateUtils {
     /// the pool, effectively distributing them to the stakers.
     uint256 public apr = (maxApr + minApr) / 2;
 
+    // Kept to prevent third parties from frontrunning the initialization
+    // `setDaoApps()` call and grief the deployment
     address private deployer;
 
     // We keep checkpoints for two most recent blocks at which totalShares has
@@ -225,11 +228,11 @@ contract StateUtils is IStateUtils {
 
     /// @notice Called after deployment to set the addresses of the DAO apps
     /// @dev This can also be called later on by the primary Agent to update
-    /// all app addresses as a means of upgrade
+    /// all app addresses as a means of an upgrade
     /// @param _agentAppPrimary Address of the primary Agent
     /// @param _agentAppSecondary Address of the secondary Agent
-    /// @param _votingAppPrimary Address of the primary Api3Voting
-    /// @param _votingAppSecondary Address of the secondary Api3Voting
+    /// @param _votingAppPrimary Address of the primary Api3Voting app
+    /// @param _votingAppSecondary Address of the secondary Api3Voting app
     function setDaoApps(
         address _agentAppPrimary,
         address _agentAppSecondary,
@@ -264,8 +267,8 @@ contract StateUtils is IStateUtils {
             );
     }
 
-    /// @notice Called by the DAO Agent to set the authorization status of a
-    /// claims manager contract
+    /// @notice Called by the primary DAO Agent to set the authorization status
+    /// of a claims manager contract
     /// @dev The claims manager is a trusted contract that is allowed to
     /// withdraw as many tokens as it wants from the pool to pay out insurance
     /// claims.
@@ -393,7 +396,8 @@ contract StateUtils is IStateUtils {
 
     /// @notice Called by the DAO Agent to set the voting power threshold for
     /// proposals
-    /// Only the primary Agent can do this because it is a critical operation.
+    /// @dev Only the primary Agent can do this because it is a critical
+    /// operation.
     /// @param _proposalVotingPowerThreshold Voting power threshold for
     /// proposals
     function setProposalVotingPowerThreshold(uint256 _proposalVotingPowerThreshold)

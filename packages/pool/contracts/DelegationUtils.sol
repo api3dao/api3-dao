@@ -110,7 +110,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
 
     /// @notice Called internally when the user shares are updated to update
     /// the delegated voting power
-    /// @dev User shares only get updated while staking or unstaking
+    /// @dev User shares only get updated while staking or scheduling unstaking
     /// @param shares Amount of shares that will be added/removed
     /// @param delta Whether the shares will be added/removed (add for `true`,
     /// and vice versa)

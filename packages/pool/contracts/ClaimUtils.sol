@@ -21,7 +21,7 @@ abstract contract ClaimUtils is StakeUtils, IClaimUtils {
     /// claims. Any kind of limiting logic (e.g., maximum amount of tokens that
     /// can be withdrawn) is implemented at its end and is out of the scope of
     /// this contract.
-    /// This will revert if the pool does not have enough funds.
+    /// This will revert if the pool does not have enough staked funds.
     /// @param recipient Recipient of the claim
     /// @param amount Amount of tokens that will be paid out
     function payOutClaim(

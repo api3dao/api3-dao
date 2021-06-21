@@ -4,7 +4,7 @@ pragma solidity 0.8.4;
 import "./GetterUtils.sol";
 import "./interfaces/IRewardUtils.sol";
 
-/// @title Contract that implements reward payments and locks
+/// @title Contract that implements reward payments
 abstract contract RewardUtils is GetterUtils, IRewardUtils {
     /// @notice Called to mint the staking reward
     /// @dev Skips past epochs for which rewards have not been paid for.

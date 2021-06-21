@@ -10,8 +10,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
     /// @dev The user should approve the pool to spend at least `amount` tokens
     /// before calling this.
     /// The method is named `depositRegular()` to prevent potential confusion
-    /// (for example it is difficult to differentiate overloaded functions in
-    /// JS). See `deposit()` for more context.
+    /// See `deposit()` for more context.
     /// @param amount Amount to be deposited
     function depositRegular(uint256 amount)
         public
@@ -48,7 +47,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
     /// frequently (50+/week) in the last `REWARD_VESTING_PERIOD`, the
     /// `userLocked()` call gas cost may exceed the block gas limit. In that
     /// case, the user may call this method multiple times to have their locked
-    /// tokens calculated.
+    /// tokens calculated and use `withdrawPrecalculated()` to withdraw.
     /// @param userAddress User address
     /// @param noEpochsPerIteration Number of epochs per iteration
     /// @return finished Calculation has finished in this call
