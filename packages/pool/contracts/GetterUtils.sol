@@ -172,9 +172,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     {
         Checkpoint[] storage _userShares = users[userAddress].shares;
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
-        uint256 oldestLockedEpoch = currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
-            ? currentEpoch - REWARD_VESTING_PERIOD + 1
-            : genesisEpoch + 1;
+        uint256 oldestLockedEpoch = getOldestLockedEpoch();
 
         if (_userShares.length == 0)
         {
@@ -339,5 +337,19 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
             }
         }
         return checkpoints[min]._address;
+    }
+
+    /// @notice Called internally to get the index of the oldest epoch whose
+    /// reward should be locked in the current epoch
+    /// @return oldestLockedEpoch Index of the oldest epoch with locked rewards
+    function getOldestLockedEpoch()
+        internal
+        view
+        returns (uint256 oldestLockedEpoch)
+    {
+        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
+        oldestLockedEpoch = currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
+            ? currentEpoch - REWARD_VESTING_PERIOD + 1
+            : genesisEpoch + 1;
     }
 }
