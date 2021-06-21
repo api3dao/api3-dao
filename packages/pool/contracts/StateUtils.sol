@@ -352,7 +352,8 @@ contract StateUtils is IStateUtils {
             );
     }
 
-    /// @notice Called by the DAO Agent to set the unstake waiting period
+    /// @notice Called by the primary DAO Agent to set the unstake waiting
+    /// period
     /// @dev This may want to be increased to provide more time for insurance
     /// claims to be resolved.
     /// Even when the insurance functionality is not implemented, the minimum
@@ -378,13 +379,14 @@ contract StateUtils is IStateUtils {
             );
     }
 
-    /// @notice Called by the DAO Agent to set the APR update steps
-    /// @dev aprUpdateStep can be 0% or 100%+
+    /// @notice Called by the primary DAO Agent to set the APR update steps
+    /// @dev aprUpdateStep can be 0% or 100%+.
+    /// Only the primary Agent can do this because it is a critical operation.
     /// @param _aprUpdateStep APR update steps
     function setAprUpdateStep(uint256 _aprUpdateStep)
         external
         override
-        onlyAgentApp()
+        onlyAgentAppPrimary()
     {
         uint256 oldAprUpdateStep = aprUpdateStep;
         aprUpdateStep = _aprUpdateStep;
@@ -394,8 +396,8 @@ contract StateUtils is IStateUtils {
             );
     }
 
-    /// @notice Called by the DAO Agent to set the voting power threshold for
-    /// proposals
+    /// @notice Called by the primary DAO Agent to set the voting power
+    /// threshold for proposals
     /// @dev Only the primary Agent can do this because it is a critical
     /// operation.
     /// @param _proposalVotingPowerThreshold Voting power threshold for

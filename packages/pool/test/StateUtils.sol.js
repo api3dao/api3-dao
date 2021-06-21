@@ -622,7 +622,7 @@ describe("setUnstakeWaitPeriod", function () {
 });
 
 describe("setAprUpdateStep", function () {
-  context("Caller is DAO Agent", function () {
+  context("Caller is primary DAO Agent", function () {
     it("sets APR update step", async function () {
       await api3Pool
         .connect(roles.deployer)
@@ -644,14 +644,19 @@ describe("setAprUpdateStep", function () {
       expect(await api3Pool.aprUpdateStep()).to.equal(newAprUpdateStep);
     });
   });
-  context("Caller is not DAO Agent", function () {
+  context("Caller is not primary DAO Agent", function () {
     it("reverts", async function () {
       const newAprUpdateCoefficient = ethers.BigNumber.from(123);
       await expect(
         api3Pool
+          .connect(roles.agentAppSecondary)
+          .setAprUpdateStep(newAprUpdateCoefficient)
+      ).to.be.revertedWith("Pool: Caller not primary agent");
+      await expect(
+        api3Pool
           .connect(roles.randomPerson)
           .setAprUpdateStep(newAprUpdateCoefficient)
-      ).to.be.revertedWith("Pool: Caller not agent");
+      ).to.be.revertedWith("Pool: Caller not primary agent");
     });
   });
 });
