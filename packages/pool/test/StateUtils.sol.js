@@ -94,9 +94,7 @@ describe("constructor", function () {
         // Token address set correctly
         expect(await api3Pool.api3Token()).to.equal(api3Token.address);
         // Initialize share price at 1
-        expect(await api3Pool.totalVotingPower()).to.equal(
-          ethers.BigNumber.from(1)
-        );
+        expect(await api3Pool.totalShares()).to.equal(ethers.BigNumber.from(1));
         expect(await api3Pool.totalStake()).to.equal(ethers.BigNumber.from(1));
         // Genesis epoch is the current epoch
         const currentBlock = await ethers.provider.getBlock(

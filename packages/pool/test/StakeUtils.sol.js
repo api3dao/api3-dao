@@ -355,7 +355,7 @@ describe("unstake", function () {
           const unstakeShares = user.unstakeShares;
           const actualUnstakeAmount = unstakeShares
             .mul(await api3Pool.totalStake())
-            .div(await api3Pool.totalVotingPower());
+            .div(await api3Pool.totalShares());
           await expect(
             api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
           )

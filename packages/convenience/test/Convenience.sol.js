@@ -176,9 +176,7 @@ describe("getUserStakingData", function () {
       await mockApi3Token.totalSupply()
     );
     expect(userStakingData.totalStake).to.equal(await api3Pool.totalStake());
-    expect(userStakingData.totalShares).to.equal(
-      await api3Pool.totalVotingPower()
-    );
+    expect(userStakingData.totalShares).to.equal(await api3Pool.totalShares());
     expect(userStakingData.stakeTarget).to.equal(await api3Pool.stakeTarget());
     expect(userStakingData.userApi3Balance).to.equal(
       await mockApi3Token.balanceOf(roles.user1.address)

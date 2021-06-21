@@ -17,12 +17,12 @@ interface IGetterUtils is IStateUtils {
         view
         returns (uint256);
 
-    function totalVotingPowerOneBlockAgo()
+    function totalSharesAt(uint256 _block)
         external
         view
         returns (uint256);
 
-    function totalVotingPower()
+    function totalShares()
         external
         view
         returns (uint256);

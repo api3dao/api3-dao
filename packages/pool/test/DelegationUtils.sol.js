@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 
 let roles;
-let api3Token, api3Pool, api3Voting;
+let api3Token, api3Pool;
 let EPOCH_LENGTH;
 
 beforeEach(async () => {
@@ -35,17 +35,12 @@ beforeEach(async () => {
     roles.mockTimelockManager.address
   );
   EPOCH_LENGTH = (await api3Pool.EPOCH_LENGTH()).toNumber();
-  const api3VotingFactory = await ethers.getContractFactory(
-    "MockApi3Voting",
-    roles.deployer
-  );
-  api3Voting = await api3VotingFactory.deploy(api3Pool.address);
   await api3Pool
     .connect(roles.deployer)
     .setDaoApps(
       roles.agentAppPrimary.address,
       roles.agentAppSecondary.address,
-      api3Voting.address,
+      roles.votingAppPrimary.address,
       roles.votingAppSecondary.address
     );
 });

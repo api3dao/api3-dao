@@ -40,28 +40,29 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         return userVotingPowerAt(userAddress, block.number);
     }
 
-    /// @notice Called to get the total voting power one block ago
-    /// @dev This method is meant to be used by the API3 DAO's Api3Voting apps
-    /// to get the total voting power at vote creation-time
-    /// @return Total voting power one block ago
-    function totalVotingPowerOneBlockAgo()
-        external
+    /// @notice Called to get the total pool shares at a specific block
+    /// @dev Total pool shares also corresponds to total voting power
+    /// @param _block Block number for which the query is being made for
+    /// @return Total pool shares at the block
+    function totalSharesAt(uint256 _block)
+        public
         view
         override
         returns (uint256)
     {
-        return totalSharesOneBlockAgo();
+        return getValueAt(poolShares, _block);
     }
 
-    /// @notice Called to get the current total voting power
-    /// @return Current total voting power
-    function totalVotingPower()
-        external
+    /// @notice Called to get the current total pool shares
+    /// @dev Total pool shares also corresponds to total voting power
+    /// @return Current total pool shares
+    function totalShares()
+        public
         view
         override
         returns (uint256)
     {
-        return totalShares();
+        return totalSharesAt(block.number);
     }
 
     /// @notice Called to get the pool shares of a user at a specific block

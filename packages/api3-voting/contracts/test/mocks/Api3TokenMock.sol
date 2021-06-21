@@ -45,12 +45,12 @@ contract Api3TokenMock is MiniMeToken {
         return mockProposalVotingPowerThreshold;
     }
 
-    function totalVotingPowerOneBlockAgo()
+    function totalSharesAt(uint256 _block)
         external
         view
         returns (uint256)
     {
-        return totalSupplyAt(block.number - 1);
+        return totalSupplyAt(_block);
     }
 
     function getMinterStatus(address minterAddress)

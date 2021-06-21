@@ -156,17 +156,14 @@ contract StateUtils is IStateUtils {
     uint256 public apr = (maxApr + minApr) / 2;
 
     /// @notice User records
-    mapping(address => User) internal users;
+    mapping(address => User) public users;
 
     // Kept to prevent third parties from frontrunning the initialization
     // `setDaoApps()` call and grief the deployment
     address private deployer;
 
-    // We keep checkpoints for two most recent blocks at which totalShares has
-    // been updated. Note that the indices do not indicate chronological
-    // ordering.
-    Checkpoint private totalSharesCheckpoint1;
-    Checkpoint private totalSharesCheckpoint2;
+    // Keeps the total number of shares of the pool
+    Checkpoint[] internal poolShares;
 
     // Keeps user states used in `withdrawPrecalculated()` calls
     mapping(address => LockedCalculation) internal userToLockedCalculation;
@@ -217,7 +214,10 @@ contract StateUtils is IStateUtils {
         api3Token = IApi3Token(api3TokenAddress);
         timelockManager = timelockManagerAddress;
         // Initialize the share price at 1
-        updateTotalShares(1);
+        poolShares.push(Checkpoint({
+            fromBlock: uint32(block.number),
+            value: 1
+            }));
         totalStake = 1;
         // Set the current epoch as the genesis epoch and skip its reward
         // payment
@@ -445,76 +445,5 @@ contract StateUtils is IStateUtils {
         returns (bool)
     {
         return block.timestamp / EPOCH_LENGTH == genesisEpoch;
-    }
-
-    /// @notice Called internally to update the total shares history
-    /// @dev `fromBlock0` and `fromBlock1` will be two different block numbers
-    /// when totalShares history was last updated. If one of these
-    /// `fromBlock`s match with `block.number`, we simply update the value
-    /// (because the history keeps the most recent value from that block). If
-    /// not, we can overwrite the older one, as we no longer need it.
-    /// @param newTotalShares Total shares value to insert into history
-    function updateTotalShares(uint224 newTotalShares)
-        internal
-    {
-        if (block.number == totalSharesCheckpoint1.fromBlock)
-        {
-            totalSharesCheckpoint1.value = newTotalShares;
-        }
-        else if (block.number == totalSharesCheckpoint2.fromBlock)
-        {
-            totalSharesCheckpoint2.value = newTotalShares;
-        }
-        else
-        {
-            if (totalSharesCheckpoint1.fromBlock < totalSharesCheckpoint2.fromBlock)
-            {
-                totalSharesCheckpoint1.fromBlock = uint32(block.number);
-                totalSharesCheckpoint1.value = newTotalShares;
-            }
-            else
-            {
-                totalSharesCheckpoint2.fromBlock = uint32(block.number);
-                totalSharesCheckpoint2.value = newTotalShares;
-            }
-        }
-    }
-
-    /// @notice Called internally to get the current total shares
-    /// @return Current total shares
-    function totalShares()
-        internal
-        view
-        returns (uint256)
-    {
-        if (totalSharesCheckpoint1.fromBlock < totalSharesCheckpoint2.fromBlock)
-        {
-            return totalSharesCheckpoint2.value;
-        }
-        else
-        {
-            return totalSharesCheckpoint1.value;
-        }
-    }
-
-    /// @notice Called internally to get the total shares one block ago
-    /// @return Total shares one block ago
-    function totalSharesOneBlockAgo()
-        internal
-        view
-        returns (uint256)
-    {
-        if (totalSharesCheckpoint2.fromBlock == block.number)
-        {
-            return totalSharesCheckpoint1.value;
-        }
-        else if (totalSharesCheckpoint1.fromBlock == block.number)
-        {
-            return totalSharesCheckpoint2.value;
-        }
-        else
-        {
-            return totalShares();
-        }
     }
 }

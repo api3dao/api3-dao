@@ -22,7 +22,7 @@ interface IApi3Pool {
         view
         returns (uint256);
 
-    function totalVotingPowerOneBlockAgo()
+    function totalSharesAt(uint256 _block)
         external
         view
         returns (uint256);

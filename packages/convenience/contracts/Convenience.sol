@@ -56,7 +56,7 @@ contract Convenience is Ownable  {
         apr = api3Pool.apr();
         api3Supply = api3Token.totalSupply();
         totalStake = api3Pool.totalStake();
-        totalShares = api3Pool.totalVotingPower();
+        totalShares = api3Pool.totalShares();
         stakeTarget = api3Pool.stakeTarget();
         userApi3Balance = api3Token.balanceOf(userAddress);
         userStaked = api3Pool.userStake(userAddress);

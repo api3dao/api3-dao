@@ -26,7 +26,10 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             fromBlock: uint32(block.number),
             value: uint224(userSharesNow + sharesToMint)
             }));
-        updateTotalShares(uint224(totalSharesNow + sharesToMint));
+        poolShares.push(Checkpoint({
+            fromBlock: uint32(block.number),
+            value: uint224(totalSharesNow + sharesToMint)
+            }));
         totalStake += amount;
         updateDelegatedVotingPower(sharesToMint, true);
         emit Staked(
@@ -126,7 +129,10 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             : totalStake - 1;
         user.unstaked += unstakeAmount;
 
-        updateTotalShares(uint224(totalShares - user.unstakeShares));
+        poolShares.push(Checkpoint({
+            fromBlock: uint32(block.number),
+            value: uint224(totalShares - user.unstakeShares)
+            }));
         totalStake -= unstakeAmount;
 
         user.unstakeShares = 0;

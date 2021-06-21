@@ -270,7 +270,7 @@ contract Api3Voting is IForwarder, AragonApp {
 
         uint64 snapshotBlock = getBlockNumber64() - 1; // avoid double voting in this very block
 
-        uint256 votingPower = api3Pool.totalVotingPowerOneBlockAgo();
+        uint256 votingPower = api3Pool.totalSharesAt(snapshotBlock);
         require(votingPower > 0, ERROR_NO_VOTING_POWER);
         uint256 proposalMakerVotingPower = api3Pool.userVotingPowerAt(msg.sender, snapshotBlock);
         require(
