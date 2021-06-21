@@ -17,11 +17,11 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
         // This will be skipped in most cases because someone else will have
         // triggered the payment for this epoch
-        if (epochIndexOfLastRewardPayment < currentEpoch)
+        if (epochIndexOfLastReward < currentEpoch)
         {
             if (api3Token.getMinterStatus(address(this)))
             {
-                uint256 rewardAmount = totalStake * currentApr * EPOCH_LENGTH / ONE_YEAR_IN_SECONDS / HUNDRED_PERCENT;
+                uint256 rewardAmount = totalStake * apr * EPOCH_LENGTH / ONE_YEAR_IN_SECONDS / HUNDRED_PERCENT;
                 epochIndexToReward[currentEpoch] = Reward({
                     atBlock: block.number,
                     amount: rewardAmount,
@@ -32,11 +32,11 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
                 emit MintedReward(
                     currentEpoch,
                     rewardAmount,
-                    currentApr
+                    apr
                     );
                 updateCurrentApr();
             }
-            epochIndexOfLastRewardPayment = currentEpoch;
+            epochIndexOfLastReward = currentEpoch;
         }
     }
 
@@ -48,17 +48,19 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
         uint256 totalStakePercentage = totalStake
             * HUNDRED_PERCENT
             / api3Token.totalSupply();
-        if (totalStakePercentage > stakeTarget) {
-            currentApr = currentApr > aprUpdateStep ? currentApr - aprUpdateStep : 0;
+        if (totalStakePercentage > stakeTarget)
+        {
+            apr = apr > aprUpdateStep ? apr - aprUpdateStep : 0;
         }
-        else {
-            currentApr += aprUpdateStep;
+        else
+        {
+            apr += aprUpdateStep;
         }
-        if (currentApr > maxApr) {
-            currentApr = maxApr;
+        if (apr > maxApr) {
+            apr = maxApr;
         }
-        else if (currentApr < minApr) {
-            currentApr = minApr;
+        else if (apr < minApr) {
+            apr = minApr;
         }
     }
 }

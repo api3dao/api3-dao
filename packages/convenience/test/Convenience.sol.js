@@ -171,7 +171,7 @@ describe("getUserStakingData", function () {
     );
     const api3PoolUser = await api3Pool.getUser(roles.user1.address);
 
-    expect(userStakingData.apr).to.equal(await api3Pool.currentApr());
+    expect(userStakingData.apr).to.equal(await api3Pool.apr());
     expect(userStakingData.api3Supply).to.equal(
       await mockApi3Token.totalSupply()
     );

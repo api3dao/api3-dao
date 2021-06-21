@@ -67,24 +67,25 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         mintReward();
         Checkpoint[] storage _userShares = users[userAddress].shares;
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
+        LockedCalculation storage lockedCalculation = userToLockedCalculation[userAddress];
         // Reset the state if there was no calculation made in this epoch
-        if (state.initialIndEpoch != currentEpoch)
+        if (lockedCalculation.initialIndEpoch != currentEpoch)
         {
-            state.initialIndEpoch = currentEpoch;
-            state.nextIndEpoch = currentEpoch;
-            state.locked = 0;
+            lockedCalculation.initialIndEpoch = currentEpoch;
+            lockedCalculation.nextIndEpoch = currentEpoch;
+            lockedCalculation.locked = 0;
         }
-        uint256 indEpoch = state.nextIndEpoch;
-        uint256 locked = state.locked;
+        uint256 indEpoch = lockedCalculation.nextIndEpoch;
+        uint256 locked = lockedCalculation.locked;
         uint256 oldestLockedEpoch = currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
             ? currentEpoch - REWARD_VESTING_PERIOD + 1
             : genesisEpoch + 1;
         for (; indEpoch >= oldestLockedEpoch; indEpoch--)
         {
-            if (state.nextIndEpoch >= indEpoch + noEpochsPerIteration)
+            if (lockedCalculation.nextIndEpoch >= indEpoch + noEpochsPerIteration)
             {
-                state.nextIndEpoch = indEpoch;
-                state.locked = locked;
+                lockedCalculation.nextIndEpoch = indEpoch;
+                lockedCalculation.locked = locked;
                 emit CalculatingUserLocked(
                     userAddress,
                     indEpoch,
@@ -99,8 +100,8 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
                 locked = locked + (lockedReward.amount * userSharesThen / lockedReward.totalSharesThen);
             }
         }
-        state.nextIndEpoch = indEpoch;
-        state.locked = locked;
+        lockedCalculation.nextIndEpoch = indEpoch;
+        lockedCalculation.locked = locked;
         emit CalculatedUserLocked(userAddress, locked);
         return true;
     }
@@ -116,11 +117,12 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
     {
         mintReward();
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
+        LockedCalculation storage lockedCalculation = userToLockedCalculation[msg.sender];
         require(
-            state.initialIndEpoch == currentEpoch,
+            lockedCalculation.initialIndEpoch == currentEpoch,
             "Pool: Locked not precalculated"
             );
-        withdraw(amount, state.locked);
+        withdraw(amount, lockedCalculation.locked);
     }
 
     /// @notice Called internally after the amount of locked tokens of the user

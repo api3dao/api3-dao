@@ -78,26 +78,26 @@ describe("mintReward", function () {
               // Pay reward
               const totalStake = await api3Pool.totalStake();
               const aprUpdateStep = await api3Pool.aprUpdateStep();
-              const currentApr = await api3Pool.currentApr();
-              let newApr = currentApr.sub(aprUpdateStep);
+              const apr = await api3Pool.apr();
+              let newApr = apr.sub(aprUpdateStep);
               if (newApr.lt(await api3Pool.minApr())) {
                 newApr = await api3Pool.minApr();
               }
               const rewardAmount = totalStake
-                .mul(currentApr)
+                .mul(apr)
                 .mul(EPOCH_LENGTH)
                 .div(ONE_YEAR_IN_SECONDS)
                 .div(HUNDRED_PERCENT);
               await expect(api3Pool.connect(roles.randomPerson).mintReward())
                 .to.emit(api3Pool, "MintedReward")
-                .withArgs(nextEpoch, rewardAmount, currentApr);
+                .withArgs(nextEpoch, rewardAmount, apr);
               expect(await api3Pool.totalStake()).to.equal(
                 totalStake.add(rewardAmount)
               );
-              expect(await api3Pool.epochIndexOfLastRewardPayment()).to.equal(
+              expect(await api3Pool.epochIndexOfLastReward()).to.equal(
                 nextEpoch
               );
-              expect(await api3Pool.currentApr()).to.equal(newApr);
+              expect(await api3Pool.apr()).to.equal(newApr);
               const reward = await api3Pool.epochIndexToReward(nextEpoch);
               expect(reward.atBlock).to.equal(
                 await ethers.provider.getBlockNumber()
@@ -141,26 +141,26 @@ describe("mintReward", function () {
               // Pay reward
               const totalStake = await api3Pool.totalStake();
               const aprUpdateStep = await api3Pool.aprUpdateStep();
-              const currentApr = await api3Pool.currentApr();
-              let newApr = currentApr.add(aprUpdateStep);
+              const apr = await api3Pool.apr();
+              let newApr = apr.add(aprUpdateStep);
               if (newApr.gt(await api3Pool.maxApr())) {
                 newApr = await api3Pool.maxApr();
               }
               const rewardAmount = totalStake
-                .mul(currentApr)
+                .mul(apr)
                 .mul(EPOCH_LENGTH)
                 .div(ONE_YEAR_IN_SECONDS)
                 .div(HUNDRED_PERCENT);
               await expect(api3Pool.connect(roles.randomPerson).mintReward())
                 .to.emit(api3Pool, "MintedReward")
-                .withArgs(nextEpoch, rewardAmount, currentApr);
+                .withArgs(nextEpoch, rewardAmount, apr);
               expect(await api3Pool.totalStake()).to.equal(
                 totalStake.add(rewardAmount)
               );
-              expect(await api3Pool.epochIndexOfLastRewardPayment()).to.equal(
+              expect(await api3Pool.epochIndexOfLastReward()).to.equal(
                 nextEpoch
               );
-              expect(await api3Pool.currentApr()).to.equal(newApr);
+              expect(await api3Pool.apr()).to.equal(newApr);
               const reward = await api3Pool.epochIndexToReward(nextEpoch);
               expect(reward.atBlock).to.equal(
                 await ethers.provider.getBlockNumber()
@@ -198,13 +198,13 @@ describe("mintReward", function () {
         ]);
         // Pay reward
         const totalStake = await api3Pool.totalStake();
-        const currentApr = await api3Pool.currentApr();
+        const apr = await api3Pool.apr();
         await api3Pool.connect(roles.randomPerson).mintReward();
         expect(await api3Pool.totalStake()).to.equal(totalStake);
-        expect(await api3Pool.epochIndexOfLastRewardPayment()).to.equal(
+        expect(await api3Pool.epochIndexOfLastReward()).to.equal(
           genesisEpochPlusOne
         );
-        expect(await api3Pool.currentApr()).to.equal(currentApr);
+        expect(await api3Pool.apr()).to.equal(apr);
         const reward = await api3Pool.epochIndexToReward(genesisEpochPlusOne);
         expect(reward.atBlock).to.equal(0);
         expect(reward.amount).to.equal(0);
@@ -244,23 +244,23 @@ describe("mintReward", function () {
         // Pay reward
         const totalStake = await api3Pool.totalStake();
         const aprUpdateStep = await api3Pool.aprUpdateStep();
-        const currentApr = await api3Pool.currentApr();
-        const newApr = currentApr.sub(aprUpdateStep);
+        const apr = await api3Pool.apr();
+        const newApr = apr.sub(aprUpdateStep);
         const rewardAmount = totalStake
-          .mul(currentApr)
+          .mul(apr)
           .mul(EPOCH_LENGTH)
           .div(ONE_YEAR_IN_SECONDS)
           .div(HUNDRED_PERCENT);
         await expect(api3Pool.connect(roles.randomPerson).mintReward())
           .to.emit(api3Pool, "MintedReward")
-          .withArgs(genesisEpochPlusFive, rewardAmount, currentApr);
+          .withArgs(genesisEpochPlusFive, rewardAmount, apr);
         expect(await api3Pool.totalStake()).to.equal(
           totalStake.add(rewardAmount)
         );
-        expect(await api3Pool.epochIndexOfLastRewardPayment()).to.equal(
+        expect(await api3Pool.epochIndexOfLastReward()).to.equal(
           genesisEpochPlusFive
         );
-        expect(await api3Pool.currentApr()).to.equal(newApr);
+        expect(await api3Pool.apr()).to.equal(newApr);
         const reward = await api3Pool.epochIndexToReward(genesisEpochPlusFive);
         expect(reward.atBlock).to.equal(await ethers.provider.getBlockNumber());
         expect(reward.amount).to.equal(rewardAmount);
@@ -293,13 +293,13 @@ describe("mintReward", function () {
         ]);
         // Pay reward
         const totalStake = await api3Pool.totalStake();
-        const currentApr = await api3Pool.currentApr();
+        const apr = await api3Pool.apr();
         await api3Pool.connect(roles.randomPerson).mintReward();
         expect(await api3Pool.totalStake()).to.equal(totalStake);
-        expect(await api3Pool.epochIndexOfLastRewardPayment()).to.equal(
+        expect(await api3Pool.epochIndexOfLastReward()).to.equal(
           genesisEpochPlusFive
         );
-        expect(await api3Pool.currentApr()).to.equal(currentApr);
+        expect(await api3Pool.apr()).to.equal(apr);
         const reward = await api3Pool.epochIndexToReward(genesisEpochPlusFive);
         expect(reward.atBlock).to.equal(0);
         expect(reward.amount).to.equal(0);
@@ -338,17 +338,16 @@ describe("mintReward", function () {
       // Pay reward
       await api3Pool.connect(roles.randomPerson).mintReward();
       const totalStake = await api3Pool.totalStake();
-      const epochIndexOfLastRewardPayment =
-        await api3Pool.epochIndexOfLastRewardPayment();
-      const currentApr = await api3Pool.currentApr();
+      const epochIndexOfLastReward = await api3Pool.epochIndexOfLastReward();
+      const apr = await api3Pool.apr();
       // Pay reward again
       await api3Pool.connect(roles.randomPerson).mintReward();
       // Nothing should have changed
       expect(await api3Pool.totalStake()).to.equal(totalStake);
-      expect(await api3Pool.epochIndexOfLastRewardPayment()).to.equal(
-        epochIndexOfLastRewardPayment
+      expect(await api3Pool.epochIndexOfLastReward()).to.equal(
+        epochIndexOfLastReward
       );
-      expect(await api3Pool.currentApr()).to.equal(currentApr);
+      expect(await api3Pool.apr()).to.equal(apr);
     });
   });
 });

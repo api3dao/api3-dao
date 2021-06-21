@@ -53,7 +53,7 @@ contract Convenience is Ownable  {
             uint256 userLocked
             )
     {
-        apr = api3Pool.currentApr();
+        apr = api3Pool.apr();
         api3Supply = api3Token.totalSupply();
         totalStake = api3Pool.totalStake();
         totalShares = api3Pool.totalVotingPower();

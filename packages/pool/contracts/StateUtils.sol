@@ -35,7 +35,7 @@ contract StateUtils is IStateUtils {
         uint256 lastProposalTimestamp;
     }
 
-    struct LockedCalculationState {
+    struct LockedCalculation {
         uint256 initialIndEpoch;
         uint256 nextIndEpoch;
         uint256 locked;
@@ -105,12 +105,11 @@ contract StateUtils is IStateUtils {
     /// reward was paid for that block
     mapping(uint256 => Reward) public epochIndexToReward;
 
-    /// @notice Epoch index of the most recent reward payment
-    uint256 public epochIndexOfLastRewardPayment;
+    /// @notice Epoch index of the most recent reward
+    uint256 public epochIndexOfLastReward;
 
     /// @notice User records
     mapping(address => User) public users;
-    mapping(address => LockedCalculationState) internal userToLockedCalculationState;
 
     /// @notice Total number of tokens staked at the pool
     uint256 public totalStake;
@@ -156,7 +155,7 @@ contract StateUtils is IStateUtils {
     /// @dev This value will reach an equilibrium based on the stake target.
     /// Every epoch (week), APR/52 of the total staked tokens will be added to
     /// the pool, effectively distributing them to the stakers.
-    uint256 public currentApr = (maxApr + minApr) / 2;
+    uint256 public apr = (maxApr + minApr) / 2;
 
     /// @notice Mapping that keeps the specs of a proposal provided by a user
     /// @dev After making a proposal through the Agent app, the user publishes
@@ -171,6 +170,9 @@ contract StateUtils is IStateUtils {
     // ordering.
     Checkpoint private totalSharesCheckpoint1;
     Checkpoint private totalSharesCheckpoint2;
+
+    // Keeps user states used in `withdrawPrecalculated()` calls
+    mapping(address => LockedCalculation) internal userToLockedCalculation;
 
     /// @dev Reverts if the caller is not an API3 DAO Agent
     modifier onlyAgentApp() {
