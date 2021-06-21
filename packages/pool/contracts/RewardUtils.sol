@@ -23,8 +23,8 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
             {
                 uint256 rewardAmount = totalStake * apr * EPOCH_LENGTH / ONE_YEAR_IN_SECONDS / HUNDRED_PERCENT;
                 epochIndexToReward[currentEpoch] = Reward({
-                    atBlock: block.number,
-                    amount: rewardAmount,
+                    atBlock: uint32(block.number),
+                    amount: uint224(rewardAmount),
                     totalSharesThen: totalShares()
                     });
                 api3Token.mint(address(this), rewardAmount);

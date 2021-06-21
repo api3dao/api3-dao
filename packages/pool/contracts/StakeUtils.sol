@@ -23,11 +23,10 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         uint256 sharesToMint = totalSharesNow * amount / totalStake;
         uint256 userSharesNow = userShares(msg.sender);
         user.shares.push(Checkpoint({
-            fromBlock: block.number,
-            value: userSharesNow + sharesToMint
+            fromBlock: uint32(block.number),
+            value: uint224(userSharesNow + sharesToMint)
             }));
-        uint256 totalSharesAfter = totalSharesNow + sharesToMint; 
-        updateTotalShares(totalSharesAfter);
+        updateTotalShares(uint224(totalSharesNow + sharesToMint));
         totalStake += amount;
         updateDelegatedVotingPower(sharesToMint, true);
         emit Staked(
@@ -80,9 +79,10 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         user.unstakeScheduledFor = block.timestamp + unstakeWaitPeriod;
         user.unstakeAmount = amount;
         user.unstakeShares = shares;
-        user.shares.push(
-            Checkpoint({fromBlock: block.number, value: userSharesNow - shares})
-        );
+        user.shares.push(Checkpoint({
+            fromBlock: uint32(block.number),
+            value: uint224(userSharesNow - shares)
+            }));
         updateDelegatedVotingPower(shares, false);
         emit ScheduledUnstake(
             msg.sender,
@@ -126,7 +126,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             : totalStake - 1;
         user.unstaked += unstakeAmount;
 
-        updateTotalShares(totalShares - user.unstakeShares);
+        updateTotalShares(uint224(totalShares - user.unstakeShares));
         totalStake -= unstakeAmount;
 
         user.unstakeShares = 0;

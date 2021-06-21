@@ -7,18 +7,18 @@ import "./interfaces/IStateUtils.sol";
 /// @title Contract that keeps state variables
 contract StateUtils is IStateUtils {
     struct Checkpoint {
-        uint256 fromBlock;
-        uint256 value;
+        uint32 fromBlock;
+        uint224 value;
     }
 
     struct AddressCheckpoint {
-        uint256 fromBlock;
+        uint32 fromBlock;
         address _address;
     }
 
     struct Reward {
-        uint256 atBlock;
-        uint256 amount;
+        uint32 atBlock;
+        uint224 amount;
         uint256 totalSharesThen;
     }
 
@@ -448,7 +448,7 @@ contract StateUtils is IStateUtils {
     /// (because the history keeps the most recent value from that block). If
     /// not, we can overwrite the older one, as we no longer need it.
     /// @param newTotalShares Total shares value to insert into history
-    function updateTotalShares(uint256 newTotalShares)
+    function updateTotalShares(uint224 newTotalShares)
         internal
     {
         if (block.number == totalSharesCheckpoint1.fromBlock)
@@ -463,12 +463,12 @@ contract StateUtils is IStateUtils {
         {
             if (totalSharesCheckpoint1.fromBlock < totalSharesCheckpoint2.fromBlock)
             {
-                totalSharesCheckpoint1.fromBlock = block.number;
+                totalSharesCheckpoint1.fromBlock = uint32(block.number);
                 totalSharesCheckpoint1.value = newTotalShares;
             }
             else
             {
-                totalSharesCheckpoint2.fromBlock = block.number;
+                totalSharesCheckpoint2.fromBlock = uint32(block.number);
                 totalSharesCheckpoint2.value = newTotalShares;
             }
         }
