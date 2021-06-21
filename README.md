@@ -1,5 +1,3 @@
-[![api3-dao](https://circleci.com/gh/api3dao/api3-dao.svg?style=svg)](https://app.circleci.com/pipelines/github/api3dao)
-
 # API3 DAO
 
 - Install the dependencies
@@ -16,9 +14,12 @@ It integrates with the pool contract to implement proposal spam protection measu
 
 ### [`@api3-dao/dao`](/packages/dao/README.md)
 
-The package that keeps the DAO configuration and deployment implementation.
+The package that keeps the DAO configuration and deployment implementation
 
 ### [`@api3-dao/pool`](/packages/pool/README.md)
 
-A pool contract that users can stake API3 tokens to receive voting power at the DAO.
-It implements a MiniMe interface that integrates to the Api3Voting app.
+A pool contract that users can stake API3 tokens to receive voting power at the DAO
+
+### [`@api3-dao/convenience`](/packages/convenience/README.md)
+
+A convenience contract used to make batch view calls to the DAO contracts
