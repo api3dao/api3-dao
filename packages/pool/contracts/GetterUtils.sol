@@ -173,11 +173,6 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         Checkpoint[] storage _userShares = users[userAddress].shares;
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
         uint256 oldestLockedEpoch = getOldestLockedEpoch();
-
-        if (_userShares.length == 0)
-        {
-            return 0;
-        }
         uint256 indUserShares = _userShares.length;
         for (
                 uint256 indEpoch = currentEpoch;
@@ -185,6 +180,10 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
                 indEpoch--
             )
         {
+            if (indUserShares == 0)
+            {
+                break;
+            }
             Reward storage lockedReward = epochIndexToReward[indEpoch];
             if (lockedReward.atBlock != 0)
             {

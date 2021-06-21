@@ -275,28 +275,127 @@ describe("userLocked", function () {
     "It has been more than REWARD_VESTING_PERIOD since the genesis epoch",
     function () {
       context("User has staked", function () {
-        it("returns the rewards paid to the user in the last REWARD_VESTING_PERIOD", async function () {
-          // Authorize pool contract to mint tokens
-          await api3Token
-            .connect(roles.deployer)
-            .updateMinterStatus(api3Pool.address, true);
-          // Have the user stake (half of this up-front, the rest in future epochs)
-          const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
-          await api3Token
-            .connect(roles.deployer)
-            .transfer(roles.user1.address, user1Stake);
-          await api3Token
-            .connect(roles.user1)
-            .approve(api3Pool.address, user1Stake);
-          await api3Pool
-            .connect(roles.user1)
-            .depositAndStake(user1Stake.div(2));
-          const genesisEpoch = await api3Pool.genesisEpoch();
-          const userRewards = [];
-          for (let i = 1; i < REWARD_VESTING_PERIOD.mul(2); i++) {
-            const currentEpoch = genesisEpoch.add(ethers.BigNumber.from(i));
-            await ethers.provider.send("evm_setNextBlockTimestamp", [
+        context(
+          "User has staked for the entire REWARD_VESTING_PERIOD",
+          function () {
+            it("returns the rewards paid to the user in the last REWARD_VESTING_PERIOD", async function () {
+              // Authorize pool contract to mint tokens
+              await api3Token
+                .connect(roles.deployer)
+                .updateMinterStatus(api3Pool.address, true);
+              // Have the user stake (half of this up-front, the rest in future epochs)
+              const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+              await api3Token
+                .connect(roles.deployer)
+                .transfer(roles.user1.address, user1Stake);
+              await api3Token
+                .connect(roles.user1)
+                .approve(api3Pool.address, user1Stake);
+              await api3Pool
+                .connect(roles.user1)
+                .depositAndStake(user1Stake.div(2));
+              const genesisEpoch = await api3Pool.genesisEpoch();
+              const userRewards = [];
+              for (let i = 1; i < REWARD_VESTING_PERIOD.mul(2); i++) {
+                const currentEpoch = genesisEpoch.add(ethers.BigNumber.from(i));
+                await ethers.provider.send("evm_setNextBlockTimestamp", [
                   currentEpoch.mul(EPOCH_LENGTH).toNumber(),
+                ]);
+                // Only pay around the half of the rewards
+                if (Math.random() > 0.5) {
+                  const userStakeBefore = await api3Pool.userStake(
+                    roles.user1.address
+                  );
+                  await api3Pool.mintReward();
+                  const userStakeAfter = await api3Pool.userStake(
+                    roles.user1.address
+                  );
+                  userRewards.push(userStakeAfter.sub(userStakeBefore));
+                  // Stake some more
+                  await api3Pool
+                    .connect(roles.user1)
+                    .depositAndStake(user1Stake.div(1000));
+                } else {
+                  userRewards.push(ethers.BigNumber.from(0));
+                }
+              }
+              const expectedUserLocked = userRewards
+                .slice(-REWARD_VESTING_PERIOD)
+                .reduce((a, b) => a.add(b), ethers.BigNumber.from(0));
+              const error = expectedUserLocked.sub(
+                await api3Pool.userLocked(roles.user1.address)
+              );
+              // Tolerate rounding errors
+              expect(error).to.lt(REWARD_VESTING_PERIOD);
+            });
+          }
+        );
+        context(
+          "User has not staked for the entire REWARD_VESTING_PERIOD",
+          function () {
+            it("returns the rewards paid to the user", async function () {
+              // Authorize pool contract to mint tokens
+              await api3Token
+                .connect(roles.deployer)
+                .updateMinterStatus(api3Pool.address, true);
+              const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+              // Wait a full `REWARD_VESTING_PERIOD` before having the user stake
+              await api3Token
+                .connect(roles.deployer)
+                .transfer(roles.user1.address, user1Stake);
+              await api3Token
+                .connect(roles.user1)
+                .approve(api3Pool.address, user1Stake);
+              let currentEpoch = await api3Pool.genesisEpoch();
+              for (let i = 1; i < REWARD_VESTING_PERIOD; i++) {
+                currentEpoch = currentEpoch.add(ethers.BigNumber.from(1));
+                await ethers.provider.send("evm_setNextBlockTimestamp", [
+                  currentEpoch.mul(EPOCH_LENGTH).toNumber(),
+                ]);
+                // Only pay around the half of the rewards
+                if (Math.random() > 0.5) {
+                  await api3Pool.mintReward();
+                }
+              }
+              await api3Pool
+                .connect(roles.user1)
+                .depositAndStake(user1Stake.div(2));
+              // Have the user stake for half of `REWARD_VESTING_PERIOD`
+              const userRewards = [];
+              for (let i = 1; i < REWARD_VESTING_PERIOD.div(2); i++) {
+                currentEpoch = currentEpoch.add(ethers.BigNumber.from(1));
+                await ethers.provider.send("evm_setNextBlockTimestamp", [
+                  currentEpoch.mul(EPOCH_LENGTH).toNumber(),
+                ]);
+                // Only pay around the half of the rewards
+                if (Math.random() > 0.5) {
+                  const userStakeBefore = await api3Pool.userStake(
+                    roles.user1.address
+                  );
+                  await api3Pool.mintReward();
+                  const userStakeAfter = await api3Pool.userStake(
+                    roles.user1.address
+                  );
+                  userRewards.push(userStakeAfter.sub(userStakeBefore));
+                  // Stake some more
+                  await api3Pool
+                    .connect(roles.user1)
+                    .depositAndStake(user1Stake.div(1000));
+                } else {
+                  userRewards.push(ethers.BigNumber.from(0));
+                }
+              }
+              const expectedUserLocked = userRewards
+                .slice(-REWARD_VESTING_PERIOD.div(2))
+                .reduce((a, b) => a.add(b), ethers.BigNumber.from(0));
+              const error = expectedUserLocked.sub(
+                await api3Pool.userLocked(roles.user1.address)
+              );
+              // Tolerate rounding errors
+              expect(error).to.lt(REWARD_VESTING_PERIOD.div(2));
+            });
+          }
+        );
       });
       context("User has not staked", function () {
         it("returns 0", async function () {
