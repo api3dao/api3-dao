@@ -361,6 +361,6 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     view
     returns (uint256)
     {
-        return totalShares();
+        return getValueAt(totalSharesHistory, block.number-1);
     }
 }
