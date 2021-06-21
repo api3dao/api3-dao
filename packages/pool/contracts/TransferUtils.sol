@@ -118,7 +118,11 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         LockedCalculation storage lockedCalculation = userToLockedCalculation[msg.sender];
         require(
             lockedCalculation.initialIndEpoch == currentEpoch,
-            "Pool: Locked not precalculated"
+            "Pool: Calculation not up to date"
+            );
+        require(
+            lockedCalculation.nextIndEpoch < getOldestLockedEpoch(),
+            "Pool: Calculation not complete"
             );
         withdraw(amount, lockedCalculation.locked);
     }
