@@ -8,7 +8,7 @@
     "lint:solhint": "solhint ./packages/pool/contracts/*.sol && solhint ./packages/api3-voting/contracts/*.sol && solhint ./packages/dao/contracts/*.sol && solhint ./packages/convenience/contracts/*.sol",
     "lint:eslint": "eslint . --ext .js",
     "pretty-quick": "pretty-quick --staged --pattern \"**/*.js\"",
-    "test:api3-voting": "cd ./packages/api3-voting npm run test",
+    "test:api3-voting": "cd ./packages/api3-voting && npm run test",
     "test:dao": "cd ./packages/dao && npm run test",
     "test:pool": "cd ./packages/pool && npm run test",
     "test:convenience": "cd ./packages/convenience && npm run test",
