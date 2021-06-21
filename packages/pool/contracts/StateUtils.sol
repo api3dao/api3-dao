@@ -108,9 +108,6 @@ contract StateUtils is IStateUtils {
     /// @notice Epoch index of the most recent reward
     uint256 public epochIndexOfLastReward;
 
-    /// @notice User records
-    mapping(address => User) public users;
-
     /// @notice Total number of tokens staked at the pool
     uint256 public totalStake;
 
@@ -157,6 +154,9 @@ contract StateUtils is IStateUtils {
     /// Every epoch (week), APR/52 of the total staked tokens will be added to
     /// the pool, effectively distributing them to the stakers.
     uint256 public apr = (maxApr + minApr) / 2;
+
+    /// @notice User records
+    mapping(address => User) internal users;
 
     // Kept to prevent third parties from frontrunning the initialization
     // `setDaoApps()` call and grief the deployment
