@@ -12,7 +12,7 @@ interface IApi3Pool {
     function proposalVotingPowerThreshold()
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function userVotingPowerAt(
         address userAddress,
@@ -20,12 +20,12 @@ interface IApi3Pool {
         )
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function totalVotingPowerOneBlockAgo()
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function updateLastProposalTimestamp(address userAddress)
         external;
@@ -33,7 +33,7 @@ interface IApi3Pool {
     function getUser(address userAddress)
         external
         view
-        returns(
+        returns (
             uint256 unstaked,
             uint256 vesting,
             uint256 unstakeShares,

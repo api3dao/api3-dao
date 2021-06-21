@@ -35,10 +35,10 @@ interface IApi3Token is IERC20Aux {
     function getMinterStatus(address minterAddress)
         external
         view
-        returns(bool minterStatus);
+        returns (bool minterStatus);
 
     function getBurnerStatus(address burnerAddress)
         external
         view
-        returns(bool burnerStatus);
+        returns (bool burnerStatus);
 }

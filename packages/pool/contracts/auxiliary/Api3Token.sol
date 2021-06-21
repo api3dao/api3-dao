@@ -112,7 +112,7 @@ contract Api3Token is ERC20, Ownable, IApi3Token {
         external
         view
         override
-        returns(bool minterStatus)
+        returns (bool minterStatus)
     {
         minterStatus = isMinter[minterAddress];
     }
@@ -125,7 +125,7 @@ contract Api3Token is ERC20, Ownable, IApi3Token {
         external
         view
         override
-        returns(bool burnerStatus)
+        returns (bool burnerStatus)
     {
         burnerStatus = isBurner[burnerAddress];
     }

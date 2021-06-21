@@ -28,7 +28,7 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
                     totalSharesThen: totalShares()
                     });
                 api3Token.mint(address(this), rewardAmount);
-                totalStake = totalStake + rewardAmount;
+                totalStake += rewardAmount;
                 emit MintedReward(
                     currentEpoch,
                     rewardAmount,

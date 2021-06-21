@@ -10,22 +10,22 @@ interface IGetterUtils is IStateUtils {
         )
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function userVotingPower(address userAddress)
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function totalVotingPowerOneBlockAgo()
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function totalVotingPower()
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function userSharesAt(
         address userAddress,
@@ -33,17 +33,17 @@ interface IGetterUtils is IStateUtils {
         )
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function userShares(address userAddress)
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function userStake(address userAddress)
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function delegatedToUserAt(
         address userAddress,
@@ -51,12 +51,12 @@ interface IGetterUtils is IStateUtils {
         )
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function delegatedToUser(address userAddress)
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function userDelegateAt(
         address userAddress,
@@ -64,22 +64,22 @@ interface IGetterUtils is IStateUtils {
         )
         external
         view
-        returns(address);
+        returns (address);
 
     function userDelegate(address userAddress)
         external
         view
-        returns(address);
+        returns (address);
 
     function userLocked(address userAddress)
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function getUser(address userAddress)
         external
         view
-        returns(
+        returns (
             uint256 unstaked,
             uint256 vesting,
             uint256 unstakeShares,

@@ -7,7 +7,7 @@ interface IApi3Voting {
     function votesLength()
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function getVote(uint256 _voteId)
         external

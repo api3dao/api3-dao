@@ -32,17 +32,17 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             "Pool: Updated delegate recently"
             );
         user.lastDelegationUpdateTimestamp = block.timestamp;
-        
-        address previousDelegate = userDelegate(msg.sender);
-        require(
-            previousDelegate != delegate,
-            "Pool: Already delegated"
-            );
 
         uint256 userShares = userShares(msg.sender);
         require(
             userShares != 0,
             "Pool: Have no shares to delegate"
+            );
+
+        address previousDelegate = userDelegate(msg.sender);
+        require(
+            previousDelegate != delegate,
+            "Pool: Already delegated"
             );
         if (previousDelegate != address(0)) {
             // Need to revoke previous delegation
@@ -55,12 +55,14 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
                 previousDelegate
                 );
         }
+
         // Assign the new delegation
         User storage _delegate = users[delegate];
         _delegate.delegatedTo.push(Checkpoint({
             fromBlock: block.number,
             value: delegatedToUser(delegate) + userShares
             }));
+
         // Record the new delegate for the user
         user.delegates.push(AddressCheckpoint({
             fromBlock: block.number,

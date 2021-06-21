@@ -24,8 +24,8 @@ contract StateUtils is IStateUtils {
 
     struct User {
         Checkpoint[] shares;
-        AddressCheckpoint[] delegates;
         Checkpoint[] delegatedTo;
+        AddressCheckpoint[] delegates;
         uint256 unstaked;
         uint256 vesting;
         uint256 unstakeShares;
@@ -247,9 +247,9 @@ contract StateUtils is IStateUtils {
             );
         require(
             _agentAppPrimary != address(0)
-                && _agentAppSecondary  != address(0)
-                && _votingAppPrimary  != address(0)
-                && _votingAppSecondary  != address(0),
+                && _agentAppSecondary != address(0)
+                && _votingAppPrimary != address(0)
+                && _votingAppSecondary != address(0),
             "Pool: Invalid DAO apps"
             );
         agentAppPrimary = _agentAppPrimary;
@@ -459,7 +459,8 @@ contract StateUtils is IStateUtils {
         {
             totalSharesCheckpoint2.value = newTotalShares;
         }
-        else {
+        else
+        {
             if (totalSharesCheckpoint1.fromBlock < totalSharesCheckpoint2.fromBlock)
             {
                 totalSharesCheckpoint1.fromBlock = block.number;

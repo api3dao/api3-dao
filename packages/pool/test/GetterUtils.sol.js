@@ -438,7 +438,7 @@ describe("getUser", function () {
       delegationBlock.timestamp + 100
     );
     expect(user.unstakeScheduledFor).to.equal(unstakeScheduledFor);
-    /*expect(user.unstakeAmount).to.equal(userScheduledToUnstake);
-    expect(user.lastProposalTimestamp).to.equal(proposalBlock.timestamp + 100);*/
+    expect(user.unstakeAmount).to.equal(userScheduledToUnstake);
+    expect(user.lastProposalTimestamp).to.equal(proposalBlock.timestamp + 100);
   });
 });

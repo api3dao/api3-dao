@@ -60,11 +60,11 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         override
         returns (bool finished)
     {
+        mintReward();
         require(
             noEpochsPerIteration > 0,
             "Pool: Zero iteration window"
             );
-        mintReward();
         Checkpoint[] storage _userShares = users[userAddress].shares;
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
         LockedCalculation storage lockedCalculation = userToLockedCalculation[userAddress];

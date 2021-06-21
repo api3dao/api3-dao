@@ -300,7 +300,7 @@ contract TimelockManager is Ownable, ITimelockManager {
         public
         view
         override
-        returns(uint256 withdrawable)
+        returns (uint256 withdrawable)
     {
         Timelock storage timelock = timelocks[recipient];
         uint256 unlocked = getUnlocked(recipient);
@@ -315,7 +315,7 @@ contract TimelockManager is Ownable, ITimelockManager {
     function getUnlocked(address recipient)
         private
         view
-        returns(uint256 unlocked)
+        returns (uint256 unlocked)
     {
         Timelock storage timelock = timelocks[recipient];
         if (now <= timelock.releaseStart)

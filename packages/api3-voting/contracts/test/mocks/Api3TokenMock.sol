@@ -40,7 +40,7 @@ contract Api3TokenMock is MiniMeToken {
     function proposalVotingPowerThreshold()
         external
         view
-        returns(uint256)
+        returns (uint256)
     {
         return mockProposalVotingPowerThreshold;
     }
@@ -48,7 +48,7 @@ contract Api3TokenMock is MiniMeToken {
     function totalVotingPowerOneBlockAgo()
         external
         view
-        returns(uint256)
+        returns (uint256)
     {
         return totalSupplyAt(block.number - 1);
     }
@@ -56,7 +56,7 @@ contract Api3TokenMock is MiniMeToken {
     function getMinterStatus(address minterAddress)
         external
         view
-        returns(bool)
+        returns (bool)
     {
         return false;
     }
@@ -64,7 +64,7 @@ contract Api3TokenMock is MiniMeToken {
     function getUser(address userAddress)
         external
         view
-        returns(
+        returns (
             uint256 unstaked,
             uint256 vesting,
             uint256 unstakeShares,

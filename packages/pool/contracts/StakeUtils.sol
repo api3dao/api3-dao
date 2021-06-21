@@ -89,7 +89,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             shares,
             amount,
             user.unstakeScheduledFor
-        );
+            );
     }
 
     /// @notice Called to execute a pre-scheduled unstake
