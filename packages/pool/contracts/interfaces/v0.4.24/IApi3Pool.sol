@@ -4,10 +4,10 @@ pragma solidity 0.4.24;
 /// @title A limited API3 pool contract interface to be used by Api3Voting.sol
 /// in the (at)api3-dao/api3-voting package
 interface IApi3Pool {
-    function epochLength()
+    function EPOCH_LENGTH()
         external
         view
-        returns(uint256);
+        returns (uint256);
 
     function proposalVotingPowerThreshold()
         external

@@ -17,7 +17,6 @@ const supportRequiredPct1 = 50e16;
 const minAcceptQuorumPct1 = 50e16;
 const supportRequiredPct2 = 50e16;
 const minAcceptQuorumPct2 = 15e16;
-const epochLength = 7 * 24 * 60 * 60;
 
 /**
  * Returns the address of the deployer
@@ -59,8 +58,7 @@ module.exports = async (callback) => {
     );
     const api3Pool = await Api3Pool.new(
       api3Token.address,
-      timelockManager.address,
-      epochLength
+      timelockManager.address
     );
     const convenience = await Convenience.new(api3Pool.address);
     const template = await deployTemplate(

@@ -28,7 +28,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         // Do not allow frequent delegation updates as that can be used to spam
         // proposals
         require(
-            user.lastDelegationUpdateTimestamp + epochLength < block.timestamp,
+            user.lastDelegationUpdateTimestamp + EPOCH_LENGTH < block.timestamp,
             "Pool: Updated delegate recently"
             );
         user.lastDelegationUpdateTimestamp = block.timestamp;
@@ -85,7 +85,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             "Pool: Not delegated"
             );
         require(
-            user.lastDelegationUpdateTimestamp + epochLength < block.timestamp,
+            user.lastDelegationUpdateTimestamp + EPOCH_LENGTH < block.timestamp,
             "Pool: Updated delegate recently"
             );
 

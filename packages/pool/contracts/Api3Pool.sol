@@ -24,16 +24,13 @@ import "./interfaces/IApi3Pool.sol";
 contract Api3Pool is TimelockUtils, IApi3Pool {
     /// @param api3TokenAddress API3 token contract address
     /// @param timelockManagerAddress Timelock manager contract address
-    /// @param _epochLength Epoch length in seconds
     constructor(
         address api3TokenAddress,
-        address timelockManagerAddress,
-        uint256 _epochLength
+        address timelockManagerAddress
         )
         StateUtils(
             api3TokenAddress,
-            timelockManagerAddress,
-            _epochLength
+            timelockManagerAddress
             )
     {}
 }

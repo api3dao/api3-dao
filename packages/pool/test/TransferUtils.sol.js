@@ -2,8 +2,7 @@ const { expect } = require("chai");
 
 let roles;
 let api3Token, api3Pool;
-const epochLength = 7 * 24 * 60 * 60;
-let REWARD_VESTING_PERIOD;
+let EPOCH_LENGTH, REWARD_VESTING_PERIOD;
 
 beforeEach(async () => {
   const accounts = await ethers.getSigners();
@@ -33,9 +32,9 @@ beforeEach(async () => {
   );
   api3Pool = await api3PoolFactory.deploy(
     api3Token.address,
-    roles.mockTimelockManager.address,
-    epochLength
+    roles.mockTimelockManager.address
   );
+  EPOCH_LENGTH = (await api3Pool.EPOCH_LENGTH()).toNumber();
   REWARD_VESTING_PERIOD = await api3Pool.REWARD_VESTING_PERIOD();
 });
 
@@ -77,7 +76,7 @@ describe("withdrawRegular", function () {
       for (let i = 0; i < 100; i++) {
         const currentEpoch = genesisEpoch.add(ethers.BigNumber.from(i + 1));
         await ethers.provider.send("evm_setNextBlockTimestamp", [
-          currentEpoch.mul(epochLength).toNumber(),
+          currentEpoch.mul(EPOCH_LENGTH).toNumber(),
         ]);
         await api3Pool.mintReward();
       }
@@ -86,7 +85,7 @@ describe("withdrawRegular", function () {
         .connect(roles.user1)
         .scheduleUnstake(await api3Pool.userShares(roles.user1.address));
       await ethers.provider.send("evm_setNextBlockTimestamp", [
-        genesisEpoch.add(102).mul(epochLength).toNumber(),
+        genesisEpoch.add(102).mul(EPOCH_LENGTH).toNumber(),
       ]);
       await api3Pool.connect(roles.randomPerson).unstake(roles.user1.address);
       const userBefore = await api3Pool.users(roles.user1.address);
@@ -150,7 +149,7 @@ describe("precalculateUserLocked", function () {
           for (let i = 0; i < noEpochsToFastForward; i++) {
             const currentEpoch = genesisEpoch.add(ethers.BigNumber.from(i + 1));
             await ethers.provider.send("evm_setNextBlockTimestamp", [
-              currentEpoch.mul(epochLength).toNumber(),
+              currentEpoch.mul(EPOCH_LENGTH).toNumber(),
             ]);
             await api3Pool.mintReward();
           }
@@ -244,7 +243,7 @@ describe("withdrawPrecalculated", function () {
       for (let i = 0; i < noEpochsToFastForward; i++) {
         const currentEpoch = genesisEpoch.add(ethers.BigNumber.from(i + 1));
         await ethers.provider.send("evm_setNextBlockTimestamp", [
-          currentEpoch.mul(epochLength).toNumber(),
+          currentEpoch.mul(EPOCH_LENGTH).toNumber(),
         ]);
         await api3Pool.mintReward();
       }
@@ -253,7 +252,7 @@ describe("withdrawPrecalculated", function () {
         .connect(roles.user1)
         .scheduleUnstake(await api3Pool.userShares(roles.user1.address));
       await ethers.provider.send("evm_setNextBlockTimestamp", [
-        genesisEpoch.add(102).mul(epochLength).toNumber(),
+        genesisEpoch.add(102).mul(EPOCH_LENGTH).toNumber(),
       ]);
       await api3Pool.connect(roles.randomPerson).unstake(roles.user1.address);
       await api3Pool

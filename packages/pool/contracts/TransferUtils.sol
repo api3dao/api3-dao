@@ -66,13 +66,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
             );
         mintReward();
         Checkpoint[] storage _userShares = users[userAddress].shares;
-        uint256 userSharesLength = _userShares.length;
-        require(
-            userSharesLength != 0,
-            "Pool: User never had shares"
-            );
-        uint256 currentEpoch = block.timestamp / epochLength;
-        LockedCalculationState storage state = userToLockedCalculationState[userAddress];
+        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
         // Reset the state if there was no calculation made in this epoch
         if (state.initialIndEpoch != currentEpoch)
         {
@@ -121,8 +115,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         override
     {
         mintReward();
-        uint256 currentEpoch = block.timestamp / epochLength;
-        LockedCalculationState storage state = userToLockedCalculationState[msg.sender];
+        uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
         require(
             state.initialIndEpoch == currentEpoch,
             "Pool: Locked not precalculated"

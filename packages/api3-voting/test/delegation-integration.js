@@ -22,12 +22,11 @@ const createdVoteId = (receipt) =>
 
 const MOCK_TIMELOCKMANAGER_ADDRESS =
   "0x0000000000000000000000000000000000000001";
-const epochLength = Number(time.duration.weeks(1));
 
 contract(
   "API3 Voting App delegation tests",
   ([root, voter1, voter2, voter3]) => {
-    let pool, votingBase, voting, token;
+    let api3Pool, votingBase, voting, token;
     let CREATE_VOTES_ROLE, MODIFY_SUPPORT_ROLE, MODIFY_QUORUM_ROLE;
 
     const NOW = 1;
@@ -46,14 +45,15 @@ contract(
       );
 
       votingBase = await Voting.new();
-      pool = await Api3Pool.new(
+      api3Pool = await Api3Pool.new(
         token.address,
-        MOCK_TIMELOCKMANAGER_ADDRESS,
-        epochLength
+        MOCK_TIMELOCKMANAGER_ADDRESS
       );
       // Wait for the Genesis epoch to pass
       const latest = Number(await time.latest());
-      await time.increaseTo(latest + epochLength + 1);
+      await time.increaseTo(
+        latest + (await api3Pool.EPOCH_LENGTH()).toNumber() + 1
+      );
 
       // ROLES are below
       CREATE_VOTES_ROLE = await votingBase.CREATE_VOTES_ROLE();
@@ -100,16 +100,16 @@ contract(
         await token.generateTokens(voter2, balance2);
         await token.generateTokens(voter3, balance3);
 
-        await token.approve(pool.address, balance1, { from: voter1 });
-        await pool.depositAndStake(balance1, { from: voter1 });
+        await token.approve(api3Pool.address, balance1, { from: voter1 });
+        await api3Pool.depositAndStake(balance1, { from: voter1 });
 
-        await token.approve(pool.address, balance2, { from: voter2 });
-        await pool.depositAndStake(balance2, { from: voter2 });
+        await token.approve(api3Pool.address, balance2, { from: voter2 });
+        await api3Pool.depositAndStake(balance2, { from: voter2 });
 
-        await token.approve(pool.address, balance3, { from: voter3 });
-        await pool.depositAndStake(balance3, { from: voter3 });
+        await token.approve(api3Pool.address, balance3, { from: voter3 });
+        await api3Pool.depositAndStake(balance3, { from: voter3 });
 
-        await pool.setDaoApps(
+        await api3Pool.setDaoApps(
           voting.address,
           voting.address,
           voting.address,
@@ -119,11 +119,11 @@ contract(
 
       it("delegate to myself or to 0 address", async () => {
         await expectRevert(
-          pool.delegateVotingPower(voter3, { from: voter3 }),
+          api3Pool.delegateVotingPower(voter3, { from: voter3 }),
           "Pool: Invalid delegate"
         );
         await expectRevert(
-          pool.delegateVotingPower(
+          api3Pool.delegateVotingPower(
             "0x0000000000000000000000000000000000000000",
             { from: voter3 }
           ),
@@ -132,11 +132,11 @@ contract(
       });
 
       it("need to delegate", async () => {
-        await pool.delegateVotingPower(voter2, { from: voter1 });
+        await api3Pool.delegateVotingPower(voter2, { from: voter1 });
         const neededSupport = pct16(60);
         const minimumAcceptanceQuorum = pct16(20);
         await voting.initialize(
-          pool.address,
+          api3Pool.address,
           neededSupport,
           minimumAcceptanceQuorum
         );
@@ -150,22 +150,24 @@ contract(
 
       it("delegate after already delegated", async () => {
         await expectRevert(
-          pool.delegateVotingPower(voter3, { from: voter1 }),
+          api3Pool.delegateVotingPower(voter3, { from: voter1 }),
           "Pool: Updated delegate recently"
         );
       });
 
       it("undo delegate earlier then after a week", async () => {
         await expectRevert(
-          pool.undelegateVotingPower({ from: voter1 }),
+          api3Pool.undelegateVotingPower({ from: voter1 }),
           "Pool: Updated delegate recently"
         );
       });
 
       it("undo delegate", async () => {
         const latest = Number(await time.latest());
-        await time.increaseTo(latest + epochLength + 1);
-        await pool.undelegateVotingPower({ from: voter1 });
+        await time.increaseTo(
+          latest + (await api3Pool.EPOCH_LENGTH()).toNumber() + 1
+        );
+        await api3Pool.undelegateVotingPower({ from: voter1 });
         const voteId = createdVoteId(
           await voting.newVote(EMPTY_CALLS_SCRIPT, "metadata", { from: voter3 })
         );
@@ -176,9 +178,11 @@ contract(
 
       it("delegate delegated", async () => {
         let latest = Number(await time.latest());
-        await time.increaseTo(latest + epochLength + 1);
-        await pool.delegateVotingPower(voter2, { from: voter1 });
-        await pool.delegateVotingPower(voter3, { from: voter2 });
+        await time.increaseTo(
+          latest + (await api3Pool.EPOCH_LENGTH()).toNumber() + 1
+        );
+        await api3Pool.delegateVotingPower(voter2, { from: voter1 });
+        await api3Pool.delegateVotingPower(voter3, { from: voter2 });
         const voteId = createdVoteId(
           await voting.newVote(EMPTY_CALLS_SCRIPT, "metadata", { from: voter3 })
         );
@@ -188,16 +192,20 @@ contract(
 
       it("delegate delegated in a cycle", async () => {
         let latest = Number(await time.latest());
-        await time.increaseTo(latest + epochLength + 1);
-        await pool.undelegateVotingPower({ from: voter2 });
+        await time.increaseTo(
+          latest + (await api3Pool.EPOCH_LENGTH()).toNumber() + 1
+        );
+        await api3Pool.undelegateVotingPower({ from: voter2 });
         await expectRevert(
-          pool.delegateVotingPower(voter2, { from: voter1 }),
+          api3Pool.delegateVotingPower(voter2, { from: voter1 }),
           "Pool: Already delegated"
         );
         latest = Number(await time.latest());
-        await time.increaseTo(latest + epochLength + 1);
+        await time.increaseTo(
+          latest + (await api3Pool.EPOCH_LENGTH()).toNumber() + 1
+        );
         await expectRevert(
-          pool.delegateVotingPower(voter1, { from: voter2 }),
+          api3Pool.delegateVotingPower(voter1, { from: voter2 }),
           "Pool: Delegate is delegating"
         );
       });

@@ -4,8 +4,7 @@ const { expect } = require("chai");
 
 let roles;
 let api3Token, api3Pool, api3Voting, api3Staker;
-const epochLength = 7 * 24 * 60 * 60;
-let REWARD_VESTING_PERIOD;
+let EPOCH_LENGTH, REWARD_VESTING_PERIOD;
 
 beforeEach(async () => {
   const accounts = await ethers.getSigners();
@@ -35,9 +34,10 @@ beforeEach(async () => {
   );
   api3Pool = await api3PoolFactory.deploy(
     api3Token.address,
-    roles.mockTimelockManager.address,
-    epochLength
+    roles.mockTimelockManager.address
   );
+  EPOCH_LENGTH = (await api3Pool.EPOCH_LENGTH()).toNumber();
+  REWARD_VESTING_PERIOD = await api3Pool.REWARD_VESTING_PERIOD();
   const api3VotingFactory = await ethers.getContractFactory(
     "MockApi3Voting",
     roles.deployer
@@ -59,7 +59,6 @@ beforeEach(async () => {
     api3Token.address,
     api3Pool.address
   );
-  REWARD_VESTING_PERIOD = await api3Pool.REWARD_VESTING_PERIOD();
 });
 
 describe("totalVotingPowerOneBlockAgo", function () {
@@ -196,17 +195,17 @@ describe("getDelegateAt", function () {
           .delegateVotingPower(roles.user2.address);
         const firstBlockNumber = await ethers.provider.getBlockNumber();
         // Fast forward time
-        await ethers.provider.send("evm_increaseTime", [epochLength + 1]);
+        await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH + 1]);
         await api3Pool
           .connect(roles.user1)
           .delegateVotingPower(roles.randomPerson.address);
         // Fast forward time
-        await ethers.provider.send("evm_increaseTime", [epochLength + 1]);
+        await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH + 1]);
         await api3Pool
           .connect(roles.user1)
           .delegateVotingPower(roles.user2.address);
         // Fast forward time
-        await ethers.provider.send("evm_increaseTime", [epochLength + 1]);
+        await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH + 1]);
         // Check delegates
         expect(await api3Pool.userDelegateAt(roles.user1.address, 0)).to.equal(
           ethers.constants.AddressZero
@@ -244,11 +243,11 @@ describe("getDelegateAt", function () {
         await api3Pool
           .connect(roles.user1)
           .delegateVotingPower(roles.user2.address);
-        await ethers.provider.send("evm_increaseTime", [epochLength + 1]);
+        await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH + 1]);
         await api3Pool
           .connect(roles.user1)
           .delegateVotingPower(roles.randomPerson.address);
-        await ethers.provider.send("evm_increaseTime", [epochLength + 1]);
+        await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH + 1]);
       }
       expect(await api3Pool.userDelegateAt(roles.user1.address, 0)).to.equal(
         ethers.constants.AddressZero
@@ -297,35 +296,7 @@ describe("userLocked", function () {
           for (let i = 1; i < REWARD_VESTING_PERIOD.mul(2); i++) {
             const currentEpoch = genesisEpoch.add(ethers.BigNumber.from(i));
             await ethers.provider.send("evm_setNextBlockTimestamp", [
-              currentEpoch.mul(epochLength).toNumber(),
-            ]);
-            // Only pay around the half of the rewards
-            if (Math.random() > 0.5) {
-              const userStakeBefore = await api3Pool.userStake(
-                roles.user1.address
-              );
-              await api3Pool.mintReward();
-              const userStakeAfter = await api3Pool.userStake(
-                roles.user1.address
-              );
-              userRewards.push(userStakeAfter.sub(userStakeBefore));
-              // Stake some more
-              await api3Pool
-                .connect(roles.user1)
-                .depositAndStake(user1Stake.div(1000));
-            } else {
-              userRewards.push(ethers.BigNumber.from(0));
-            }
-          }
-          const expectedUserLocked = userRewards
-            .slice(-REWARD_VESTING_PERIOD)
-            .reduce((a, b) => a.add(b), ethers.BigNumber.from(0));
-          const error = expectedUserLocked.sub(
-            await api3Pool.userLocked(roles.user1.address)
-          );
-          // Tolerate rounding errors
-          expect(error).to.lt(REWARD_VESTING_PERIOD);
-        });
+                  currentEpoch.mul(EPOCH_LENGTH).toNumber(),
       });
       context("User has not staked", function () {
         it("returns 0", async function () {
@@ -333,7 +304,7 @@ describe("userLocked", function () {
           for (let i = 1; i < REWARD_VESTING_PERIOD.mul(2); i++) {
             const currentEpoch = genesisEpoch.add(ethers.BigNumber.from(i));
             await ethers.provider.send("evm_setNextBlockTimestamp", [
-              currentEpoch.mul(epochLength).toNumber(),
+              currentEpoch.mul(EPOCH_LENGTH).toNumber(),
             ]);
             await api3Pool.mintReward();
           }
@@ -367,7 +338,7 @@ describe("userLocked", function () {
         for (let i = 1; i < REWARD_VESTING_PERIOD.div(2); i++) {
           const currentEpoch = genesisEpoch.add(ethers.BigNumber.from(i));
           await ethers.provider.send("evm_setNextBlockTimestamp", [
-            currentEpoch.mul(epochLength).toNumber(),
+            currentEpoch.mul(EPOCH_LENGTH).toNumber(),
           ]);
           // Only pay around the half of the rewards
           if (Math.random() > 0.5) {
@@ -438,7 +409,7 @@ describe("getUser", function () {
     const unstakeScheduledFor = ethers.BigNumber.from(
       unstakeScheduleBlock.timestamp
     )
-      .add(ethers.BigNumber.from(epochLength))
+      .add(ethers.BigNumber.from(EPOCH_LENGTH))
       .add(ethers.BigNumber.from(1));
     await api3Pool.connect(roles.user1).scheduleUnstake(userScheduledToUnstake);
     // Have user1 make a proposal

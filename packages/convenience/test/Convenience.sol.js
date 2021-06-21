@@ -8,7 +8,6 @@ let mockApi3VotingPrimary,
   api3Pool,
   convenience;
 let roles, erc20Tokens;
-const epochLength = 7 * 24 * 60 * 60;
 
 const VotingAppType = Object.freeze({ Primary: 0, Secondary: 1 });
 const VoterStateType = Object.freeze({ ABSENT: 0, YEA: 1, NAY: 2 });
@@ -47,8 +46,7 @@ beforeEach(async () => {
   );
   api3Pool = await api3PoolFactory.deploy(
     mockApi3Token.address,
-    roles.mockTimeLockManager.address,
-    epochLength
+    roles.mockTimeLockManager.address
   );
 
   await api3Pool.setDaoApps(

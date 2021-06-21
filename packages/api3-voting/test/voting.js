@@ -35,7 +35,6 @@ const VOTER_STATE = ["ABSENT", "YEA", "NAY"].reduce((state, key, index) => {
 }, {});
 const MOCK_TIMELOCKMANAGER_ADDRESS =
   "0x0000000000000000000000000000000000000001";
-const epochLength = Number(time.duration.weeks(1));
 
 contract(
   "API3 Voting App",
@@ -101,8 +100,7 @@ contract(
         ); // empty parameters minime
         api3Pool = await Api3Pool.new(
           token.address,
-          MOCK_TIMELOCKMANAGER_ADDRESS,
-          epochLength
+          MOCK_TIMELOCKMANAGER_ADDRESS
         );
         await api3Pool.setDaoApps(
           voting.address,
@@ -181,12 +179,13 @@ contract(
         ); // empty parameters minime
         api3Pool = await Api3Pool.new(
           token.address,
-          MOCK_TIMELOCKMANAGER_ADDRESS,
-          epochLength
+          MOCK_TIMELOCKMANAGER_ADDRESS
         );
         // Wait for the Genesis epoch to pass
         const latest = Number(await time.latest());
-        await time.increaseTo(latest + epochLength + 1);
+        await time.increaseTo(
+          latest + (await api3Pool.EPOCH_LENGTH()).toNumber() + 1
+        );
         await api3Pool.setDaoApps(
           voting.address,
           voting.address,
@@ -297,12 +296,13 @@ contract(
           ); // empty parameters minime
           api3Pool = await Api3Pool.new(
             token.address,
-            MOCK_TIMELOCKMANAGER_ADDRESS,
-            epochLength
+            MOCK_TIMELOCKMANAGER_ADDRESS
           );
           // Wait for the Genesis epoch to pass
           const latest = Number(await time.latest());
-          await time.increaseTo(latest + epochLength + 1);
+          await time.increaseTo(
+            latest + (await api3Pool.EPOCH_LENGTH()).toNumber() + 1
+          );
           await api3Pool.setDaoApps(
             voting.address,
             voting.address,

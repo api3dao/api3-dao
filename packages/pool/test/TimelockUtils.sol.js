@@ -2,7 +2,6 @@ const { expect } = require("chai");
 
 let roles;
 let api3Token, api3Pool;
-const epochLength = 7 * 24 * 60 * 60;
 
 beforeEach(async () => {
   const accounts = await ethers.getSigners();
@@ -33,8 +32,7 @@ beforeEach(async () => {
   );
   api3Pool = await api3PoolFactory.deploy(
     api3Token.address,
-    roles.mockTimelockManager.address,
-    epochLength
+    roles.mockTimelockManager.address
   );
 });
 

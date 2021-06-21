@@ -85,7 +85,7 @@ aragon dao acl <DAO kernel address> --use-frame
 
 7. Check that the following values are initialized correctly
 - `api3Pool` and the voting parameters (`supportRequiredPct` and `minAcceptQuorumPct`) at the Api3Voting apps
-- `api3Token`, `timelockManager`, `agentAppPrimary`, `agentAppSecondary`, `votingAppPrimary`, `votingAppSecondary` and `epochLength` (7 * 24 * 60 * 60) at the pool contract
+- `api3Token`, `timelockManager`, `agentAppPrimary`, `agentAppSecondary`, `votingAppPrimary` and `votingAppSecondary` at the pool contract
 - If any claims manager contracts are set for the pool, they are audited and implemented to pay out claims in a trustless way with fail-safes such as payout limits (note that the pool will be deployed with no claims managers set initially)
 
 ## Permissions
