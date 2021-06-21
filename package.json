@@ -12,7 +12,7 @@
     "test:dao": "cd ./packages/dao && npm run test",
     "test:pool": "cd ./packages/pool && npm run test",
     "test:convenience": "cd ./packages/convenience && npm run test",
-    "prettify": "prettier --write \"./**/*.js\"",
+    "prettify": "prettier --write \"./**/*.js\""
   },
   "devDependencies": {
     "eslint": "^7.27.0",
