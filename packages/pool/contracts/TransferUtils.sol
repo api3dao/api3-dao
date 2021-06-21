@@ -18,7 +18,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         override
     {
         mintReward();
-        users[msg.sender].unstaked = users[msg.sender].unstaked + amount;
+        users[msg.sender].unstaked += amount;
         // Should never return false because the API3 token uses the
         // OpenZeppelin implementation
         assert(api3Token.transferFrom(msg.sender, address(this), amount));
@@ -77,9 +77,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         }
         uint256 indEpoch = lockedCalculation.nextIndEpoch;
         uint256 locked = lockedCalculation.locked;
-        uint256 oldestLockedEpoch = currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
-            ? currentEpoch - REWARD_VESTING_PERIOD + 1
-            : genesisEpoch + 1;
+        uint256 oldestLockedEpoch = getOldestLockedEpoch();
         for (; indEpoch >= oldestLockedEpoch; indEpoch--)
         {
             if (lockedCalculation.nextIndEpoch >= indEpoch + noEpochsPerIteration)
@@ -97,7 +95,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
             if (lockedReward.atBlock != 0)
             {
                 uint256 userSharesThen = getValueAt(_userShares, lockedReward.atBlock);
-                locked = locked + (lockedReward.amount * userSharesThen / lockedReward.totalSharesThen);
+                locked += lockedReward.amount * userSharesThen / lockedReward.totalSharesThen;
             }
         }
         lockedCalculation.nextIndEpoch = indEpoch;
@@ -143,12 +141,12 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
             userTotalFunds >= lockedAndVesting + amount,
             "Pool: Not enough unlocked funds"
             );
-        // Carry on with the withdrawal
         require(
             user.unstaked >= amount,
             "Pool: Not enough unstaked funds"
             );
-        user.unstaked = user.unstaked - amount;
+        // Carry on with the withdrawal
+        user.unstaked -= amount;
         // Should never return false because the API3 token uses the
         // OpenZeppelin implementation
         assert(api3Token.transfer(msg.sender, amount));

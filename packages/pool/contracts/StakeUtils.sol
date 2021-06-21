@@ -18,7 +18,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             user.unstaked >= amount,
             "Pool: Amount exceeds unstaked"
             );
-        user.unstaked = user.unstaked - amount;
+        user.unstaked -= amount;
         uint256 totalSharesNow = totalShares();
         uint256 sharesToMint = totalSharesNow * amount / totalStake;
         uint256 userSharesNow = userShares(msg.sender);
@@ -28,7 +28,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             }));
         uint256 totalSharesAfter = totalSharesNow + sharesToMint; 
         updateTotalShares(totalSharesAfter);
-        totalStake = totalStake + amount;
+        totalStake += amount;
         updateDelegatedVotingPower(sharesToMint, true);
         emit Staked(
             msg.sender,
@@ -76,7 +76,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             user.unstakeScheduledFor == 0,
             "Pool: Unexecuted unstake exists"
             );
-        uint256 amount = (shares * totalStake) / totalShares();
+        uint256 amount = shares * totalStake / totalShares();
         user.unstakeScheduledFor = block.timestamp + unstakeWaitPeriod;
         user.unstakeAmount = amount;
         user.unstakeShares = shares;
@@ -124,10 +124,10 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         unstakeAmount = unstakeAmount < totalStake
             ? unstakeAmount
             : totalStake - 1;
-        user.unstaked = user.unstaked + unstakeAmount;
+        user.unstaked += unstakeAmount;
 
         updateTotalShares(totalShares - user.unstakeShares);
-        totalStake = totalStake - unstakeAmount;
+        totalStake -= unstakeAmount;
 
         user.unstakeShares = 0;
         user.unstakeAmount = 0;

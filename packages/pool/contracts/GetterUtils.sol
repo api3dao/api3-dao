@@ -101,7 +101,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         override
         returns (uint256)
     {
-        return (userShares(userAddress) * totalStake) / totalShares();
+        return userShares(userAddress) * totalStake / totalShares();
     }
 
     /// @notice Called to get the voting power delegated to a user at a
@@ -261,17 +261,13 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
         // Limit the search to the last 1024 elements if the value being
         // searched falls within that window
-        uint min;
+        uint min = 0;
         if (
             checkpoints.length > 1024
                 && checkpoints[checkpoints.length - 1024].fromBlock < _block
             )
         {
             min = checkpoints.length - 1024;
-        }
-        else
-        {
-            min = 0;
         }
 
         // Binary search of the value in the array
@@ -313,17 +309,13 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
 
         // Limit the search to the last 1024 elements if the value being
         // searched falls within that window
-        uint min;
+        uint min = 0;
         if (
             checkpoints.length > 1024
                 && checkpoints[checkpoints.length - 1024].fromBlock < _block
             )
         {
             min = checkpoints.length - 1024;
-        }
-        else
-        {
-            min = 0;
         }
 
         // Binary search of the value in the array

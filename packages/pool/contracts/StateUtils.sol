@@ -69,10 +69,10 @@ contract StateUtils is IStateUtils {
     uint256 public immutable genesisEpoch;
 
     /// @notice API3 token contract
-    IApi3Token public api3Token;
+    IApi3Token public immutable api3Token;
 
     /// @notice TimelockManager contract
-    address public timelockManager;
+    address public immutable timelockManager;
 
     /// @notice Address of the primary Agent app of the API3 DAO
     /// @dev Primary Agent can be operated through the primary Api3Voting app.
@@ -156,12 +156,6 @@ contract StateUtils is IStateUtils {
     /// Every epoch (week), APR/52 of the total staked tokens will be added to
     /// the pool, effectively distributing them to the stakers.
     uint256 public apr = (maxApr + minApr) / 2;
-
-    /// @notice Mapping that keeps the specs of a proposal provided by a user
-    /// @dev After making a proposal through the Agent app, the user publishes
-    /// the specs of the proposal (target contract address, function,
-    /// parameters) at a URL
-    mapping(address => mapping(address => mapping(uint256 => string))) public userAddressToVotingAppToProposalIndexToSpecsUrl;
 
     address private deployer;
 

@@ -38,7 +38,7 @@ abstract contract ClaimUtils is StakeUtils, IClaimUtils {
             totalStake > amount,
             "Pool: Amount exceeds total stake"
             );
-        totalStake = totalStake - amount;
+        totalStake -= amount;
         // Should never return false because the API3 token uses the
         // OpenZeppelin implementation
         assert(api3Token.transfer(recipient, amount));

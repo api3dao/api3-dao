@@ -118,22 +118,17 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         )
         internal
     {
-        address currentDelegate = userDelegate(msg.sender);
-        if (currentDelegate == address(0)) {
+        address delegate = userDelegate(msg.sender);
+        if (delegate == address(0)) {
             return;
         }
-
-        User storage delegate = users[currentDelegate];
-        uint256 currentlyDelegatedTo = delegatedToUser(currentDelegate);
-        uint256 newDelegatedTo;
-        if (delta) {
-            newDelegatedTo = currentlyDelegatedTo + shares;
-        } else {
-            newDelegatedTo = currentlyDelegatedTo - shares;
-        }
-        delegate.delegatedTo.push(Checkpoint({
-            fromBlock: block.number,
-            value: newDelegatedTo
+        uint256 currentDelegatedTo = delegatedToUser(delegate);
+        uint256 newDelegatedTo = delta
+            ? currentDelegatedTo + shares
+            : currentDelegatedTo - shares;
+        users[delegate].delegatedTo.push(Checkpoint({
+            fromBlock: uint32(block.number),
+            value: uint224(newDelegatedTo)
             }));
     }
 }
