@@ -162,11 +162,8 @@ contract StateUtils is IStateUtils {
     // `setDaoApps()` call and grief the deployment
     address private deployer;
 
-    // We keep checkpoints for two most recent blocks at which totalShares has
-    // been updated. Note that the indices do not indicate chronological
-    // ordering.
-    Checkpoint private totalSharesCheckpoint1;
-    Checkpoint private totalSharesCheckpoint2;
+    // We keep checkpoints for the totalShares history updates.
+    Checkpoint[] public totalSharesHistory;
 
     // Keeps user states used in `withdrawPrecalculated()` calls
     mapping(address => LockedCalculation) internal userToLockedCalculation;
@@ -455,64 +452,12 @@ contract StateUtils is IStateUtils {
     function updateTotalShares(uint224 newTotalShares)
         internal
     {
-        if (block.number == totalSharesCheckpoint1.fromBlock)
-        {
-            totalSharesCheckpoint1.value = newTotalShares;
-        }
-        else if (block.number == totalSharesCheckpoint2.fromBlock)
-        {
-            totalSharesCheckpoint2.value = newTotalShares;
-        }
-        else
-        {
-            if (totalSharesCheckpoint1.fromBlock < totalSharesCheckpoint2.fromBlock)
-            {
-                totalSharesCheckpoint1.fromBlock = uint32(block.number);
-                totalSharesCheckpoint1.value = newTotalShares;
-            }
-            else
-            {
-                totalSharesCheckpoint2.fromBlock = uint32(block.number);
-                totalSharesCheckpoint2.value = newTotalShares;
-            }
-        }
+        totalSharesHistory.push(
+            Checkpoint({
+                fromBlock: uint32(block.number),
+                value: newTotalShares})
+        );
     }
 
-    /// @notice Called internally to get the current total shares
-    /// @return Current total shares
-    function totalShares()
-        internal
-        view
-        returns (uint256)
-    {
-        if (totalSharesCheckpoint1.fromBlock < totalSharesCheckpoint2.fromBlock)
-        {
-            return totalSharesCheckpoint2.value;
-        }
-        else
-        {
-            return totalSharesCheckpoint1.value;
-        }
-    }
 
-    /// @notice Called internally to get the total shares one block ago
-    /// @return Total shares one block ago
-    function totalSharesOneBlockAgo()
-        internal
-        view
-        returns (uint256)
-    {
-        if (totalSharesCheckpoint2.fromBlock == block.number)
-        {
-            return totalSharesCheckpoint1.value;
-        }
-        else if (totalSharesCheckpoint1.fromBlock == block.number)
-        {
-            return totalSharesCheckpoint2.value;
-        }
-        else
-        {
-            return totalShares();
-        }
-    }
 }

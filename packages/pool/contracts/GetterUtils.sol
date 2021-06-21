@@ -343,4 +343,24 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
             ? currentEpoch - REWARD_VESTING_PERIOD + 1
             : genesisEpoch + 1;
     }
+
+    /// @notice Called internally to get the current total shares
+    /// @return Current total shares
+    function totalShares()
+    internal
+    view
+    returns (uint256)
+    {
+        return getValueAt(totalSharesHistory, block.number);
+    }
+
+    /// @notice Called internally to get the total shares one block ago
+    /// @return Total shares one block ago
+    function totalSharesOneBlockAgo()
+    internal
+    view
+    returns (uint256)
+    {
+        return totalShares();
+    }
 }
