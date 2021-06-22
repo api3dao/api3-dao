@@ -57,8 +57,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         }
 
         // Assign the new delegation
-        User storage _delegate = users[delegate];
-        _delegate.delegatedTo.push(Checkpoint({
+        users[delegate].delegatedTo.push(Checkpoint({
             fromBlock: uint32(block.number),
             value: uint224(delegatedToUser(delegate) + userShares)
             }));
@@ -90,10 +89,10 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             user.lastDelegationUpdateTimestamp + EPOCH_LENGTH < block.timestamp,
             "Pool: Updated delegate recently"
             );
+        user.lastDelegationUpdateTimestamp = block.timestamp;
 
         uint256 userShares = userShares(msg.sender);
-        User storage delegate = users[previousDelegate];
-        delegate.delegatedTo.push(Checkpoint({
+        users[previousDelegate].delegatedTo.push(Checkpoint({
             fromBlock: uint32(block.number),
             value: uint224(delegatedToUser(previousDelegate) - userShares)
             }));
@@ -101,7 +100,6 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             fromBlock: uint32(block.number),
             _address: address(0)
             }));
-        user.lastDelegationUpdateTimestamp = block.timestamp;
         emit Undelegated(
             msg.sender,
             previousDelegate
@@ -121,7 +119,8 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         internal
     {
         address delegate = userDelegate(msg.sender);
-        if (delegate == address(0)) {
+        if (delegate == address(0))
+        {
             return;
         }
         uint256 currentDelegatedTo = delegatedToUser(delegate);

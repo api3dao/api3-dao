@@ -8,8 +8,7 @@ import "./interfaces/ITimelockUtils.sol";
 /// @dev The TimelockManager contract interfaces with this contract to transfer
 /// API3 tokens that are locked under a vesting schedule
 abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
-    struct Timelock
-    {
+    struct Timelock {
         uint256 totalAmount;
         uint256 remainingAmount;
         uint256 releaseStart;

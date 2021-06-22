@@ -118,8 +118,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             );
         uint256 totalShares = totalShares();
         uint256 unstakeAmountAtSchedulingTime = user.unstakeAmount;
-        uint256 unstakeAmountByShares =
-            (user.unstakeShares * totalStake) / totalShares;
+        uint256 unstakeAmountByShares = user.unstakeShares * totalStake / totalShares;
         uint256 unstakeAmount =
             unstakeAmountAtSchedulingTime > unstakeAmountByShares
                 ? unstakeAmountByShares
@@ -150,7 +149,6 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         external
         override
     {
-        uint256 unstaked = unstake(msg.sender);
-        withdrawRegular(unstaked);
+        withdrawRegular(unstake(msg.sender));
     }
 }

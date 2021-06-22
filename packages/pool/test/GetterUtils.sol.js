@@ -63,21 +63,21 @@ beforeEach(async () => {
 
 describe("totalSharesAt", function () {
   it("gets total shares at the queried block", async function () {
-    expect(await api3Pool.totalSharesAt((await ethers.provider.getBlockNumber()) - 1)).to.equal(
-      ethers.BigNumber.from(1)
-    );
+    expect(
+      await api3Pool.totalSharesAt((await ethers.provider.getBlockNumber()) - 1)
+    ).to.equal(ethers.BigNumber.from(1));
     const stakeAmount = ethers.BigNumber.from(1000);
     await api3Token
       .connect(roles.deployer)
       .transfer(api3Staker.address, stakeAmount.mul(1000));
     await api3Staker.stakeTwice(stakeAmount, stakeAmount);
-    expect(await api3Pool.totalSharesAt((await ethers.provider.getBlockNumber()) - 1)).to.equal(
-      ethers.BigNumber.from(1)
-    );
+    expect(
+      await api3Pool.totalSharesAt((await ethers.provider.getBlockNumber()) - 1)
+    ).to.equal(ethers.BigNumber.from(1));
     await api3Staker.stakeTwice(stakeAmount, stakeAmount);
-    expect(await api3Pool.totalSharesAt((await ethers.provider.getBlockNumber()) - 1)).to.equal(
-      ethers.BigNumber.from(1).add(stakeAmount).add(stakeAmount)
-    );
+    expect(
+      await api3Pool.totalSharesAt((await ethers.provider.getBlockNumber()) - 1)
+    ).to.equal(ethers.BigNumber.from(1).add(stakeAmount).add(stakeAmount));
   });
 });
 
