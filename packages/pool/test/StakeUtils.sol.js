@@ -162,7 +162,7 @@ describe("scheduleUnstake", function () {
           .add(ethers.BigNumber.from(1));
         // Schedule unstake
         const user1Shares = await api3Pool.userShares(roles.user1.address);
-        await expect(api3Pool.connect(roles.user1).scheduleUnstake(user1Shares))
+        await expect(api3Pool.connect(roles.user1).scheduleUnstake(user1Stake))
           .to.emit(api3Pool, "ScheduledUnstake")
           .withArgs(
             roles.user1.address,
@@ -183,9 +183,8 @@ describe("scheduleUnstake", function () {
           .connect(roles.user1)
           .approve(api3Pool.address, user1Stake);
         await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
-        // Schedule unstake for half of the shares
-        const user1Shares = await api3Pool.userShares(roles.user1.address);
-        await api3Pool.connect(roles.user1).scheduleUnstake(user1Shares.div(2));
+        // Schedule unstake for half of the tokens
+        await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake.div(2));
         // Attempt to schedule again
         await expect(
           api3Pool
@@ -199,7 +198,7 @@ describe("scheduleUnstake", function () {
     it("reverts", async function () {
       await expect(
         api3Pool.connect(roles.user1).scheduleUnstake(ethers.BigNumber.from(1))
-      ).to.be.revertedWith("Pool: Amount exceeds user shares");
+      ).to.be.revertedWith("Pool: Amount exceeds staked");
     });
   });
 });
@@ -234,8 +233,9 @@ describe("unstake", function () {
               roles.user2.address
             );
             // Schedule unstake
-            const user1Shares = await api3Pool.userShares(roles.user1.address);
-            await api3Pool.connect(roles.user1).scheduleUnstake(user1Shares);
+            await api3Pool
+              .connect(roles.user1)
+              .scheduleUnstake(await api3Pool.userStake(roles.user1.address));
             // Fast forward time to one epoch into the future
             const genesisEpoch = await api3Pool.genesisEpoch();
             const genesisEpochPlusTwo = genesisEpoch.add(
@@ -279,8 +279,9 @@ describe("unstake", function () {
               .approve(api3Pool.address, user1Stake);
             await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
             // Schedule unstake
-            const user1Shares = await api3Pool.userShares(roles.user1.address);
-            await api3Pool.connect(roles.user1).scheduleUnstake(user1Shares);
+            await api3Pool
+              .connect(roles.user1)
+              .scheduleUnstake(await api3Pool.userStake(roles.user1.address));
             // Fast forward time to one epoch into the future
             const genesisEpoch = await api3Pool.genesisEpoch();
             const genesisEpochPlusTwo = genesisEpoch.add(
@@ -316,11 +317,10 @@ describe("unstake", function () {
             .connect(roles.user1)
             .approve(api3Pool.address, user1Stake);
           await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
-          // Schedule unstake half of the shares
-          const user1Shares = await api3Pool.userShares(roles.user1.address);
+          // Schedule unstake half of the tokens
           await api3Pool
             .connect(roles.user1)
-            .scheduleUnstake(user1Shares.div(2));
+            .scheduleUnstake(user1Stake.div(2));
           // Set the DAO Agent
           await api3Pool
             .connect(roles.deployer)
@@ -378,8 +378,9 @@ describe("unstake", function () {
             .approve(api3Pool.address, user1Stake);
           await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
           // Schedule unstake
-          const user1Shares = await api3Pool.userShares(roles.user1.address);
-          await api3Pool.connect(roles.user1).scheduleUnstake(user1Shares);
+          await api3Pool
+            .connect(roles.user1)
+            .scheduleUnstake(await api3Pool.userStake(roles.user1.address));
           // Attempt to unstake
           await expect(
             api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)

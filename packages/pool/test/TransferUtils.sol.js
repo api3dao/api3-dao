@@ -83,7 +83,7 @@ describe("withdrawRegular", function () {
       // Schedule unstake and execute
       await api3Pool
         .connect(roles.user1)
-        .scheduleUnstake(await api3Pool.userShares(roles.user1.address));
+        .scheduleUnstake(await api3Pool.userStake(roles.user1.address));
       await ethers.provider.send("evm_setNextBlockTimestamp", [
         genesisEpoch.add(102).mul(EPOCH_LENGTH).toNumber(),
       ]);
@@ -235,7 +235,7 @@ describe("withdrawPrecalculated", function () {
         // Schedule unstake and execute
         await api3Pool
           .connect(roles.user1)
-          .scheduleUnstake(await api3Pool.userShares(roles.user1.address));
+          .scheduleUnstake(await api3Pool.userStake(roles.user1.address));
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           genesisEpoch.add(102).mul(EPOCH_LENGTH).toNumber(),
         ]);
@@ -287,7 +287,7 @@ describe("withdrawPrecalculated", function () {
         // Schedule unstake and execute
         await api3Pool
           .connect(roles.user1)
-          .scheduleUnstake(await api3Pool.userShares(roles.user1.address));
+          .scheduleUnstake(await api3Pool.userStake(roles.user1.address));
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           genesisEpoch.add(102).mul(EPOCH_LENGTH).toNumber(),
         ]);

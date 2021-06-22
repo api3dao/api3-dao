@@ -53,43 +53,47 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     /// meaning that they will not receive rewards or voting power for them any
     /// longer.
     /// At unstaking-time, the user unstakes either the amount of tokens
-    /// `shares` corresponds to at scheduling-time, or the amount of tokens
-    /// `shares` corresponds to at unstaking-time, whichever is smaller. This
-    /// corresponds to tokens being scheduled to be unstaked not receiving any
-    /// rewards, but being subject to claim payouts.
+    /// scheduled to unstake, or the amount of tokens `shares` corresponds to
+    /// at unstaking-time, whichever is smaller. This corresponds to tokens
+    /// being scheduled to be unstaked not receiving any rewards, but being
+    /// subject to claim payouts.
     /// In the instance that a claim has been paid out before an unstaking is
     /// executed, the user may potentially receive rewards during
     /// `unstakeWaitPeriod` (but not if there has not been a claim payout) but
     /// the amount of tokens that they can unstake will not be able to exceed
     /// the amount they scheduled the unstaking for.
-    /// @param shares Amount of shares to be revoked to unstake tokens
-    function scheduleUnstake(uint256 shares)
+    /// @param amount Amount of tokens scheduled to unstake
+    function scheduleUnstake(uint256 amount)
         external
         override
     {
         mintReward();
         uint256 userSharesNow = userShares(msg.sender);
+        uint256 totalSharesNow = totalShares();
+        uint256 userStaked = userSharesNow * totalStake / totalSharesNow;
         require(
-            userSharesNow >= shares,
-            "Pool: Amount exceeds user shares"
+            userStaked >= amount,
+            "Pool: Amount exceeds staked"
             );
+
         User storage user = users[msg.sender];
         require(
             user.unstakeScheduledFor == 0,
             "Pool: Unexecuted unstake exists"
             );
-        uint256 amount = shares * totalStake / totalShares();
+
+        uint256 sharesToUnstake = amount * totalSharesNow / totalStake;
         user.unstakeScheduledFor = block.timestamp + unstakeWaitPeriod;
         user.unstakeAmount = amount;
-        user.unstakeShares = shares;
+        user.unstakeShares = sharesToUnstake;
         user.shares.push(Checkpoint({
             fromBlock: uint32(block.number),
-            value: uint224(userSharesNow - shares)
+            value: uint224(userSharesNow - sharesToUnstake)
             }));
-        updateDelegatedVotingPower(shares, false);
+        updateDelegatedVotingPower(sharesToUnstake, false);
         emit ScheduledUnstake(
             msg.sender,
-            shares,
+            sharesToUnstake,
             amount,
             user.unstakeScheduledFor
             );
