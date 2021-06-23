@@ -34,7 +34,7 @@ beforeEach(async () => {
     api3Token.address,
     roles.mockTimelockManager.address
   );
-  EPOCH_LENGTH = (await api3Pool.EPOCH_LENGTH()).toNumber();
+  EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
   await api3Pool
     .connect(roles.deployer)
     .setDaoApps(
@@ -84,15 +84,9 @@ describe("delegateVotingPower", function () {
                   await api3Pool
                     .connect(roles.user1)
                     .delegateVotingPower(roles.randomPerson.address);
-                  expect(
-                    await api3Pool.userVotingPower(roles.user1.address)
-                  ).to.equal(ethers.BigNumber.from(0));
-                  expect(
-                    await api3Pool.userVotingPower(roles.randomPerson.address)
-                  ).to.equal(user1Stake);
                   // Fast forward time
                   await ethers.provider.send("evm_increaseTime", [
-                    EPOCH_LENGTH + 1,
+                    EPOCH_LENGTH.toNumber() + 1,
                   ]);
                   // ... then have user 1 delegate to user 2
                   const user1Shares = await api3Pool.userShares(
@@ -111,7 +105,7 @@ describe("delegateVotingPower", function () {
                     );
                   expect(
                     await api3Pool.userVotingPower(roles.user1.address)
-                  ).to.equal(ethers.BigNumber.from(0));
+                  ).to.equal(0);
                   expect(
                     await api3Pool.userVotingPower(roles.user2.address)
                   ).to.equal(user2Stake.add(user1Stake));
@@ -129,34 +123,22 @@ describe("delegateVotingPower", function () {
                   const user1Stake = ethers.utils.parseEther(
                     "20" + "000" + "000"
                   );
-                  const user2Stake = ethers.utils.parseEther(
-                    "60" + "000" + "000"
-                  );
                   await api3Token
                     .connect(roles.deployer)
                     .transfer(roles.user1.address, user1Stake);
                   await api3Token
-                    .connect(roles.deployer)
-                    .transfer(roles.user2.address, user2Stake);
-                  await api3Token
                     .connect(roles.user1)
                     .approve(api3Pool.address, user1Stake);
-                  await api3Token
-                    .connect(roles.user2)
-                    .approve(api3Pool.address, user2Stake);
                   await api3Pool
                     .connect(roles.user1)
                     .depositAndStake(user1Stake);
-                  await api3Pool
-                    .connect(roles.user2)
-                    .depositAndStake(user2Stake);
                   // Have user 1 delegate to user 2
                   await api3Pool
                     .connect(roles.user1)
                     .delegateVotingPower(roles.user2.address);
                   // Fast forward time
                   await ethers.provider.send("evm_increaseTime", [
-                    EPOCH_LENGTH + 1,
+                    EPOCH_LENGTH.toNumber() + 1,
                   ]);
                   // ... then have user 1 delegate to user 2 again
                   await expect(
@@ -164,13 +146,6 @@ describe("delegateVotingPower", function () {
                       .connect(roles.user1)
                       .delegateVotingPower(roles.user2.address)
                   ).to.be.revertedWith("Pool: Already delegated");
-
-                  expect(
-                    await api3Pool.userVotingPower(roles.user1.address)
-                  ).to.equal(ethers.BigNumber.from(0));
-                  expect(
-                    await api3Pool.userVotingPower(roles.user2.address)
-                  ).to.equal(user2Stake.add(user1Stake));
                 });
               });
             });
@@ -271,27 +246,21 @@ describe("undelegateVotingPower", function () {
         it("undelegates voting power", async function () {
           // Have two users stake
           const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
-          const user2Stake = ethers.utils.parseEther("60" + "000" + "000");
           await api3Token
             .connect(roles.deployer)
             .transfer(roles.user1.address, user1Stake);
           await api3Token
-            .connect(roles.deployer)
-            .transfer(roles.user2.address, user2Stake);
-          await api3Token
             .connect(roles.user1)
             .approve(api3Pool.address, user1Stake);
-          await api3Token
-            .connect(roles.user2)
-            .approve(api3Pool.address, user2Stake);
           await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
-          await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
           // Have user 1 delegate to user 2 first
           await api3Pool
             .connect(roles.user1)
             .delegateVotingPower(roles.user2.address);
           // Fast forward time
-          await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH + 1]);
+          await ethers.provider.send("evm_increaseTime", [
+            EPOCH_LENGTH.toNumber() + 1,
+          ]);
           // Have user 1 undelegate
           const user1Shares = await api3Pool.userShares(roles.user1.address);
           await expect(api3Pool.connect(roles.user1).undelegateVotingPower())
@@ -301,10 +270,10 @@ describe("undelegateVotingPower", function () {
             user1Stake
           );
           expect(await api3Pool.userVotingPower(roles.user2.address)).to.equal(
-            user2Stake
+            0
           );
           expect(await api3Pool.delegatedToUser(roles.user2.address)).to.equal(
-            ethers.BigNumber.from(0)
+            0
           );
           expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
             ethers.constants.AddressZero

@@ -36,138 +36,138 @@ beforeEach(async () => {
     api3Token.address,
     roles.mockTimelockManager.address
   );
-  EPOCH_LENGTH = (await api3Pool.EPOCH_LENGTH()).toNumber();
+  EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
 });
 
 describe("mintReward", function () {
   context("Reward for the previous epoch has not been minted", function () {
     context("Pool contract is authorized to mint tokens", function () {
-      context("Stake target is not zero", function () {
-        context("Total stake is above target", function () {
-          it("updates APR and mints reward", async function () {
-            // Authorize pool contract to mint tokens
-            await api3Token
-              .connect(roles.deployer)
-              .updateMinterStatus(api3Pool.address, true);
-            // Have two users stake
-            const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
-            const user2Stake = ethers.utils.parseEther("60" + "000" + "000");
-            await api3Token
-              .connect(roles.deployer)
-              .transfer(roles.user1.address, user1Stake);
-            await api3Token
-              .connect(roles.deployer)
-              .transfer(roles.user2.address, user2Stake);
-            await api3Token
-              .connect(roles.user1)
-              .approve(api3Pool.address, user1Stake);
-            await api3Token
-              .connect(roles.user2)
-              .approve(api3Pool.address, user2Stake);
-            await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
-            await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
-            // Fast forward time to one epoch into the future
-            const genesisEpoch = await api3Pool.genesisEpoch();
-            let nextEpoch = genesisEpoch;
-            // Pay rewards until APR is clipped at its minimum value
-            for (let ind = 0; ind < 50; ind++) {
-              nextEpoch = nextEpoch.add(ethers.BigNumber.from(1));
-              await ethers.provider.send("evm_setNextBlockTimestamp", [
-                nextEpoch.mul(EPOCH_LENGTH).toNumber(),
-              ]);
-              // Pay reward
-              const totalStake = await api3Pool.totalStake();
-              const aprUpdateStep = await api3Pool.aprUpdateStep();
-              const apr = await api3Pool.apr();
-              let newApr = apr.sub(aprUpdateStep);
-              if (newApr.lt(await api3Pool.minApr())) {
-                newApr = await api3Pool.minApr();
-              }
-              const rewardAmount = totalStake
-                .mul(apr)
-                .mul(EPOCH_LENGTH)
-                .div(ONE_YEAR_IN_SECONDS)
-                .div(HUNDRED_PERCENT);
-              await expect(api3Pool.connect(roles.randomPerson).mintReward())
-                .to.emit(api3Pool, "MintedReward")
-                .withArgs(nextEpoch, rewardAmount, newApr);
-              expect(await api3Pool.totalStake()).to.equal(
-                totalStake.add(rewardAmount)
-              );
-              expect(await api3Pool.epochIndexOfLastReward()).to.equal(
-                nextEpoch
-              );
-              expect(await api3Pool.apr()).to.equal(newApr);
-              const reward = await api3Pool.epochIndexToReward(nextEpoch);
-              expect(reward.atBlock).to.equal(
-                await ethers.provider.getBlockNumber()
-              );
-              expect(reward.amount).to.equal(rewardAmount);
+      context("Total stake is above target", function () {
+        it("mints reward and increases APR", async function () {
+          // Authorize pool contract to mint tokens
+          await api3Token
+            .connect(roles.deployer)
+            .updateMinterStatus(api3Pool.address, true);
+          // Have two users stake
+          const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+          const user2Stake = ethers.utils.parseEther("60" + "000" + "000");
+          await api3Token
+            .connect(roles.deployer)
+            .transfer(roles.user1.address, user1Stake);
+          await api3Token
+            .connect(roles.deployer)
+            .transfer(roles.user2.address, user2Stake);
+          await api3Token
+            .connect(roles.user1)
+            .approve(api3Pool.address, user1Stake);
+          await api3Token
+            .connect(roles.user2)
+            .approve(api3Pool.address, user2Stake);
+          await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+          await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
+          // Fast forward time to one epoch into the future
+          const genesisEpoch = await api3Pool.genesisEpoch();
+          let nextEpoch = genesisEpoch;
+          // Pay rewards until APR is clipped at its minimum value
+          for (let ind = 0; ind < 50; ind++) {
+            nextEpoch = nextEpoch.add(1);
+            await ethers.provider.send("evm_setNextBlockTimestamp", [
+              nextEpoch.mul(EPOCH_LENGTH).toNumber(),
+            ]);
+            // Pay reward
+            const totalStake = await api3Pool.totalStake();
+            const aprUpdateStep = await api3Pool.aprUpdateStep();
+            const apr = await api3Pool.apr();
+            let newApr = apr.sub(aprUpdateStep);
+            if (newApr.lt(await api3Pool.minApr())) {
+              newApr = await api3Pool.minApr();
             }
-          });
+            const rewardAmount = totalStake
+              .mul(apr)
+              .mul(EPOCH_LENGTH)
+              .div(ONE_YEAR_IN_SECONDS)
+              .div(HUNDRED_PERCENT);
+            await expect(api3Pool.connect(roles.randomPerson).mintReward())
+              .to.emit(api3Pool, "MintedReward")
+              .withArgs(nextEpoch, rewardAmount, newApr);
+            expect(await api3Pool.totalStake()).to.equal(
+              totalStake.add(rewardAmount)
+            );
+            expect(await api3Pool.epochIndexOfLastReward()).to.equal(nextEpoch);
+            expect(await api3Pool.apr()).to.equal(newApr);
+            const reward = await api3Pool.epochIndexToReward(nextEpoch);
+            expect(reward.atBlock).to.equal(
+              await ethers.provider.getBlockNumber()
+            );
+            expect(reward.amount).to.equal(rewardAmount);
+            expect(reward.totalSharesThen).to.equal(
+              user1Stake.add(user2Stake).add(1)
+            );
+          }
         });
-        context("Total stake is below target", function () {
-          it("updates APR and pays reward", async function () {
-            // Authorize pool contract to mint tokens
-            await api3Token
-              .connect(roles.deployer)
-              .updateMinterStatus(api3Pool.address, true);
-            // Have two users stake
-            const user1Stake = ethers.utils.parseEther("1" + "000" + "000");
-            const user2Stake = ethers.utils.parseEther("3" + "000" + "000");
-            await api3Token
-              .connect(roles.deployer)
-              .transfer(roles.user1.address, user1Stake);
-            await api3Token
-              .connect(roles.deployer)
-              .transfer(roles.user2.address, user2Stake);
-            await api3Token
-              .connect(roles.user1)
-              .approve(api3Pool.address, user1Stake);
-            await api3Token
-              .connect(roles.user2)
-              .approve(api3Pool.address, user2Stake);
-            await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
-            await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
-            // Fast forward time to one epoch into the future
-            const genesisEpoch = await api3Pool.genesisEpoch();
-            let nextEpoch = genesisEpoch;
-            // Pay rewards until APR is clipped at its maximum value
-            for (let ind = 0; ind < 50; ind++) {
-              nextEpoch = nextEpoch.add(ethers.BigNumber.from(1));
-              await ethers.provider.send("evm_setNextBlockTimestamp", [
-                nextEpoch.mul(EPOCH_LENGTH).toNumber(),
-              ]);
-              // Pay reward
-              const totalStake = await api3Pool.totalStake();
-              const aprUpdateStep = await api3Pool.aprUpdateStep();
-              const apr = await api3Pool.apr();
-              let newApr = apr.add(aprUpdateStep);
-              if (newApr.gt(await api3Pool.maxApr())) {
-                newApr = await api3Pool.maxApr();
-              }
-              const rewardAmount = totalStake
-                .mul(apr)
-                .mul(EPOCH_LENGTH)
-                .div(ONE_YEAR_IN_SECONDS)
-                .div(HUNDRED_PERCENT);
-              await expect(api3Pool.connect(roles.randomPerson).mintReward())
-                .to.emit(api3Pool, "MintedReward")
-                .withArgs(nextEpoch, rewardAmount, newApr);
-              expect(await api3Pool.totalStake()).to.equal(
-                totalStake.add(rewardAmount)
-              );
-              expect(await api3Pool.epochIndexOfLastReward()).to.equal(
-                nextEpoch
-              );
-              expect(await api3Pool.apr()).to.equal(newApr);
-              const reward = await api3Pool.epochIndexToReward(nextEpoch);
-              expect(reward.atBlock).to.equal(
-                await ethers.provider.getBlockNumber()
-              );
-              expect(reward.amount).to.equal(rewardAmount);
+      });
+      context("Total stake is below target", function () {
+        it("pays reward and decreases APR", async function () {
+          // Authorize pool contract to mint tokens
+          await api3Token
+            .connect(roles.deployer)
+            .updateMinterStatus(api3Pool.address, true);
+          // Have two users stake
+          const user1Stake = ethers.utils.parseEther("1" + "000" + "000");
+          const user2Stake = ethers.utils.parseEther("3" + "000" + "000");
+          await api3Token
+            .connect(roles.deployer)
+            .transfer(roles.user1.address, user1Stake);
+          await api3Token
+            .connect(roles.deployer)
+            .transfer(roles.user2.address, user2Stake);
+          await api3Token
+            .connect(roles.user1)
+            .approve(api3Pool.address, user1Stake);
+          await api3Token
+            .connect(roles.user2)
+            .approve(api3Pool.address, user2Stake);
+          await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+          await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
+          // Fast forward time to one epoch into the future
+          const genesisEpoch = await api3Pool.genesisEpoch();
+          let nextEpoch = genesisEpoch;
+          // Pay rewards until APR is clipped at its maximum value
+          for (let ind = 0; ind < 50; ind++) {
+            nextEpoch = nextEpoch.add(1);
+            await ethers.provider.send("evm_setNextBlockTimestamp", [
+              nextEpoch.mul(EPOCH_LENGTH).toNumber(),
+            ]);
+            // Pay reward
+            const totalStake = await api3Pool.totalStake();
+            const aprUpdateStep = await api3Pool.aprUpdateStep();
+            const apr = await api3Pool.apr();
+            let newApr = apr.add(aprUpdateStep);
+            if (newApr.gt(await api3Pool.maxApr())) {
+              newApr = await api3Pool.maxApr();
             }
-          });
+            const rewardAmount = totalStake
+              .mul(apr)
+              .mul(EPOCH_LENGTH)
+              .div(ONE_YEAR_IN_SECONDS)
+              .div(HUNDRED_PERCENT);
+            await expect(api3Pool.connect(roles.randomPerson).mintReward())
+              .to.emit(api3Pool, "MintedReward")
+              .withArgs(nextEpoch, rewardAmount, newApr);
+            expect(await api3Pool.totalStake()).to.equal(
+              totalStake.add(rewardAmount)
+            );
+            expect(await api3Pool.epochIndexOfLastReward()).to.equal(nextEpoch);
+            expect(await api3Pool.apr()).to.equal(newApr);
+            const reward = await api3Pool.epochIndexToReward(nextEpoch);
+            expect(reward.atBlock).to.equal(
+              await ethers.provider.getBlockNumber()
+            );
+            expect(reward.amount).to.equal(rewardAmount);
+            expect(reward.totalSharesThen).to.equal(
+              user1Stake.add(user2Stake).add(1)
+            );
+          }
         });
       });
     });
@@ -192,7 +192,7 @@ describe("mintReward", function () {
         await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
         // Fast forward time to one epoch into the future
         const genesisEpoch = await api3Pool.genesisEpoch();
-        const genesisEpochPlusOne = genesisEpoch.add(ethers.BigNumber.from(1));
+        const genesisEpochPlusOne = genesisEpoch.add(1);
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           genesisEpochPlusOne.mul(EPOCH_LENGTH).toNumber(),
         ]);
@@ -208,12 +208,13 @@ describe("mintReward", function () {
         const reward = await api3Pool.epochIndexToReward(genesisEpochPlusOne);
         expect(reward.atBlock).to.equal(0);
         expect(reward.amount).to.equal(0);
+        expect(reward.totalSharesThen).to.equal(0);
       });
     });
   });
   context("Rewards for multiple epochs have not been paid", function () {
     context("Pool contract is authorized to mint tokens", function () {
-      it("updates APR and only pays the reward for the current epoch", async function () {
+      it("only pays the reward for the current epoch and updates APR", async function () {
         // Authorize pool contract to mint tokens
         await api3Token
           .connect(roles.deployer)
@@ -237,7 +238,7 @@ describe("mintReward", function () {
         await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
         // Fast forward time to five epochs into the future
         const genesisEpoch = await api3Pool.genesisEpoch();
-        const genesisEpochPlusFive = genesisEpoch.add(ethers.BigNumber.from(5));
+        const genesisEpochPlusFive = genesisEpoch.add(5);
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           genesisEpochPlusFive.mul(EPOCH_LENGTH).toNumber(),
         ]);
@@ -264,6 +265,9 @@ describe("mintReward", function () {
         const reward = await api3Pool.epochIndexToReward(genesisEpochPlusFive);
         expect(reward.atBlock).to.equal(await ethers.provider.getBlockNumber());
         expect(reward.amount).to.equal(rewardAmount);
+        expect(reward.totalSharesThen).to.equal(
+          user1Stake.add(user2Stake).add(1)
+        );
       });
     });
     context("Pool contract is not authorized to mint tokens", function () {
@@ -287,7 +291,7 @@ describe("mintReward", function () {
         await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
         // Fast forward time to five epochs into the future
         const genesisEpoch = await api3Pool.genesisEpoch();
-        const genesisEpochPlusFive = genesisEpoch.add(ethers.BigNumber.from(5));
+        const genesisEpochPlusFive = genesisEpoch.add(5);
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           genesisEpochPlusFive.mul(EPOCH_LENGTH).toNumber(),
         ]);
@@ -303,6 +307,7 @@ describe("mintReward", function () {
         const reward = await api3Pool.epochIndexToReward(genesisEpochPlusFive);
         expect(reward.atBlock).to.equal(0);
         expect(reward.amount).to.equal(0);
+        expect(reward.totalSharesThen).to.equal(0);
       });
     });
   });
@@ -331,7 +336,7 @@ describe("mintReward", function () {
       await api3Pool.connect(roles.user2).depositAndStake(user2Stake);
       // Fast forward time to one epoch into the future
       const genesisEpoch = await api3Pool.genesisEpoch();
-      const genesisEpochPlusOne = genesisEpoch.add(ethers.BigNumber.from(1));
+      const genesisEpochPlusOne = genesisEpoch.add(1);
       await ethers.provider.send("evm_setNextBlockTimestamp", [
         genesisEpochPlusOne.mul(EPOCH_LENGTH).toNumber(),
       ]);

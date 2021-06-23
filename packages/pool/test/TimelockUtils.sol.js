@@ -72,9 +72,9 @@ describe("deposit", function () {
         api3Pool
           .connect(roles.randomPerson)
           .deposit(
-            roles.randomPerson.address,
+            roles.mockTimelockManager.address,
             timelockManagerDeposit,
-            roles.randomPerson.address
+            roles.user1.address
           )
       ).to.be.revertedWith("Pool: Caller not TimelockManager");
     });
@@ -121,7 +121,7 @@ describe("depositWithVesting", function () {
         });
         context("Amount is zero", function () {
           it("reverts", async function () {
-            const depositAmount = ethers.BigNumber.from(0);
+            const depositAmount = 0;
             const currentBlock = await ethers.provider.getBlock(
               await ethers.provider.getBlockNumber()
             );

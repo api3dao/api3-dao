@@ -96,7 +96,7 @@ describe("payOutClaim", function () {
         await expect(
           api3Pool
             .connect(roles.claimsManager)
-            .payOutClaim(roles.claimsManager.address, ethers.BigNumber.from(1))
+            .payOutClaim(roles.claimsManager.address, 1)
         ).to.be.revertedWith("Pool: Amount exceeds total stake");
       });
     });
@@ -106,7 +106,7 @@ describe("payOutClaim", function () {
       await expect(
         api3Pool
           .connect(roles.randomPerson)
-          .payOutClaim(roles.randomPerson.address, ethers.BigNumber.from(1))
+          .payOutClaim(roles.randomPerson.address, 1)
       ).to.be.revertedWith("Pool: Caller not claims manager");
     });
   });

@@ -67,7 +67,7 @@ beforeEach(async () => {
   // Stake half the tokens
   await api3Pool
     .connect(roles.user1)
-    .stake(user1Stake.div(ethers.BigNumber.from(2)));
+    .stake(user1Stake.div(2));
   // Delegate To User 2
   await api3Pool.connect(roles.user1).delegateVotingPower(roles.user2.address);
 
@@ -82,7 +82,7 @@ beforeEach(async () => {
   // Stake half the tokens
   await api3Pool
     .connect(roles.user3)
-    .stake(user3Stake.div(ethers.BigNumber.from(2)));
+    .stake(user3Stake.div(2));
 
   const convenienceFactory = await ethers.getContractFactory(
     "Convenience",
@@ -323,13 +323,13 @@ describe("getStaticVoteData", function () {
             timestamp - 7 * 24 * 60 * 60 - 30 + i * 10
           );
           expect(staticVoteData.supportRequired[i]).to.be.equal(
-            ethers.BigNumber.from((50 * 10) ^ 16)
+            (50 * 10) ^ 16
           );
           expect(staticVoteData.minAcceptQuorum[i]).to.be.equal(
-            ethers.BigNumber.from((25 * 10) ^ 16)
+            (25 * 10) ^ 16
           );
           expect(staticVoteData.votingPower[i]).to.be.equal(
-            ethers.BigNumber.from(10000)
+            10000
           );
           expect(staticVoteData.script[i]).to.be.equal("0xabcdef");
         }
@@ -364,13 +364,13 @@ describe("getStaticVoteData", function () {
             timestamp - 7 * 24 * 60 * 60 - 30 + i * 10
           );
           expect(staticVoteData.supportRequired[i]).to.be.equal(
-            ethers.BigNumber.from((50 * 10) ^ 16)
+            (50 * 10) ^ 16
           );
           expect(staticVoteData.minAcceptQuorum[i]).to.be.equal(
-            ethers.BigNumber.from((25 * 10) ^ 16)
+            (25 * 10) ^ 16
           );
           expect(staticVoteData.votingPower[i]).to.be.equal(
-            ethers.BigNumber.from(10000)
+            10000
           );
           expect(staticVoteData.script[i]).to.be.equal("0xabcdef");
         }
@@ -634,8 +634,8 @@ describe("getOpenVoteIds", function () {
             VotingAppType.Primary
           );
           expect(openVoteIds.length).to.be.equal(2);
-          expect(openVoteIds[0]).to.be.equal(ethers.BigNumber.from(4));
-          expect(openVoteIds[1]).to.be.equal(ethers.BigNumber.from(3));
+          expect(openVoteIds[0]).to.be.equal(4);
+          expect(openVoteIds[1]).to.be.equal(3);
         });
       });
       context("There are no open votes", async function () {
@@ -676,8 +676,8 @@ describe("getOpenVoteIds", function () {
             VotingAppType.Secondary
           );
           expect(openVoteIds.length).to.be.equal(2);
-          expect(openVoteIds[0]).to.be.equal(ethers.BigNumber.from(4));
-          expect(openVoteIds[1]).to.be.equal(ethers.BigNumber.from(3));
+          expect(openVoteIds[0]).to.be.equal(4);
+          expect(openVoteIds[1]).to.be.equal(3);
         });
       });
       context("There are no open votes", async function () {

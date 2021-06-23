@@ -34,7 +34,7 @@ beforeEach(async () => {
     api3Token.address,
     roles.mockTimelockManager.address
   );
-  EPOCH_LENGTH = (await api3Pool.EPOCH_LENGTH()).toNumber();
+  EPOCH_LENGTH = await api3Pool.EPOCH_LENGTH();
 });
 
 describe("stake", function () {
@@ -50,37 +50,29 @@ describe("stake", function () {
           .approve(api3Pool.address, user1Stake);
         await api3Pool.connect(roles.user1).depositRegular(user1Stake);
         // Stake the first half
-        await api3Pool
-          .connect(roles.user1)
-          .stake(user1Stake.div(ethers.BigNumber.from(2)));
+        await api3Pool.connect(roles.user1).stake(user1Stake.div(2));
         // Delegate
         await api3Pool
           .connect(roles.user1)
           .delegateVotingPower(roles.user2.address);
         expect(await api3Pool.userStake(roles.user1.address)).to.equal(
-          user1Stake.div(ethers.BigNumber.from(2))
+          user1Stake.div(2)
         );
         expect(await api3Pool.userShares(roles.user1.address)).to.equal(
-          user1Stake.div(ethers.BigNumber.from(2))
+          user1Stake.div(2)
         );
         expect(await api3Pool.delegatedToUser(roles.user2.address)).to.equal(
-          user1Stake.div(ethers.BigNumber.from(2))
+          user1Stake.div(2)
         );
         expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
           roles.user2.address
         );
+        expect(await api3Pool.totalStake()).to.equal(user1Stake.div(2).add(1));
+        expect(await api3Pool.totalShares()).to.equal(user1Stake.div(2).add(1));
         // Stake the second half
-        await expect(
-          api3Pool
-            .connect(roles.user1)
-            .stake(user1Stake.div(ethers.BigNumber.from(2)))
-        )
+        await expect(api3Pool.connect(roles.user1).stake(user1Stake.div(2)))
           .to.emit(api3Pool, "Staked")
-          .withArgs(
-            roles.user1.address,
-            user1Stake.div(ethers.BigNumber.from(2)),
-            user1Stake.div(ethers.BigNumber.from(2))
-          );
+          .withArgs(roles.user1.address, user1Stake.div(2), user1Stake.div(2));
         expect(await api3Pool.userStake(roles.user1.address)).to.equal(
           user1Stake
         );
@@ -93,6 +85,8 @@ describe("stake", function () {
         expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
           roles.user2.address
         );
+        expect(await api3Pool.totalStake()).to.equal(user1Stake.add(1));
+        expect(await api3Pool.totalShares()).to.equal(user1Stake.add(1));
       });
     });
     context("User does not have a delegate", function () {
@@ -114,15 +108,16 @@ describe("stake", function () {
         expect(await api3Pool.userShares(roles.user1.address)).to.equal(
           user1Stake
         );
+        expect(await api3Pool.totalStake()).to.equal(user1Stake.add(1));
+        expect(await api3Pool.totalShares()).to.equal(user1Stake.add(1));
       });
     });
   });
   context("User does not have enough to stake", function () {
     it("reverts", async function () {
-      const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
-      await expect(
-        api3Pool.connect(roles.user1).stake(user1Stake)
-      ).to.be.revertedWith("Pool: Amount exceeds unstaked");
+      await expect(api3Pool.connect(roles.user1).stake(1)).to.be.revertedWith(
+        "Pool: Amount exceeds unstaked"
+      );
     });
   });
 });
@@ -143,34 +138,91 @@ describe("depositAndStake", function () {
 describe("scheduleUnstake", function () {
   context("User has enough staked to schedule unstake", function () {
     context("User does not already have a scheduled unstake", function () {
-      it("schedules unstake", async function () {
-        // Have the user stake
-        const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
-        await api3Token
-          .connect(roles.deployer)
-          .transfer(roles.user1.address, user1Stake);
-        await api3Token
-          .connect(roles.user1)
-          .approve(api3Pool.address, user1Stake);
-        await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
-        const currentBlock = await ethers.provider.getBlock(
-          await ethers.provider.getBlockNumber()
-        );
-        const unstakeScheduledFor = ethers.BigNumber.from(
-          currentBlock.timestamp
-        )
-          .add(EPOCH_LENGTH)
-          .add(ethers.BigNumber.from(1));
-        // Schedule unstake
-        const user1Shares = await api3Pool.userShares(roles.user1.address);
-        await expect(api3Pool.connect(roles.user1).scheduleUnstake(user1Stake))
-          .to.emit(api3Pool, "ScheduledUnstake")
-          .withArgs(
-            roles.user1.address,
-            user1Stake,
-            user1Shares,
-            unstakeScheduledFor
+      context("User has a delegate", function () {
+        it("schedules unstake and updates delegated voting power", async function () {
+          // Have the user stake
+          const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+          await api3Token
+            .connect(roles.deployer)
+            .transfer(roles.user1.address, user1Stake);
+          await api3Token
+            .connect(roles.user1)
+            .approve(api3Pool.address, user1Stake);
+          await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+          // Have the user delegate
+          await api3Pool
+            .connect(roles.user1)
+            .delegateVotingPower(roles.user2.address);
+          expect(await api3Pool.delegatedToUser(roles.user2.address)).to.equal(
+            user1Stake
           );
+          expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
+            roles.user2.address
+          );
+          const currentBlock = await ethers.provider.getBlock(
+            await ethers.provider.getBlockNumber()
+          );
+          const unstakeScheduledFor = ethers.BigNumber.from(
+            currentBlock.timestamp
+          )
+            .add(EPOCH_LENGTH)
+            .add(1);
+          // Schedule unstake
+          const user1Shares = await api3Pool.userShares(roles.user1.address);
+          await expect(
+            api3Pool.connect(roles.user1).scheduleUnstake(user1Stake)
+          )
+            .to.emit(api3Pool, "ScheduledUnstake")
+            .withArgs(
+              roles.user1.address,
+              user1Stake,
+              user1Shares,
+              unstakeScheduledFor
+            );
+          expect(await api3Pool.userShares(roles.user1.address)).to.equal(0);
+          expect(await api3Pool.totalShares()).to.equal(user1Shares.add(1));
+          expect(await api3Pool.delegatedToUser(roles.user2.address)).to.equal(
+            0
+          );
+          expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
+            roles.user2.address
+          );
+        });
+      });
+      context("User does not have a delegate", function () {
+        it("schedules unstake", async function () {
+          // Have the user stake
+          const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+          await api3Token
+            .connect(roles.deployer)
+            .transfer(roles.user1.address, user1Stake);
+          await api3Token
+            .connect(roles.user1)
+            .approve(api3Pool.address, user1Stake);
+          await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+          const currentBlock = await ethers.provider.getBlock(
+            await ethers.provider.getBlockNumber()
+          );
+          const unstakeScheduledFor = ethers.BigNumber.from(
+            currentBlock.timestamp
+          )
+            .add(EPOCH_LENGTH)
+            .add(1);
+          // Schedule unstake
+          const user1Shares = await api3Pool.userShares(roles.user1.address);
+          await expect(
+            api3Pool.connect(roles.user1).scheduleUnstake(user1Stake)
+          )
+            .to.emit(api3Pool, "ScheduledUnstake")
+            .withArgs(
+              roles.user1.address,
+              user1Stake,
+              user1Shares,
+              unstakeScheduledFor
+            );
+          expect(await api3Pool.userShares(roles.user1.address)).to.equal(0);
+          expect(await api3Pool.totalShares()).to.equal(user1Shares.add(1));
+        });
       });
     });
     context("User already has a scheduled unstake", function () {
@@ -188,9 +240,7 @@ describe("scheduleUnstake", function () {
         await api3Pool.connect(roles.user1).scheduleUnstake(user1Stake.div(2));
         // Attempt to schedule again
         await expect(
-          api3Pool
-            .connect(roles.user1)
-            .scheduleUnstake(ethers.BigNumber.from(1))
+          api3Pool.connect(roles.user1).scheduleUnstake(1)
         ).to.be.revertedWith("Pool: Unexecuted unstake exists");
       });
     });
@@ -198,7 +248,7 @@ describe("scheduleUnstake", function () {
   context("User does not have enough staked to schedule unstake", function () {
     it("reverts", async function () {
       await expect(
-        api3Pool.connect(roles.user1).scheduleUnstake(ethers.BigNumber.from(1))
+        api3Pool.connect(roles.user1).scheduleUnstake(1)
       ).to.be.revertedWith("Pool: Amount exceeds staked");
     });
   });
@@ -208,99 +258,39 @@ describe("unstake", function () {
   context("An unstake is scheduled for the user", function () {
     context("Enough time has passed since the unstake scheduling", function () {
       context("No claim payout has been made", function () {
-        context("User has a delegate", function () {
-          it("unstakes and updates delegated voting power", async function () {
-            // Authorize pool contract to mint tokens
-            await api3Token
-              .connect(roles.deployer)
-              .updateMinterStatus(api3Pool.address, true);
-            // Have the user stake
-            const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
-            await api3Token
-              .connect(roles.deployer)
-              .transfer(roles.user1.address, user1Stake);
-            await api3Token
-              .connect(roles.user1)
-              .approve(api3Pool.address, user1Stake);
-            await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
-            // Have the user delegate
-            await api3Pool
-              .connect(roles.user1)
-              .delegateVotingPower(roles.user2.address);
-            expect(
-              await api3Pool.delegatedToUser(roles.user2.address)
-            ).to.equal(ethers.BigNumber.from(user1Stake));
-            expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
-              roles.user2.address
-            );
-            // Schedule unstake
-            await api3Pool
-              .connect(roles.user1)
-              .scheduleUnstake(await api3Pool.userStake(roles.user1.address));
-            // Fast forward time to one epoch into the future
-            const genesisEpoch = await api3Pool.genesisEpoch();
-            const genesisEpochPlusTwo = genesisEpoch.add(
-              ethers.BigNumber.from(2)
-            );
-            await ethers.provider.send("evm_setNextBlockTimestamp", [
-              genesisEpochPlusTwo.mul(EPOCH_LENGTH).toNumber(),
-            ]);
-            // Unstake
-            await api3Pool.mintReward();
-            await expect(
-              api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
-            )
-              .to.emit(api3Pool, "Unstaked")
-              .withArgs(roles.user1.address, user1Stake);
-            // Delegation remains
-            expect(
-              await api3Pool.delegatedToUser(roles.user2.address)
-            ).to.equal(await api3Pool.userShares(roles.user1.address));
-            // This epoch's reward remains as being delegated
-            expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
-              roles.user2.address
-            );
-            const user = await api3Pool.users(roles.user1.address);
-            expect(user.unstaked).to.equal(user1Stake);
-          });
-        });
-        context("User does not have a delegate", function () {
-          it("unstakes", async function () {
-            // Authorize pool contract to mint tokens
-            await api3Token
-              .connect(roles.deployer)
-              .updateMinterStatus(api3Pool.address, true);
-            // Have the user stake
-            const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
-            await api3Token
-              .connect(roles.deployer)
-              .transfer(roles.user1.address, user1Stake);
-            await api3Token
-              .connect(roles.user1)
-              .approve(api3Pool.address, user1Stake);
-            await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
-            // Schedule unstake
-            await api3Pool
-              .connect(roles.user1)
-              .scheduleUnstake(await api3Pool.userStake(roles.user1.address));
-            // Fast forward time to one epoch into the future
-            const genesisEpoch = await api3Pool.genesisEpoch();
-            const genesisEpochPlusTwo = genesisEpoch.add(
-              ethers.BigNumber.from(2)
-            );
-            await ethers.provider.send("evm_setNextBlockTimestamp", [
-              genesisEpochPlusTwo.mul(EPOCH_LENGTH).toNumber(),
-            ]);
-            // Unstake
-            await api3Pool.mintReward();
-            await expect(
-              api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
-            )
-              .to.emit(api3Pool, "Unstaked")
-              .withArgs(roles.user1.address, user1Stake);
-            const user = await api3Pool.users(roles.user1.address);
-            expect(user.unstaked).to.equal(user1Stake);
-          });
+        it("unstakes", async function () {
+          // Authorize pool contract to mint tokens
+          await api3Token
+            .connect(roles.deployer)
+            .updateMinterStatus(api3Pool.address, true);
+          // Have the user stake
+          const user1Stake = ethers.utils.parseEther("20" + "000" + "000");
+          await api3Token
+            .connect(roles.deployer)
+            .transfer(roles.user1.address, user1Stake);
+          await api3Token
+            .connect(roles.user1)
+            .approve(api3Pool.address, user1Stake);
+          await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
+          // Schedule unstake
+          await api3Pool
+            .connect(roles.user1)
+            .scheduleUnstake(await api3Pool.userStake(roles.user1.address));
+          // Fast forward time to one epoch into the future
+          const genesisEpoch = await api3Pool.genesisEpoch();
+          const genesisEpochPlusTwo = genesisEpoch.add(2);
+          await ethers.provider.send("evm_setNextBlockTimestamp", [
+            genesisEpochPlusTwo.mul(EPOCH_LENGTH).toNumber(),
+          ]);
+          // Unstake
+          await api3Pool.mintReward();
+          await expect(
+            api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
+          )
+            .to.emit(api3Pool, "Unstaked")
+            .withArgs(roles.user1.address, user1Stake);
+          const user = await api3Pool.users(roles.user1.address);
+          expect(user.unstaked).to.equal(user1Stake);
         });
       });
       context("A claim has been paid out", function () {
@@ -344,9 +334,7 @@ describe("unstake", function () {
             );
           // Fast forward time to one epoch into the future
           const genesisEpoch = await api3Pool.genesisEpoch();
-          const genesisEpochPlusTwo = genesisEpoch.add(
-            ethers.BigNumber.from(2)
-          );
+          const genesisEpochPlusTwo = genesisEpoch.add(2);
           await ethers.provider.send("evm_setNextBlockTimestamp", [
             genesisEpochPlusTwo.mul(EPOCH_LENGTH).toNumber(),
           ]);
@@ -413,18 +401,18 @@ describe("unstakeAndWithdraw", function () {
     await api3Token.connect(roles.user1).approve(api3Pool.address, user1Stake);
     await api3Pool.connect(roles.user1).depositAndStake(user1Stake);
     // Schedule unstake
-    const user1Unstake = user1Stake.div(ethers.BigNumber.from(2));
+    const user1Unstake = user1Stake.div(2);
     await api3Pool.connect(roles.user1).scheduleUnstake(user1Unstake);
     // Fast forward time to one epoch into the future
     const genesisEpoch = await api3Pool.genesisEpoch();
-    const genesisEpochPlusTwo = genesisEpoch.add(ethers.BigNumber.from(2));
+    const genesisEpochPlusTwo = genesisEpoch.add(2);
     await ethers.provider.send("evm_setNextBlockTimestamp", [
       genesisEpochPlusTwo.mul(EPOCH_LENGTH).toNumber(),
     ]);
     // Unstake and withdraw
     await api3Pool.connect(roles.user1).unstakeAndWithdraw();
     const user = await api3Pool.users(roles.user1.address);
-    expect(user.unstaked).to.equal(ethers.BigNumber.from(0));
+    expect(user.unstaked).to.equal(0);
     expect(await api3Token.balanceOf(roles.user1.address)).to.equal(
       user1Unstake
     );
