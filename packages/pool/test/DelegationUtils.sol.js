@@ -95,13 +95,20 @@ describe("delegateVotingPower", function () {
                     EPOCH_LENGTH + 1,
                   ]);
                   // ... then have user 1 delegate to user 2
+                  const user1Shares = await api3Pool.userShares(
+                    roles.user1.address
+                  );
                   await expect(
                     api3Pool
                       .connect(roles.user1)
                       .delegateVotingPower(roles.user2.address)
                   )
                     .to.emit(api3Pool, "Delegated")
-                    .withArgs(roles.user1.address, roles.user2.address);
+                    .withArgs(
+                      roles.user1.address,
+                      roles.user2.address,
+                      user1Shares
+                    );
                   expect(
                     await api3Pool.userVotingPower(roles.user1.address)
                   ).to.equal(ethers.BigNumber.from(0));
@@ -286,9 +293,10 @@ describe("undelegateVotingPower", function () {
           // Fast forward time
           await ethers.provider.send("evm_increaseTime", [EPOCH_LENGTH + 1]);
           // Have user 1 undelegate
+          const user1Shares = await api3Pool.userShares(roles.user1.address);
           await expect(api3Pool.connect(roles.user1).undelegateVotingPower())
             .to.emit(api3Pool, "Undelegated")
-            .withArgs(roles.user1.address, roles.user2.address);
+            .withArgs(roles.user1.address, roles.user2.address, user1Shares);
           expect(await api3Pool.userVotingPower(roles.user1.address)).to.equal(
             user1Stake
           );

@@ -50,10 +50,6 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
                 fromBlock: uint32(block.number),
                 value: uint224(delegatedToUser(previousDelegate) - userShares)
                 }));
-            emit Undelegated(
-                msg.sender,
-                previousDelegate
-                );
         }
 
         // Assign the new delegation
@@ -69,7 +65,8 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             }));
         emit Delegated(
             msg.sender,
-            delegate
+            delegate,
+            userShares
             );
     }
 
@@ -102,7 +99,8 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             }));
         emit Undelegated(
             msg.sender,
-            previousDelegate
+            previousDelegate,
+            userShares
             );
     }
 
@@ -131,5 +129,10 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             fromBlock: uint32(block.number),
             value: uint224(newDelegatedTo)
             }));
+        emit Delegated(
+            msg.sender,
+            delegate,
+            newDelegatedTo
+            );
     }
 }

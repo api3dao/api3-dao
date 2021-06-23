@@ -10,44 +10,26 @@ interface IStateUtils {
         );
 
     event SetClaimsManagerStatus(
-        address claimsManager,
-        bool status
+        address indexed claimsManager,
+        bool indexed status
         );
 
-    event SetStakeTarget(
-        uint256 oldTarget,
-        uint256 newTarget
-        );
+    event SetStakeTarget(uint256 stakeTarget);
 
-    event SetMaxApr(
-        uint256 oldMaxApr,
-        uint256 maxApr
-        );
+    event SetMaxApr(uint256 maxApr);
 
-    event SetMinApr(
-        uint256 oldMinApr,
-        uint256 minApr
-        );
+    event SetMinApr(uint256 minApr);
 
-    event SetUnstakeWaitPeriod(
-        uint256 oldUnstakeWaitPeriod,
-        uint256 unstakeWaitPeriod
-        );
+    event SetUnstakeWaitPeriod(uint256 unstakeWaitPeriod);
 
-    event SetAprUpdateStep(
-        uint256 oldAprUpdateStep,
-        uint256 aprUpdateStep
-        );
+    event SetAprUpdateStep(uint256 aprUpdateStep);
 
-    event SetProposalVotingPowerThreshold(
-        uint256 oldProposalVotingPowerThreshold,
-        uint256 proposalVotingPowerThreshold
-        );
+    event SetProposalVotingPowerThreshold(uint256 proposalVotingPowerThreshold);
 
     event UpdatedLastProposalTimestamp(
-        address votingApp,
-        address userAddress,
-        uint256 lastProposalTimestamp
+        address indexed user,
+        uint256 lastProposalTimestamp,
+        address votingApp
         );
 
     function setDaoApps(

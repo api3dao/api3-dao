@@ -6,12 +6,14 @@ import "./IRewardUtils.sol";
 interface IDelegationUtils is IRewardUtils {
     event Delegated(
         address indexed user,
-        address indexed delegate
+        address indexed delegate,
+        uint256 shares
         );
 
     event Undelegated(
         address indexed user,
-        address indexed delegate
+        address indexed delegate,
+        uint256 shares
         );
 
     function delegateVotingPower(address delegate) 

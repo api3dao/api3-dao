@@ -5,9 +5,9 @@ import "./IGetterUtils.sol";
 
 interface IRewardUtils is IGetterUtils {
     event MintedReward(
-        uint256 indexed epoch,
-        uint256 rewardAmount,
-        uint256 apr
+        uint256 indexed epochIndex,
+        uint256 amount,
+        uint256 newApr
         );
 
     function mintReward()

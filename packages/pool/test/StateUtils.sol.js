@@ -385,16 +385,16 @@ describe("setStakeTarget", function () {
               .setStakeTarget(newStakeTarget)
           )
             .to.emit(api3Pool, "SetStakeTarget")
-            .withArgs(oldStakeTarget, newStakeTarget);
+            .withArgs(newStakeTarget);
           expect(await api3Pool.stakeTarget()).to.equal(newStakeTarget);
           await expect(
             api3Pool
               .connect(roles.agentAppSecondary)
-              .setStakeTarget(newStakeTarget)
+              .setStakeTarget(oldStakeTarget)
           )
             .to.emit(api3Pool, "SetStakeTarget")
-            .withArgs(newStakeTarget, newStakeTarget);
-          expect(await api3Pool.stakeTarget()).to.equal(newStakeTarget);
+            .withArgs(oldStakeTarget);
+          expect(await api3Pool.stakeTarget()).to.equal(oldStakeTarget);
         });
       }
     );
@@ -448,14 +448,14 @@ describe("setMaxApr", function () {
             api3Pool.connect(roles.agentAppPrimary).setMaxApr(newMaxApr)
           )
             .to.emit(api3Pool, "SetMaxApr")
-            .withArgs(oldMaxApr, newMaxApr);
+            .withArgs(newMaxApr);
           expect(await api3Pool.maxApr()).to.equal(newMaxApr);
           await expect(
-            api3Pool.connect(roles.agentAppSecondary).setMaxApr(newMaxApr)
+            api3Pool.connect(roles.agentAppSecondary).setMaxApr(oldMaxApr)
           )
             .to.emit(api3Pool, "SetMaxApr")
-            .withArgs(newMaxApr, newMaxApr);
-          expect(await api3Pool.maxApr()).to.equal(newMaxApr);
+            .withArgs(oldMaxApr);
+          expect(await api3Pool.maxApr()).to.equal(oldMaxApr);
         });
       }
     );
@@ -508,14 +508,14 @@ describe("setMinApr", function () {
             api3Pool.connect(roles.agentAppPrimary).setMinApr(newMinApr)
           )
             .to.emit(api3Pool, "SetMinApr")
-            .withArgs(oldMinApr, newMinApr);
+            .withArgs(newMinApr);
           expect(await api3Pool.minApr()).to.equal(newMinApr);
           await expect(
-            api3Pool.connect(roles.agentAppSecondary).setMinApr(newMinApr)
+            api3Pool.connect(roles.agentAppSecondary).setMinApr(oldMinApr)
           )
             .to.emit(api3Pool, "SetMinApr")
-            .withArgs(newMinApr, newMinApr);
-          expect(await api3Pool.minApr()).to.equal(newMinApr);
+            .withArgs(oldMinApr);
+          expect(await api3Pool.minApr()).to.equal(oldMinApr);
         });
       }
     );
@@ -561,7 +561,6 @@ describe("setUnstakeWaitPeriod", function () {
               roles.votingAppPrimary.address,
               roles.votingAppSecondary.address
             );
-          const oldUnstakeWaitPeriod = await api3Pool.unstakeWaitPeriod();
           const newUnstakeWaitPeriod = ethers.BigNumber.from(EPOCH_LENGTH).add(
             ethers.BigNumber.from(123)
           );
@@ -571,7 +570,7 @@ describe("setUnstakeWaitPeriod", function () {
               .setUnstakeWaitPeriod(newUnstakeWaitPeriod)
           )
             .to.emit(api3Pool, "SetUnstakeWaitPeriod")
-            .withArgs(oldUnstakeWaitPeriod, newUnstakeWaitPeriod);
+            .withArgs(newUnstakeWaitPeriod);
           expect(await api3Pool.unstakeWaitPeriod()).to.equal(
             newUnstakeWaitPeriod
           );
@@ -638,7 +637,7 @@ describe("setAprUpdateStep", function () {
           .setAprUpdateStep(newAprUpdateStep)
       )
         .to.emit(api3Pool, "SetAprUpdateStep")
-        .withArgs(oldAprUpdateStep, newAprUpdateStep);
+        .withArgs(newAprUpdateStep);
       expect(await api3Pool.aprUpdateStep()).to.equal(newAprUpdateStep);
     });
   });
@@ -673,8 +672,6 @@ describe("setProposalVotingPowerThreshold", function () {
               roles.votingAppPrimary.address,
               roles.votingAppSecondary.address
             );
-          const oldProposalVotingPowerThreshold =
-            await api3Pool.proposalVotingPowerThreshold();
           const firstNewProposalVotingPowerThreshold = ethers.BigNumber.from(
             `10${"0".repeat(16)}`
           );
@@ -686,10 +683,7 @@ describe("setProposalVotingPowerThreshold", function () {
               )
           )
             .to.emit(api3Pool, "SetProposalVotingPowerThreshold")
-            .withArgs(
-              oldProposalVotingPowerThreshold,
-              firstNewProposalVotingPowerThreshold
-            );
+            .withArgs(firstNewProposalVotingPowerThreshold);
           expect(await api3Pool.proposalVotingPowerThreshold()).to.equal(
             firstNewProposalVotingPowerThreshold
           );
@@ -704,10 +698,7 @@ describe("setProposalVotingPowerThreshold", function () {
               )
           )
             .to.emit(api3Pool, "SetProposalVotingPowerThreshold")
-            .withArgs(
-              firstNewProposalVotingPowerThreshold,
-              secondNewProposalVotingPowerThreshold
-            );
+            .withArgs(secondNewProposalVotingPowerThreshold);
           expect(await api3Pool.proposalVotingPowerThreshold()).to.equal(
             secondNewProposalVotingPowerThreshold
           );
@@ -792,9 +783,9 @@ describe("updateLastProposalTimestamp", function () {
       )
         .to.emit(api3Pool, "UpdatedLastProposalTimestamp")
         .withArgs(
-          roles.votingAppPrimary.address,
           roles.user1.address,
-          nextBlockTimestamp
+          nextBlockTimestamp,
+          roles.votingAppPrimary.address
         );
       expect(
         (await api3Pool.getUser(roles.user1.address)).lastProposalTimestamp

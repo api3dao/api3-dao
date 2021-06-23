@@ -29,12 +29,12 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
                     });
                 api3Token.mint(address(this), rewardAmount);
                 totalStake += rewardAmount;
+                updateCurrentApr();
                 emit MintedReward(
                     currentEpoch,
                     rewardAmount,
                     apr
                     );
-                updateCurrentApr();
             }
             epochIndexOfLastReward = currentEpoch;
         }

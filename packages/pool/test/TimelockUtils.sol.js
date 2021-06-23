@@ -260,8 +260,8 @@ describe("updateTimelockStatus", function () {
               .connect(roles.randomPerson)
               .updateTimelockStatus(roles.user1.address)
           )
-            .to.emit(api3Pool, "UpdatedTimelock")
-            .withArgs(roles.user1.address, ethers.BigNumber.from(0));
+            .to.emit(api3Pool, "VestedTimelock")
+            .withArgs(roles.user1.address, depositAmount);
         });
       });
       context("It is not past release end", function () {
@@ -293,7 +293,7 @@ describe("updateTimelockStatus", function () {
               .connect(roles.randomPerson)
               .updateTimelockStatus(roles.user1.address)
           )
-            .to.emit(api3Pool, "UpdatedTimelock")
+            .to.emit(api3Pool, "VestedTimelock")
             .withArgs(roles.user1.address, depositAmount.div(2));
         });
       });

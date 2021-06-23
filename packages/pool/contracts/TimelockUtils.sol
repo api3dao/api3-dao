@@ -139,9 +139,9 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         user.vesting -= newlyUnlocked;
         uint256 newRemainingAmount = timelock.remainingAmount - newlyUnlocked;
         userToTimelock[userAddress].remainingAmount = newRemainingAmount;
-        emit UpdatedTimelock(
+        emit VestedTimelock(
             userAddress,
-            newRemainingAmount
+            newlyUnlocked
             );
     }
 }

@@ -306,12 +306,8 @@ contract StateUtils is IStateUtils {
             _stakeTarget <= HUNDRED_PERCENT,
             "Pool: Invalid percentage value"
             );
-        uint256 oldStakeTarget = stakeTarget;
         stakeTarget = _stakeTarget;
-        emit SetStakeTarget(
-            oldStakeTarget,
-            stakeTarget
-            );
+        emit SetStakeTarget(_stakeTarget);
     }
 
     /// @notice Called by the DAO Agent to set the maximum APR
@@ -325,12 +321,8 @@ contract StateUtils is IStateUtils {
             _maxApr >= minApr,
             "Pool: Max APR smaller than min"
             );
-        uint256 oldMaxApr = maxApr;
         maxApr = _maxApr;
-        emit SetMaxApr(
-            oldMaxApr,
-            maxApr
-            );
+        emit SetMaxApr(_maxApr);
     }
 
     /// @notice Called by the DAO Agent to set the minimum APR
@@ -344,12 +336,8 @@ contract StateUtils is IStateUtils {
             _minApr <= maxApr,
             "Pool: Min APR larger than max"
             );
-        uint256 oldMinApr = minApr;
         minApr = _minApr;
-        emit SetMinApr(
-            oldMinApr,
-            minApr
-            );
+        emit SetMinApr(_minApr);
     }
 
     /// @notice Called by the primary DAO Agent to set the unstake waiting
@@ -371,12 +359,8 @@ contract StateUtils is IStateUtils {
             _unstakeWaitPeriod >= EPOCH_LENGTH,
             "Pool: Period shorter than epoch"
             );
-        uint256 oldUnstakeWaitPeriod = unstakeWaitPeriod;
         unstakeWaitPeriod = _unstakeWaitPeriod;
-        emit SetUnstakeWaitPeriod(
-            oldUnstakeWaitPeriod,
-            unstakeWaitPeriod
-            );
+        emit SetUnstakeWaitPeriod(_unstakeWaitPeriod);
     }
 
     /// @notice Called by the primary DAO Agent to set the APR update steps
@@ -388,12 +372,8 @@ contract StateUtils is IStateUtils {
         override
         onlyAgentAppPrimary()
     {
-        uint256 oldAprUpdateStep = aprUpdateStep;
         aprUpdateStep = _aprUpdateStep;
-        emit SetAprUpdateStep(
-            oldAprUpdateStep,
-            aprUpdateStep
-            );
+        emit SetAprUpdateStep(_aprUpdateStep);
     }
 
     /// @notice Called by the primary DAO Agent to set the voting power
@@ -411,12 +391,8 @@ contract StateUtils is IStateUtils {
             _proposalVotingPowerThreshold >= ONE_PERCENT / 10
                 && _proposalVotingPowerThreshold <= 10 * ONE_PERCENT,
             "Pool: Threshold outside limits");
-        uint256 oldProposalVotingPowerThreshold = proposalVotingPowerThreshold;
         proposalVotingPowerThreshold = _proposalVotingPowerThreshold;
-        emit SetProposalVotingPowerThreshold(
-            oldProposalVotingPowerThreshold,
-            proposalVotingPowerThreshold
-            );
+        emit SetProposalVotingPowerThreshold(_proposalVotingPowerThreshold);
     }
 
     /// @notice Called by a DAO Api3Voting app at proposal creation-time to
@@ -429,15 +405,16 @@ contract StateUtils is IStateUtils {
     {
         users[userAddress].lastProposalTimestamp = block.timestamp;
         emit UpdatedLastProposalTimestamp(
-            msg.sender,
             userAddress,
-            block.timestamp
+            block.timestamp,
+            msg.sender
             );
     }
 
     /// @notice Called to check if we are in the genesis epoch
     /// @dev Voting apps use this to prevent proposals from being made in the
     /// genesis epoch
+    /// @return If the current epoch is the genesis epoch
     function isGenesisEpoch()
         external
         view

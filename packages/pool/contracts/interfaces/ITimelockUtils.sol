@@ -16,9 +16,9 @@ interface ITimelockUtils is IClaimUtils {
         uint256 end
         );
 
-    event UpdatedTimelock(
+    event VestedTimelock(
         address indexed user,
-        uint256 remainingAmount
+        uint256 amount
         );
 
     function deposit(
