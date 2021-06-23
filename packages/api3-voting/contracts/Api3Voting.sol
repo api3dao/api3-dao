@@ -259,8 +259,8 @@ contract Api3Voting is IForwarder, AragonApp {
         (
             , // unstaked
             , // vesting
-            , // unstakeShares
             , // unstakeAmount
+            , // unstakeShares 
             , // unstakeScheduledFor
             , // lastDelegationUpdateTimestamp
             uint256 lastProposalTimestamp

@@ -36,8 +36,8 @@ interface IApi3Pool {
         returns (
             uint256 unstaked,
             uint256 vesting,
-            uint256 unstakeShares,
             uint256 unstakeAmount,
+            uint256 unstakeShares,
             uint256 unstakeScheduledFor,
             uint256 lastDelegationUpdateTimestamp,
             uint256 lastProposalTimestamp

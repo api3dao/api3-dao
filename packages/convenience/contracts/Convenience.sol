@@ -63,8 +63,8 @@ contract Convenience is Ownable  {
         (
             userUnstaked,
             userVesting,
-            userUnstakeShares,
             userUnstakeAmount,
+            userUnstakeShares,
             userUnstakeScheduledFor,
             , // lastDelegationUpdateTimestamp
             // lastProposalTimestamp
@@ -111,8 +111,8 @@ contract Convenience is Ownable  {
         (
             , // unstaked
             , // vesting
-            , // unstakeShares
             , // unstakeAmount
+            , // unstakeShares
             , // unstakeScheduledFor
             lastDelegationUpdateTimestamp,
             lastProposalTimestamp

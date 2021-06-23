@@ -205,8 +205,8 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
     /// @param userAddress User address
     /// @return unstaked Amount of unstaked API3 tokens
     /// @return vesting Amount of API3 tokens locked by vesting
-    /// @return unstakeShares Shares revoked to unstake
     /// @return unstakeAmount Amount scheduled to unstake
+    /// @return unstakeShares Shares revoked to unstake
     /// @return unstakeScheduledFor Time unstaking is scheduled for
     /// @return lastDelegationUpdateTimestamp Time of last delegation update
     /// @return lastProposalTimestamp Time when the user made their most
@@ -218,8 +218,8 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         returns (
             uint256 unstaked,
             uint256 vesting,
-            uint256 unstakeShares,
             uint256 unstakeAmount,
+            uint256 unstakeShares,
             uint256 unstakeScheduledFor,
             uint256 lastDelegationUpdateTimestamp,
             uint256 lastProposalTimestamp
@@ -228,8 +228,8 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         User storage user = users[userAddress];
         unstaked = user.unstaked;
         vesting = user.vesting;
-        unstakeShares = user.unstakeShares;
         unstakeAmount = user.unstakeAmount;
+        unstakeShares = user.unstakeShares;
         unstakeScheduledFor = user.unstakeScheduledFor;
         lastDelegationUpdateTimestamp = user.lastDelegationUpdateTimestamp;
         lastProposalTimestamp = user.lastProposalTimestamp;
