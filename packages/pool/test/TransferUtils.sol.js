@@ -151,7 +151,6 @@ describe("precalculateUserLocked", function () {
           await api3Pool.mintReward();
         }
       }
-      const userLocked = await api3Pool.userLocked(roles.user1.address);
       const noEpochsToCalculateLockedForAtEachIteration = 10;
       for (let i = 0; i < 5; i++) {
         await expect(
@@ -181,7 +180,7 @@ describe("precalculateUserLocked", function () {
           )
       )
         .to.emit(api3Pool, "CalculatedUserLocked")
-        .withArgs(roles.user1.address, userLocked);
+        .withArgs(roles.user1.address, await api3Pool.userLocked(roles.user1.address));
     });
   });
   context("Iteration window is zero", function () {
