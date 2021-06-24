@@ -244,7 +244,7 @@ describe("getTreasuryAndUserDelegationData", function () {
         ]);
         await expect(
           convenience.getTreasuryAndUserDelegationData(roles.user1.address)
-        ).to.be.revertedWith("function call to a non-contract account");
+        ).to.be.reverted;
       });
     });
 
