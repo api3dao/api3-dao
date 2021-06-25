@@ -129,9 +129,6 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             unstakeAmountAtSchedulingTime > unstakeAmountByShares
                 ? unstakeAmountByShares
                 : unstakeAmountAtSchedulingTime;
-        unstakeAmount = unstakeAmount < totalStake
-            ? unstakeAmount
-            : totalStake - 1;
         user.unstaked += unstakeAmount;
 
         poolShares.push(Checkpoint({
