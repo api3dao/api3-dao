@@ -13,6 +13,7 @@ contract Convenience is Ownable  {
     Api3Pool public api3Pool;
     address[] public erc20Addresses;
     IERC20Metadata public api3Token;
+    mapping(VotingAppType => mapping(uint256 => string)) public votingAppTypeToVoteIdToDiscussionUrl;
 
     constructor(address api3PoolAddress)
     {
@@ -30,6 +31,25 @@ contract Convenience is Ownable  {
         onlyOwner()
     {
         erc20Addresses = _erc20Addresses;
+    }
+
+    /// @notice Called by the owner to update the discussion URL of a specific
+    /// vote to be displayed on the DAO dashboard
+    /// @dev The owner privileges here do not pose a serious security risk, the
+    /// worst that can happen is that the discussion URL will malfunction
+    /// @param votingAppType Enumerated voting app type (primary or secondary)
+    /// @param voteId Array of vote ID for which discussion URL will be
+    /// updated
+    /// @param discussionUrl Discussion URL
+    function setDiscussionUrl(
+        VotingAppType votingAppType,
+        uint256 voteId,
+        string calldata discussionUrl
+        )
+        external
+        onlyOwner()
+    {
+        votingAppTypeToVoteIdToDiscussionUrl[votingAppType][voteId] = discussionUrl;
     }
 
     /// @notice Used by the DAO dashboard client to retrieve user staking data
@@ -135,7 +155,8 @@ contract Convenience is Ownable  {
             uint64[] memory minAcceptQuorum,
             uint256[] memory votingPower,
             bytes[] memory script,
-            uint256[] memory userVotingPowerAt
+            uint256[] memory userVotingPowerAt,
+            string[] memory discussionUrl
             )
     {
         IApi3Voting api3Voting;
@@ -153,6 +174,7 @@ contract Convenience is Ownable  {
         votingPower = new uint256[](voteIds.length);
         script = new bytes[](voteIds.length);
         userVotingPowerAt = new uint256[](voteIds.length);
+        discussionUrl = new string[](voteIds.length);
         for (uint256 i = 0; i < voteIds.length; i++)
         {
             uint64 snapshotBlock;
@@ -169,6 +191,7 @@ contract Convenience is Ownable  {
                 script[i]
                 ) = api3Voting.getVote(voteIds[i]);
             userVotingPowerAt[i] = api3Pool.userVotingPowerAt(userAddress, snapshotBlock);
+            discussionUrl[i] = votingAppTypeToVoteIdToDiscussionUrl[votingAppType][voteIds[i]];
         }
     }
 
