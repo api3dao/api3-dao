@@ -60,7 +60,9 @@ module.exports = async (callback) => {
       api3Token.address,
       timelockManager.address
     );
+    await api3Token.updateMinterStatus(api3Pool.address, true);
     const convenience = await Convenience.new(api3Pool.address);
+    await convenience.setErc20Addresses([api3Token.address]);
     const template = await deployTemplate(
       web3,
       artifacts,
@@ -115,6 +117,9 @@ module.exports = async (callback) => {
       secondaryVoting,
       { from: deployer }
     );
+
+    await api3Token.transfer(primaryAgent, "100000000000000000000000");
+    await api3Token.transfer(secondaryAgent, "50000000000000000000000");
 
     const deployedAddresses = {
       api3Token: api3Token.address,
