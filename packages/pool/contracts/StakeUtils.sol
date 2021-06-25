@@ -84,6 +84,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             );
 
         uint256 sharesToUnstake = amount * totalSharesNow / totalStake;
+        require(sharesToUnstake > 0, "Pool: Unstake amount too small");
         uint256 unstakeScheduledFor = block.timestamp + unstakeWaitPeriod;
         user.unstakeScheduledFor = unstakeScheduledFor;
         user.unstakeAmount = amount;
