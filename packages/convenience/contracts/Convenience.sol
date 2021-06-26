@@ -87,8 +87,8 @@ contract Convenience is Ownable  {
             uint256 userStaked,
             uint256 userUnstaked,
             uint256 userVesting,
-            uint256 userUnstakeShares,
             uint256 userUnstakeAmount,
+            uint256 userUnstakeShares,
             uint256 userUnstakeScheduledFor,
             uint256 userLocked
             )
