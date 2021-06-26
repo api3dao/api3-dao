@@ -38,8 +38,7 @@ contract Convenience is Ownable  {
     /// @dev The owner privileges here do not pose a serious security risk, the
     /// worst that can happen is that the discussion URL will malfunction
     /// @param votingAppType Enumerated voting app type (primary or secondary)
-    /// @param voteId Array of vote ID for which discussion URL will be
-    /// updated
+    /// @param voteId vote ID for which discussion URL will be updated
     /// @param discussionUrl Discussion URL
     function setDiscussionUrl(
         VotingAppType votingAppType,

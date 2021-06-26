@@ -65,9 +65,7 @@ beforeEach(async () => {
     .connect(roles.mockTimeLockManager)
     .deposit(roles.deployer.address, user1Stake, roles.user1.address);
   // Stake half the tokens
-  await api3Pool
-    .connect(roles.user1)
-    .stake(user1Stake.div(2));
+  await api3Pool.connect(roles.user1).stake(user1Stake.div(2));
   // Delegate To User 2
   await api3Pool.connect(roles.user1).delegateVotingPower(roles.user2.address);
 
@@ -80,15 +78,15 @@ beforeEach(async () => {
     .connect(roles.mockTimeLockManager)
     .deposit(roles.deployer.address, user3Stake, roles.user3.address);
   // Stake half the tokens
-  await api3Pool
-    .connect(roles.user3)
-    .stake(user3Stake.div(2));
+  await api3Pool.connect(roles.user3).stake(user3Stake.div(2));
 
   const convenienceFactory = await ethers.getContractFactory(
     "Convenience",
     roles.deployer
   );
   convenience = await convenienceFactory.deploy(api3Pool.address);
+
+  // set default erc20 Addresses
   await convenience.setErc20Addresses(
     erc20Tokens.map((token) => token.address)
   );
@@ -161,6 +159,46 @@ describe("setErc20Addresses", function () {
         erc20Tokens.map((token) => token.address)[i]
       );
     }
+  });
+});
+
+describe("setDiscussionUrl", function () {
+  context("called by Owner", function () {
+    context("Voting App type is Valid", function () {
+      it("sets the DiscussionUrl", async function () {
+        await convenience.setDiscussionUrl(
+          VotingAppType.Primary,
+          0,
+          "https://api3.org/discussion"
+        );
+        expect(
+          await convenience.votingAppTypeToVoteIdToDiscussionUrl(
+            VotingAppType.Primary,
+            0
+          )
+        ).to.deep.equal("https://api3.org/discussion");
+      });
+    });
+    context("Voting App type is Invalid", function () {
+      it("reverts", async function () {
+        await expect(
+          convenience.setDiscussionUrl(5, 0, "https://api3.org/discussion")
+        ).to.be.reverted;
+      });
+    });
+  });
+  context("not called by the Owner", function () {
+    it("reverts", async function () {
+      await expect(
+        convenience
+          .connect(roles.randomPerson)
+          .setDiscussionUrl(
+            VotingAppType.Primary,
+            0,
+            "https://api3.org/discussion"
+          )
+      ).to.be.revertedWith("caller is not the owner");
+    });
   });
 });
 
@@ -312,6 +350,15 @@ describe("getStaticVoteData", function () {
           true,
           mockApi3VotingPrimary
         );
+
+        for (let i = 0; i < 5; i++) {
+          await convenience.setDiscussionUrl(
+            VotingAppType.Primary,
+            i,
+            `https://api3.org/discussion${i}`
+          );
+        }
+
         const staticVoteData = await convenience.getStaticVoteData(
           VotingAppType.Primary,
           roles.user1.address,
@@ -322,16 +369,13 @@ describe("getStaticVoteData", function () {
           expect(staticVoteData.startDate[4 - i]).to.be.equal(
             timestamp - 7 * 24 * 60 * 60 - 30 + i * 10
           );
-          expect(staticVoteData.supportRequired[i]).to.be.equal(
-            (50 * 10) ^ 16
-          );
-          expect(staticVoteData.minAcceptQuorum[i]).to.be.equal(
-            (25 * 10) ^ 16
-          );
-          expect(staticVoteData.votingPower[i]).to.be.equal(
-            10000
-          );
+          expect(staticVoteData.supportRequired[i]).to.be.equal((50 * 10) ^ 16);
+          expect(staticVoteData.minAcceptQuorum[i]).to.be.equal((25 * 10) ^ 16);
+          expect(staticVoteData.votingPower[i]).to.be.equal(10000);
           expect(staticVoteData.script[i]).to.be.equal("0xabcdef");
+          expect(staticVoteData.discussionUrl[i]).to.be.equal(
+            `https://api3.org/discussion${4 - i}`
+          );
         }
       });
 
@@ -353,6 +397,15 @@ describe("getStaticVoteData", function () {
           true,
           mockApi3VotingSecondary
         );
+
+        for (let i = 0; i < 5; i++) {
+          await convenience.setDiscussionUrl(
+            VotingAppType.Secondary,
+            i,
+            `https://api3.org/discussion${i}`
+          );
+        }
+
         const staticVoteData = await convenience.getStaticVoteData(
           VotingAppType.Secondary,
           roles.user1.address,
@@ -363,16 +416,13 @@ describe("getStaticVoteData", function () {
           expect(staticVoteData.startDate[4 - i]).to.be.equal(
             timestamp - 7 * 24 * 60 * 60 - 30 + i * 10
           );
-          expect(staticVoteData.supportRequired[i]).to.be.equal(
-            (50 * 10) ^ 16
-          );
-          expect(staticVoteData.minAcceptQuorum[i]).to.be.equal(
-            (25 * 10) ^ 16
-          );
-          expect(staticVoteData.votingPower[i]).to.be.equal(
-            10000
-          );
+          expect(staticVoteData.supportRequired[i]).to.be.equal((50 * 10) ^ 16);
+          expect(staticVoteData.minAcceptQuorum[i]).to.be.equal((25 * 10) ^ 16);
+          expect(staticVoteData.votingPower[i]).to.be.equal(10000);
           expect(staticVoteData.script[i]).to.be.equal("0xabcdef");
+          expect(staticVoteData.discussionUrl[i]).to.be.equal(
+            `https://api3.org/discussion${4 - i}`
+          );
         }
       });
 
@@ -400,6 +450,7 @@ describe("getStaticVoteData", function () {
         expect(staticVoteDataPrimary.minAcceptQuorum).to.deep.equal([]);
         expect(staticVoteDataPrimary.votingPower).to.deep.equal([]);
         expect(staticVoteDataPrimary.script).to.deep.equal([]);
+        expect(staticVoteDataPrimary.discussionUrl).to.deep.equal([]);
 
         const staticVoteDataSecondary = await convenience.getStaticVoteData(
           VotingAppType.Secondary,
@@ -411,6 +462,7 @@ describe("getStaticVoteData", function () {
         expect(staticVoteDataSecondary.minAcceptQuorum).to.deep.equal([]);
         expect(staticVoteDataSecondary.votingPower).to.deep.equal([]);
         expect(staticVoteDataSecondary.script).to.deep.equal([]);
+        expect(staticVoteDataSecondary.discussionUrl).to.deep.equal([]);
       });
       it("reverts on invalid voteIds", async function () {
         await expect(
