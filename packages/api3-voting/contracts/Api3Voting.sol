@@ -49,11 +49,10 @@ contract Api3Voting is IForwarder, AragonApp {
         mapping (address => VoterState) voters;
     }
 
+    IApi3Pool public api3Pool;
     uint64 public supportRequiredPct;
     uint64 public minAcceptQuorumPct;
     uint64 public voteTime;
-
-    IApi3Pool public api3Pool;
 
     // We are mimicing an array, we use a mapping instead to make app upgrade more graceful
     mapping (uint256 => Vote) internal votes;
@@ -71,13 +70,13 @@ contract Api3Voting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Initialize Voting app with `_token.symbol(): string` for governance, minimum support of `@formatPct(_supportRequiredPct)`%, minimum acceptance quorum of `@formatPct(_minAcceptQuorumPct)`%`
-    * @param _token MiniMeToken Address that will be used as governance token
+    * @notice Initialize Voting app with the API3 staking pool for governance, minimum support of `@formatPct(_supportRequiredPct)`%, minimum acceptance quorum of `@formatPct(_minAcceptQuorumPct)`%`
+    * @param _api3Pool API3 staking pool address that will be used to provide voting power information
     * @param _supportRequiredPct Percentage of yeas in casted votes for a vote to succeed (expressed as a percentage of 10^18; eg. 10^16 = 1%, 10^18 = 100%)
     * @param _minAcceptQuorumPct Percentage of yeas in total possible votes for a vote to succeed (expressed as a percentage of 10^18; eg. 10^16 = 1%, 10^18 = 100%)
     */
     function initialize(
-        address _token,
+        address _api3Pool,
         uint64 _supportRequiredPct,
         uint64 _minAcceptQuorumPct
     )
@@ -89,10 +88,10 @@ contract Api3Voting is IForwarder, AragonApp {
         require(_minAcceptQuorumPct <= _supportRequiredPct, ERROR_INIT_PCTS);
         require(_supportRequiredPct < PCT_BASE, ERROR_INIT_SUPPORT_TOO_BIG);
 
+        // The pool replaces the MiniMe token
+        api3Pool = IApi3Pool(_api3Pool);
         supportRequiredPct = _supportRequiredPct;
         minAcceptQuorumPct = _minAcceptQuorumPct;
-        // The pool acts as the MiniMe token
-        api3Pool = IApi3Pool(_token);
         // Unlike the original Voting app, `voteTime` has to be `EPOCH_LENGTH` of the pool
         voteTime = uint64(api3Pool.EPOCH_LENGTH());
     }
@@ -269,7 +268,6 @@ contract Api3Voting is IForwarder, AragonApp {
         api3Pool.updateLastProposalTimestamp(msg.sender);
 
         uint64 snapshotBlock = getBlockNumber64() - 1; // avoid double voting in this very block
-
         uint256 votingPower = api3Pool.totalSharesAt(snapshotBlock);
         require(votingPower > 0, ERROR_NO_VOTING_POWER);
         uint256 proposalMakerVotingPower = api3Pool.userVotingPowerAt(msg.sender, snapshotBlock);
