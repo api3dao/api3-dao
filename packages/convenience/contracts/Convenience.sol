@@ -24,6 +24,15 @@ contract Convenience is Ownable  {
     /// type and ID and writes its URL to the chain
     mapping(VotingAppType => mapping(uint256 => string)) public votingAppTypeToVoteIdToDiscussionUrl;
 
+    event SetErc20Addresses(address[] erc20Addresses);
+
+    event SetDiscussionUrl(
+        VotingAppType indexed votingAppType,
+        uint256 indexed voteId,
+        string discussionUrl
+        );
+
+    /// @param api3PoolAddress Staking pool address of the DAO 
     constructor(address api3PoolAddress)
     {
         api3Pool = Api3Pool(api3PoolAddress);
@@ -40,6 +49,7 @@ contract Convenience is Ownable  {
         onlyOwner()
     {
         erc20Addresses = _erc20Addresses;
+        emit SetErc20Addresses(_erc20Addresses);
     }
 
     /// @notice Called by the owner to update the discussion URL of a specific
@@ -58,6 +68,7 @@ contract Convenience is Ownable  {
         onlyOwner()
     {
         votingAppTypeToVoteIdToDiscussionUrl[votingAppType][voteId] = discussionUrl;
+        emit SetDiscussionUrl(votingAppType, voteId, discussionUrl);
     }
 
     /// @notice Used by the DAO dashboard client to retrieve user staking data
