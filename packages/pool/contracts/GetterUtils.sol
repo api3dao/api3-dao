@@ -340,8 +340,10 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
         returns (uint256 oldestLockedEpoch)
     {
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
-        oldestLockedEpoch = currentEpoch - REWARD_VESTING_PERIOD > genesisEpoch
-            ? currentEpoch - REWARD_VESTING_PERIOD + 1
-            : genesisEpoch + 1;
+        oldestLockedEpoch = currentEpoch - REWARD_VESTING_PERIOD + 1;
+        if (oldestLockedEpoch < genesisEpoch + 1)
+        {
+            oldestLockedEpoch = genesisEpoch + 1;
+        }
     }
 }

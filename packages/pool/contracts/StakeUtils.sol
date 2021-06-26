@@ -124,14 +124,14 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             "Pool: Unstake not mature yet"
             );
         uint256 totalShares = totalShares();
-        uint256 unstakeAmountAtSchedulingTime = user.unstakeAmount;
+        uint256 unstakeAmount = user.unstakeAmount;
         uint256 unstakeAmountByShares = user.unstakeShares * totalStake / totalShares;
         // If there was a claim payout in between the scheduling and the actual unstake 
         // then the amount might be lower than expected at scheduling time
-        uint256 unstakeAmount =
-            unstakeAmountAtSchedulingTime > unstakeAmountByShares
-                ? unstakeAmountByShares
-                : unstakeAmountAtSchedulingTime;
+        if (unstakeAmount > unstakeAmountByShares)
+        {
+            unstakeAmount = unstakeAmountByShares;
+        }
         user.unstaked += unstakeAmount;
 
         poolShares.push(Checkpoint({

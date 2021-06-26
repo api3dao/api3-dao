@@ -49,7 +49,7 @@ contract StateUtils is IStateUtils {
     /// before `EPOCH_LENGTH` has passed
     /// (2) After a user updates their delegation status, they have to wait
     /// `EPOCH_LENGTH` before updating it again
-    uint256 public constant EPOCH_LENGTH = 7 * 24 * 60 * 60;
+    uint256 public constant EPOCH_LENGTH = 1 weeks;
 
     /// @notice Number of epochs before the staking rewards get unlocked.
     /// Hardcoded as 52 epochs, which corresponds to a year with an

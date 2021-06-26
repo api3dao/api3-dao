@@ -64,7 +64,6 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
             noEpochsPerIteration > 0,
             "Pool: Zero iteration window"
             );
-        Checkpoint[] storage _userShares = users[userAddress].shares;
         uint256 currentEpoch = block.timestamp / EPOCH_LENGTH;
         LockedCalculation storage lockedCalculation = userToLockedCalculation[userAddress];
         // Reset the state if there was no calculation made in this epoch
@@ -93,7 +92,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
             Reward storage lockedReward = epochIndexToReward[indEpoch];
             if (lockedReward.atBlock != 0)
             {
-                uint256 userSharesThen = getValueAt(_userShares, lockedReward.atBlock);
+                uint256 userSharesThen = userSharesAt(userAddress, lockedReward.atBlock);
                 locked += lockedReward.amount * userSharesThen / lockedReward.totalSharesThen;
             }
         }
