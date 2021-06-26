@@ -151,12 +151,13 @@ describe("constructor", function () {
 
 describe("setErc20Addresses", function () {
   it("sets the erc20Addresses", async function () {
-    await convenience.setErc20Addresses(
-      erc20Tokens.map((token) => token.address)
-    );
+    const erc20TokenAddresses = erc20Tokens.map((token) => token.address);
+    await expect(convenience.setErc20Addresses(erc20TokenAddresses))
+      .to.emit(convenience, "SetErc20Addresses")
+      .withArgs(erc20TokenAddresses);
     for (let i = 0; i < erc20Tokens.length; i++) {
       expect(await convenience.erc20Addresses(i)).to.be.equal(
-        erc20Tokens.map((token) => token.address)[i]
+        erc20TokenAddresses[i]
       );
     }
   });
@@ -166,17 +167,37 @@ describe("setDiscussionUrl", function () {
   context("called by Owner", function () {
     context("Voting App type is Valid", function () {
       it("sets the DiscussionUrl", async function () {
-        await convenience.setDiscussionUrl(
-          VotingAppType.Primary,
-          0,
-          "https://api3.org/discussion"
-        );
+        await expect(
+          convenience.setDiscussionUrl(
+            VotingAppType.Primary,
+            0,
+            "https://api3.org/discussion1"
+          )
+        )
+          .to.emit(convenience, "SetDiscussionUrl")
+          .withArgs(VotingAppType.Primary, 0, "https://api3.org/discussion1");
         expect(
           await convenience.votingAppTypeToVoteIdToDiscussionUrl(
             VotingAppType.Primary,
             0
           )
-        ).to.deep.equal("https://api3.org/discussion");
+        ).to.deep.equal("https://api3.org/discussion1");
+
+        await expect(
+          convenience.setDiscussionUrl(
+            VotingAppType.Secondary,
+            0,
+            "https://api3.org/discussion2"
+          )
+        )
+          .to.emit(convenience, "SetDiscussionUrl")
+          .withArgs(VotingAppType.Secondary, 0, "https://api3.org/discussion2");
+        expect(
+          await convenience.votingAppTypeToVoteIdToDiscussionUrl(
+            VotingAppType.Secondary,
+            0
+          )
+        ).to.deep.equal("https://api3.org/discussion2");
       });
     });
     context("Voting App type is Invalid", function () {

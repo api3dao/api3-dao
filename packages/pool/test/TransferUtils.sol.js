@@ -180,7 +180,10 @@ describe("precalculateUserLocked", function () {
           )
       )
         .to.emit(api3Pool, "CalculatedUserLocked")
-        .withArgs(roles.user1.address, await api3Pool.userLocked(roles.user1.address));
+        .withArgs(
+          roles.user1.address,
+          await api3Pool.userLocked(roles.user1.address)
+        );
     });
   });
   context("Iteration window is zero", function () {

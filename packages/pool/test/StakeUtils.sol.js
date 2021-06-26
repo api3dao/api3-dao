@@ -154,9 +154,9 @@ describe("scheduleUnstake", function () {
             await api3Pool
               .connect(roles.user1)
               .delegateVotingPower(roles.user2.address);
-            expect(await api3Pool.delegatedToUser(roles.user2.address)).to.equal(
-              user1Stake
-            );
+            expect(
+              await api3Pool.delegatedToUser(roles.user2.address)
+            ).to.equal(user1Stake);
             expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
               roles.user2.address
             );
@@ -182,9 +182,9 @@ describe("scheduleUnstake", function () {
               );
             expect(await api3Pool.userShares(roles.user1.address)).to.equal(0);
             expect(await api3Pool.totalShares()).to.equal(user1Shares.add(1));
-            expect(await api3Pool.delegatedToUser(roles.user2.address)).to.equal(
-              0
-            );
+            expect(
+              await api3Pool.delegatedToUser(roles.user2.address)
+            ).to.equal(0);
             expect(await api3Pool.userDelegate(roles.user1.address)).to.equal(
               roles.user2.address
             );
