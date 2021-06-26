@@ -3,10 +3,13 @@
 Make sure you have followed the [instructions](/README.md) to install the dependencies first.
 
 - Build
+
 ```sh
 npm run build
 ```
+
 - Test, get test coverage and gas reports
+
 ```sh
 npm run test
 npm run test:coverage
@@ -14,6 +17,7 @@ npm run test:gas
 ```
 
 - Create `credentials.json` similar to `credentials.example.json` and deploy
+
 ```sh
 npm run deploy:rinkeby
 npm run deploy:mainnet
@@ -34,6 +38,7 @@ cd packages/pool/contracts
 # Specifications
 
 Staking API3 tokens at the API3 pool contract grants the following:
+
 - Governance: The only way to receive voting power at the API3 DAO is to stake tokens at the pool
 - Rewards: Staking tokens at the pool grants the stakers rewards proportional to the amount they have staked
 - Collateralization: Staked tokens at the pool will be used to insure the services the API3 DAO provides
@@ -48,6 +53,7 @@ This pool contract has a MiniMe token-like interface that Api3Voting apps will u
 In case a user does not want to make proposals and vote directly, they can delegate their voting power to another user.
 A user that has delegated their voting power cannot make or vote on proposals.
 Delegation works only one-hop, i.e., if a user has delegated their voting power to another user that has also delegated to someone else, the delegation will not be counted for anyone's voting power.
+The user can then update the delegate address or even revoke the delegation.
 
 ### Proposal spam protection
 
@@ -55,19 +61,22 @@ There are four mechanics that are implemented to protect against proposal spam:
 
 1. A minimum governable threshold of voting power is required to make a proposal (minimum and initial value: 0.1%)
 2. A user cannot make proposals less than 7 days apart
-3. A user cannot update their delegation less than 7 days apart
+3. A user cannot update or revoke their delegation less than 7 days apart
 4. A user will have to "schedule an unstake" a governable period of time (minimum and initial value: 7 days) before being able to unstake
 
 ## Rewards
 
-The aim of the staking rewards (paid every 7 days) is to ensure that the pool is staked at enough to:
+The aim of the staking rewards is to ensure that the pool is staked enough to:
+
 1. Ensure adequate representation (and prevent governance attacks)
 2. Ensure that the pool remains solvent in the case of an insurance claim payout
+
+These rewards will be paid every 7 days.
 
 ### Adaptive rewards
 
 Since the aim is to meet a staking target, the staking reward increases automatically to incentivize staking when the pool runs low, and decreases to reduce unnecessary emission when the pool is already well-funded.
-The staking reward gets updated every 7 days based on a governable staking target and the current pool funds.
+The staking reward gets updated every 7 days based on a governable staking target and the current pool funds. It can be increased or decreased based on a governable step value until it reaches a max or min value which are also governable values.
 The staking reward is a percentage of the total token supply (and not an absolute number of tokens) to avoid having to constantly adjust it in case of inflation/deflation.
 
 ### Reward locks
@@ -109,6 +118,10 @@ API3 tokens allocated to founding members, builders and investors are timelocked
 The beneficiaries of the timelocked tokens can withdraw their tokens to this pool contract, where the vesting schedule will be continued.
 The tokens withdrawn to the pool will be able to be staked by their owners to receive voting power, staking rewards and be used as collateral.
 
+### Timelock status update
+
+During or after the vesting schedule period, the user can update the timelocked tokens status making the newely unlocked tokens available for withdrawal.
+
 ## Double Agent and Api3Voting apps
 
 The DAO will have two pairs of Agents and Api3Voting apps, where having an Agent app make a transaction will require a proposal to be passed with the respective Api3Voting app.
@@ -133,3 +146,7 @@ This is to prevent the pool from breaking in case its minting authorization is r
 
 This is the parameter that represents how aggresively the APR will be updated to meet the stake target.
 Each epoch the total staked amount is below the target, APR will be increased by this value, and vice versa.
+
+## Precalculated user locked
+
+If the user updates their `user.shares` by staking/unstaking too frequently (50+/week) in the last year, the user migth not be able to withdraw tokens because the call gas cost may exceed the block gas limit. In that case, the user may call `precalculateUserLocked()` method as many times needed to have their locked tokens calculated and then use `withdrawPrecalculated()` to withdraw.
