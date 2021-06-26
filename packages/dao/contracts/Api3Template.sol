@@ -49,7 +49,7 @@ contract Api3Template is BaseTemplate {
     */
     function newInstance(
         string _id,
-        MiniMeToken _api3Pool,
+        address _api3Pool,
         uint64[2] _primaryVotingSettings,
         uint64[2] _secondaryVotingSettings,
         bytes32 api3VotingAppId
@@ -83,7 +83,7 @@ contract Api3Template is BaseTemplate {
     function _setupApps(
         Kernel _dao,
         ACL _acl,
-        MiniMeToken _api3Pool,
+        address _api3Pool,
         uint64[2] memory _primaryVotingSettings,
         uint64[2] memory _secondaryVotingSettings,
         bytes32 api3VotingAppId
@@ -133,20 +133,20 @@ contract Api3Template is BaseTemplate {
 
     /*API3 VOTING*/
 
-    function _installApi3VotingApp(Kernel _dao, MiniMeToken _token, uint64[2] memory _votingSettings, bytes32 api3VotingAppId) internal returns (Api3Voting) {
-        return _installApi3VotingApp(_dao, _token, _votingSettings[0], _votingSettings[1], api3VotingAppId);
+    function _installApi3VotingApp(Kernel _dao, address _api3Pool, uint64[2] memory _votingSettings, bytes32 api3VotingAppId) internal returns (Api3Voting) {
+        return _installApi3VotingApp(_dao, _api3Pool, _votingSettings[0], _votingSettings[1], api3VotingAppId);
     }
 
     function _installApi3VotingApp(
         Kernel _dao,
-        MiniMeToken _token,
+        address _api3Pool,
         uint64 _support,
         uint64 _acceptance,
         bytes32 api3VotingAppId
     )
     internal returns (Api3Voting)
     {
-        bytes memory initializeData = abi.encodeWithSelector(Api3Voting(0).initialize.selector, _token, _support, _acceptance);
+        bytes memory initializeData = abi.encodeWithSelector(Api3Voting(0).initialize.selector, _api3Pool, _support, _acceptance);
         return Api3Voting(_installNonDefaultApp(_dao, api3VotingAppId, initializeData));
     }
 
