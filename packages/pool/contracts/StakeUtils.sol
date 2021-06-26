@@ -20,7 +20,7 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             );
         user.unstaked -= amount;
         uint256 totalSharesNow = totalShares();
-        uint256 sharesToMint = totalSharesNow * amount / totalStake;
+        uint256 sharesToMint = amount * totalSharesNow / totalStake;
         uint256 userSharesNow = userShares(msg.sender);
         user.shares.push(Checkpoint({
             fromBlock: uint32(block.number),
@@ -140,8 +140,8 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             }));
         totalStake -= unstakeAmount;
 
-        user.unstakeShares = 0;
         user.unstakeAmount = 0;
+        user.unstakeShares = 0;
         user.unstakeScheduledFor = 0;
         emit Unstaked(userAddress, unstakeAmount);
         return unstakeAmount;
