@@ -53,7 +53,7 @@ This pool contract has a MiniMe token-like interface that Api3Voting apps will u
 In case a user does not want to make proposals and vote directly, they can delegate their voting power to another user.
 A user that has delegated their voting power cannot make or vote on proposals.
 Delegation works only one-hop, i.e., if a user has delegated their voting power to another user that has also delegated to someone else, the delegation will not be counted for anyone's voting power.
-The user can then update the delegate address or even revoke the delegation.
+The user can update or revoke their delegation every 7 days.
 
 ### Proposal spam protection
 
@@ -76,7 +76,9 @@ These rewards will be paid every 7 days.
 ### Adaptive rewards
 
 Since the aim is to meet a staking target, the staking reward increases automatically to incentivize staking when the pool runs low, and decreases to reduce unnecessary emission when the pool is already well-funded.
-The staking reward gets updated every 7 days based on a governable staking target and the current pool funds. It can be increased or decreased based on a governable step value until it reaches a max or min value which are also governable values.
+The staking reward gets updated every 7 days based on a governable staking target and the current pool funds.
+The updates are made in a specific step value and the result is clipped between minimum and maximum limits.
+These values are all governable.
 The staking reward is a percentage of the total token supply (and not an absolute number of tokens) to avoid having to constantly adjust it in case of inflation/deflation.
 
 ### Reward locks
@@ -114,13 +116,13 @@ Since insurance claims will likely get resolved in more than 7 days, the DAO is 
 
 ## Timelock transfers
 
-API3 tokens allocated to founding members, builders and investors are timelocked at [`TimelockManager`](/contracts/auxiliary/TimelockManager.sol) contracts.
+API3 tokens allocated to founding members and investors are timelocked at [`TimelockManager`](/contracts/auxiliary/TimelockManager.sol) contracts.
 The beneficiaries of the timelocked tokens can withdraw their tokens to this pool contract, where the vesting schedule will be continued.
 The tokens withdrawn to the pool will be able to be staked by their owners to receive voting power, staking rewards and be used as collateral.
 
 ### Timelock status update
 
-During or after the vesting schedule period, the user can update the timelocked tokens status making the newely unlocked tokens available for withdrawal.
+During or after the vesting schedule period, the user can update the timelocked tokens status making the newly unlocked tokens available for withdrawal.
 
 ## Double Agent and Api3Voting apps
 
