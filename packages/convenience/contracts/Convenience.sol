@@ -58,7 +58,7 @@ contract Convenience is Ownable  {
     /// @dev The owner privileges here do not pose a serious security risk, the
     /// worst that can happen is that the discussion URL will malfunction
     /// @param votingAppType Enumerated voting app type (primary or secondary)
-    /// @param voteId vote ID for which discussion URL will be updated
+    /// @param voteId Vote ID for which discussion URL will be updated
     /// @param discussionUrl Discussion URL
     function setDiscussionUrl(
         VotingAppType votingAppType,
@@ -160,7 +160,9 @@ contract Convenience is Ownable  {
     }
 
     /// @notice Used by the DAO dashboard client to retrieve static vote data
+    /// @dev `discussionUrl` is not actually static but can be treated as such
     /// @param votingAppType Enumerated voting app type (primary or secondary)
+    /// @param userAddress User address
     /// @param voteIds Array of vote IDs for which data will be retrieved
     function getStaticVoteData(
         VotingAppType votingAppType,
