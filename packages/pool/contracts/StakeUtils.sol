@@ -84,6 +84,8 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             );
 
         uint256 sharesToUnstake = amount * totalSharesNow / totalStake;
+        // This will only happen if the user wants to schedule an unstake for a
+        // few Wei
         require(sharesToUnstake > 0, "Pool: Unstake amount too small");
         uint256 unstakeScheduledFor = block.timestamp + unstakeWaitPeriod;
         user.unstakeScheduledFor = unstakeScheduledFor;
@@ -149,8 +151,8 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
 
     /// @notice Convenience method to execute an unstake and withdraw to the
     /// user's wallet in a single transaction
-    /// @dev Note that withdraw may revert because the user may have less than
-    /// `unstaked` tokens that are withdrawable
+    /// @dev Note that the withdrawal may revert because the user may have less
+    /// than `unstaked` tokens that are withdrawable
     function unstakeAndWithdraw()
         external
         override

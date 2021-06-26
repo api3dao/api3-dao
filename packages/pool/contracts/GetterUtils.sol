@@ -181,6 +181,7 @@ abstract contract GetterUtils is StateUtils, IGetterUtils {
                 indEpoch--
             )
         {
+            // The user has never staked at this point, we can exit early
             if (indUserShares == 0)
             {
                 break;

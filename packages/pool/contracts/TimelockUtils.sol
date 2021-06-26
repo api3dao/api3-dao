@@ -7,6 +7,9 @@ import "./interfaces/ITimelockUtils.sol";
 /// @title Contract that implements vesting functionality
 /// @dev The TimelockManager contract interfaces with this contract to transfer
 /// API3 tokens that are locked under a vesting schedule
+/// This contract keeps its own type definitions, event declarations and state
+/// variables for them to be easier to remove for a subDAO where they will
+/// likely not be used.
 abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
     struct Timelock {
         uint256 totalAmount;

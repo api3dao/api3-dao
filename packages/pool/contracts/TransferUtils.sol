@@ -9,7 +9,7 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
     /// @notice Called by the user to deposit tokens
     /// @dev The user should approve the pool to spend at least `amount` tokens
     /// before calling this.
-    /// The method is named `depositRegular()` to prevent potential confusion
+    /// The method is named `depositRegular()` to prevent potential confusion.
     /// See `deposit()` for more context.
     /// @param amount Amount to be deposited
     function depositRegular(uint256 amount)
