@@ -60,8 +60,6 @@ contract StateUtils is IStateUtils {
     uint256 internal constant ONE_PERCENT = 1e18 / 100;
     uint256 internal constant HUNDRED_PERCENT = 1e18;
 
-    uint256 internal constant ONE_YEAR_IN_SECONDS = 52 * 7 * 24 * 60 * 60;
-
     /// @notice Epochs are indexed as `block.timestamp / EPOCH_LENGTH`.
     /// `genesisEpoch` is the index of the epoch in which the pool is deployed.
     /// @dev No reward gets paid and proposals are not allowed in the genesis
@@ -158,15 +156,15 @@ contract StateUtils is IStateUtils {
     /// @notice User records
     mapping(address => User) public users;
 
+    // Keeps the total number of shares of the pool
+    Checkpoint[] public poolShares;
+
+    // Keeps user states used in `withdrawPrecalculated()` calls
+    mapping(address => LockedCalculation) public userToLockedCalculation;
+
     // Kept to prevent third parties from frontrunning the initialization
     // `setDaoApps()` call and grief the deployment
     address private deployer;
-
-    // Keeps the total number of shares of the pool
-    Checkpoint[] internal poolShares;
-
-    // Keeps user states used in `withdrawPrecalculated()` calls
-    mapping(address => LockedCalculation) internal userToLockedCalculation;
 
     /// @dev Reverts if the caller is not an API3 DAO Agent
     modifier onlyAgentApp() {
