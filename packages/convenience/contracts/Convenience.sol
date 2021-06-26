@@ -3,8 +3,9 @@ pragma solidity 0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import "@api3-dao/pool/contracts/Api3Pool.sol";
 import "@api3-dao/api3-voting/interfaces/v0.8.4/IApi3Voting.sol";
+import "./interfaces/IApi3PoolExtended.sol";
+
 
 /// @title Convenience contract used to make batch view calls to DAO contracts
 contract Convenience is Ownable  {
@@ -13,7 +14,7 @@ contract Convenience is Ownable  {
     /// @notice Governance token of the DAO
     IERC20Metadata public immutable api3Token;
     /// @notice Staking pool of the DAO
-    Api3Pool public immutable api3Pool;
+    IApi3PoolExtended public immutable api3Pool;
     /// @notice List of ERC20 addresses that will be displayed in the DAO
     /// treasury
     /// @dev These are set by the owner of this contract
@@ -35,8 +36,8 @@ contract Convenience is Ownable  {
     /// @param api3PoolAddress Staking pool address of the DAO 
     constructor(address api3PoolAddress)
     {
-        api3Pool = Api3Pool(api3PoolAddress);
-        api3Token = IERC20Metadata(address(Api3Pool(api3PoolAddress).api3Token()));
+        api3Pool = IApi3PoolExtended(api3PoolAddress);
+        api3Token = IERC20Metadata(address(IApi3PoolExtended(api3PoolAddress).api3Token()));
     }
 
     /// @notice Called by the owner to update the addresses of the contract
