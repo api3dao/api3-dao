@@ -17,7 +17,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             delegate != address(0) && delegate != msg.sender,
             "Pool: Invalid delegate"
             );
-        // Delegating users have cannot use their voting power, so we are
+        // Delegating users cannot use their voting power, so we are
         // verifying that the delegate is not currently delegating. However,
         // the delegate may delegate after they have been delegated to.
         require(
