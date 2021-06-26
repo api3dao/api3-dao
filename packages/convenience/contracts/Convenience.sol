@@ -10,15 +10,24 @@ import "@api3-dao/api3-voting/interfaces/v0.8.4/IApi3Voting.sol";
 contract Convenience is Ownable  {
     enum VotingAppType { Primary, Secondary }
 
-    Api3Pool public api3Pool;
+    /// @notice Governance token of the DAO
+    IERC20Metadata public immutable api3Token;
+    /// @notice Staking pool of the DAO
+    Api3Pool public immutable api3Pool;
+    /// @notice List of ERC20 addresses that will be displayed in the DAO
+    /// treasury
+    /// @dev These are set by the owner of this contract
     address[] public erc20Addresses;
-    IERC20Metadata public api3Token;
+    /// @notice Links to the discussion venues for each vote
+    /// @dev These are set by the owner of this contract, for example by
+    /// running a bot that automatically creates a forum thread with the vote
+    /// type and ID and writes its URL to the chain
     mapping(VotingAppType => mapping(uint256 => string)) public votingAppTypeToVoteIdToDiscussionUrl;
 
     constructor(address api3PoolAddress)
     {
         api3Pool = Api3Pool(api3PoolAddress);
-        api3Token = IERC20Metadata(address(api3Pool.api3Token()));
+        api3Token = IERC20Metadata(address(Api3Pool(api3PoolAddress).api3Token()));
     }
 
     /// @notice Called by the owner to update the addresses of the contract
