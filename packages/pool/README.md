@@ -120,6 +120,10 @@ API3 tokens allocated to founding members and investors are timelocked at [`Time
 The beneficiaries of the timelocked tokens can withdraw their tokens to this pool contract, where the vesting schedule will be continued.
 The tokens withdrawn to the pool will be able to be staked by their owners to receive voting power, staking rewards and be used as collateral.
 
+Note that the TimelockManager contract was already deployed and in use before this contract started being developed.
+As a result, this contract had to be developed in a way that conforms to the interface that the already deployed TimelockManager expects, which is not always elegant.
+Any fork of this codebase should refactor or remove this part.
+
 ### Timelock status update
 
 During or after the vesting schedule period, the user can update the timelocked tokens status making the newly unlocked tokens available for withdrawal.
@@ -152,3 +156,41 @@ Each epoch the total staked amount is below the target, APR will be increased by
 ## Precalculated user locked
 
 If the user updates their `user.shares` by staking/unstaking too frequently (50+/week) in the last year, the user migth not be able to withdraw tokens because the call gas cost may exceed the block gas limit. In that case, the user may call `precalculateUserLocked()` method as many times needed to have their locked tokens calculated and then use `withdrawPrecalculated()` to withdraw.
+
+## Packing checkpoint structs
+
+Checkpoints that keep pool share amounts and delegates are implemented as follows for significant gas cost optimization:
+```solidity
+struct Checkpoint {
+    uint32 fromBlock;
+    uint224 value;
+}
+struct AddressCheckpoint {
+    uint32 fromBlock;
+    address _address;
+}
+```
+Here, the assumption is that block numbers will never exceed `2^32-1` (on mainnet it is currently `<2^24`) and pool shares will never exceed `2^224-1` (with the current API3 total supply and the initial pool share price of `1` it is `<2^87`), so it can be expected that this will hold true.
+
+## Binary searches are optimistically optimized
+
+While doing a binary search in a checkpoint array, if the value being searched for is within the last 1024 elements, the search is limited to this section.
+This is meant to protect against searching through very bloated checkpoint arrays whenever possible.
+For example, when creating a new proposal, Api3Voting calls `totalSharesAt()` to get the total shares from one block ago.
+If `poolShares` is updated in the current block, this will require an actual binary search through `poolShares` (instead of simply using the last element) and since `poolShares` is updated with every stake/unstake, this operation may cost a lot of gas.
+This optimization is meant to prevent such edge cases, but may considered to be overengineering by some.
+
+## User shares get deducted while scheduling the unstake while pool shares get deducted while executing the unstake
+
+We need to deduct the user shares at scheduling-time because we do not want them to receive rewards or voting power any longer.
+However, if we also deduct the pool shares at scheduling-time, we would only have to update `totalStake` at unstake execution.
+Only decreasing `totalStake` will decrease share price (`totalStake/totalShares`), which means all users' staked amount will decrease.
+Deducting pool shares while executing the unstake limits this effect significantly (now other users' staked amounts will only increase slightly at execution-time).
+The downside of this is that while a unstaking is scheduled, the shares deducted for it will not be able to vote, i.e., there will be a small portion of voting power that is not usable until the unstaking is executed.
+In other words, the user still receives voting power for the tokens they have scheduled to unstake, they just cannot vote with them.
+This is not deemed a significant issue.
+
+## Locked token calculation
+
+`userLocked()` calculates the number of tokens from scratch at each call, instead of keeping a running total of all rewards received and unlocked (and one would calculate the locked amount by subtracting unlocked amount from the total amount).
+This assumes the user will withdraw less frequently than once a year and optimizes for that, as this is the prioritized user behavior.
