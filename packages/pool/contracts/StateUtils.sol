@@ -60,6 +60,9 @@ contract StateUtils is IStateUtils {
     uint256 internal constant ONE_PERCENT = 1e18 / 100;
     uint256 internal constant HUNDRED_PERCENT = 1e18;
 
+    uint256 private constant MAX_UINT32 = 2**32 - 1;
+    uint256 private constant MAX_UINT224 = 2**224 - 1;
+
     /// @notice Epochs are indexed as `block.timestamp / EPOCH_LENGTH`.
     /// `genesisEpoch` is the index of the epoch in which the pool is deployed.
     /// @dev No reward gets paid and proposals are not allowed in the genesis
@@ -212,10 +215,7 @@ contract StateUtils is IStateUtils {
         api3Token = IApi3Token(api3TokenAddress);
         timelockManager = timelockManagerAddress;
         // Initialize the share price at 1
-        poolShares.push(Checkpoint({
-            fromBlock: uint32(block.number),
-            value: 1
-            }));
+        updateCheckpointArray(poolShares, 1);
         totalStake = 1;
         // Set the current epoch as the genesis epoch and skip its reward
         // payment
@@ -420,5 +420,46 @@ contract StateUtils is IStateUtils {
         returns (bool)
     {
         return block.timestamp / EPOCH_LENGTH == genesisEpoch;
+    }
+
+    /// @notice Called internally to update a checkpoint array by pushing a new
+    /// checkpoint
+    /// @dev We assume `block.number` will always fit in a uint32 and `value`
+    /// will always fit in a uint224. `value` will either be a raw token amount
+    /// or a raw pool share amount so this assumption will be correct in
+    /// practice with a token with 18 decimals, 1e8 initial total supply and no
+    /// hyperinflation.
+    /// @param checkpointArray Checkpoint array
+    /// @param value Value to be used to create the new checkpoint
+    function updateCheckpointArray(
+        Checkpoint[] storage checkpointArray,
+        uint256 value
+        )
+        internal
+    {
+        assert(block.number <= MAX_UINT32);
+        assert(value <= MAX_UINT224);
+        checkpointArray.push(Checkpoint({
+            fromBlock: uint32(block.number),
+            value: uint224(value)
+            }));
+    }
+
+    /// @notice Called internally to update an address-checkpoint array by
+    /// pushing a new checkpoint
+    /// @dev We assume `block.number` will always fit in a uint32
+    /// @param addressCheckpointArray Address-checkpoint array
+    /// @param _address Address to be used to create the new checkpoint
+    function updateAddressCheckpointArray(
+        AddressCheckpoint[] storage addressCheckpointArray,
+        address _address
+        )
+        internal
+    {
+        assert(block.number <= MAX_UINT32);
+        addressCheckpointArray.push(AddressCheckpoint({
+            fromBlock: uint32(block.number),
+            _address: _address
+            }));
     }
 }

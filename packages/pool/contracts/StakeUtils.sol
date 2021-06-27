@@ -22,14 +22,14 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         uint256 totalSharesNow = totalShares();
         uint256 sharesToMint = amount * totalSharesNow / totalStake;
         uint256 userSharesNow = userShares(msg.sender);
-        user.shares.push(Checkpoint({
-            fromBlock: uint32(block.number),
-            value: uint224(userSharesNow + sharesToMint)
-            }));
-        poolShares.push(Checkpoint({
-            fromBlock: uint32(block.number),
-            value: uint224(totalSharesNow + sharesToMint)
-            }));
+        updateCheckpointArray(
+            user.shares,
+            userSharesNow + sharesToMint
+            );
+        updateCheckpointArray(
+            poolShares,
+            totalSharesNow + sharesToMint
+            );
         totalStake += amount;
         updateDelegatedVotingPower(sharesToMint, true);
         emit Staked(
@@ -91,10 +91,10 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         user.unstakeScheduledFor = unstakeScheduledFor;
         user.unstakeAmount = amount;
         user.unstakeShares = sharesToUnstake;
-        user.shares.push(Checkpoint({
-            fromBlock: uint32(block.number),
-            value: uint224(userSharesNow - sharesToUnstake)
-            }));
+        updateCheckpointArray(
+            user.shares,
+            userSharesNow - sharesToUnstake
+            );
         updateDelegatedVotingPower(sharesToUnstake, false);
         emit ScheduledUnstake(
             msg.sender,
@@ -136,10 +136,10 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         }
         user.unstaked += unstakeAmount;
 
-        poolShares.push(Checkpoint({
-            fromBlock: uint32(block.number),
-            value: uint224(totalShares - user.unstakeShares)
-            }));
+        updateCheckpointArray(
+            poolShares,
+            totalShares - user.unstakeShares
+            );
         totalStake -= unstakeAmount;
 
         user.unstakeAmount = 0;

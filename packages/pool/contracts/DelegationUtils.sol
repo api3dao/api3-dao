@@ -46,23 +46,23 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             );
         if (previousDelegate != address(0)) {
             // Need to revoke previous delegation
-            users[previousDelegate].delegatedTo.push(Checkpoint({
-                fromBlock: uint32(block.number),
-                value: uint224(delegatedToUser(previousDelegate) - userShares)
-                }));
+            updateCheckpointArray(
+                users[previousDelegate].delegatedTo,
+                delegatedToUser(previousDelegate) - userShares
+                );
         }
 
         // Assign the new delegation
-        users[delegate].delegatedTo.push(Checkpoint({
-            fromBlock: uint32(block.number),
-            value: uint224(delegatedToUser(delegate) + userShares)
-            }));
+        updateCheckpointArray(
+            users[delegate].delegatedTo,
+            delegatedToUser(delegate) + userShares
+            );
 
         // Record the new delegate for the user
-        user.delegates.push(AddressCheckpoint({
-            fromBlock: uint32(block.number),
-            _address: delegate
-            }));
+        updateAddressCheckpointArray(
+            user.delegates,
+            delegate
+            );
         emit Delegated(
             msg.sender,
             delegate,
@@ -89,14 +89,14 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         user.lastDelegationUpdateTimestamp = block.timestamp;
 
         uint256 userShares = userShares(msg.sender);
-        users[previousDelegate].delegatedTo.push(Checkpoint({
-            fromBlock: uint32(block.number),
-            value: uint224(delegatedToUser(previousDelegate) - userShares)
-            }));
-        user.delegates.push(AddressCheckpoint({
-            fromBlock: uint32(block.number),
-            _address: address(0)
-            }));
+        updateCheckpointArray(
+            users[previousDelegate].delegatedTo,
+            delegatedToUser(previousDelegate) - userShares
+            );
+        updateAddressCheckpointArray(
+            user.delegates,
+            address(0)
+            );
         emit Undelegated(
             msg.sender,
             previousDelegate,
@@ -125,10 +125,10 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         uint256 newDelegatedTo = delta
             ? currentDelegatedTo + shares
             : currentDelegatedTo - shares;
-        users[delegate].delegatedTo.push(Checkpoint({
-            fromBlock: uint32(block.number),
-            value: uint224(newDelegatedTo)
-            }));
+        updateCheckpointArray(
+            users[delegate].delegatedTo,
+            newDelegatedTo
+            );
         emit Delegated(
             msg.sender,
             delegate,
