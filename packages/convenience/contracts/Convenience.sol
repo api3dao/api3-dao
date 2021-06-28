@@ -131,11 +131,11 @@ contract Convenience is Ownable  {
             uint256 lastProposalTimestamp
             )
     {
-        names = new string[](erc20Addresses.length);
-        symbols = new string[](erc20Addresses.length);
-        decimals = new uint8[](erc20Addresses.length);
-        balancesOfPrimaryAgent = new uint256[](erc20Addresses.length);
-        balancesOfSecondaryAgent = new uint256[](erc20Addresses.length);
+        names = new string[](erc20Addresses.length + 1);
+        symbols = new string[](erc20Addresses.length + 1);
+        decimals = new uint8[](erc20Addresses.length + 1);
+        balancesOfPrimaryAgent = new uint256[](erc20Addresses.length + 1);
+        balancesOfSecondaryAgent = new uint256[](erc20Addresses.length + 1);
         for (uint256 i = 0; i < erc20Addresses.length; i++)
         {
             IERC20Metadata erc20 = IERC20Metadata(erc20Addresses[i]);
@@ -145,6 +145,11 @@ contract Convenience is Ownable  {
             balancesOfPrimaryAgent[i] = erc20.balanceOf(api3Pool.agentAppPrimary());
             balancesOfSecondaryAgent[i] = erc20.balanceOf(api3Pool.agentAppSecondary());
         }
+        names[erc20Addresses.length] = "Ethereum";
+        symbols[erc20Addresses.length] = "ETH";
+        decimals[erc20Addresses.length] = 18;
+        balancesOfPrimaryAgent[erc20Addresses.length] = address(api3Pool.agentAppPrimary()).balance;
+        balancesOfSecondaryAgent[erc20Addresses.length] = address(api3Pool.agentAppSecondary()).balance;
         proposalVotingPowerThreshold = api3Pool.proposalVotingPowerThreshold();
         userVotingPower = api3Pool.userVotingPower(userAddress);
         delegate = api3Pool.userDelegate(userAddress);   
