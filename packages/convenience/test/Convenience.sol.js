@@ -3,6 +3,8 @@ const { ethers } = require("hardhat");
 
 let mockApi3VotingPrimary,
   mockApi3VotingSecondary,
+  mockAgentPrimary,
+  mockAgentSecondary,
   mockApi3Token,
   mockOtherToken,
   api3Pool,
@@ -49,9 +51,11 @@ beforeEach(async () => {
     roles.mockTimeLockManager.address
   );
 
+  mockAgentPrimary = ethers.Wallet.createRandom();
+  mockAgentSecondary = ethers.Wallet.createRandom();
   await api3Pool.setDaoApps(
-    mockApi3VotingPrimary.address,
-    mockApi3VotingSecondary.address,
+    mockAgentPrimary.address,
+    mockAgentSecondary.address,
     mockApi3VotingPrimary.address,
     mockApi3VotingSecondary.address
   );
@@ -90,6 +94,16 @@ beforeEach(async () => {
   await convenience.setErc20Addresses(
     erc20Tokens.map((token) => token.address)
   );
+
+  // Send some ETH to the agents
+  await roles.deployer.sendTransaction({
+    to: mockAgentPrimary.address,
+    value: ethers.utils.parseEther("12"),
+  });
+  await roles.deployer.sendTransaction({
+    to: mockAgentSecondary.address,
+    value: ethers.utils.parseEther("34"),
+  });
 });
 
 // Cast Votes in the mock contract
@@ -265,15 +279,15 @@ describe("getTreasuryAndUserDelegationData", function () {
         await convenience.getTreasuryAndUserDelegationData(roles.user1.address);
       const api3PoolUser = await api3Pool.getUser(roles.user1.address);
 
-      expect(TreasuryAndUserDelegationData.names).to.deep.equal([]);
-      expect(TreasuryAndUserDelegationData.symbols).to.deep.equal([]);
-      expect(TreasuryAndUserDelegationData.decimals).to.deep.equal([]);
+      expect(TreasuryAndUserDelegationData.names).to.deep.equal(["Ethereum"]);
+      expect(TreasuryAndUserDelegationData.symbols).to.deep.equal(["ETH"]);
+      expect(TreasuryAndUserDelegationData.decimals).to.deep.equal([18]);
       expect(
         TreasuryAndUserDelegationData.balancesOfPrimaryAgent
-      ).to.deep.equal([]);
+      ).to.deep.equal([ethers.utils.parseEther("12")]);
       expect(
         TreasuryAndUserDelegationData.balancesOfSecondaryAgent
-      ).to.deep.equal([]);
+      ).to.deep.equal([ethers.utils.parseEther("34")]);
       expect(
         TreasuryAndUserDelegationData.proposalVotingPowerThreshold
       ).to.equal(await api3Pool.proposalVotingPowerThreshold());
@@ -339,6 +353,25 @@ describe("getTreasuryAndUserDelegationData", function () {
             await erc20Tokens[i].balanceOf(await api3Pool.agentAppSecondary())
           );
         }
+        expect(TreasuryAndUserDelegationData.names[erc20Tokens.length]).to.equal(
+          "Ethereum"
+        );
+        expect(TreasuryAndUserDelegationData.symbols[erc20Tokens.length]).to.equal(
+          "ETH"
+        );
+        expect(TreasuryAndUserDelegationData.decimals[erc20Tokens.length]).to.equal(
+          18
+        );
+        expect(
+          TreasuryAndUserDelegationData.balancesOfPrimaryAgent[erc20Tokens.length]
+        ).to.equal(
+          ethers.utils.parseEther("12")
+        );
+        expect(
+          TreasuryAndUserDelegationData.balancesOfSecondaryAgent[erc20Tokens.length]
+        ).to.equal(
+          ethers.utils.parseEther("34")
+        );
 
         expect(
           TreasuryAndUserDelegationData.proposalVotingPowerThreshold
