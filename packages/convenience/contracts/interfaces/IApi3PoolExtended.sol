@@ -1,9 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-import "@api3-dao/pool/contracts/interfaces/IApi3Pool.sol";
-
-interface IApi3PoolExtended is IApi3Pool {
+interface IApi3PoolExtended {
     function api3Token()
         external
         view
@@ -48,4 +46,63 @@ interface IApi3PoolExtended is IApi3Pool {
         external
         view
         returns (uint256);
+
+    function totalShares()
+        external
+        view
+        returns (uint256);
+
+    function userStake(address userAddress)
+        external
+        view
+        returns (uint256);
+
+    function getUser(address userAddress)
+        external
+        view
+        returns (
+            uint256 unstaked,
+            uint256 vesting,
+            uint256 unstakeShares,
+            uint256 unstakeAmount,
+            uint256 unstakeScheduledFor,
+            uint256 lastDelegationUpdateTimestamp,
+            uint256 lastProposalTimestamp
+            );
+
+    function userLocked(address userAddress)
+        external
+        view
+        returns (uint256);
+
+    function userVotingPowerAt(
+        address userAddress,
+        uint256 _block
+        )
+        external
+        view
+        returns (uint256);
+
+    function userVotingPower(address userAddress)
+        external
+        view
+        returns (uint256);
+
+    function delegatedToUser(address userAddress)
+        external
+        view
+        returns (uint256);
+
+    function userDelegateAt(
+        address userAddress,
+        uint256 _block
+        )
+        external
+        view
+        returns (address);
+
+    function userDelegate(address userAddress)
+        external
+        view
+        returns (address);
 }
