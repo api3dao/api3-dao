@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
-    "build": "hardhat compile",
+    "build": "hardhat compile && npm run build:copy-from-pool",
+    "build:copy-from-pool": "cd ../pool && npm run build && mkdir -p ../convenience/artifacts/contracts/Api3Pool.sol && cp ./artifacts/contracts/Api3Pool.sol/Api3Pool.json ../convenience/artifacts/contracts/Api3Pool.sol/Api3Pool.json && cd ../convenience",
     "flatten": "hardhat flatten contracts/Convenience.sol > Convenience.flat.sol && yarn run flatten:delete-license-lines",
     "flatten:delete-license-lines": "sed --in-place '/SPDX-License-Identifier/d' *.flat.sol",
     "lint": "solium --no-soliumignore --dir ./contracts",
-    "test": "hardhat test",
-    "test:coverage": "hardhat coverage",
-    "test:gas": "REPORT_GAS=TRUE hardhat test"
+    "test": "npm run build && hardhat test --no-compile",
+    "test:gas": "npm run build && REPORT_GAS=TRUE hardhat test --no-compile"
   },
   "devDependencies": {
     "@api3-dao/api3-voting": "^1.0.0",
@@ -20,7 +20,6 @@
     "chai": "^4.3.4",
     "ethereum-waffle": "^3.3.0",
     "hardhat": "^2.3.0",
-    "hardhat-gas-reporter": "^1.0.4",
-    "solidity-coverage": "^0.7.16"
+    "hardhat-gas-reporter": "^1.0.4"
   }
 }
