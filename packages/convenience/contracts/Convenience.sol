@@ -126,6 +126,7 @@ contract Convenience is Ownable  {
             uint256[] memory balancesOfSecondaryAgent,
             uint256 proposalVotingPowerThreshold,
             uint256 userVotingPower,
+            uint256 delegatedToUser,
             address delegate,
             uint256 lastDelegationUpdateTimestamp,
             uint256 lastProposalTimestamp
@@ -152,6 +153,7 @@ contract Convenience is Ownable  {
         balancesOfSecondaryAgent[erc20Addresses.length] = address(api3Pool.agentAppSecondary()).balance;
         proposalVotingPowerThreshold = api3Pool.proposalVotingPowerThreshold();
         userVotingPower = api3Pool.userVotingPower(userAddress);
+        delegatedToUser = api3Pool.delegatedToUser(userAddress);
         delegate = api3Pool.userDelegate(userAddress);   
         (
             , // unstaked

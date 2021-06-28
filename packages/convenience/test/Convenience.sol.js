@@ -294,6 +294,9 @@ describe("getTreasuryAndUserDelegationData", function () {
       expect(TreasuryAndUserDelegationData.userVotingPower).to.equal(
         await api3Pool.userVotingPower(roles.user1.address)
       );
+      expect(TreasuryAndUserDelegationData.delegatedToUser).to.equal(
+        await api3Pool.delegatedToUser(roles.user1.address)
+      );
       expect(TreasuryAndUserDelegationData.delegate).to.equal(
         await api3Pool.userDelegate(roles.user1.address)
       );
@@ -378,6 +381,9 @@ describe("getTreasuryAndUserDelegationData", function () {
         ).to.equal(await api3Pool.proposalVotingPowerThreshold());
         expect(TreasuryAndUserDelegationData.userVotingPower).to.equal(
           await api3Pool.userVotingPower(roles.user1.address)
+        );
+        expect(TreasuryAndUserDelegationData.delegatedToUser).to.equal(
+          await api3Pool.delegatedToUser(roles.user1.address)
         );
         expect(TreasuryAndUserDelegationData.delegate).to.equal(
           await api3Pool.userDelegate(roles.user1.address)
