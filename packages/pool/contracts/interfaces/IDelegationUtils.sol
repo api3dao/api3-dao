@@ -16,6 +16,12 @@ interface IDelegationUtils is IRewardUtils {
         uint256 shares
         );
 
+    event UpdatedDelegation(
+        address indexed user,
+        address indexed delegate,
+        uint256 shares
+        );
+
     function delegateVotingPower(address delegate) 
         external;
 

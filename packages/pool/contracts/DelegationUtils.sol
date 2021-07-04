@@ -129,7 +129,7 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             users[delegate].delegatedTo,
             newDelegatedTo
             );
-        emit Delegated(
+        emit UpdatedDelegation(
             msg.sender,
             delegate,
             newDelegatedTo
