@@ -105,9 +105,8 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
     }
 
     /// @notice Called to execute a pre-scheduled unstake
-    /// @dev Note that anyone can execute a matured unstake. This is to allow
-    /// the user to use bots, etc. to execute their unstaking as soon as
-    /// possible.
+    /// @dev Anyone can execute a matured unstake. This is to allow the user to
+    /// use bots, etc. to execute their unstaking as soon as possible.
     /// @param userAddress User address
     /// @return Amount of tokens that are unstaked
     function unstake(address userAddress)
@@ -128,8 +127,9 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         uint256 totalShares = totalShares();
         uint256 unstakeAmount = user.unstakeAmount;
         uint256 unstakeAmountByShares = user.unstakeShares * totalStake / totalShares;
-        // If there was a claim payout in between the scheduling and the actual unstake 
-        // then the amount might be lower than expected at scheduling time
+        // If there was a claim payout in between the scheduling and the actual
+        // unstake then the amount might be lower than expected at scheduling
+        // time
         if (unstakeAmount > unstakeAmountByShares)
         {
             unstakeAmount = unstakeAmountByShares;
@@ -151,8 +151,8 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
 
     /// @notice Convenience method to execute an unstake and withdraw to the
     /// user's wallet in a single transaction
-    /// @dev Note that the withdrawal may revert because the user may have less
-    /// than `unstaked` tokens that are withdrawable
+    /// @dev The withdrawal will revert if the user has less than
+    /// `unstakeAmount` tokens that are withdrawable
     function unstakeAndWithdraw()
         external
         override

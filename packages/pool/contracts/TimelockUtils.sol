@@ -6,7 +6,7 @@ import "./interfaces/ITimelockUtils.sol";
 
 /// @title Contract that implements vesting functionality
 /// @dev The TimelockManager contract interfaces with this contract to transfer
-/// API3 tokens that are locked under a vesting schedule
+/// API3 tokens that are locked under a vesting schedule.
 /// This contract keeps its own type definitions, event declarations and state
 /// variables for them to be easier to remove for a subDAO where they will
 /// likely not be used.
@@ -28,7 +28,7 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
     /// @notice Called by the TimelockManager contract to deposit tokens on
     /// behalf of a user
     /// @dev This method is only usable by `TimelockManager.sol`.
-    /// It is named as `deposit()` and not `depositByTimelockManager()` for
+    /// It is named as `deposit()` and not `depositAsTimelockManager()` for
     /// example, because the TimelockManager is already deployed and expects
     /// the `deposit(address,uint256,address)` interface.
     /// @param source Token transfer source

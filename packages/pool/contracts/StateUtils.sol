@@ -53,8 +53,8 @@ contract StateUtils is IStateUtils {
     uint256 public constant EPOCH_LENGTH = 1 weeks;
 
     /// @notice Number of epochs before the staking rewards get unlocked.
-    /// Hardcoded as 52 epochs, which corresponds to a year with an
-    /// `EPOCH_LENGTH` of 1 week.
+    /// Hardcoded as 52 epochs, which approximately corresponds to a year with
+    /// an `EPOCH_LENGTH` of 1 week.
     uint256 public constant REWARD_VESTING_PERIOD = 52;
 
     // All percentage values are represented as 1e18 = 100%

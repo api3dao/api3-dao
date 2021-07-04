@@ -16,7 +16,7 @@ contract Convenience is Ownable  {
     /// @notice Staking pool of the DAO
     IApi3PoolExtended public immutable api3Pool;
     /// @notice List of ERC20 addresses that will be displayed in the DAO
-    /// treasury
+    /// treasury. The ETH balance will also be displayed by default.
     /// @dev These are set by the owner of this contract
     address[] public erc20Addresses;
     /// @notice Links to the discussion venues for each vote
@@ -74,6 +74,26 @@ contract Convenience is Ownable  {
 
     /// @notice Used by the DAO dashboard client to retrieve user staking data
     /// @param userAddress User address
+    /// @return apr Staking reward APR
+    /// @return api3Supply API3 total supply
+    /// @return totalStake Total amount staked at the pool
+    /// @return totalShares Total pool shares (also represents total voting
+    /// power)
+    /// @return stakeTarget Pool stake target in percentages
+    /// @return userApi3Balance User API3 balance
+    /// @return userStaked Amount of staked tokens the user has at the pool
+    /// @return userUnstaked Amount of non-staked tokens the user has at the
+    /// pool
+    /// @return userVesting Amount of tokens not yet vested to the user (it is
+    /// not withdrawable, similar to `userLocked`)
+    /// @return userUnstakeAmount Amount of tokens the user scheduled to
+    /// unstake
+    /// @return userUnstakeShares Amount of shares the user gave up to schedule
+    /// the unstaking
+    /// @return userUnstakeScheduledFor Time when the scheduled unstake will
+    /// mature
+    /// @return userLocked Amount of rewards the user has received that are not
+    /// withdrawable yet
     function getUserStakingData(address userAddress)
         external
         view
@@ -114,7 +134,24 @@ contract Convenience is Ownable  {
 
     /// @notice Used by the DAO dashboard client to retrieve the treasury and
     /// user delegation data
+    /// @dev In addition to the ERC20 tokens, it returns the ETH balances of
+    /// the treasuries
     /// @param userAddress User address
+    /// @return names ERC20 (+ Ethereum) names
+    /// @return symbols ERC20 (+ Ethereum) symbols
+    /// @return decimals ERC20 (+ Ethereum) decimals
+    /// @return balancesOfPrimaryAgent ERC20 (+ Ethereum) balances of the
+    /// primary agent
+    /// @return balancesOfSecondaryAgent ERC20 (+ Ethereum) balances of the
+    /// secondary agent
+    /// @return proposalVotingPowerThreshold Proposal voting power threshold in
+    /// percentages
+    /// @return userVotingPower Voting power of the user, including delegations
+    /// @return delegatedToUser Voting power delegated to user
+    /// @return delegate Address that the user has delegated to
+    /// @return lastDelegationUpdateTimestamp When the user has last updated
+    /// their delegation
+    /// @return lastProposalTimestamp When the user has last made a proposal
     function getTreasuryAndUserDelegationData(address userAddress)
         external
         view
@@ -171,6 +208,17 @@ contract Convenience is Ownable  {
     /// @param votingAppType Enumerated voting app type (primary or secondary)
     /// @param userAddress User address
     /// @param voteIds Array of vote IDs for which data will be retrieved
+    /// @return startDate Start date of the vote
+    /// @return supportRequired Support required for the vote to pass in
+    /// percentages
+    /// @return minAcceptQuorum Minimum acceptance quorum required for the vote
+    /// to pass in percentages
+    /// @return votingPower Total voting power at the time the vote was created
+    /// @return script The EVMScript that will be run if the vote passes
+    /// @return userVotingPowerAt User's voting power at the time the vote was
+    /// created
+    /// @return discussionUrl Discussion URL set for the vote by the contract
+    /// owner
     function getStaticVoteData(
         VotingAppType votingAppType,
         address userAddress,
@@ -230,6 +278,13 @@ contract Convenience is Ownable  {
     /// @param votingAppType Enumerated voting app type (primary or secondary)
     /// @param userAddress User address
     /// @param voteIds Array of vote IDs for which data will be retrieved
+    /// @return executed If the vote has been executed
+    /// @return yea Total voting power voted for "For"
+    /// @return nay Total voting power voted for "Against"
+    /// @return voterState Vote cast by the user
+    /// @return delegateAt Address the user has delegated to at the time the
+    /// vote was created
+    /// @return delegateState Vote cast by the delegate of the user
     function getDynamicVoteData(
         VotingAppType votingAppType,
         address userAddress,
