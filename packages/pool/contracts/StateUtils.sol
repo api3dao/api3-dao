@@ -60,8 +60,9 @@ contract StateUtils is IStateUtils {
     uint256 internal constant ONE_PERCENT = 1e18 / 100;
     uint256 internal constant HUNDRED_PERCENT = 1e18;
 
-    uint256 private constant MAX_UINT32 = 2**32 - 1;
-    uint256 private constant MAX_UINT224 = 2**224 - 1;
+    // To assert that typecasts do not overflow
+    uint256 internal constant MAX_UINT32 = 2**32 - 1;
+    uint256 internal constant MAX_UINT224 = 2**224 - 1;
 
     /// @notice Epochs are indexed as `block.timestamp / EPOCH_LENGTH`.
     /// `genesisEpoch` is the index of the epoch in which the pool is deployed.
