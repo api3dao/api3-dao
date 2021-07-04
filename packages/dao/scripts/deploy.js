@@ -90,6 +90,8 @@ module.exports = async (callback) => {
       [supportRequiredPct2, minAcceptQuorumPct2],
       api3VotingAppId
     );
+    const dao = getEventArgument(tx, "Api3DaoDeployed", "dao");
+    const acl = getEventArgument(tx, "Api3DaoDeployed", "acl");
     const primaryVoting = getEventArgument(
       tx,
       "Api3DaoDeployed",
@@ -126,6 +128,8 @@ module.exports = async (callback) => {
       timelockManager: timelockManager.address,
       api3Pool: api3Pool.address,
       convenience: convenience.address,
+      dao: dao,
+      acl: acl,
       votingAppPrimary: getEventArgument(
         set_tx,
         "SetDaoApps",
