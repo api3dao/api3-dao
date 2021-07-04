@@ -20,6 +20,7 @@ contract StateUtils is IStateUtils {
         uint32 atBlock;
         uint224 amount;
         uint256 totalSharesThen;
+        uint256 totalStakeThen;
     }
 
     struct User {
