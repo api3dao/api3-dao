@@ -356,25 +356,25 @@ describe("getTreasuryAndUserDelegationData", function () {
             await erc20Tokens[i].balanceOf(await api3Pool.agentAppSecondary())
           );
         }
-        expect(TreasuryAndUserDelegationData.names[erc20Tokens.length]).to.equal(
-          "Ethereum"
-        );
-        expect(TreasuryAndUserDelegationData.symbols[erc20Tokens.length]).to.equal(
-          "ETH"
-        );
-        expect(TreasuryAndUserDelegationData.decimals[erc20Tokens.length]).to.equal(
-          18
-        );
         expect(
-          TreasuryAndUserDelegationData.balancesOfPrimaryAgent[erc20Tokens.length]
-        ).to.equal(
-          ethers.utils.parseEther("12")
-        );
+          TreasuryAndUserDelegationData.names[erc20Tokens.length]
+        ).to.equal("Ethereum");
         expect(
-          TreasuryAndUserDelegationData.balancesOfSecondaryAgent[erc20Tokens.length]
-        ).to.equal(
-          ethers.utils.parseEther("34")
-        );
+          TreasuryAndUserDelegationData.symbols[erc20Tokens.length]
+        ).to.equal("ETH");
+        expect(
+          TreasuryAndUserDelegationData.decimals[erc20Tokens.length]
+        ).to.equal(18);
+        expect(
+          TreasuryAndUserDelegationData.balancesOfPrimaryAgent[
+            erc20Tokens.length
+          ]
+        ).to.equal(ethers.utils.parseEther("12"));
+        expect(
+          TreasuryAndUserDelegationData.balancesOfSecondaryAgent[
+            erc20Tokens.length
+          ]
+        ).to.equal(ethers.utils.parseEther("34"));
 
         expect(
           TreasuryAndUserDelegationData.proposalVotingPowerThreshold

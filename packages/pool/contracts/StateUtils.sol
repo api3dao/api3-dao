@@ -119,7 +119,7 @@ contract StateUtils is IStateUtils {
     /// amount is below this, and vice versa.
     /// @dev Default value is 50% of the total API3 token supply. This
     /// parameter is governable by the DAO.
-    uint256 public stakeTarget = 50 * ONE_PERCENT;
+    uint256 public stakeTarget = ONE_PERCENT * 50;
 
     /// @notice Minimum APR (annual percentage rate) the pool will pay as
     /// staking rewards in percentages
@@ -129,7 +129,7 @@ contract StateUtils is IStateUtils {
     /// @notice Maximum APR (annual percentage rate) the pool will pay as
     /// staking rewards in percentages
     /// @dev Default value is 75%. This parameter is governable by the DAO.
-    uint256 public maxApr = 75 * ONE_PERCENT;
+    uint256 public maxApr = ONE_PERCENT * 75;
 
     /// @notice Steps in which APR will be updated in percentages
     /// @dev Default value is 1%. This parameter is governable by the DAO.
@@ -389,7 +389,7 @@ contract StateUtils is IStateUtils {
     {
         require(
             _proposalVotingPowerThreshold >= ONE_PERCENT / 10
-                && _proposalVotingPowerThreshold <= 10 * ONE_PERCENT,
+                && _proposalVotingPowerThreshold <= ONE_PERCENT * 10,
             "Pool: Threshold outside limits");
         proposalVotingPowerThreshold = _proposalVotingPowerThreshold;
         emit SetProposalVotingPowerThreshold(_proposalVotingPowerThreshold);

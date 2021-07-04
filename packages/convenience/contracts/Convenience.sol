@@ -268,7 +268,7 @@ contract Convenience is Ownable  {
                 , // open
                 executed[i],
                 , // startDate
-                snapshotBlock ,
+                snapshotBlock,
                 , // supportRequired
                 , // minAcceptQuorum
                 yea[i],
