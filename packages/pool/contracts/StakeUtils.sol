@@ -21,21 +21,24 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         user.unstaked -= amount;
         uint256 totalSharesNow = totalShares();
         uint256 sharesToMint = amount * totalSharesNow / totalStake;
-        uint256 userSharesNow = userShares(msg.sender);
+        uint256 userSharesUpdate = userShares(msg.sender) + sharesToMint;
         updateCheckpointArray(
             user.shares,
-            userSharesNow + sharesToMint
+            userSharesUpdate
             );
+        uint256 totalSharesUpdate = totalSharesNow + sharesToMint;
         updateCheckpointArray(
             poolShares,
-            totalSharesNow + sharesToMint
+            totalSharesUpdate
             );
         totalStake += amount;
         updateDelegatedVotingPower(sharesToMint, true);
         emit Staked(
             msg.sender,
             amount,
-            sharesToMint
+            sharesToMint,
+            userSharesUpdate,
+            totalSharesUpdate
             );
     }
 
@@ -91,16 +94,18 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         user.unstakeScheduledFor = unstakeScheduledFor;
         user.unstakeAmount = amount;
         user.unstakeShares = sharesToUnstake;
+        uint256 userSharesUpdate = userSharesNow - sharesToUnstake;
         updateCheckpointArray(
             user.shares,
-            userSharesNow - sharesToUnstake
+            userSharesUpdate
             );
         updateDelegatedVotingPower(sharesToUnstake, false);
         emit ScheduledUnstake(
             msg.sender,
             amount,
             sharesToUnstake,
-            unstakeScheduledFor
+            unstakeScheduledFor,
+            userSharesUpdate
             );
     }
 
@@ -136,16 +141,21 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         }
         user.unstaked += unstakeAmount;
 
+        uint256 totalSharesUpdate = totalShares - user.unstakeShares;
         updateCheckpointArray(
             poolShares,
-            totalShares - user.unstakeShares
+            totalSharesUpdate
             );
         totalStake -= unstakeAmount;
 
         user.unstakeAmount = 0;
         user.unstakeShares = 0;
         user.unstakeScheduledFor = 0;
-        emit Unstaked(userAddress, unstakeAmount);
+        emit Unstaked(
+            userAddress,
+            unstakeAmount,
+            totalSharesUpdate
+            );
         return unstakeAmount;
     }
 

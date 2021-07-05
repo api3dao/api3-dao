@@ -72,7 +72,13 @@ describe("stake", function () {
         // Stake the second half
         await expect(api3Pool.connect(roles.user1).stake(user1Stake.div(2)))
           .to.emit(api3Pool, "Staked")
-          .withArgs(roles.user1.address, user1Stake.div(2), user1Stake.div(2));
+          .withArgs(
+            roles.user1.address,
+            user1Stake.div(2),
+            user1Stake.div(2),
+            user1Stake,
+            user1Stake.add(1)
+          );
         expect(await api3Pool.userStake(roles.user1.address)).to.equal(
           user1Stake
         );
@@ -101,7 +107,13 @@ describe("stake", function () {
         await api3Pool.connect(roles.user1).depositRegular(user1Stake);
         await expect(api3Pool.connect(roles.user1).stake(user1Stake))
           .to.emit(api3Pool, "Staked")
-          .withArgs(roles.user1.address, user1Stake, user1Stake);
+          .withArgs(
+            roles.user1.address,
+            user1Stake,
+            user1Stake,
+            user1Stake,
+            user1Stake.add(1)
+          );
         expect(await api3Pool.userStake(roles.user1.address)).to.equal(
           user1Stake
         );
@@ -131,7 +143,13 @@ describe("depositAndStake", function () {
     await api3Token.connect(roles.user1).approve(api3Pool.address, user1Stake);
     await expect(api3Pool.connect(roles.user1).depositAndStake(user1Stake))
       .to.emit(api3Pool, "Staked")
-      .withArgs(roles.user1.address, user1Stake, user1Stake);
+      .withArgs(
+        roles.user1.address,
+        user1Stake,
+        user1Stake,
+        user1Stake,
+        user1Stake.add(1)
+      );
   });
 });
 
@@ -178,7 +196,8 @@ describe("scheduleUnstake", function () {
                 roles.user1.address,
                 user1Stake,
                 user1Shares,
-                unstakeScheduledFor
+                unstakeScheduledFor,
+                0
               );
             expect(await api3Pool.userShares(roles.user1.address)).to.equal(0);
             expect(await api3Pool.totalShares()).to.equal(user1Shares.add(1));
@@ -219,7 +238,8 @@ describe("scheduleUnstake", function () {
                 roles.user1.address,
                 user1Stake,
                 user1Shares,
-                unstakeScheduledFor
+                unstakeScheduledFor,
+                0
               );
             expect(await api3Pool.userShares(roles.user1.address)).to.equal(0);
             expect(await api3Pool.totalShares()).to.equal(user1Shares.add(1));
@@ -318,7 +338,7 @@ describe("unstake", function () {
             api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
           )
             .to.emit(api3Pool, "Unstaked")
-            .withArgs(roles.user1.address, user1Stake);
+            .withArgs(roles.user1.address, user1Stake, 1);
           const user = await api3Pool.users(roles.user1.address);
           expect(user.unstaked).to.equal(user1Stake);
         });
@@ -379,7 +399,11 @@ describe("unstake", function () {
             api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
           )
             .to.emit(api3Pool, "Unstaked")
-            .withArgs(roles.user1.address, actualUnstakeAmount);
+            .withArgs(
+              roles.user1.address,
+              actualUnstakeAmount,
+              user1Stake.div(2).add(1)
+            );
         });
       });
     });

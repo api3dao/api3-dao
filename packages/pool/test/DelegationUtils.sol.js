@@ -101,6 +101,7 @@ describe("delegateVotingPower", function () {
                     .withArgs(
                       roles.user1.address,
                       roles.user2.address,
+                      user1Shares,
                       user1Shares
                     );
                   expect(
@@ -265,7 +266,7 @@ describe("undelegateVotingPower", function () {
           const user1Shares = await api3Pool.userShares(roles.user1.address);
           await expect(api3Pool.connect(roles.user1).undelegateVotingPower())
             .to.emit(api3Pool, "Undelegated")
-            .withArgs(roles.user1.address, roles.user2.address, user1Shares);
+            .withArgs(roles.user1.address, roles.user2.address, user1Shares, 0);
           expect(await api3Pool.userVotingPower(roles.user1.address)).to.equal(
             user1Stake
           );

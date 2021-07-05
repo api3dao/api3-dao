@@ -49,7 +49,7 @@ describe("depositRegular", function () {
       .approve(api3Pool.address, user1Deposit);
     await expect(api3Pool.connect(roles.user1).depositRegular(user1Deposit))
       .to.emit(api3Pool, "Deposited")
-      .withArgs(roles.user1.address, user1Deposit);
+      .withArgs(roles.user1.address, user1Deposit, user1Deposit);
     const user = await api3Pool.users(roles.user1.address);
     expect(user.unstaked).to.equal(user1Deposit);
   });
@@ -94,7 +94,11 @@ describe("withdrawRegular", function () {
       const unlocked = userBefore.unstaked.sub(locked);
       await expect(api3Pool.connect(roles.user1).withdrawRegular(unlocked))
         .to.emit(api3Pool, "Withdrawn")
-        .withArgs(roles.user1.address, unlocked);
+        .withArgs(
+          roles.user1.address,
+          unlocked,
+          userBefore.unstaked.sub(unlocked)
+        );
       const userAfter = await api3Pool.users(roles.user1.address);
       expect(locked).to.equal(userAfter.unstaked);
     });
@@ -238,11 +242,16 @@ describe("withdrawPrecalculated", function () {
         await api3Pool
           .connect(roles.user1)
           .precalculateUserLocked(roles.user1.address, 30);
+        const userBefore = await api3Pool.users(roles.user1.address);
         await expect(
           api3Pool.connect(roles.user1).withdrawPrecalculated(user1Stake)
         )
           .to.emit(api3Pool, "Withdrawn")
-          .withArgs(roles.user1.address, user1Stake);
+          .withArgs(
+            roles.user1.address,
+            user1Stake,
+            userBefore.unstaked.sub(user1Stake)
+          );
       });
     });
     context("Calculation is not complete", function () {

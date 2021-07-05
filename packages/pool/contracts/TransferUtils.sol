@@ -17,13 +17,15 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
         override
     {
         mintReward();
-        users[msg.sender].unstaked += amount;
+        uint256 unstakedUpdate = users[msg.sender].unstaked + amount;
+        users[msg.sender].unstaked = unstakedUpdate;
         // Should never return false because the API3 token uses the
         // OpenZeppelin implementation
         assert(api3Token.transferFrom(msg.sender, address(this), amount));
         emit Deposited(
             msg.sender,
-            amount
+            amount,
+            unstakedUpdate
             );
     }
 
@@ -148,13 +150,15 @@ abstract contract TransferUtils is DelegationUtils, ITransferUtils {
             "Pool: Not enough unstaked funds"
             );
         // Carry on with the withdrawal
-        user.unstaked -= amount;
+        uint256 unstakedUpdate = user.unstaked - amount;
+        user.unstaked = unstakedUpdate;
         // Should never return false because the API3 token uses the
         // OpenZeppelin implementation
         assert(api3Token.transfer(msg.sender, amount));
         emit Withdrawn(
             msg.sender,
-            amount
+            amount,
+            unstakedUpdate
             );
     }
 }

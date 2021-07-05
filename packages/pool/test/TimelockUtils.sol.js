@@ -58,7 +58,11 @@ describe("deposit", function () {
           )
       )
         .to.emit(api3Pool, "DepositedByTimelockManager")
-        .withArgs(roles.user1.address, timelockManagerDeposit);
+        .withArgs(
+          roles.user1.address,
+          timelockManagerDeposit,
+          timelockManagerDeposit
+        );
       const user = await api3Pool.users(roles.user1.address);
       expect(user.unstaked).to.equal(timelockManagerDeposit);
     });
@@ -115,7 +119,9 @@ describe("depositWithVesting", function () {
                 roles.user1.address,
                 depositAmount,
                 releaseStart,
-                releaseEnd
+                releaseEnd,
+                depositAmount,
+                depositAmount
               );
           });
         });
@@ -171,7 +177,9 @@ describe("depositWithVesting", function () {
               roles.user1.address,
               depositAmount,
               releaseEnd - 1,
-              releaseEnd
+              releaseEnd,
+              depositAmount,
+              depositAmount
             );
         });
       });
@@ -274,7 +282,7 @@ describe("updateTimelockStatus", function () {
               .updateTimelockStatus(roles.user1.address)
           )
             .to.emit(api3Pool, "VestedTimelock")
-            .withArgs(roles.user1.address, depositAmount);
+            .withArgs(roles.user1.address, depositAmount, 0);
         });
       });
       context("It is not past release end", function () {
@@ -307,7 +315,11 @@ describe("updateTimelockStatus", function () {
               .updateTimelockStatus(roles.user1.address)
           )
             .to.emit(api3Pool, "VestedTimelock")
-            .withArgs(roles.user1.address, depositAmount.div(2));
+            .withArgs(
+              roles.user1.address,
+              depositAmount.div(2),
+              depositAmount.div(2)
+            );
         });
       });
     });

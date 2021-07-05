@@ -6,19 +6,23 @@ import "./IClaimUtils.sol";
 interface ITimelockUtils is IClaimUtils {
     event DepositedByTimelockManager(
         address indexed user,
-        uint256 amount
+        uint256 amount,
+        uint256 userUnstaked
         );
 
     event DepositedVesting(
         address indexed user,
         uint256 amount,
         uint256 start,
-        uint256 end
+        uint256 end,
+        uint256 userUnstaked,
+        uint256 userVesting
         );
 
     event VestedTimelock(
         address indexed user,
-        uint256 amount
+        uint256 amount,
+        uint256 userVesting
         );
 
     function deposit(

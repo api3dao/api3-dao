@@ -46,13 +46,15 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
             msg.sender == timelockManager,
             "Pool: Caller not TimelockManager"
             );
-        users[userAddress].unstaked += amount;
+        uint256 unstakedUpdate = users[userAddress].unstaked + amount;
+        users[userAddress].unstaked = unstakedUpdate;
         // Should never return false because the API3 token uses the
         // OpenZeppelin implementation
         assert(api3Token.transferFrom(source, address(this), amount));
         emit DepositedByTimelockManager(
             userAddress,
-            amount
+            amount,
+            unstakedUpdate
             );
     }
 
@@ -103,8 +105,10 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
             amount != 0,
             "Pool: Timelock amount zero"
             );
-        users[userAddress].unstaked += amount;
-        users[userAddress].vesting += amount;
+        uint256 unstakedUpdate = users[userAddress].unstaked + amount;
+        users[userAddress].unstaked = unstakedUpdate;
+        uint256 vestingUpdate = users[userAddress].vesting + amount;
+        users[userAddress].vesting = vestingUpdate;
         userToTimelock[userAddress] = Timelock({
             totalAmount: amount,
             remainingAmount: amount,
@@ -118,7 +122,9 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
             userAddress,
             amount,
             releaseStart,
-            releaseEnd
+            releaseEnd,
+            unstakedUpdate,
+            vestingUpdate
             );
     }
 
@@ -152,11 +158,13 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         uint256 previouslyUnlocked = timelock.totalAmount - timelock.remainingAmount;
         uint256 newlyUnlocked = totalUnlocked - previouslyUnlocked;
         User storage user = users[userAddress];
-        user.vesting -= newlyUnlocked;
+        uint256 vestingUpdate = user.vesting - newlyUnlocked;
+        user.vesting = vestingUpdate;
         timelock.remainingAmount -= newlyUnlocked;
         emit VestedTimelock(
             userAddress,
-            newlyUnlocked
+            newlyUnlocked,
+            vestingUpdate
             );
     }
 }

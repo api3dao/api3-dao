@@ -44,7 +44,8 @@ abstract contract ClaimUtils is StakeUtils, IClaimUtils {
         assert(api3Token.transfer(recipient, amount));
         emit PaidOutClaim(
             recipient,
-            amount
+            amount,
+            totalStake
             );
     }
 }

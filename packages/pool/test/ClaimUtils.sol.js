@@ -69,7 +69,11 @@ describe("payOutClaim", function () {
             .payOutClaim(roles.claimsManager.address, claimAmount)
         )
           .to.emit(api3Pool, "PaidOutClaim")
-          .withArgs(roles.claimsManager.address, claimAmount);
+          .withArgs(
+            roles.claimsManager.address,
+            claimAmount,
+            user1Stake.sub(claimAmount).add(1)
+          );
         expect(await api3Pool.userStake(roles.user1.address)).to.equal(
           user1Stake.sub(claimAmount)
         );
