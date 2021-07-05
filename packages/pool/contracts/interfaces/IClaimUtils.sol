@@ -6,7 +6,8 @@ import "./IStakeUtils.sol";
 interface IClaimUtils is IStakeUtils {
     event PaidOutClaim(
         address indexed recipient,
-        uint256 amount
+        uint256 amount,
+        uint256 totalStake
         );
 
     function payOutClaim(

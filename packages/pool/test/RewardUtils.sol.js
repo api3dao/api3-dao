@@ -89,7 +89,12 @@ describe("mintReward", function () {
               .div(HUNDRED_PERCENT);
             await expect(api3Pool.connect(roles.randomPerson).mintReward())
               .to.emit(api3Pool, "MintedReward")
-              .withArgs(nextEpoch, rewardAmount, newApr);
+              .withArgs(
+                nextEpoch,
+                rewardAmount,
+                newApr,
+                totalStake.add(rewardAmount)
+              );
             expect(await api3Pool.totalStake()).to.equal(
               totalStake.add(rewardAmount)
             );
@@ -153,7 +158,12 @@ describe("mintReward", function () {
               .div(HUNDRED_PERCENT);
             await expect(api3Pool.connect(roles.randomPerson).mintReward())
               .to.emit(api3Pool, "MintedReward")
-              .withArgs(nextEpoch, rewardAmount, newApr);
+              .withArgs(
+                nextEpoch,
+                rewardAmount,
+                newApr,
+                totalStake.add(rewardAmount)
+              );
             expect(await api3Pool.totalStake()).to.equal(
               totalStake.add(rewardAmount)
             );
@@ -254,7 +264,12 @@ describe("mintReward", function () {
           .div(HUNDRED_PERCENT);
         await expect(api3Pool.connect(roles.randomPerson).mintReward())
           .to.emit(api3Pool, "MintedReward")
-          .withArgs(genesisEpochPlusFive, rewardAmount, newApr);
+          .withArgs(
+            genesisEpochPlusFive,
+            rewardAmount,
+            newApr,
+            totalStake.add(rewardAmount)
+          );
         expect(await api3Pool.totalStake()).to.equal(
           totalStake.add(rewardAmount)
         );

@@ -7,7 +7,8 @@ interface IRewardUtils is IGetterUtils {
     event MintedReward(
         uint256 indexed epochIndex,
         uint256 amount,
-        uint256 newApr
+        uint256 newApr,
+        uint256 totalStake
         );
 
     function mintReward()

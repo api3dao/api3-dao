@@ -53,9 +53,10 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         }
 
         // Assign the new delegation
+        uint256 delegatedToUpdate = delegatedToUser(delegate) + userShares;
         updateCheckpointArray(
             users[delegate].delegatedTo,
-            delegatedToUser(delegate) + userShares
+            delegatedToUpdate
             );
 
         // Record the new delegate for the user
@@ -66,7 +67,8 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         emit Delegated(
             msg.sender,
             delegate,
-            userShares
+            userShares,
+            delegatedToUpdate
             );
     }
 
@@ -89,9 +91,10 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         user.lastDelegationUpdateTimestamp = block.timestamp;
 
         uint256 userShares = userShares(msg.sender);
+        uint256 delegatedToUpdate = delegatedToUser(previousDelegate) - userShares;
         updateCheckpointArray(
             users[previousDelegate].delegatedTo,
-            delegatedToUser(previousDelegate) - userShares
+            delegatedToUpdate
             );
         updateAddressCheckpointArray(
             user.delegates,
@@ -100,7 +103,8 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
         emit Undelegated(
             msg.sender,
             previousDelegate,
-            userShares
+            userShares,
+            delegatedToUpdate
             );
     }
 
@@ -122,17 +126,19 @@ abstract contract DelegationUtils is RewardUtils, IDelegationUtils {
             return;
         }
         uint256 currentDelegatedTo = delegatedToUser(delegate);
-        uint256 newDelegatedTo = delta
+        uint256 delegatedToUpdate = delta
             ? currentDelegatedTo + shares
             : currentDelegatedTo - shares;
         updateCheckpointArray(
             users[delegate].delegatedTo,
-            newDelegatedTo
+            delegatedToUpdate
             );
-        emit Delegated(
+        emit UpdatedDelegation(
             msg.sender,
             delegate,
-            newDelegatedTo
+            delta,
+            shares,
+            delegatedToUpdate
             );
     }
 }

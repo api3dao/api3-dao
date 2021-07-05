@@ -21,21 +21,24 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         user.unstaked -= amount;
         uint256 totalSharesNow = totalShares();
         uint256 sharesToMint = amount * totalSharesNow / totalStake;
-        uint256 userSharesNow = userShares(msg.sender);
+        uint256 userSharesUpdate = userShares(msg.sender) + sharesToMint;
         updateCheckpointArray(
             user.shares,
-            userSharesNow + sharesToMint
+            userSharesUpdate
             );
+        uint256 totalSharesUpdate = totalSharesNow + sharesToMint;
         updateCheckpointArray(
             poolShares,
-            totalSharesNow + sharesToMint
+            totalSharesUpdate
             );
         totalStake += amount;
         updateDelegatedVotingPower(sharesToMint, true);
         emit Staked(
             msg.sender,
             amount,
-            sharesToMint
+            sharesToMint,
+            userSharesUpdate,
+            totalSharesUpdate
             );
     }
 
@@ -91,23 +94,24 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         user.unstakeScheduledFor = unstakeScheduledFor;
         user.unstakeAmount = amount;
         user.unstakeShares = sharesToUnstake;
+        uint256 userSharesUpdate = userSharesNow - sharesToUnstake;
         updateCheckpointArray(
             user.shares,
-            userSharesNow - sharesToUnstake
+            userSharesUpdate
             );
         updateDelegatedVotingPower(sharesToUnstake, false);
         emit ScheduledUnstake(
             msg.sender,
             amount,
             sharesToUnstake,
-            unstakeScheduledFor
+            unstakeScheduledFor,
+            userSharesUpdate
             );
     }
 
     /// @notice Called to execute a pre-scheduled unstake
-    /// @dev Note that anyone can execute a matured unstake. This is to allow
-    /// the user to use bots, etc. to execute their unstaking as soon as
-    /// possible.
+    /// @dev Anyone can execute a matured unstake. This is to allow the user to
+    /// use bots, etc. to execute their unstaking as soon as possible.
     /// @param userAddress User address
     /// @return Amount of tokens that are unstaked
     function unstake(address userAddress)
@@ -128,31 +132,37 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         uint256 totalShares = totalShares();
         uint256 unstakeAmount = user.unstakeAmount;
         uint256 unstakeAmountByShares = user.unstakeShares * totalStake / totalShares;
-        // If there was a claim payout in between the scheduling and the actual unstake 
-        // then the amount might be lower than expected at scheduling time
+        // If there was a claim payout in between the scheduling and the actual
+        // unstake then the amount might be lower than expected at scheduling
+        // time
         if (unstakeAmount > unstakeAmountByShares)
         {
             unstakeAmount = unstakeAmountByShares;
         }
         user.unstaked += unstakeAmount;
 
+        uint256 totalSharesUpdate = totalShares - user.unstakeShares;
         updateCheckpointArray(
             poolShares,
-            totalShares - user.unstakeShares
+            totalSharesUpdate
             );
         totalStake -= unstakeAmount;
 
         user.unstakeAmount = 0;
         user.unstakeShares = 0;
         user.unstakeScheduledFor = 0;
-        emit Unstaked(userAddress, unstakeAmount);
+        emit Unstaked(
+            userAddress,
+            unstakeAmount,
+            totalSharesUpdate
+            );
         return unstakeAmount;
     }
 
     /// @notice Convenience method to execute an unstake and withdraw to the
     /// user's wallet in a single transaction
-    /// @dev Note that the withdrawal may revert because the user may have less
-    /// than `unstaked` tokens that are withdrawable
+    /// @dev The withdrawal will revert if the user has less than
+    /// `unstakeAmount` tokens that are withdrawable
     function unstakeAndWithdraw()
         external
         override

@@ -6,12 +6,14 @@ import "./IDelegationUtils.sol";
 interface ITransferUtils is IDelegationUtils{
     event Deposited(
         address indexed user,
-        uint256 amount
+        uint256 amount,
+        uint256 userUnstaked
         );
 
     event Withdrawn(
         address indexed user,
-        uint256 amount
+        uint256 amount,
+        uint256 userUnstaked
         );
 
     event CalculatingUserLocked(

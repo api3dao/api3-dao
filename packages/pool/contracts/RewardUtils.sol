@@ -22,10 +22,13 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
             if (api3Token.getMinterStatus(address(this)))
             {
                 uint256 rewardAmount = totalStake * apr * EPOCH_LENGTH / 365 days / HUNDRED_PERCENT;
+                assert(block.number <= MAX_UINT32);
+                assert(rewardAmount <= MAX_UINT224);
                 epochIndexToReward[currentEpoch] = Reward({
                     atBlock: uint32(block.number),
                     amount: uint224(rewardAmount),
-                    totalSharesThen: totalShares()
+                    totalSharesThen: totalShares(),
+                    totalStakeThen: totalStake
                     });
                 api3Token.mint(address(this), rewardAmount);
                 totalStake += rewardAmount;
@@ -33,7 +36,8 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
                 emit MintedReward(
                     currentEpoch,
                     rewardAmount,
-                    apr
+                    apr,
+                    totalStake
                     );
             }
             epochIndexOfLastReward = currentEpoch;

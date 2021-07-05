@@ -20,6 +20,7 @@ contract StateUtils is IStateUtils {
         uint32 atBlock;
         uint224 amount;
         uint256 totalSharesThen;
+        uint256 totalStakeThen;
     }
 
     struct User {
@@ -52,16 +53,17 @@ contract StateUtils is IStateUtils {
     uint256 public constant EPOCH_LENGTH = 1 weeks;
 
     /// @notice Number of epochs before the staking rewards get unlocked.
-    /// Hardcoded as 52 epochs, which corresponds to a year with an
-    /// `EPOCH_LENGTH` of 1 week.
+    /// Hardcoded as 52 epochs, which approximately corresponds to a year with
+    /// an `EPOCH_LENGTH` of 1 week.
     uint256 public constant REWARD_VESTING_PERIOD = 52;
 
     // All percentage values are represented as 1e18 = 100%
     uint256 internal constant ONE_PERCENT = 1e18 / 100;
     uint256 internal constant HUNDRED_PERCENT = 1e18;
 
-    uint256 private constant MAX_UINT32 = 2**32 - 1;
-    uint256 private constant MAX_UINT224 = 2**224 - 1;
+    // To assert that typecasts do not overflow
+    uint256 internal constant MAX_UINT32 = 2**32 - 1;
+    uint256 internal constant MAX_UINT224 = 2**224 - 1;
 
     /// @notice Epochs are indexed as `block.timestamp / EPOCH_LENGTH`.
     /// `genesisEpoch` is the index of the epoch in which the pool is deployed.
@@ -117,7 +119,7 @@ contract StateUtils is IStateUtils {
     /// amount is below this, and vice versa.
     /// @dev Default value is 50% of the total API3 token supply. This
     /// parameter is governable by the DAO.
-    uint256 public stakeTarget = 50 * ONE_PERCENT;
+    uint256 public stakeTarget = ONE_PERCENT * 50;
 
     /// @notice Minimum APR (annual percentage rate) the pool will pay as
     /// staking rewards in percentages
@@ -127,7 +129,7 @@ contract StateUtils is IStateUtils {
     /// @notice Maximum APR (annual percentage rate) the pool will pay as
     /// staking rewards in percentages
     /// @dev Default value is 75%. This parameter is governable by the DAO.
-    uint256 public maxApr = 75 * ONE_PERCENT;
+    uint256 public maxApr = ONE_PERCENT * 75;
 
     /// @notice Steps in which APR will be updated in percentages
     /// @dev Default value is 1%. This parameter is governable by the DAO.
@@ -387,7 +389,7 @@ contract StateUtils is IStateUtils {
     {
         require(
             _proposalVotingPowerThreshold >= ONE_PERCENT / 10
-                && _proposalVotingPowerThreshold <= 10 * ONE_PERCENT,
+                && _proposalVotingPowerThreshold <= ONE_PERCENT * 10,
             "Pool: Threshold outside limits");
         proposalVotingPowerThreshold = _proposalVotingPowerThreshold;
         emit SetProposalVotingPowerThreshold(_proposalVotingPowerThreshold);

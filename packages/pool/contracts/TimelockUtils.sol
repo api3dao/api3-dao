@@ -6,7 +6,7 @@ import "./interfaces/ITimelockUtils.sol";
 
 /// @title Contract that implements vesting functionality
 /// @dev The TimelockManager contract interfaces with this contract to transfer
-/// API3 tokens that are locked under a vesting schedule
+/// API3 tokens that are locked under a vesting schedule.
 /// This contract keeps its own type definitions, event declarations and state
 /// variables for them to be easier to remove for a subDAO where they will
 /// likely not be used.
@@ -28,7 +28,7 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
     /// @notice Called by the TimelockManager contract to deposit tokens on
     /// behalf of a user
     /// @dev This method is only usable by `TimelockManager.sol`.
-    /// It is named as `deposit()` and not `depositByTimelockManager()` for
+    /// It is named as `deposit()` and not `depositAsTimelockManager()` for
     /// example, because the TimelockManager is already deployed and expects
     /// the `deposit(address,uint256,address)` interface.
     /// @param source Token transfer source
@@ -46,13 +46,15 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
             msg.sender == timelockManager,
             "Pool: Caller not TimelockManager"
             );
-        users[userAddress].unstaked += amount;
+        uint256 unstakedUpdate = users[userAddress].unstaked + amount;
+        users[userAddress].unstaked = unstakedUpdate;
         // Should never return false because the API3 token uses the
         // OpenZeppelin implementation
         assert(api3Token.transferFrom(source, address(this), amount));
         emit DepositedByTimelockManager(
             userAddress,
-            amount
+            amount,
+            unstakedUpdate
             );
     }
 
@@ -103,8 +105,10 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
             amount != 0,
             "Pool: Timelock amount zero"
             );
-        users[userAddress].unstaked += amount;
-        users[userAddress].vesting += amount;
+        uint256 unstakedUpdate = users[userAddress].unstaked + amount;
+        users[userAddress].unstaked = unstakedUpdate;
+        uint256 vestingUpdate = users[userAddress].vesting + amount;
+        users[userAddress].vesting = vestingUpdate;
         userToTimelock[userAddress] = Timelock({
             totalAmount: amount,
             remainingAmount: amount,
@@ -118,7 +122,9 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
             userAddress,
             amount,
             releaseStart,
-            releaseEnd
+            releaseEnd,
+            unstakedUpdate,
+            vestingUpdate
             );
     }
 
@@ -152,11 +158,13 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
         uint256 previouslyUnlocked = timelock.totalAmount - timelock.remainingAmount;
         uint256 newlyUnlocked = totalUnlocked - previouslyUnlocked;
         User storage user = users[userAddress];
-        user.vesting -= newlyUnlocked;
+        uint256 vestingUpdate = user.vesting - newlyUnlocked;
+        user.vesting = vestingUpdate;
         timelock.remainingAmount -= newlyUnlocked;
         emit VestedTimelock(
             userAddress,
-            newlyUnlocked
+            newlyUnlocked,
+            vestingUpdate
             );
     }
 }
