@@ -36,7 +36,8 @@ abstract contract RewardUtils is GetterUtils, IRewardUtils {
                 emit MintedReward(
                     currentEpoch,
                     rewardAmount,
-                    apr
+                    apr,
+                    totalStake
                     );
             }
             epochIndexOfLastReward = currentEpoch;
