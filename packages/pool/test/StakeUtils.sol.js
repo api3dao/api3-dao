@@ -77,6 +77,7 @@ describe("stake", function () {
             user1Stake.div(2),
             user1Stake.div(2),
             user1Stake,
+            user1Stake.add(1),
             user1Stake.add(1)
           );
         expect(await api3Pool.userStake(roles.user1.address)).to.equal(
@@ -112,6 +113,7 @@ describe("stake", function () {
             user1Stake,
             user1Stake,
             user1Stake,
+            user1Stake.add(1),
             user1Stake.add(1)
           );
         expect(await api3Pool.userStake(roles.user1.address)).to.equal(
@@ -148,6 +150,7 @@ describe("depositAndStake", function () {
         user1Stake,
         user1Stake,
         user1Stake,
+        user1Stake.add(1),
         user1Stake.add(1)
       );
   });
@@ -334,11 +337,17 @@ describe("unstake", function () {
           ]);
           // Unstake
           await api3Pool.mintReward();
+          const totalStake = await api3Pool.totalStake();
           await expect(
             api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
           )
             .to.emit(api3Pool, "Unstaked")
-            .withArgs(roles.user1.address, user1Stake, 1);
+            .withArgs(
+              roles.user1.address,
+              user1Stake,
+              1,
+              totalStake.sub(user1Stake)
+            );
           const user = await api3Pool.users(roles.user1.address);
           expect(user.unstaked).to.equal(user1Stake);
         });
@@ -395,6 +404,7 @@ describe("unstake", function () {
           const actualUnstakeAmount = unstakeShares
             .mul(await api3Pool.totalStake())
             .div(await api3Pool.totalShares());
+          const totalStake = await api3Pool.totalStake();
           await expect(
             api3Pool.connect(roles.randomPerson).unstake(roles.user1.address)
           )
@@ -402,7 +412,8 @@ describe("unstake", function () {
             .withArgs(
               roles.user1.address,
               actualUnstakeAmount,
-              user1Stake.div(2).add(1)
+              user1Stake.div(2).add(1),
+              totalStake.sub(actualUnstakeAmount)
             );
         });
       });

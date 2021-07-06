@@ -38,7 +38,8 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             amount,
             sharesToMint,
             userSharesUpdate,
-            totalSharesUpdate
+            totalSharesUpdate,
+            totalStake
             );
     }
 
@@ -154,7 +155,8 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         emit Unstaked(
             userAddress,
             unstakeAmount,
-            totalSharesUpdate
+            totalSharesUpdate,
+            totalStake
             );
         return unstakeAmount;
     }
