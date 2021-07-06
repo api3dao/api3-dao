@@ -8,6 +8,7 @@ interface IStakeUtils is ITransferUtils{
         address indexed user,
         uint256 amount,
         uint256 mintedShares,
+        uint256 userUnstaked,
         uint256 userShares,
         uint256 totalShares,
         uint256 totalStake
@@ -24,6 +25,7 @@ interface IStakeUtils is ITransferUtils{
     event Unstaked(
         address indexed user,
         uint256 amount,
+        uint256 userUnstaked,
         uint256 totalShares,
         uint256 totalStake
         );

@@ -76,6 +76,7 @@ describe("stake", function () {
             roles.user1.address,
             user1Stake.div(2),
             user1Stake.div(2),
+            0,
             user1Stake,
             user1Stake.add(1),
             user1Stake.add(1)
@@ -112,6 +113,7 @@ describe("stake", function () {
             roles.user1.address,
             user1Stake,
             user1Stake,
+            0,
             user1Stake,
             user1Stake.add(1),
             user1Stake.add(1)
@@ -149,6 +151,7 @@ describe("depositAndStake", function () {
         roles.user1.address,
         user1Stake,
         user1Stake,
+        0,
         user1Stake,
         user1Stake.add(1),
         user1Stake.add(1)
@@ -345,6 +348,7 @@ describe("unstake", function () {
             .withArgs(
               roles.user1.address,
               user1Stake,
+              user1Stake,
               1,
               totalStake.sub(user1Stake)
             );
@@ -411,6 +415,7 @@ describe("unstake", function () {
             .to.emit(api3Pool, "Unstaked")
             .withArgs(
               roles.user1.address,
+              actualUnstakeAmount,
               actualUnstakeAmount,
               user1Stake.div(2).add(1),
               totalStake.sub(actualUnstakeAmount)
