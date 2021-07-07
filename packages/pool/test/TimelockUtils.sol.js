@@ -148,7 +148,7 @@ describe("depositWithVesting", function () {
         });
       });
       context("Release end is not later than release start", function () {
-        it("updates release start and deposits with vesting", async function () {
+        it("reverts", async function () {
           const depositAmount = ethers.utils.parseEther("20" + "000" + "000");
           await api3Token
             .connect(roles.deployer)
@@ -171,16 +171,7 @@ describe("depositWithVesting", function () {
                 releaseStart,
                 releaseEnd
               )
-          )
-            .to.emit(api3Pool, "DepositedVesting")
-            .withArgs(
-              roles.user1.address,
-              depositAmount,
-              releaseEnd - 1,
-              releaseEnd,
-              depositAmount,
-              depositAmount
-            );
+          ).to.be.revertedWith("Pool: Timelock start after end");
         });
       });
     });

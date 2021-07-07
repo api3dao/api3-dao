@@ -60,10 +60,7 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
 
     /// @notice Called by the TimelockManager contract to deposit tokens on
     /// behalf of a user on a linear vesting schedule
-    /// @dev Refer to `TimelockManager.sol` to see how this is used.
-    /// Note that `releaseStart` gets updated as `releaseEnd - 1` if it is
-    /// equal to or greater than `releaseEnd`. This is to accomodate for the
-    /// already deployed TimelockManager. See the code below for more context. 
+    /// @dev Refer to `TimelockManager.sol` to see how this is used
     /// @param source Token source
     /// @param amount Token amount
     /// @param userAddress Address of the user who will receive the tokens
@@ -87,20 +84,10 @@ abstract contract TimelockUtils is ClaimUtils, ITimelockUtils {
             userToTimelock[userAddress].remainingAmount == 0,
             "Pool: User has active timelock"
             );
-        /*
         require(
             releaseEnd > releaseStart,
             "Pool: Timelock start after end"
             );
-        // While calling `depositWithVesting()`, if the time is later than
-        // `releaseEnd`, TimelockManager may call this contract with
-        // `releaseStart` that is larger than `releaseEnd`. Instead of
-        // reverting, simply update `releaseStart`.
-        */
-        if (releaseStart >= releaseEnd)
-        {
-            releaseStart = releaseEnd - 1;
-        }
         require(
             amount != 0,
             "Pool: Timelock amount zero"
