@@ -6,6 +6,18 @@
       "appName": "api3voting.aragonpm.eth",
       "registry": "0xdA71454D2a71D63116cd67099e4a0fdd3a8Dfb47"
     },
+    "mainnet": {
+      "apm": {
+        "ipfs": {
+          "gateway": "https://ipfs.eth.aragon.network/ipfs"
+        }
+      },
+      "network": "mainnet",
+      "appName": "api3voting.open.aragonpm.eth",
+      "wsRPC": "wss://mainnet.infura.io/ws/v3/4c9049736af84c46ad0972910df0476a",
+      "rpc": "https://mainnet.infura.io/v3/4c9049736af84c46ad0972910df0476a",
+      "registry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"
+    },
     "rinkeby": {
       "apm": {
         "ipfs": {

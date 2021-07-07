@@ -12,11 +12,12 @@ const Api3Token = artifacts.require("Api3Token");
 const Convenience = artifacts.require("Convenience");
 const TimelockManager = artifacts.require("TimelockManager");
 
-const daoId = `api3-template-${Math.random().toString(36).substring(7)}`;
 const supportRequiredPct1 = 50e16;
 const minAcceptQuorumPct1 = 50e16;
 const supportRequiredPct2 = 50e16;
 const minAcceptQuorumPct2 = 15e16;
+
+const gasPrice = "55" + "000" + "000" + "000";
 
 /**
  * Returns the address of the deployer
@@ -44,29 +45,75 @@ const getDeployer = async () => {
 module.exports = async (callback) => {
   try {
     const network = await getNetworkName();
-    if (network === "mainnet") {
-      // TODO: We should use specific daoId and do NOT create new token and pool instance
-      throw new Error("This script is not yet ready for mainnet deployment!");
-    }
-
     const deployer = await getDeployer();
 
-    const api3Token = await Api3Token.new(deployer, deployer);
-    const timelockManager = await TimelockManager.new(
-      api3Token.address,
-      deployer
-    );
-    const api3Pool = await Api3Pool.new(
-      api3Token.address,
-      timelockManager.address
-    );
-    await api3Token.updateMinterStatus(api3Pool.address, true);
-    const convenience = await Convenience.new(api3Pool.address);
-    await convenience.setErc20Addresses([api3Token.address]);
+    let api3Token, api3Pool;
+    let api3TokenAddress, timelockManagerAddress;
+    if (network === "mainnet") {
+      // TODO: replace below with 0x0b38210ea11411557c13457D4dA7dC6ea731B88a
+      api3TokenAddress = "0x0000000000000000000000000000000000000001";
+      timelockManagerAddress = "0xFaef86994a37F1c8b2A5c73648F07dd4eFF02baA";
+      api3Pool = await Api3Pool.new(api3TokenAddress, timelockManagerAddress, {
+        gasPrice: gasPrice,
+      });
+      // Pass an API3DAOv1 proposal to call the token contract to authorize the pool contract as a minter
+      // Pass an API3DAOv1 proposal to call the timelock manager contract to set the pool contract
+    } else {
+      api3Token = await Api3Token.new(deployer, deployer, {
+        gasPrice: gasPrice,
+      });
+      api3TokenAddress = api3Token.address;
+      const timelockManager = await TimelockManager.new(
+        api3Token.address,
+        deployer,
+        { gasPrice: gasPrice }
+      );
+      timelockManagerAddress = timelockManager.address;
+      api3Pool = await Api3Pool.new(
+        api3Token.address,
+        timelockManager.address,
+        { gasPrice: gasPrice }
+      );
+      await api3Token.updateMinterStatus(api3Pool.address, true, {
+        gasPrice: gasPrice,
+      });
+      await timelockManager.updateApi3Pool(api3Pool.address, {
+        gasPrice: gasPrice,
+      });
+    }
+
+    const convenience = await Convenience.new(api3Pool.address, {
+      gasPrice: gasPrice,
+    });
+    if (network === "mainnet") {
+      await convenience.setErc20Addresses(
+        [
+          api3TokenAddress,
+          "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", // USDC
+        ],
+        { gasPrice: gasPrice }
+      );
+    } else {
+      await convenience.setErc20Addresses([api3TokenAddress], {
+        gasPrice: gasPrice,
+      });
+    }
+
+    let templateId;
+    if (network === "mainnet") {
+      // TODO: replace below with the final name
+      templateId = "api3-template-test.open";
+    } else if (network === "rinkeby" || network === "ropsten") {
+      templateId = `api3-template-${Math.random()
+        .toString(36)
+        .substring(7)}.open`;
+    } else {
+      templateId = `api3-template-${Math.random().toString(36).substring(7)}`;
+    }
     const template = await deployTemplate(
       web3,
       artifacts,
-      network === "rinkeby" || network === "ropsten" ? daoId + ".open" : daoId,
+      templateId,
       "Api3Template",
       [
         { name: "agent", contractName: "Agent" },
@@ -76,19 +123,28 @@ module.exports = async (callback) => {
         { name: "payroll", contractName: "Payroll" },
         { name: "finance", contractName: "Finance" },
         { name: "token-manager", contractName: "TokenManager" },
-      ]
+      ],
+      { gasPrice: gasPrice }
     );
+
+    let daoId;
+    if (network === "mainnet") {
+      // TODO: replace below with the final name
+      daoId = "api3-test";
+    } else {
+      daoId = `api3-${Math.random().toString(36).substring(7)}`;
+    }
     const api3VotingAppId =
-      network === "rinkeby" || network === "mainnet" || network === "ropsten"
+      network === "mainnet" || network === "ropsten" || network === "rinkeby"
         ? namehash("api3voting.open.aragonpm.eth")
         : namehash("api3voting.aragonpm.eth");
-
     const tx = await template.newInstance(
       daoId,
       api3Pool.address,
       [supportRequiredPct1, minAcceptQuorumPct1],
       [supportRequiredPct2, minAcceptQuorumPct2],
-      api3VotingAppId
+      api3VotingAppId,
+      { gasPrice: gasPrice }
     );
     const dao = getEventArgument(tx, "Api3DaoDeployed", "dao");
     const acl = getEventArgument(tx, "Api3DaoDeployed", "acl");
@@ -120,12 +176,18 @@ module.exports = async (callback) => {
       { from: deployer }
     );
 
-    await api3Token.transfer(primaryAgent, "100000000000000000000000");
-    await api3Token.transfer(secondaryAgent, "50000000000000000000000");
+    if (network !== "mainnet") {
+      await api3Token.transfer(primaryAgent, "100000000000000000000000", {
+        gasPrice: gasPrice,
+      });
+      await api3Token.transfer(secondaryAgent, "50000000000000000000000", {
+        gasPrice: gasPrice,
+      });
+    }
 
     const deployedAddresses = {
-      api3Token: api3Token.address,
-      timelockManager: timelockManager.address,
+      api3Token: api3TokenAddress,
+      timelockManager: timelockManagerAddress,
       api3Pool: api3Pool.address,
       convenience: convenience.address,
       dao: dao,
@@ -161,6 +223,5 @@ module.exports = async (callback) => {
   } catch (error) {
     callback(error);
   }
-
   callback();
 };
