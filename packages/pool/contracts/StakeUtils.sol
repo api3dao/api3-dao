@@ -18,7 +18,8 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             user.unstaked >= amount,
             "Pool: Amount exceeds unstaked"
             );
-        user.unstaked -= amount;
+        uint256 userUnstakedUpdate = user.unstaked - amount;
+        user.unstaked = userUnstakedUpdate;
         uint256 totalSharesNow = totalShares();
         uint256 sharesToMint = amount * totalSharesNow / totalStake;
         uint256 userSharesUpdate = userShares(msg.sender) + sharesToMint;
@@ -37,8 +38,10 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
             msg.sender,
             amount,
             sharesToMint,
+            userUnstakedUpdate,
             userSharesUpdate,
-            totalSharesUpdate
+            totalSharesUpdate,
+            totalStake
             );
     }
 
@@ -139,7 +142,8 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         {
             unstakeAmount = unstakeAmountByShares;
         }
-        user.unstaked += unstakeAmount;
+        uint256 userUnstakedUpdate = user.unstaked + unstakeAmount;
+        user.unstaked = userUnstakedUpdate;
 
         uint256 totalSharesUpdate = totalShares - user.unstakeShares;
         updateCheckpointArray(
@@ -154,7 +158,9 @@ abstract contract StakeUtils is TransferUtils, IStakeUtils {
         emit Unstaked(
             userAddress,
             unstakeAmount,
-            totalSharesUpdate
+            userUnstakedUpdate,
+            totalSharesUpdate,
+            totalStake
             );
         return unstakeAmount;
     }
