@@ -34,7 +34,7 @@ module.exports = {
       url: "https://mainnet.infura.io/v3/4c9049736af84c46ad0972910df0476a",
       chainId: 1,
       accounts: [process.env.MAINNET_PRIVATE_KEY || ""],
-      gasPrice: 50_000_000_000,
+      gasPrice: 50000000000,
     },
     ropsten: {
       url: "https://ropsten.infura.io/v3/4c9049736af84c46ad0972910df0476a",
