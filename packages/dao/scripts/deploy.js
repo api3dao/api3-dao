@@ -17,7 +17,7 @@ const minAcceptQuorumPct1 = 50e16;
 const supportRequiredPct2 = 50e16;
 const minAcceptQuorumPct2 = 15e16;
 
-const gasPrice = "55" + "000" + "000" + "000";
+const gasPrice = "35" + "000" + "000" + "000";
 
 /**
  * Returns the address of the deployer
@@ -50,8 +50,7 @@ module.exports = async (callback) => {
     let api3Token, api3Pool;
     let api3TokenAddress, timelockManagerAddress;
     if (network === "mainnet") {
-      // TODO: replace below with 0x0b38210ea11411557c13457D4dA7dC6ea731B88a
-      api3TokenAddress = "0x0000000000000000000000000000000000000001";
+      api3TokenAddress = "0x0b38210ea11411557c13457D4dA7dC6ea731B88a";
       timelockManagerAddress = "0xFaef86994a37F1c8b2A5c73648F07dd4eFF02baA";
       api3Pool = await Api3Pool.new(api3TokenAddress, timelockManagerAddress, {
         gasPrice: gasPrice,
@@ -101,8 +100,7 @@ module.exports = async (callback) => {
 
     let templateId;
     if (network === "mainnet") {
-      // TODO: replace below with the final name
-      templateId = "api3-template-test.open";
+      templateId = "api3-dao-template.open";
     } else if (network === "rinkeby" || network === "ropsten") {
       templateId = `api3-template-${Math.random()
         .toString(36)
@@ -129,8 +127,7 @@ module.exports = async (callback) => {
 
     let daoId;
     if (network === "mainnet") {
-      // TODO: replace below with the final name
-      daoId = "api3-test";
+      daoId = "api3dao";
     } else {
       daoId = `api3-${Math.random().toString(36).substring(7)}`;
     }

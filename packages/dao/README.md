@@ -48,9 +48,22 @@ and run
 npm run deploy:rinkeby
 ```
 
-## Verifying the DAO deployment
+## Verifying the Mainnet deployment
 
-**This needs to be repeated with the final mainnet deployment.**
+```json
+{
+  "api3Token": "0x0b38210ea11411557c13457D4dA7dC6ea731B88a",
+  "timelockManager": "0xFaef86994a37F1c8b2A5c73648F07dd4eFF02baA",
+  "api3Pool": "0x6dd655f10d4b9e242ae186d9050b68f725c76d76",
+  "convenience": "0x95087266018b9637aff3d76d4e0cad7e52c19636",
+  "dao": "0x593ea926ee9820a933488b6a288433c387d06dba",
+  "acl": "0x1e7ecc6d3b5b4cfdfc71cb7c3ea9ac4a55f4195a",
+  "votingAppPrimary": "0xdb6c812e439ce5c740570578681ea7aadba5170b",
+  "votingAppSecondary": "0x1c8058e72e4902b3431ef057e8d9a58a73f26372",
+  "agentAppPrimary": "0xd9f80bdb37e6bad114d747e60ce6d2aaf26704ae",
+  "agentAppSecondary": "0x556ecbb0311d350491ba0ec7e019c354d7723ce0"
+}
+```
 
 1. Install aragonCLI globally (specifying the package version because latest seems to be broken for some machines):
 ```sh
@@ -62,10 +75,12 @@ Run it and make sure that it is connected to the correct chain.
 
 3. Inspect the DAO with the following
 ```sh
-aragon dao apps <DAO kernel address> --use-frame
+aragon dao apps 0x593ea926ee9820a933488b6a288433c387d06dba --use-frame
 ```
-For example, you can use `0x825cc178f0510de72c8d3af4be69917935b3d269` on Rinkeby (**note that this may not be identical to the final version**).
-Review the displayed information is correct.
+Review that the displayed information is correct.
+```sh
+aragon dao apps 0x9B64177757a0BD2A042446C8d910526476B7Bf57 --use-frame
+```
 
 4. In (3), you should have seen Api3Voting apps with the ID `0x323c4eb511f386e7972d45b948cc546db35e9ccc7161c056fb07e09abd87e554`.
 This is derived as `namehash("api3voting.open.aragonpm.eth")`.
@@ -80,13 +95,18 @@ Then check the source code at this implementation address using Etherscan and ve
 
 6. Verify that the ACL (Access Control List) is configured correctly
 ```sh
-aragon dao acl <DAO kernel address> --use-frame
+aragon dao acl 0x593ea926ee9820a933488b6a288433c387d06dba --use-frame
+```
+
+You can compare with API3DAOv1
+```sh
+aragon dao acl 0x9B64177757a0BD2A042446C8d910526476B7Bf57 --use-frame
 ```
 
 7. Check that the following values are initialized correctly
 - `api3Pool` and the voting parameters (`supportRequiredPct` and `minAcceptQuorumPct`) at the Api3Voting apps
 - `api3Token`, `timelockManager`, `agentAppPrimary`, `agentAppSecondary`, `votingAppPrimary` and `votingAppSecondary` at the pool contract
-- If any claims manager contracts are set for the pool, they are audited and implemented to pay out claims in a trustless way with fail-safes such as payout limits (note that the pool will be deployed with no claims managers set initially)
+- If any claims manager contracts are set for the pool, they are audited and implemented to pay out claims in a trustless way with fail-safes such as payout limits (note that the pool will be deployed with no claims managers set initially and the DAO does not allow proposals in the first epoch to set a claims manager)
 
 ## Permissions
 
