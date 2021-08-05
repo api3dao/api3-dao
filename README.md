@@ -24,6 +24,20 @@ A pool contract that users can stake API3 tokens to receive voting power at the 
 
 A convenience contract used to make batch view calls to the DAO contracts
 
+## Audits
+
+This repo is audited by the following in this order:
+- [Solidified](https://github.com/solidified-platform/audits/blob/2bfe9e613c69333ba0abe4b262579b2540619780/Audit%20Report%20-%20API3DAO%20%20%5B15.04.2021%5D.pdf)
+- [Quantstamp](https://certificate.quantstamp.com/full/api-3)
+- Team Omega
+
+You can also find the audit reports in [`reports/`](/reports).
+Note that the [`convenience`](https://github.com/api3dao/api3-dao/tree/main/packages/convenience) package implements `view` functions for the [dashboard](https://github.com/api3dao/api3-dao-dashboard/) and is developed after the audits.
+
+[![QS audit seal](/reports/audit-seal-api3.png?raw=true)](https://certificate.quantstamp.com/full/api-3)
+
+
+
 ## Bug bounty
 
 If you have detected an issue that may cause serious consequences such as loss of funds:
