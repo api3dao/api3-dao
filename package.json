@@ -1,0 +1,33 @@
+{
+  "name": "@api3/api3-dao-contracts",
+  "version": "0.0.1",
+  "license": "MIT",
+  "private": false,
+  "files": [
+    "contracts",
+    "deployments/references.json"
+  ],
+  "scripts": {
+    "build": "hardhat compile",
+    "lint": "yarn prettier:check && yarn lint:eslint && yarn lint:solhint",
+    "lint:eslint": "eslint . --ext .js,.ts",
+    "lint:solhint": "solhint contracts/**/*.sol",
+    "prepare": "husky install",
+    "prettier": "prettier --write \"./**/*.{json,js,ts,sol,md}\"",
+    "prettier:check": "prettier --check \"./**/*.{json,js,ts,sol,md}\""
+  },
+  "devDependencies": {
+    "@api3/airnode-protocol": "^0.6.2",
+    "@nomiclabs/hardhat-ethers": "^2.0.5",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "chai": "^4.3.6",
+    "eslint": "^8.14.0",
+    "ethereum-waffle": "^3.4.4",
+    "ethers": "^5.6.5",
+    "hardhat": "^2.9.3",
+    "husky": "^7.0.4",
+    "prettier": "^2.6.2",
+    "prettier-plugin-solidity": "^1.0.0-beta.19",
+    "solhint": "^3.3.7"
+  }
+}
