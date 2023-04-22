@@ -18,7 +18,7 @@
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@openzeppelin/contracts": "^3.4.1",
     "chai": "^4.3.4",
-    "ethereum-waffle": "^3.3.0",
+    "ethereum-waffle": "^4.0.10",
     "hardhat": "^2.3.0",
     "hardhat-deploy": "^0.7.10",
     "hardhat-gas-reporter": "^1.0.4",
