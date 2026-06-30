@@ -15,7 +15,7 @@
     "prettify": "prettier --write \"./**/*.js\""
   },
   "devDependencies": {
-    "eslint": "^7.27.0",
+    "eslint": "^10.6.0",
     "husky": "^6.0.0",
     "lerna": "^4.0.0",
     "prettier": "^2.3.0",
